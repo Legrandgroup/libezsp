@@ -7,5 +7,5 @@ public:
 	RaritanUARTInputObservable();
 	virtual ~RaritanUARTInputObservable();
 
-	void measureTemp();
+	void genRandomData();
 };

@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 	probe.registerObserver(&disp2);
 
 	for(int i = 0; i < 5; ++i) {
-		probe.measureTemp();
+		probe.genRandomData();
 	}
 
 	probe.unregisterObserver(&disp1);
