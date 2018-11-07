@@ -1,31 +1,24 @@
-/*
- * Observable.cpp
- *
- *  Created on: Jun 19, 2015
- *      Author: alex
- */
-
-#include "Observable.hpp"
+#include "IObservable.h"
 
 using namespace std;
 
-Observable::Observable() {
+IObservable::IObservable() {
 
 }
 
-Observable::~Observable() {
+IObservable::~IObservable() {
 }
 
 
-bool Observable::registerObserver(Observer* observer) {
+bool IObservable::registerObserver(IObserver* observer) {
 	return this->observers.emplace(observer).second;
 }
 
-bool Observable::unregisterObserver(Observer* observer) {
+bool IObservable::unregisterObserver(IObserver* observer) {
 	return static_cast<bool>(this->observers.erase(observer));
 }
 
-void Observable::notifyObservers(const int& dataToPush) {
+void IObservable::notifyObservers(const int& dataToPush) {
 	for(auto observer : this->observers) {
 		observer->notify(dataToPush);
 	}

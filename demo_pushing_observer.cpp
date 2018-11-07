@@ -1,15 +1,14 @@
-
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <string>
 
-#include "Observable.hpp"
-#include "Observer.hpp"
+#include "IObservable.h"
+#include "IObserver.h"
 
 using namespace std;
 
-class TempProbe : public Observable {
+class TempProbe : public IObservable {
 public:
 	TempProbe() {};
 
@@ -19,7 +18,7 @@ public:
 	}
 };
 
-class TempDisplayer : public Observer {
+class TempDisplayer : public IObserver {
 public:
 	TempDisplayer(const string& name): name(name) {};
 	~TempDisplayer() {};
