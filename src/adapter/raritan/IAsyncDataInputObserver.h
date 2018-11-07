@@ -8,5 +8,5 @@ public:
 	virtual ~IAsyncDataInputObserver() {};
 
 	// Here we are sending a whole buffer during notification
-	virtual void notify(const std::vector<unsigned char>& dataIn) = 0;
+	virtual void handleInputData(const std::vector<unsigned char>& dataIn) = 0;
 };

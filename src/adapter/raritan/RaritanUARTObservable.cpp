@@ -19,6 +19,6 @@ bool IAsyncDataInputObservable::unregisterObserver(IAsyncDataInputObserver* obse
 
 void IAsyncDataInputObservable::notifyObservers(const std::vector<unsigned char>& inputData) {
 	for(auto observer : this->observers) {
-		observer->notify(inputData);
+		observer->handleInputData(inputData);
 	}
 }

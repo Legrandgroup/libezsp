@@ -29,7 +29,7 @@ public:
 	TempDisplayer(const string& name): name(name) {};
 	~TempDisplayer() {};
 
-	virtual void notify(const std::vector<unsigned char>& dataIn) {
+	virtual void handleInputData(const std::vector<unsigned char>& dataIn) {
 		std::stringstream bufDump;
 		for (auto i =dataIn.begin(); i != dataIn.end(); ++i) {
 			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*i) << " ";
@@ -42,8 +42,8 @@ private :
 
 int main(int argc, char** argv) {
 	srand(time(NULL));
-	TempDisplayer disp1("Displayer 1");
-	TempDisplayer disp2("Displayer 2");
+	TempDisplayer disp1("Input processor #1");
+	TempDisplayer disp2("Input processor #2");
 
 	TempProbe probe;
 	probe.registerObserver(&disp1);
