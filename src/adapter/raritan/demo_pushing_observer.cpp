@@ -3,12 +3,12 @@
 #include <ctime>
 #include <string>
 
-#include "IObservable.h"
-#include "IObserver.h"
+#include "IAsyncDataInputObservable.h"
+#include "IAsyncDataInputObserver.h"
 
 using namespace std;
 
-class TempProbe : public IObservable {
+class TempProbe : public IAsyncDataInputObservable {
 public:
 	TempProbe() {};
 
@@ -18,7 +18,7 @@ public:
 	}
 };
 
-class TempDisplayer : public IObserver {
+class TempDisplayer : public IAsyncDataInputObserver {
 public:
 	TempDisplayer(const string& name): name(name) {};
 	~TempDisplayer() {};
