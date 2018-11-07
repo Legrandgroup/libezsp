@@ -41,9 +41,17 @@ public:
 	/**
 	 * @brief Writes a byte sequence to the serial port
 	 *
+	 * NOTE: This function may write less data than requested!
+	 *
+	 * @param writtenCnt -- retval: count of bytes written
+	 * @param buf -- data buffer
+	 * @param cnt -- byte count of data to write
+	 *
+	 * @return PP_OK on success, errno on failure
+	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-//	virtual void write() = 0;
+	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt) = 0;
 
 	/**
 	 * @brief Callback to execute on bytes received

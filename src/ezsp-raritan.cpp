@@ -50,9 +50,14 @@ public:
 		};
 		unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
 		size_t written;
-		m_serial_tty->write(written, buf, 5);
+		write(written, buf, 5);
+		PPD_DEBUG("%u bytes written to dongle", written);
 
 		this->m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
+	}
+
+	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt) {
+		return this->m_serial_tty->write(writtenCnt, buf, cnt);
 	}
 
 	void close() {
