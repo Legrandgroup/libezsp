@@ -1,7 +1,7 @@
 /**
- * \file Ifw-downloader.h
+ * \file IUartDriver.h
  *
- * \brief Abstract interface to which must conforms concrete implementations of classes that download firmware images
+ * \brief Abstract interface to which must conforms concrete implementations of classes that manipulate UARTs
  *
  * Used as a dependency inversion paradigm
  */
@@ -13,50 +13,49 @@
 /**
  * \class IUartDriver
  *
- * \brief Abstract class to download firmware images
+ * \brief Abstract class that manipulate UARTs
  */
 class IUartDriver {
 
 public:
 	/**
-	 * \brief Constructor
-	 *
-	 * \param sourceLocation The location where to download the firmware image from
-	 * \param destinationStream The local stream where we should write the firmware image content
-	 * \param sourceFileSize The expected size of the firmware image to download (in bytes), or -1 if unknown
+	 * @brief Constructor
 	 */
 	IUartDriver() {	}
 
+	/**
+	 * @brief Destructor
+	 */
 	virtual ~IUartDriver() { }
 
 	/**
-	 * @brief Callback to open the serial port
+	 * @brief Opens the serial port
 	 *
 	 * @param serialPortName The name of the serial port to open (eg: "/dev/ttyUSB0")
 	 * @param baudRate The baudrate to enforce on the serial port
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes to implement the real file download
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual void open(const std::string& serialPortName, unsigned int baudRate) = 0;
 
 	/**
-	 * \brief Callback to write to the serial port
+	 * @brief Writes a byte sequence to the serial port
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes to implement the real file download
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 //	virtual void write() = 0;
 
 	/**
-	 * \brief Callback to execute on bytes received
+	 * @brief Callback to execute on bytes received
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes to implement the real file download
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 //	virtual void setReadCallback() = 0;
 
 	/**
-	 * \brief Callback to close the serial port
+	 * @brief Callback to close the serial port
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes to implement the real file download
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual void close() = 0;
 
