@@ -3,7 +3,7 @@
 #include <ctime>
 #include <string>
 
-#include "IAsyncDataInputObservable.h"
+#include "GenericAsyncDataInputObservable.h"
 #include "IAsyncDataInputObserver.h"
 
 #include <sstream>
@@ -11,14 +11,14 @@
 
 using namespace std;
 
-class TempProbe : public IAsyncDataInputObservable {
+class TempProbe : public GenericAsyncDataInputObservable {
 public:
 	TempProbe() {};
 
 	void measureTemp() {
 		std::vector<unsigned char> asyncData;
-		for (unsigned int bytePos=0; bytePos< (1+rand()%10); bytePos++) {
-			asyncData.push_back(rand() % 256);
+		for (unsigned int bytePos=0; bytePos<static_cast<unsigned int>(1+rand()%10); bytePos++) {
+			asyncData.push_back(static_cast<unsigned char>(rand() % 256));
 		}
 		this->notifyObservers(asyncData);
 	}

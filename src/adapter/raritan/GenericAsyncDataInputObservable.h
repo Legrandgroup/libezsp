@@ -4,10 +4,10 @@
 #include <vector>
 #include "IAsyncDataInputObserver.h"
 
-class IAsyncDataInputObservable {
+class GenericAsyncDataInputObservable {
 public:
-	IAsyncDataInputObservable();
-	virtual ~IAsyncDataInputObservable();
+	GenericAsyncDataInputObservable();
+	virtual ~GenericAsyncDataInputObservable();
 
 	bool registerObserver(IAsyncDataInputObserver* observer);
 	bool unregisterObserver(IAsyncDataInputObserver* observer);
