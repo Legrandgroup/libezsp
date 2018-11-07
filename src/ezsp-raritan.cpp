@@ -40,7 +40,7 @@ public:
 	}
 
 	void close() {
-		//000this->s->close();
+		//this->s->close();
 	}
 
 public:
