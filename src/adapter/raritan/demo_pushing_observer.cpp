@@ -6,6 +6,9 @@
 #include "IAsyncDataInputObservable.h"
 #include "IAsyncDataInputObserver.h"
 
+#include <sstream>
+#include <iomanip>
+
 using namespace std;
 
 class TempProbe : public IAsyncDataInputObservable {
@@ -13,8 +16,11 @@ public:
 	TempProbe() {};
 
 	void measureTemp() {
-		int temp = (rand() % (25-15)) + 15;
-		this->notifyObservers(temp);
+		std::vector<unsigned char> asyncData;
+		for (unsigned int bytePos=0; bytePos< (1+rand()%10); bytePos++) {
+			asyncData.push_back(rand() % 256);
+		}
+		this->notifyObservers(asyncData);
 	}
 };
 
@@ -23,8 +29,12 @@ public:
 	TempDisplayer(const string& name): name(name) {};
 	~TempDisplayer() {};
 
-	void notify(const int& content) {
-		cout << name << ": Received temperature " << content << endl;
+	virtual void notify(const std::vector<unsigned char>& dataIn) {
+		std::stringstream bufDump;
+		for (auto i =dataIn.begin(); i != dataIn.end(); ++i) {
+			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*i) << " ";
+		}
+		cout << name << ": Received buffer " << bufDump.str() << endl;
 	};
 private :
 	string name;
@@ -39,7 +49,7 @@ int main(int argc, char** argv) {
 	probe.registerObserver(&disp1);
 	probe.registerObserver(&disp2);
 
-	for(int i = 0; i < 20; ++i) {
+	for(int i = 0; i < 5; ++i) {
 		probe.measureTemp();
 	}
 

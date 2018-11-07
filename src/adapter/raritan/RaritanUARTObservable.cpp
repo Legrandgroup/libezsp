@@ -17,8 +17,8 @@ bool IAsyncDataInputObservable::unregisterObserver(IAsyncDataInputObserver* obse
 	return static_cast<bool>(this->observers.erase(observer));
 }
 
-void IAsyncDataInputObservable::notifyObservers(const int& dataToPush) {
+void IAsyncDataInputObservable::notifyObservers(const std::vector<unsigned char>& inputData) {
 	for(auto observer : this->observers) {
-		observer->notify(dataToPush);
+		observer->notify(inputData);
 	}
 }

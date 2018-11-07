@@ -1,11 +1,12 @@
 #pragma once
 
+#include <vector>
+
 class IAsyncDataInputObserver {
 public:
 	IAsyncDataInputObserver() {};
 	virtual ~IAsyncDataInputObserver() {};
 
-	//Change parameters here if you would like to transmit something else than an int
-	//You can also add more that 1 notification method.
-	virtual void notify(const int& content) = 0;
+	// Here we are sending a whole buffer during notification
+	virtual void notify(const std::vector<unsigned char>& dataIn) = 0;
 };
