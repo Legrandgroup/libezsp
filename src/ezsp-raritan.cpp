@@ -4,58 +4,74 @@
 #include <pp/diag.h>
 #include <Iuart-driver.h>
 
+class RaritanEventLoop {
+public:
+	RaritanEventLoop() : m_selector(*pp::SelectorSingleton::getInstance()) {}
+
+	/**
+	 * @brief Run the main loop
+	 */
+	void run() {
+		this->m_selector.run();
+	}
+	pp::Selector& getSelector() {
+		return this->m_selector;
+	}
+
+private:
+	pp::Selector& m_selector;
+};
+
+
 class UartDriverRaritan : public IUartDriver {
 public:
-	UartDriverRaritan() : selector(*pp::SelectorSingleton::getInstance()), s() {}
+	UartDriverRaritan(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty() {}
 	virtual ~UartDriverRaritan() {
 		this->close();
 	}
 
-	void run() {
-		this->selector.run();
-	}
-	void open(const std::string& serialPort, unsigned int baudRate = 57600) {
-		pp::Tty::UPtr f;
-		pp::Tty::open(f, serialPort,
+	void open(const std::string& serialPortName, unsigned int baudRate = 57600) {
+		pp::Tty::UPtr tmpSerialPortUPTR;
+		pp::Tty::open(tmpSerialPortUPTR, serialPortName,
 			pp::FileDescriptor::AF_READ_WRITE,
 			pp::FileDescriptor::CF_OPEN_EXISTING);
 
-		this->s = std::move(f);
-		this->s->setParams(static_cast<int>(baudRate), pp::Tty::Parity::None, 8, false, false, true);
+		m_serial_tty = std::move(tmpSerialPortUPTR);
+		m_serial_tty->setParams(static_cast<int>(baudRate), pp::Tty::Parity::None, 8, false, false, true);
 
 		auto cbin = [this](pp::Selector::SelectableHandle& sh, short events, short&) {
 			if (events & pp::Selector::EVENT_POLLIN) {
 				char readData[20];
 				size_t rdcnt;
-				this->s->read(rdcnt, readData, 20);
+				this->m_serial_tty->read(rdcnt, readData, 20);
 				PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
 				sh.getSelector()->stopAsync();
 			}
 		};
 		unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
 		size_t written;
-		this->s->write(written, buf, 5);
+		m_serial_tty->write(written, buf, 5);
 
-		this->selector.addSelectable(mySelHandle, this->s, POLLIN, cbin);
+		this->m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
 	}
 
 	void close() {
 		//this->s->close();
 	}
 
-public:
-	pp::Selector& selector;
 private:
-	pp::Selector::SelectableHandle mySelHandle;
-	pp::Tty::SPtr s;
+	RaritanEventLoop& m_eventLoop;
+	pp::Selector::SelectableHandle m_sel_handle;
+	pp::Tty::SPtr m_serial_tty;
 };
 
 int main() {
 	
-	UartDriverRaritan uartDriver;
+	RaritanEventLoop eventLoop;
+	UartDriverRaritan uartDriver(eventLoop);
 
 	uartDriver.open("/dev/ttyUSB0", 57600);
-	uartDriver.run();
+	eventLoop.run();
 
 	return 0;
 }
