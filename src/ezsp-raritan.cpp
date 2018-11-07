@@ -2,7 +2,7 @@
 #include <pp/File.h>
 #include <pp/Tty.h>
 #include <pp/diag.h>
-#include <Iuart-driver.h>
+#include <IUartDriver.h>
 
 class RaritanEventLoop {
 public:
@@ -66,7 +66,6 @@ private:
 };
 
 int main() {
-	
 	RaritanEventLoop eventLoop;
 	UartDriverRaritan uartDriver(eventLoop);
 
