@@ -1,5 +1,8 @@
-#ifndef OBSERVER_H
-#define OBSERVER_H
+/**
+ * @file observer.h
+ */
+
+#pragma once
 
 #include <list>
 
