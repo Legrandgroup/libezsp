@@ -9,7 +9,6 @@ IObservable::IObservable() {
 IObservable::~IObservable() {
 }
 
-
 bool IObservable::registerObserver(IObserver* observer) {
 	return this->observers.emplace(observer).second;
 }
