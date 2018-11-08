@@ -22,13 +22,13 @@ void UartDriverRaritan::open(const std::string& serialPortName, unsigned int bau
 	m_serial_tty = std::move(tmpSerialPortUPTR);
 	m_serial_tty->setParams(static_cast<int>(baudRate), pp::Tty::Parity::None, 8, false, false, true);
 
-	auto cbin = [this](pp::Selector::SelectableHandle& sh, short events, short&) {
+	auto cbin = [this](pp::Selector::SelectableHandle&, short events, short&) {
 		if (events & pp::Selector::EVENT_POLLIN) {
 			char readData[20];
 			size_t rdcnt;
 			this->m_serial_tty->read(rdcnt, readData, 20);
 			PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
-			sh.getSelector()->stopAsync();
+			this->m_eventLoop.getSelector().stopAsync();
 		}
 	};
 	unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
