@@ -12,7 +12,7 @@ public:
 	bool registerObserver(IAsyncDataInputObserver* observer);
 	bool unregisterObserver(IAsyncDataInputObserver* observer);
 
-	void notifyObservers(const std::vector<unsigned char>& inputData);
+	void notifyObservers(const unsigned char* inputData, const size_t inputDataLen);
 private:
 	std::set<IAsyncDataInputObserver*> observers;
 };

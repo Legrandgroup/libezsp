@@ -15,8 +15,8 @@ bool GenericAsyncDataInputObservable::unregisterObserver(IAsyncDataInputObserver
 	return static_cast<bool>(this->observers.erase(observer));
 }
 
-void GenericAsyncDataInputObservable::notifyObservers(const std::vector<unsigned char>& inputData) {
+void GenericAsyncDataInputObservable::notifyObservers(const unsigned char* inputData, const size_t inputDataLen) {
 	for(auto observer : this->observers) {
-		observer->handleInputData(inputData);
+		observer->handleInputData(inputData, inputDataLen);
 	}
 }

@@ -15,10 +15,11 @@ public:
 	TempDisplayer(const string& name): name(name) {};
 	~TempDisplayer() {};
 
-	virtual void handleInputData(const std::vector<unsigned char>& dataIn) {
+	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) {
 		std::stringstream bufDump;
-		for (auto i =dataIn.begin(); i != dataIn.end(); ++i) {
-			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*i) << " ";
+
+		for (size_t i =0; i<dataLen; i++) {
+			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(dataIn[i]) << " ";
 		}
 		cout << name << ": Received buffer " << bufDump.str() << endl;
 	};
