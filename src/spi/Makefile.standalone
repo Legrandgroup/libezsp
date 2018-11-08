@@ -4,7 +4,7 @@ LDFLAGS =
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
 
 EXEC = test
-OBJECTFILES = demo_pushing_observer.o GenericAsyncDataInputObservable.o RaritanUARTInputObservable.o
+OBJECTFILES = demo_pushing_observer.o GenericAsyncDataInputObservable.o raritan/RaritanUARTInputObservable.o
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 
 all: $(EXEC)

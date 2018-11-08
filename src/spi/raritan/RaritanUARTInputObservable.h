@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GenericAsyncDataInputObservable.h"
+#include "../GenericAsyncDataInputObservable.h"
 
 class RaritanUARTInputObservable : public GenericAsyncDataInputObservable {
 public:
