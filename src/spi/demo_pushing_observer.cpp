@@ -3,7 +3,7 @@
 #include <string>
 
 #include "IAsyncDataInputObserver.h"
-#include "raritan/RaritanUARTInputObservable.h"
+#include "raritan/RaritanUartInputObservable.h"
 
 #include <sstream>
 #include <iomanip>
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 	TempDisplayer disp1("Input processor #1");
 	TempDisplayer disp2("Input processor #2");
 
-	RaritanUARTInputObservable probe;
+	RaritanUartInputObservable probe;
 	probe.registerObserver(&disp1);
 	probe.registerObserver(&disp2);
 

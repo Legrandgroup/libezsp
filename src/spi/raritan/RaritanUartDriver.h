@@ -1,5 +1,5 @@
 /**
- * @file RaritanUARTDriver.h
+ * @file RaritanUartDriver.h
  */
 
 #pragma once

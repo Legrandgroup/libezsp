@@ -1,8 +1,8 @@
 /**
- * @file RaritanUARTDriver.cpp
+ * @file RaritanUartDriver.cpp
  */
 
-#include "RaritanUARTDriver.h"
+#include "RaritanUartDriver.h"
 #include <pp/diag.h>
 
 UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty() {

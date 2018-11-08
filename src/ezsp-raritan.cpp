@@ -1,4 +1,4 @@
-#include "spi/raritan/RaritanUARTDriver.h"
+#include "spi/raritan/RaritanUartDriver.h"
 #include "spi/raritan/RaritanEventLoop.h"
 
 int main() {

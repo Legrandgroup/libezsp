@@ -1,14 +1,14 @@
-#include "RaritanUARTInputObservable.h"
+#include "RaritanUartInputObservable.h"
 #include <vector>
 #include <cstdlib> // For rand()
 
-RaritanUARTInputObservable::RaritanUARTInputObservable() {
+RaritanUartInputObservable::RaritanUartInputObservable() {
 }
 
-RaritanUARTInputObservable::~RaritanUARTInputObservable() {
+RaritanUartInputObservable::~RaritanUartInputObservable() {
 }
 
-void RaritanUARTInputObservable::genRandomData() {
+void RaritanUartInputObservable::genRandomData() {
 	std::vector<unsigned char> asyncData;
 	for (unsigned int bytePos=0; bytePos<static_cast<unsigned int>(1+rand()%10); bytePos++) {
 		asyncData.push_back(static_cast<unsigned char>(rand() % 256));
