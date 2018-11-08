@@ -25,7 +25,7 @@ private :
 
 int main() {
 	RaritanEventLoop eventLoop;
-	RaritanUartInputObservable uartIncomingDataHandler;
+	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	DebuggerDisplayer disp("Debugger displayer");
 	uartIncomingDataHandler.registerObserver(&disp);
 	UartDriverRaritan uartDriver(eventLoop, uartIncomingDataHandler);
