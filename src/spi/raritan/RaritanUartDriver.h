@@ -13,6 +13,7 @@
 class UartDriverRaritan : public IUartDriver {
 public:
 	UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+	UartDriverRaritan(UartDriverRaritan& other) = delete;
 	virtual ~UartDriverRaritan();
 
 	/**
