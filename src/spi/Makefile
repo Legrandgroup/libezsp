@@ -1,4 +1,4 @@
-CXXFLAGS = -W -Wall -pedantic 
+CXXFLAGS = -W -Wall -pedantic -std=c++11
 #LIBCGICC_CXXFLAGS = $(pkg-config --cflags cgicc)
 LDFLAGS = 
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
