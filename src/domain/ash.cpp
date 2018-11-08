@@ -32,10 +32,10 @@ CAsh::CAsh(CAshCallback *ipCb, CTimer *ipTimer)
     pCb = ipCb;
     pTimer = ipTimer;
 
-    if( nullptr != pTimer ){ pTimer.AddObs(this); }
+    if( nullptr != pTimer ){ /*pTimer->AddObs(this);*/ }
 
 }
-
+/* \todo timeout !!!!
 void CAsh::Update(const CObservable* observable) const
 {
     if( !stateConnected )
@@ -46,7 +46,7 @@ void CAsh::Update(const CObservable* observable) const
         }
     }
 }
-
+*/
 
 vector<uint8_t> CAsh::resetNCPFrame(void)
 {
@@ -141,7 +141,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
   std::vector<uint8_t> lo_msg;
   uint8_t val;
 
-  while( !i_data->empty && lo_msg.empty )
+  while( !i_data->empty() && lo_msg.empty() )
   {
     val = i_data->front();
     i_data->erase(i_data->begin());
@@ -158,7 +158,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
           // Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
-          if (!inputError && !in_msg.empty) {
+          if (!inputError && !in_msg.empty()) {
             if( in_msg.size() >= 3 )
             {
               // Remove byte stuffing
