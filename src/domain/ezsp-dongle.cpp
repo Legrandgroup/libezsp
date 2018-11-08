@@ -4,49 +4,55 @@
 
 #include "ezsp-dongle.h"
 
-#include "RaritanUartDriver.h"
-
 
 CEzspDongle::CEzspDongle()
 {
-    uart = nullptr;
+    pUart = nullptr;
 }
 
-bool CEzspDongle::open(const std::string& serialPortName, unsigned int baudRate, EFlowControl flowControl)
+bool CEzspDongle::open(IUartDriver *ipUart)
 {
     bool lo_success = true;
     std::vector<uint8_t> l_buffer;
     size_t l_size;
 
-    if( nullptr != uart )
+    if( nullptr == ipUart )
     {
-        uart->close();
-        delete uart;
-    }
-
-    // \todo instantiate the right uart driver according to system
-    uart = new UartDriverRaritan();
-    
-    // open uart port /!\ assume open always work !
-    open(serialPortName, baudRate);
-
-    // reset ash ncp
-    l_buffer = ash.resetNCPFrame();
-
-    if( write(l_size, l_buffer.data(), l_buffer.size) < 0 )
-    {
-        // error
-        lo_success = false;
+        lo_success = close;
     }
     else
     {
-        if( l_size != l_buffer.size )
+        pUart = ipUart;
+
+        // reset ash ncp
+        l_buffer = ash.resetNCPFrame();
+
+        if( pUart->write(l_size, l_buffer.data(), l_buffer.size) < 0 )
         {
-            // error size mismatch
+            // error
             lo_success = false;
+            pUart = nullptr;
+        }
+        else
+        {
+            if( l_size != l_buffer.size )
+            {
+                // error size mismatch
+                lo_success = false;
+                pUart = nullptr;
+            }
         }
     }
 
     return lo_success;
 }
 
+void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
+ {
+    std::stringstream bufDump;
+
+    for (size_t i =0; i<dataLen; i++) {
+        bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(dataIn[i]) << " ";
+    }
+    cout << name << ": Received buffer " << bufDump.str() << endl;
+};
