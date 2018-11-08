@@ -5,12 +5,15 @@
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
 
-UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable& uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
-
+UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 }
 
 UartDriverRaritan::~UartDriverRaritan() {
 	this->close();
+}
+
+void UartDriverRaritan::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
+	m_data_input_observable = uartIncomingDataHandler;
 }
 
 void UartDriverRaritan::open(const std::string& serialPortName, unsigned int baudRate) {
@@ -28,8 +31,9 @@ void UartDriverRaritan::open(const std::string& serialPortName, unsigned int bau
 			size_t rdcnt;
 			this->m_serial_tty->read(rdcnt, readData, sizeof(readData)/sizeof(unsigned char));
 			PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
-			this->m_data_input_observable.notifyObservers(readData, rdcnt);
-			this->m_eventLoop.getSelector().stopAsync();
+			if (this->m_data_input_observable)
+				this->m_data_input_observable->notifyObservers(readData, rdcnt);
+			//this->m_eventLoop.getSelector().stopAsync();
 		}
 	};
 	unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
@@ -41,7 +45,12 @@ void UartDriverRaritan::open(const std::string& serialPortName, unsigned int bau
 }
 
 int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
-	return this->m_serial_tty->write(writtenCnt, buf, cnt);
+	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
+	if (result == PP_OK)
+		return 0;
+	//if (result != PP_OK && result == 0)	/* Never reached, PP_OK is 0, but it is here to enforce the values in base class IUartDriver */
+	//	return -1;
+	return result;
 }
 
 void UartDriverRaritan::close() {

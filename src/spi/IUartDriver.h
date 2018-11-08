@@ -40,7 +40,7 @@ public:
 	virtual void open(const std::string& serialPortName, unsigned int baudRate) = 0;
 
 	/**
-	 * @brief Writes a byte sequence to the serial port
+	 * @brief Write a byte sequence to the serial port
 	 *
 	 * NOTE: This function may write less data than requested!
 	 *
@@ -48,7 +48,7 @@ public:
 	 * @param[in] buf data buffer to write
 	 * @param[in] cnt byte count of data to write
 	 *
-	 * @return PP_OK on success, errno on failure
+	 * @return 0 on success, errno on failure
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
