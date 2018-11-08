@@ -21,6 +21,15 @@ public:
 
     std::vector<uint8_t> resetNCPFrame(void);
 
+    std::vector<uint8_t> AckFrame(void);
+
+    std::vector<uint8_t> DataFrame(std::vector<uint8_t> i_data);
+
+    std::vector<uint8_t> decode(std::vector<uint8_t> *i_data);
+
+    bool isConnected(void){ return stateConnected; }
+
+
     void Update(const CObservable* observable) const;
 
 private:
@@ -34,7 +43,7 @@ private:
 
     uint16_t computeCRC( std::vector<uint8_t> i_msg );
     std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
-
+    std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
 };
 
 
