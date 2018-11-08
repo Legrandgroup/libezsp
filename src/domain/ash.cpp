@@ -22,13 +22,14 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh()
+CAsh::CAsh(CAshCallback *ipCb)
 {
     in_msg.clear();
     ackNum = 0;
     frmNum = 0;
     seq_num = 0;
     stateConnected = false;
+    pCb = ipCb;
 
     timer.AddObs(this);
 
@@ -38,13 +39,12 @@ void CAsh::Update(const CObservable* observable) const
 {
     if( !stateConnected )
     {
-        // --SEB-- \todo notify to other that reset failed !! emit info(ASH_RESET_FAILED);
+        if( nullptr != pCb )
+        {
+            pCb->ashCbInfo(ASH_RESET_FAILED);
+        }
     }
-
-  //on affiche l'état de la variable
-  //cout<<observable->Statut()<<endl;
 }
-
 
 
 vector<uint8_t> CAsh::resetNCPFrame(void)
@@ -184,14 +184,6 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
               {
                 if ((lo_msg.at(0) & 0x80) == 0) {
                   // DATA;
-                  /*
-                  QString l_str;
-                  foreach(quint8 l_data, lo_msg )
-                  {
-                    l_str.append( QString::number(l_data,16).toUpper().rightJustified(2,'0') + " ");
-                  }
-                  LOGGER(logTRACE) << "<-- RX ASH DATA Frame  : " +  l_str;
-                  */
 
                   // update ack number, use incoming frm number
                   ackNum = ((lo_msg.at(0)>>4&0x07) + 1) & 0x07;
@@ -212,17 +204,22 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
                   timer.stop();
-                  emit info(ASH_ACK);
+                    if( nullptr != pCb )
+                    {
+                        pCb->ashCbInfo(ASH_ACK);
+                    }
                 }
                 else if ((lo_msg.at(0) & 0x60) == 0x20) {
                   // NAK;
                   frmNum = lo_msg.at(0) & 0x07;
-//                  reTx = 0x04;
 
                   LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
                   lo_msg.clear();
                   timer->stop();
-                  emit info(ASH_NACK);
+                    if( nullptr != pCb )
+                    {
+                        pCb->ashCbInfo(ASH_NACK);
+                    }
                 }
                 else if (lo_msg.at(0) == 0xC0) {
                   // RST;
@@ -285,14 +282,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
     }
 
   }
-/*
-  QString l_str;
-  foreach(quint8 l_data, lo_msg )
-  {
-    l_str.append( QString::number(l_data,16).toUpper().rightJustified(2,'0') + " ");
-  }
-  LOGGER(logTRACE) << "<-- RX ASH return lo_msg  : " +  l_str;
-*/
+
   return lo_msg;
 }
 
