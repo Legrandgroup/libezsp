@@ -24,9 +24,9 @@ void UartDriverRaritan::open(const std::string& serialPortName, unsigned int bau
 
 	auto cbin = [this](pp::Selector::SelectableHandle&, short events, short&) {
 		if (events & pp::Selector::EVENT_POLLIN) {
-			unsigned char readData[20];
+			unsigned char readData[256];
 			size_t rdcnt;
-			this->m_serial_tty->read(rdcnt, readData, 20);
+			this->m_serial_tty->read(rdcnt, readData, 256);
 			PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
 			this->m_data_input_observable.notifyObservers(readData, rdcnt);
 			this->m_eventLoop.getSelector().stopAsync();
