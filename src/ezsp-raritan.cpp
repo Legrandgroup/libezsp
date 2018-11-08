@@ -27,7 +27,7 @@ int main() {
 	RaritanEventLoop eventLoop;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	DebuggerDisplayer disp("Debugger displayer");
-	uartIncomingDataHandler.registerObserver(&disp);
+	uartIncomingDataHandler.registerObserver(&disp); // Seb ne veut pas se préoccuper du type de l'UART et enregistrer l'observer après la construction uartDriver.
 	UartDriverRaritan uartDriver(eventLoop, uartIncomingDataHandler);
 
 	uartDriver.open("/dev/ttyUSB0", 57600);
