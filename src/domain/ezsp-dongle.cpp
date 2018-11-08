@@ -5,9 +5,10 @@
 #include "ezsp-dongle.h"
 
 
-CEzspDongle::CEzspDongle()
+CEzspDongle::CEzspDongle( CEzspHandler *ipCb )
 {
     pUart = nullptr;
+    pCb = ipCb;
     ash = new CAsh((CAshCallback*)this, nullptr);
 }
 
@@ -32,7 +33,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
         pUart = ipUart;
 
         // reset ash ncp
-        l_buffer = ash.resetNCPFrame();
+        l_buffer = ash->resetNCPFrame();
 
         if( pUart->write(l_size, l_buffer.data(), l_buffer.size) < 0 )
         {
@@ -56,10 +57,12 @@ bool CEzspDongle::open(IUartDriver *ipUart)
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
  {
+     /*
     std::stringstream bufDump;
 
     for (size_t i =0; i<dataLen; i++) {
         bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(dataIn[i]) << " ";
     }
     cout << name << ": Received buffer " << bufDump.str() << endl;
+    */
 };

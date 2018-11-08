@@ -4,9 +4,9 @@ LDFLAGS =
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
 
 EXEC = testEzsp
-OBJECTFILES = mainEzspTest.o ../domain/ezsp-dongle.cpp
+OBJECTFILES = mainEzspTest.o ../domain/ezsp-dongle.o
 CLEANFILES = $(OBJECTFILES) $(EXEC)
-INC = -I../spi -I../domain
+INC = -I../spi -I../domain -I../domain/zbmessage
 
 all: $(EXEC)
 

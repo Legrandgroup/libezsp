@@ -1,3 +1,7 @@
+/**
+ * 
+ */
+
 #ifndef EZSP_ENUM_H
 #define EZSP_ENUM_H
 

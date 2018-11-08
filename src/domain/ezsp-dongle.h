@@ -7,6 +7,8 @@
 #include "ezsp-enum.h"
 #include "IUartDriver.h"
 #include "ash.h"
+#include "zigbee-message.h"
+#include "out-zigbee-message.h"
 
 class CEzspHandler
 {
@@ -40,7 +42,7 @@ public:
     virtual void ezspDSASignHdl();
     virtual void ezspDSAVerifyHdl();
     virtual void ezspMfglibRxHdl( std::vector<uint8_t> l_msg );
-    virtual void ezspIncomingBootloadMessageHdl( uint64_t i_ieee, uint8_t i_last_lqi, int8_t l_last_rssi, vector<uint8_t> l_msg );
+    virtual void ezspIncomingBootloadMessageHdl( uint64_t i_ieee, uint8_t i_last_lqi, int8_t l_last_rssi, std::vector<uint8_t> l_msg );
     virtual void ezspBootloadTransmitCompleteHdl();    
 };
 
@@ -48,7 +50,7 @@ public:
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle();
+    CEzspDongle( CEzspHandler *ipCb );
 
     /**
      * Open connetion to dongle of type ezsp
@@ -74,6 +76,7 @@ private:
     IUartDriver *pUart;
     CAsh *ash;
     CEzspHandler *pHandler;
+    CEzspHandler *pCb;
 
 };
 
