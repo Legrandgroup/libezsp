@@ -1,6 +1,6 @@
 #include "spi/raritan/RaritanUartDriver.h"
 #include "spi/raritan/RaritanEventLoop.h"
-#include "spi/raritan/RaritanUartInputObservable.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
 #include <iostream>	// FIXME: for std::cout during debug

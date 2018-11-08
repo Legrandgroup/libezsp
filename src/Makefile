@@ -6,7 +6,7 @@ ezsp_raritan_MODULE_NAME = test_log
 
 TARGET_PRGS = ezsp-raritan
 
-ezsp_raritan_SRCS = ezsp-raritan.cpp spi/GenericAsyncDataInputObservable.cpp spi/raritan/RaritanUartInputObservable.cpp spi/raritan/RaritanUartDriver.cpp spi/raritan/RaritanEventLoop.cpp
+ezsp_raritan_SRCS = ezsp-raritan.cpp spi/GenericAsyncDataInputObservable.cpp spi/raritan/RaritanUartDriver.cpp spi/raritan/RaritanEventLoop.cpp
 #ezsp_raritan_SRCS = testtool.cpp
 ezsp_raritan_LIBS = -lpp_base
 
