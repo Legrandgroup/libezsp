@@ -22,7 +22,11 @@ public:
 class CAsh
 {
 public:
-    CAsh(CAshCallback *ipCb);
+    /**
+     * ipCb : call to inform state of ash
+     * ipTimer : timer object pass to ash module to manage internal timer
+     */
+    CAsh(CAshCallback *ipCb, CTimer *ipTimer);
 
     std::vector<uint8_t> resetNCPFrame(void);
 
@@ -40,7 +44,7 @@ private:
     uint8_t frmNum;
     uint8_t seq_num;
     bool stateConnected;
-    CTimer timer;
+    CTimer *pTimer;
     CAshCallback *pCb;
 
     std::vector<uint8_t> in_msg;

@@ -8,6 +8,13 @@
 CEzspDongle::CEzspDongle()
 {
     pUart = nullptr;
+    ash = new CAsh((CAshCallback*)this, nullptr);
+}
+
+CEzspDongle::~CEzspDongle()
+{
+    pUart = nullptr;
+    delete ash;
 }
 
 bool CEzspDongle::open(IUartDriver *ipUart)
@@ -18,7 +25,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
 
     if( nullptr == ipUart )
     {
-        lo_success = close;
+        lo_success = false;
     }
     else
     {

@@ -22,7 +22,7 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh(CAshCallback *ipCb)
+CAsh::CAsh(CAshCallback *ipCb, CTimer *ipTimer)
 {
     in_msg.clear();
     ackNum = 0;
@@ -30,8 +30,9 @@ CAsh::CAsh(CAshCallback *ipCb)
     seq_num = 0;
     stateConnected = false;
     pCb = ipCb;
+    pTimer = ipTimer;
 
-    timer.AddObs(this);
+    if( nullptr != pTimer ){ pTimer.AddObs(this); }
 
 }
 
@@ -55,7 +56,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     stateConnected = false;
     vector<uint8_t> lo_msg;
 
-    timer.stop();
+    if( nullptr != pTimer ){ pTimer->stop(); }
 
     lo_msg.push_back(0xC0);
 
@@ -68,7 +69,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    timer.start( T_RX_ACK_INIT );
+    if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
 
     return lo_msg;
 }
@@ -86,7 +87,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer.start( T_RX_ACK_INIT );
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
 
   return lo_msg;
 }
@@ -129,7 +130,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer.start( T_RX_ACK_INIT );
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
 
   return lo_msg;
 }
@@ -142,7 +143,8 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
 
   while( !i_data->empty && lo_msg.empty )
   {
-    val = i_data->takeFirst();
+    val = i_data->front();
+    i_data->erase(i_data->begin());
     switch( val )
     {
       case ASH_CANCEL_BYTE:
@@ -161,19 +163,19 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
             {
               // Remove byte stuffing
               bool escape = false;
-              foreach(quint8 data, in_msg) {
+              for (auto &data : in_msg) {
                   if (escape) {
                       escape = false;
                       if ((data & 0x20) == 0) {
-                          data = (quint8) (data + 0x20);
+                          data = (uint8_t) (data + 0x20);
                       } else {
-                          data = (quint8) (data & 0xDF);
+                          data = (uint8_t) (data & 0xDF);
                       }
                   } else if (data == 0x7D) {
                       escape = true;
                       continue;
                   }
-                  lo_msg.append(data);
+                  lo_msg.push_back(data);
               }
 
               // Check CRC
@@ -194,8 +196,8 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   if( 0xFF == lo_msg.at(2) )
                   {
                     // WARNING for all frames except "VersionRequest" frame, add exteded header
-                    lo_msg.removeAt(2);
-                    lo_msg.removeAt(2);
+                    lo_msg.erase(i_data->begin()+2);
+                    lo_msg.erase(i_data->begin()+2);
                   }
 
                 }
@@ -203,56 +205,52 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   // ACK;
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
-                  timer.stop();
-                    if( nullptr != pCb )
-                    {
-                        pCb->ashCbInfo(ASH_ACK);
-                    }
+                  if( nullptr != pTimer ){ pTimer->stop(); }
+
+                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
                 }
                 else if ((lo_msg.at(0) & 0x60) == 0x20) {
                   // NAK;
                   frmNum = lo_msg.at(0) & 0x07;
 
-                  LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
+                  //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
                   lo_msg.clear();
-                  timer->stop();
-                    if( nullptr != pCb )
-                    {
-                        pCb->ashCbInfo(ASH_NACK);
-                    }
+                  if( nullptr != pTimer ){ pTimer->stop(); }
+                  
+                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
                 }
                 else if (lo_msg.at(0) == 0xC0) {
                   // RST;
                   lo_msg.clear();
-                  LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
+                  //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
                 }
                 else if (lo_msg.at(0) == 0xC1) {
                   // RSTACK;
-                  LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
+                  //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
 
                   lo_msg.clear();
                   if( !stateConnected )
                   {
                     /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-                    timer->stop();
+                    if( nullptr != pTimer ){ pTimer->stop(); }
                     stateConnected = true;
                   }
                 }
                 else if (lo_msg.at(0) == 0xC2) {
                   // ERROR;
-                  LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
+                  //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
                   lo_msg.clear();
                 }
                 else
                 {
-                  LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
+                  //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
                   lo_msg.clear();
                 }
               }
             }
             else
             {
-              LOGGER(logTRACE) << "<-- RX ASH too short !! ";
+              //LOGGER(logTRACE) << "<-- RX ASH too short !! ";
             }
           }
           in_msg.clear();
@@ -273,7 +271,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
       case ASH_TIMEOUT:
           break;
       default:
-          if (in_msg.length() >= ASH_MAX_LENGTH) {
+          if (in_msg.size() >= ASH_MAX_LENGTH) {
               in_msg.clear();
               inputError = true;
           }
