@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "observer.h"
 #include "timer.h"
 
 
@@ -14,10 +13,16 @@ typedef enum {
   ASH_NACK
 }EAshInfo;
 
-class CAsh : public CObservateur 
+class CAshCallback
 {
 public:
-    CAsh();
+    virtual void ashCbInfo( EAshInfo info );
+};
+
+class CAsh
+{
+public:
+    CAsh(CAshCallback *ipCb);
 
     std::vector<uint8_t> resetNCPFrame(void);
 
@@ -30,14 +35,13 @@ public:
     bool isConnected(void){ return stateConnected; }
 
 
-    void Update(const CObservable* observable) const;
-
 private:
     uint8_t ackNum;
     uint8_t frmNum;
     uint8_t seq_num;
     bool stateConnected;
     CTimer timer;
+    CAshCallback *pCb;
 
     std::vector<uint8_t> in_msg;
 
