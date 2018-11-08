@@ -51,6 +51,7 @@ class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
     CEzspDongle( CEzspHandler *ipCb );
+    ~CEzspDongle();
 
     /**
      * Open connetion to dongle of type ezsp

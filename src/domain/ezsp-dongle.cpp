@@ -35,7 +35,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
         // reset ash ncp
         l_buffer = ash->resetNCPFrame();
 
-        if( pUart->write(l_size, l_buffer.data(), l_buffer.size) < 0 )
+        if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
         {
             // error
             lo_success = false;
@@ -43,7 +43,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
         }
         else
         {
-            if( l_size != l_buffer.size )
+            if( l_size != l_buffer.size() )
             {
                 // error size mismatch
                 lo_success = false;
@@ -65,4 +65,4 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
     }
     cout << name << ": Received buffer " << bufDump.str() << endl;
     */
-};
+}
