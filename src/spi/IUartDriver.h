@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "GenericAsyncDataInputObservable.h"
 #include <string>
 
 /**
@@ -66,9 +67,4 @@ public:
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual void close() = 0;
-
-public:
-
-	std::vector<unsigned char> sha1Sum;	/*!< The SHA-1 sum as a vector of bytes */
-	std::vector<unsigned char> sha256Sum;	/*!< The SHA-256 sum as a vector of bytes */
 };

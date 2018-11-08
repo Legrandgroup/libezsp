@@ -12,7 +12,7 @@
 
 class UartDriverRaritan : public IUartDriver {
 public:
-	UartDriverRaritan(RaritanEventLoop& eventLoop);
+	UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable& uartIncomingDataHandler);
 	virtual ~UartDriverRaritan();
 
 	virtual void open(const std::string& serialPortName, unsigned int baudRate = 57600);
@@ -23,4 +23,5 @@ private:
 	RaritanEventLoop& m_eventLoop;
 	pp::Selector::SelectableHandle m_sel_handle;
 	pp::Tty::SPtr m_serial_tty;
+	GenericAsyncDataInputObservable& m_data_input_observable;
 };

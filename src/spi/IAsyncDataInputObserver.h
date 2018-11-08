@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdlib>	// For size_t
 
 class IAsyncDataInputObserver {
 public:

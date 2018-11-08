@@ -5,7 +5,7 @@
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
 
-UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty() {
+UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable& uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 
 }
 
