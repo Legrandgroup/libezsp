@@ -11,6 +11,7 @@ class CAppDemo : public CEzspHandler
 public:
     CAppDemo() { 
         dongle = new CEzspDongle(this);
+        // uart
         dongle->open(nullptr); 
     }
 

@@ -4,7 +4,7 @@ LDFLAGS =
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
 
 EXEC = testEzsp
-OBJECTFILES = mainEzspTest.o ../domain/ezsp-dongle.o ../domain/ash.o
+OBJECTFILES = mainEzspTest.o ../domain/ezsp-dongle.o ../domain/ash.o ../domain/zbmessage/zigbee-message.o
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 INC = -I../spi -I../domain -I../domain/zbmessage
 
