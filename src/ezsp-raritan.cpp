@@ -1,6 +1,6 @@
 #include "spi/raritan/RaritanUartDriver.h"
 #include "spi/raritan/RaritanEventLoop.h"
-#include "spi/raritan/RaritanUartInputObservable.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
 #include <iostream>	// FIXME: for std::cout during debug
@@ -25,9 +25,9 @@ private :
 
 int main() {
 	RaritanEventLoop eventLoop;
-	RaritanUartInputObservable uartIncomingDataHandler;
+	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	DebuggerDisplayer disp("Debugger displayer");
-	uartIncomingDataHandler.registerObserver(&disp);
+	uartIncomingDataHandler.registerObserver(&disp); // Seb ne veut pas se préoccuper du type de l'UART et enregistrer l'observer après la construction uartDriver.
 	UartDriverRaritan uartDriver(eventLoop, uartIncomingDataHandler);
 
 	uartDriver.open("/dev/ttyUSB0", 57600);

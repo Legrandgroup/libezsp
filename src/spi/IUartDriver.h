@@ -44,9 +44,9 @@ public:
 	 *
 	 * NOTE: This function may write less data than requested!
 	 *
-	 * @param writtenCnt -- retval: count of bytes written
-	 * @param buf -- data buffer
-	 * @param cnt -- byte count of data to write
+	 * @param[out] writtenCnt How many bytes were actually written
+	 * @param[in] buf data buffer to write
+	 * @param[in] cnt byte count of data to write
 	 *
 	 * @return PP_OK on success, errno on failure
 	 *
