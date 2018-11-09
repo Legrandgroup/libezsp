@@ -8,8 +8,8 @@
  */
 class RaritanTimer : public ITimer {
 public:
-	RaritanTimer();
-	RaritanTimer(RaritanEventLoop* eventLoop);
+	RaritanTimer() = delete;
+	RaritanTimer(RaritanEventLoop& eventLoop);
 	~RaritanTimer();
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -30,5 +30,5 @@ public:
 	uint16_t getRemaining();
 
 private:
-	RaritanEventLoop* m_eventLoop;
+	RaritanEventLoop& m_eventLoop;
 };

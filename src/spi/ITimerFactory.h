@@ -6,7 +6,8 @@
  * Abstract factory defines methods to create all
  * related products.
  */
-class TimerFactory {
+class ITimerFactory {
 public:
-	virtual ITimer* create() = 0;
+	virtual ~ITimerFactory() { };
+	virtual ITimer* create() const = 0;
 };
