@@ -31,4 +31,5 @@ public:
 
 private:
 	RaritanEventLoop& m_eventLoop;
+	pp::Selector::TimedCbHandle m_toutcbhandle;
 };

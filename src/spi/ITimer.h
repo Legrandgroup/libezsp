@@ -35,7 +35,7 @@ public:
 	 */
 	virtual uint16_t getRemaining() = 0;
 
-protected:
+public:
 	bool started;	/*!< Is the timer currently running */
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 	std::function<void (ITimer* triggeringTimer)> callBack;	/*!< The callback function that will be triggered by this timer */

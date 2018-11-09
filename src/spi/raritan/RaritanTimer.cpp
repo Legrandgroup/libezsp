@@ -1,6 +1,6 @@
 #include "RaritanTimer.h"
 
-RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop) {
+RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_toutcbhandle() {
 }
 
 RaritanTimer::~RaritanTimer() {
@@ -10,23 +10,35 @@ RaritanTimer::~RaritanTimer() {
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
 	if (started)
 		return false;
-	this->callBack = callBackFunction;
-	/* TODO: implement the launch of timer using Raritan framework */
-	if (timeout==0)
+
+	callBack = callBackFunction;
+	duration = timeout;
+	if (duration == 0) {
 		callBack(this);
-	/* TODO */
-	return false;
+	}
+	else {
+		auto tcb = [this,timeout](pp::Selector::TimedCbHandle&) {
+			PPD_DEBUG("Timeout reached after %u", timeout);
+			if (callBack) {
+				PPD_DEBUG("Now running timer's callback");
+				callBack(this);
+			}
+		};
+		this->m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
+	}
+	return true;
 }
 
 bool RaritanTimer::stop() {
 	if (!started)
 		return false;
-	/* TODO: implement the stop of timer using Raritan framework */
+	this->m_toutcbhandle.removeFromSelector();
+	duration=0;
 	callBack=nullptr;
-	return false;
+	return true;
 }
 
 uint16_t RaritanTimer::getRemaining() {
 	/* TODO: not implemented */
-	return 0;
+	return duration/2;	/* FIXME: Fake */
 }
