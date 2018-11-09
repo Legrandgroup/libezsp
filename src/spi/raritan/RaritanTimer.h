@@ -7,31 +7,28 @@
  * @brief Concrete implementation of ITimer using the Raritan framework
  */
 class RaritanTimer : public ITimer {
-	RaritanTimer() : started(false), duration(0), eventLoop(nullptr);
-	RaritanTimer(RaritanEventLoop* eventLoop): started(false), duration(0), eventLoop(eventLoop);
-	~RaritanTimer() {
-		this->stop();
-	}
-	bool start(uint32_t timeMs, ITimerCallback* callBack) {
-		if (!m_eventLoop)
-			return false;
-		if (m_started)
-			return false;
-		/* TODO: implement the launch of timer using Raritan framework */
-		return false;
-	}
-	bool stop() {
-		if (!m_eventLoop)
-			return false;
-		if (!m_started)
-			return false;
-		/* TODO: implement the stop of timer using Raritan framework */
-		return false;
-	}
-	uint32_t getRemaining() {
-		/* TODO: not implemented */
-		return 0;
-	}
+public:
+	RaritanTimer();
+	RaritanTimer(RaritanEventLoop* eventLoop);
+	~RaritanTimer();
+	/**
+	 * @brief Start a timer, run a callback after expiration of the configured time
+	 *
+	 * @param timeout The timeout (in ms)
+	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
+	 */
+	bool start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction);
+
+	/**
+	 * @brief Stop and reset the timer
+	 */
+	bool stop();
+
+	/**
+	 * @brief Get the remaining time to run the timer
+	 */
+	uint16_t getRemaining();
+
 private:
 	RaritanEventLoop* m_eventLoop;
 };
