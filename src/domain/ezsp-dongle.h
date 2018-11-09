@@ -13,37 +13,37 @@
 class CEzspHandler
 {
 public:
-    virtual void ezspTimerHdl();
-    virtual void ezspStackStatusHdl( uint8_t i_status );
-    virtual void ezspEnergyScanResultHdl( uint8_t i_channel, int8_t i_max_rssi );
-    virtual void ezspNetworkFoundHdl( TNwkInfo i_nwk, uint8_t i_last_hop_lqi, int8_t i_last_hop_rssi );
-    virtual void ezspScanCompleteHdl( void );
-    virtual void ezspChildJoinHdl();
-    virtual void ezspRemoteSetBindingHdl();
-    virtual void ezspRemoteDeleteBindingHdl();
-    virtual void ezspMessageSentUnicastHdl( EEmberStatus i_status, COutZbMessage *ip_out_msg );
-    virtual void ezspMessageSentHdl( std::vector<uint8_t> i_rsp_param );
-    virtual void ezspPollCompleteHdl();
-    virtual void ezspPollHdl();
-    virtual void ezspIncomingSenderEUI64Hdl();
-    virtual void ezspIncomingMessageHdl( TInMsgInfo i_msg_info, CZigBeeMsg i_msg );
-    virtual void ezspIncomingRouteRecordHdl();
-    virtual void ezspIncomingManyToOneRouteRequestHdl();
-    virtual void ezspIncomingRouteErrorHdl();
-    virtual void ezspIdConflictHdl();
-    virtual void ezspMacPassthroughMessageHdl();
-    virtual void ezspMacFilterMatchMessageHdl( std::vector<uint8_t> l_msg );
-    virtual void ezspRawTransmitCompleteHdl();
-    virtual void ezspSwitchNetworkKeyHdl();
-    virtual void ezspZigbeeKeyEstablishmentHdl();
-    virtual void ezspTrustCenterJoinHdl();
-    virtual void ezspGenerateCBKEKeysHdl();
-    virtual void ezspCalculateSMACSHdl();
-    virtual void ezspDSASignHdl();
-    virtual void ezspDSAVerifyHdl();
-    virtual void ezspMfglibRxHdl( std::vector<uint8_t> l_msg );
-    virtual void ezspIncomingBootloadMessageHdl( uint64_t i_ieee, uint8_t i_last_lqi, int8_t l_last_rssi, std::vector<uint8_t> l_msg );
-    virtual void ezspBootloadTransmitCompleteHdl();    
+    virtual void ezspTimerHdl() = 0;
+    virtual void ezspStackStatusHdl( uint8_t i_status ) = 0;
+    virtual void ezspEnergyScanResultHdl( uint8_t i_channel, int8_t i_max_rssi ) = 0;
+    virtual void ezspNetworkFoundHdl( TNwkInfo i_nwk, uint8_t i_last_hop_lqi, int8_t i_last_hop_rssi ) = 0;
+    virtual void ezspScanCompleteHdl( void ) = 0;
+    virtual void ezspChildJoinHdl() = 0;
+    virtual void ezspRemoteSetBindingHdl() = 0;
+    virtual void ezspRemoteDeleteBindingHdl() = 0;
+    virtual void ezspMessageSentUnicastHdl( EEmberStatus i_status, COutZbMessage *ip_out_msg ) = 0;
+    virtual void ezspMessageSentHdl( std::vector<uint8_t> i_rsp_param ) = 0;
+    virtual void ezspPollCompleteHdl() = 0;
+    virtual void ezspPollHdl() = 0;
+    virtual void ezspIncomingSenderEUI64Hdl() = 0;
+    virtual void ezspIncomingMessageHdl( TInMsgInfo i_msg_info, CZigBeeMsg i_msg ) = 0;
+    virtual void ezspIncomingRouteRecordHdl() = 0;
+    virtual void ezspIncomingManyToOneRouteRequestHdl() = 0;
+    virtual void ezspIncomingRouteErrorHdl() = 0;
+    virtual void ezspIdConflictHdl() = 0;
+    virtual void ezspMacPassthroughMessageHdl() = 0;
+    virtual void ezspMacFilterMatchMessageHdl( std::vector<uint8_t> l_msg ) = 0;
+    virtual void ezspRawTransmitCompleteHdl() = 0;
+    virtual void ezspSwitchNetworkKeyHdl() = 0;
+    virtual void ezspZigbeeKeyEstablishmentHdl() = 0;
+    virtual void ezspTrustCenterJoinHdl() = 0;
+    virtual void ezspGenerateCBKEKeysHdl() = 0;
+    virtual void ezspCalculateSMACSHdl() = 0;
+    virtual void ezspDSASignHdl() = 0;
+    virtual void ezspDSAVerifyHdl() = 0;
+    virtual void ezspMfglibRxHdl( std::vector<uint8_t> l_msg ) = 0;
+    virtual void ezspIncomingBootloadMessageHdl( uint64_t i_ieee, uint8_t i_last_lqi, int8_t l_last_rssi, std::vector<uint8_t> l_msg ) = 0;
+    virtual void ezspBootloadTransmitCompleteHdl() = 0;
 };
 
 

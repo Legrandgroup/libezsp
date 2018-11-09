@@ -22,7 +22,7 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh(CAshCallback *ipCb, CTimer *ipTimer)
+CAsh::CAsh(CAshCallback *ipCb, ITimer *ipTimer)
 {
     in_msg.clear();
     ackNum = 0;
@@ -31,12 +31,9 @@ CAsh::CAsh(CAshCallback *ipCb, CTimer *ipTimer)
     stateConnected = false;
     pCb = ipCb;
     pTimer = ipTimer;
-
-    if( nullptr != pTimer ){ /*pTimer->AddObs(this);*/ }
-
 }
-/* \todo timeout !!!!
-void CAsh::Update(const CObservable* observable) const
+
+void CAsh::Timeout(void)
 {
     if( !stateConnected )
     {
@@ -46,7 +43,6 @@ void CAsh::Update(const CObservable* observable) const
         }
     }
 }
-*/
 
 vector<uint8_t> CAsh::resetNCPFrame(void)
 {
@@ -69,7 +65,10 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
+    if( nullptr != pTimer )
+    { 
+        pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); 
+    }
 
     return lo_msg;
 }
@@ -87,7 +86,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); }
 
   return lo_msg;
 }
@@ -113,11 +112,6 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
 
 
   i_data = dataRandomise(i_data,0);
-/*
-  foreach (quint8 val, i_data) {
-    lo_msg.append(val);
-  }
-*/
   for (auto &val : i_data)
   {
       lo_msg.push_back(val);
@@ -130,7 +124,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT ); }
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); }
 
   return lo_msg;
 }

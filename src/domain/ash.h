@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "timer.h"
+#include "ITimer.h"
 
 
 typedef enum {
@@ -16,7 +16,7 @@ typedef enum {
 class CAshCallback
 {
 public:
-    virtual void ashCbInfo( EAshInfo info );
+    virtual void ashCbInfo( EAshInfo info ) = 0;
 };
 
 class CAsh
@@ -26,7 +26,7 @@ public:
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
-    CAsh(CAshCallback *ipCb, CTimer *ipTimer);
+    CAsh(CAshCallback *ipCb, ITimer *ipTimer);
 
     std::vector<uint8_t> resetNCPFrame(void);
 
@@ -44,7 +44,7 @@ private:
     uint8_t frmNum;
     uint8_t seq_num;
     bool stateConnected;
-    CTimer *pTimer;
+    ITimer *pTimer;
     CAshCallback *pCb;
 
     std::vector<uint8_t> in_msg;
@@ -52,6 +52,7 @@ private:
     uint16_t computeCRC( std::vector<uint8_t> i_msg );
     std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
     std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
+    void Timeout(void);
 };
 
 
