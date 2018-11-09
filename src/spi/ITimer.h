@@ -1,13 +1,27 @@
+/**
+ * @file ITimer.h
+ */
+
 #pragma once
 
 #include <cstdint>
 #include <functional> // For std::function
 
 /**
+ * @class ITimer
+ *
+ * @brief Abstract class to execute a callback after a given timeout
  */
 class ITimer {
 public:
+	/**
+	 * @brief Default constructor
+	 */
 	ITimer() : started(false), duration(0) { }
+
+	/**
+	 * @brief Destructor
+	 */
 	virtual ~ITimer() { }
 
 	/**
@@ -32,6 +46,8 @@ public:
 
 	/**
 	 * @brief Get the remaining time to run the timer
+	 *
+	 * @return The time remaining in ms
 	 */
 	virtual uint16_t getRemaining() = 0;
 

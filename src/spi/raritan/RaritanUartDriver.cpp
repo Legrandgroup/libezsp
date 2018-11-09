@@ -54,5 +54,5 @@ int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 }
 
 void UartDriverRaritan::close() {
-	//this->s->close();
+	m_serial_tty = nullptr; // TODO: Test this (is the port closed when serial port descriptor goes out of scope?)
 }

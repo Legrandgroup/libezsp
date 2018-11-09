@@ -1,5 +1,5 @@
 /**
- * @file RaritanEventLoop.cpp
+ * @file RaritanEventLoop.h
  */
 
 #pragma once
@@ -15,8 +15,11 @@ public:
 	 */
 	void run();
 
+	/**
+	 * @brief Get the main loop selector
+	 */
 	pp::Selector& getSelector();
 
 private:
-	pp::Selector& m_selector;
+	pp::Selector& m_selector;	/*!< The main loop selector */
 };

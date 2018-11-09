@@ -12,9 +12,9 @@
 #include <string>
 
 /**
- * \class IUartDriver
+ * @class IUartDriver
  *
- * \brief Abstract class that manipulate UARTs
+ * @brief Abstract class that manipulate UARTs
  */
 class IUartDriver {
 
@@ -28,6 +28,15 @@ public:
 	 * @brief Destructor
 	 */
 	virtual ~IUartDriver() { }
+
+	/**
+	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
+	 *
+	 * @param GenericAsyncDataInputObservable A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 */
+	virtual void setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) = 0;
 
 	/**
 	 * @brief Opens the serial port
@@ -53,13 +62,6 @@ public:
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt) = 0;
-
-	/**
-	 * @brief Callback to execute on bytes received
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-//	virtual void setReadCallback() = 0;
 
 	/**
 	 * @brief Callback to close the serial port

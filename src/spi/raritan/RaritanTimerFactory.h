@@ -1,3 +1,7 @@
+/**
+ * @file RaritanTimerFactory.h
+ */
+
 #pragma once
 
 #include "../ITimerFactory.h"

@@ -1,3 +1,7 @@
+/**
+ * @file RaritanTimerFactory.cpp
+ */
+
 #include "RaritanTimerFactory.h"
 #include "RaritanTimer.h"
 

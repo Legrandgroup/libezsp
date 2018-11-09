@@ -12,9 +12,32 @@
 
 class UartDriverRaritan : public IUartDriver {
 public:
+	/**
+	 * @brief Default constructor
+	 *
+	 * Construction without arguments is not allowed
+	 */
+	UartDriverRaritan() = delete;
+
+	/**
+	 * @brief Constructor
+	 *
+	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
+	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
+	 */
 	UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * Copy construction is forbidden on this class
+	 */
 	UartDriverRaritan(UartDriverRaritan& other) = delete;
-	virtual ~UartDriverRaritan();
+
+	/**
+	 * @brief Destructor
+	 */
+	~UartDriverRaritan();
 
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
@@ -22,6 +45,7 @@ public:
 	 * @param GenericAsyncDataInputObservable A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
 	 */
 	void setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler);
+
 	/**
 	 * @brief Opens the serial port
 	 *
@@ -29,6 +53,7 @@ public:
 	 * @param baudRate The baudrate to enforce on the serial port
 	 */
 	virtual void open(const std::string& serialPortName, unsigned int baudRate = 57600);
+
 	/**
 	 * @brief Write a byte sequence to the serial port
 	 *
@@ -43,16 +68,15 @@ public:
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt);
+
 	/**
 	 * @brief Close the serial port
-	 *
-	 * @warning Not implemented
 	 */
 	virtual void close();
 
 private:
-	RaritanEventLoop& m_eventLoop;
-	pp::Selector::SelectableHandle m_sel_handle;
-	pp::Tty::SPtr m_serial_tty;
-	GenericAsyncDataInputObservable* m_data_input_observable;
+	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	pp::Selector::SelectableHandle m_sel_handle;	/*!< A handle on the selectable (to read bytes) */
+	pp::Tty::SPtr m_serial_tty;	/*!< The serial port file descriptor */
+	GenericAsyncDataInputObservable* m_data_input_observable;	/*!< The observable that will notify observers when new bytes are available on the UART */
 };

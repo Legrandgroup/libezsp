@@ -1,3 +1,7 @@
+/**
+ * @file RaritanTimer.h
+ */
+
 #pragma once
 
 #include "../ITimer.h"
@@ -8,9 +12,25 @@
  */
 class RaritanTimer : public ITimer {
 public:
+	/**
+	 * @brief Default constructor
+	 *
+	 * Construction without arguments is not allowed
+	 */
 	RaritanTimer() = delete;
+
+	/**
+	 * @brief Constructor
+	 *
+	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
+	 */
 	RaritanTimer(RaritanEventLoop& eventLoop);
+
+	/**
+	 * @brief Destructor
+	 */
 	~RaritanTimer();
+
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
 	 *
@@ -26,10 +46,12 @@ public:
 
 	/**
 	 * @brief Get the remaining time to run the timer
+	 *
+	 * @return The time remaining in ms
 	 */
 	uint16_t getRemaining();
 
 private:
-	RaritanEventLoop& m_eventLoop;
-	pp::Selector::TimedCbHandle m_toutcbhandle;
+	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };
