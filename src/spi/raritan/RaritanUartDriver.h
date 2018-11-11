@@ -32,7 +32,14 @@ public:
 	 *
 	 * Copy construction is forbidden on this class
 	 */
-	UartDriverRaritan(UartDriverRaritan& other) = delete;
+	UartDriverRaritan(const UartDriverRaritan& other) = delete;
+
+	/**
+	 * @brief Assignment operator
+	 *
+	 * Copy construction is forbidden on this class
+	 */
+	UartDriverRaritan& operator=(const UartDriverRaritan& other) = delete;
 
 	/**
 	 * @brief Destructor

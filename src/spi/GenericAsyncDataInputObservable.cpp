@@ -1,6 +1,6 @@
 #include "GenericAsyncDataInputObservable.h"
 
-GenericAsyncDataInputObservable::GenericAsyncDataInputObservable() {
+GenericAsyncDataInputObservable::GenericAsyncDataInputObservable() : observers() {
 
 }
 

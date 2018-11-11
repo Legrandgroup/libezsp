@@ -17,7 +17,7 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ITimer() : started(false), duration(0) { }
+	ITimer() : started(false), duration(0), callBack() { }
 
 	/**
 	 * @brief Destructor
