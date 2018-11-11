@@ -16,6 +16,7 @@ typedef enum {
 class CAshCallback
 {
 public:
+    virtual ~CAshCallback() { }
     virtual void ashCbInfo( EAshInfo info ) = 0;
 };
 
@@ -27,6 +28,10 @@ public:
      * ipTimer : timer object pass to ash module to manage internal timer
      */
     CAsh(CAshCallback *ipCb, ITimer *ipTimer);
+
+    CAsh(const CAsh&) = delete;
+
+    CAsh& operator=(const CAsh&) = delete;
 
     std::vector<uint8_t> resetNCPFrame(void);
 

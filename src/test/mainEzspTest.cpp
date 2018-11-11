@@ -19,6 +19,10 @@ public:
         delete dongle;
     }
 
+    CAppDemo(const CAppDemo& other) = delete;
+
+    CAppDemo& operator=(const CAppDemo& other) = delete;
+
     void loop(void) {
         while(1)
             ;

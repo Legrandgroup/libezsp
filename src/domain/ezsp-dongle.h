@@ -13,6 +13,7 @@
 class CEzspHandler
 {
 public:
+    virtual ~CEzspHandler() {}
     virtual void ezspTimerHdl() = 0;
     virtual void ezspStackStatusHdl( uint8_t i_status ) = 0;
     virtual void ezspEnergyScanResultHdl( uint8_t i_channel, int8_t i_max_rssi ) = 0;
@@ -51,7 +52,10 @@ class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
     CEzspDongle( CEzspHandler *ipCb );
+    CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
+
+    CEzspDongle& operator=(const CEzspDongle&) = delete; /* No assignment allowed (pointer data members) */
 
     /**
      * Open connetion to dongle of type ezsp
