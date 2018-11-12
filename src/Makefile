@@ -6,10 +6,10 @@ CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -Wno-error=unused-parameter -Wno-error #-W
 
 mainEzspTest_MODULE_NAME = test_log
 
-TARGET_PRGS = mainEzspTest
+TARGET_PRGS = mainEzspTestRaritan
 
-mainEzspTest_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage
-mainEzspTest_SRCS = mainEzspTest.cpp domain/ezsp-dongle.cpp domain/ash.cpp spi/GenericAsyncDataInputObservable.cpp spi/raritan/RaritanUartDriver.cpp spi/raritan/RaritanEventLoop.cpp
+mainEzspTest_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Itest
+mainEzspTest_SRCS = mainEzspTestRaritan.cpp test/mainEzspTest.cpp domain/ezsp-dongle.cpp domain/ash.cpp spi/GenericAsyncDataInputObservable.cpp spi/raritan/RaritanUartDriver.cpp spi/raritan/RaritanEventLoop.cpp
 #ezsp_raritan_SRCS = testtool.cpp
 mainEzspTest_LIBS = -lpp_base
 
