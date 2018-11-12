@@ -20,7 +20,7 @@ int main( void )
 
 	// uartDriver.open("/dev/ttyUSB0", 57600);
 
-    app = new CAppDemo( nullptr /*uartDriver*/);
+    app = new CAppDemo(nullptr /*uartDriver*/);
 
     while(1)
         ;
