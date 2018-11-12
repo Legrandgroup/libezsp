@@ -1,4 +1,5 @@
 #include "SerialUartDriver.h"
+#include "SerialTimerFactory.h"
 #include "../GenericAsyncDataInputObservable.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
@@ -28,13 +29,22 @@ int main() {
 	uartIncomingDataHandler.registerObserver(&disp);
 	UartDriverSerial uartDriver(uartIncomingDataHandler);
 
+	SerialTimerFactory serialTimerFactory;
+	ITimer *serialTimer = serialTimerFactory.create();
+	serialTimer->start(10000, [](ITimer* triggeringTimer) {
+			std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
+	});
+
 	uartDriver.open("/dev/ttyUSB0", 57600);
 
 	unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
 	size_t written;
 	uartDriver.write(written, buf, 5);
 
-	while(1) {}
+	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+	serialTimer->stop();
+
+	for(;;) { }
 
 	return 0;
 }

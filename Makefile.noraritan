@@ -3,8 +3,12 @@ CXXFLAGS = -I/home/nicolas/soft_raritan/serial/install/include -Weffc++ -std=c++
 LDFLAGS = -L/home/nicolas/soft_raritan/serial/install/lib -lserial -lpthread
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
 
-EXEC = test_serial
-OBJECTFILES = src/spi/serial/SerialUartDriver.o src/spi/GenericAsyncDataInputObservable.o src/spi/serial/test-serial.o
+EXEC = test-program
+OBJECTFILES = src/spi/serial/SerialUartDriver.o \
+			  src/spi/GenericAsyncDataInputObservable.o \
+			  src/spi/serial/SerialTimerFactory.o \
+			  src/spi/serial/SerialTimer.o \
+			  src/spi/serial/test-serial.o
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 
 all: $(EXEC)
