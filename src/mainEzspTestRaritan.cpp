@@ -5,9 +5,9 @@
 
 #include <iostream>
 
-#include "src/spi/raritan/RaritanEventLoop.h"
-#include "src/spi/raritan/RaritanUartDriver.h"
-#include "src/test/mainEzspTest.h"
+#include "spi/raritan/RaritanEventLoop.h"
+#include "spi/raritan/RaritanUartDriver.h"
+#include "test/mainEzspTest.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ int main( void )
 
     app = new CAppDemo(&uartDriver);
 
-    eventLoop->run();
+    eventLoop.run();
 
     delete app;
 
