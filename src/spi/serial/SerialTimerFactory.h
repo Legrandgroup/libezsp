@@ -7,5 +7,5 @@ class SerialTimerFactory : public ITimerFactory {
 public:
 	SerialTimerFactory();
 	~SerialTimerFactory();
-	ITimer* create();
+	ITimer* create() const;
 };
