@@ -3,29 +3,30 @@
 #include <iostream>
 
 #include "../domain/ezsp-dongle.h"
+#include "../spi/raritan/RaritanEventLoop.h"
+#include "../spi/raritan/RaritanUartDriver.h"
+#include "../spi/IUartDriver.h"
 
 using namespace std;
 
 class CAppDemo : public CEzspHandler
 {
 public:
-    CAppDemo() { 
-        dongle = new CEzspDongle(this);
+    CAppDemo(RaritanEventLoop* eventLoop, IUartDriver& uartDriver) : dongle(this), eventLoop(eventLoop) { 
         // uart
-        dongle->open(nullptr); 
+        dongle.open(&uartDriver);
     }
 
-    ~CAppDemo() { 
-        delete dongle;
-    }
-
-    CAppDemo(const CAppDemo& other) = delete;
-
-    CAppDemo& operator=(const CAppDemo& other) = delete;
+    ~CAppDemo() { }
 
     void loop(void) {
-        while(1)
-            ;
+        if (eventLoop) {
+            eventLoop->run();
+        }
+        else {
+            while(1)
+                ;
+        }
     }
 
     /**
@@ -64,18 +65,22 @@ public:
     virtual void ezspBootloadTransmitCompleteHdl(){;}
 
 private:
-    CEzspDongle *dongle;
-    
+    CEzspDongle dongle;
+    RaritanEventLoop* eventLoop;
 };
 
 
 int main( void )
 {
     CAppDemo *app;
+    RaritanEventLoop eventLoop;
+    UartDriverRaritan uartDriver(eventLoop);
 
     cout << "Starting ezsp test program !" << endl;
 
-    app = new CAppDemo();
+    uartDriver.open("/dev/ttyUSB0", 57600);
+
+    app = new CAppDemo(&eventLoop, uartDriver);
 
     app->loop();
 

@@ -57,8 +57,8 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.push_back(0xC0);
 
     uint16_t crc = computeCRC(lo_msg);
-    lo_msg.push_back((uint8_t)(crc>>8));
-    lo_msg.push_back((uint8_t)(crc&0xFF));
+    lo_msg.push_back(static_cast<uint8_t>(crc>>8));
+    lo_msg.push_back(static_cast<uint8_t>(crc&0xFF));
 
     lo_msg = stuffedOutputData(lo_msg);
 
@@ -67,7 +67,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     // start timer
     if( nullptr != pTimer )
     { 
-        pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); 
+        pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
     }
 
     return lo_msg;
