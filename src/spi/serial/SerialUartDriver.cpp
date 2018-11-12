@@ -7,9 +7,9 @@
 #include <exception>
 #include <iostream>	// FIXME: for std::cerr during debug
 
-UartDriverSerial::UartDriverSerial(GenericAsyncDataInputObservable& uartIncomingDataHandler) :
+UartDriverSerial::UartDriverSerial() :
 	m_serial_port(),
-	m_data_input_observable(uartIncomingDataHandler),
+	m_data_input_observable(),
 	m_read_thread_alive(false),
 	m_read_messages_thread() { }
 
@@ -21,6 +21,10 @@ UartDriverSerial::~UartDriverSerial() {
 		}
 	}
 	this->close();
+}
+
+void UartDriverSerial::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
+	this->m_data_input_observable = uartIncomingDataHandler;
 }
 
 void UartDriverSerial::open(const std::string& serialPortName, unsigned int baudRate) {
@@ -39,7 +43,21 @@ void UartDriverSerial::open(const std::string& serialPortName, unsigned int baud
 
 	if (this->m_serial_port.isOpen()) {
 		this->m_read_thread_alive = true;
-		this->m_read_messages_thread = std::thread(&UartDriverSerial::threadRead, this);
+		this->m_read_messages_thread = std::thread([this]() {
+			//std::string readData = "";
+			unsigned char readData[1];
+			size_t rdcnt;
+
+			while (this->m_read_thread_alive) {
+				try {
+					rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
+					this->m_data_input_observable->notifyObservers(readData, rdcnt);
+				}
+				catch (std::exception& e) {
+					std::cerr << "Exception in read: " << e.what() << std::endl;
+				}
+			}
+		});
 	}
 	else {
 		std::cerr << "Serial Port not opened" << std::endl;
@@ -64,19 +82,7 @@ void UartDriverSerial::close() {
 	}
 }
 
-void* UartDriverSerial::threadRead(void) {
+/*void UartDriverSerial::threadRead(void) {
 
-	//std::string readData = "";
-	unsigned char readData[1];
-	size_t rdcnt;
 
-	while (this->m_read_thread_alive) {
-		try {
-			rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
-			this->m_data_input_observable.notifyObservers(readData, rdcnt);
-		}
-		catch (std::exception& e) {
-			std::cerr << "Exception in read: " << e.what() << std::endl;
-		}
-	}
-}
+}*/
