@@ -41,15 +41,18 @@ public:
 
 	/**
 	 * @brief Stop and reset the timer
+	 *
+	 * @return true if we actually could stop a running timer
 	 */
 	bool stop();
 
 	/**
-	 * @brief Get the remaining time to run the timer
+	 * @brief Is the timer currently running?
 	 *
-	 * @return The time remaining in ms
+	 * @return true if the timer is running
 	 */
-	uint16_t getRemaining();
+	bool isRunning();
+
 
 private:
 	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */

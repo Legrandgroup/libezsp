@@ -17,7 +17,7 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ITimer() : started(false), duration(0), callBack() { }
+	ITimer() : started(false), duration(0) { }
 
 	/**
 	 * @brief Destructor
@@ -34,25 +34,21 @@ public:
 
 	/**
 	 * @brief Stop and reset the timer
+	 *
+	 * @return true if we actually could stop a running timer
 	 */
 	virtual bool stop() = 0;
 
 	/**
-	 * @brief Is the timer currently running
+	 * @brief Is the timer currently running?
 	 *
 	 * @return true if the timer is running
 	 */
-	//virtual bool isRunning() = 0;
+	virtual bool isRunning() = 0;
 
-	/**
-	 * @brief Get the remaining time to run the timer
-	 *
-	 * @return The time remaining in ms
-	 */
-	virtual uint16_t getRemaining() = 0;
 
-public:
+protected:
 	bool started;	/*!< Is the timer currently running */
+public:
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
-	std::function<void (ITimer* triggeringTimer)> callBack;	/*!< The callback function that will be triggered by this timer */
 };

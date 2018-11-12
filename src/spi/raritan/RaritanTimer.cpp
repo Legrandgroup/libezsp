@@ -15,18 +15,18 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 	if (started)
 		return false;
 
-	callBack = callBackFunction;
+	if (!callBackFunction)
+		return false;
+
 	duration = timeout;
 	if (duration == 0) {
-		callBack(this);
+		callBackFunction(this);
 	}
 	else {
 		auto tcb = [this,timeout](pp::Selector::TimedCbHandle&) {
 			PPD_DEBUG("Timeout reached after %u", timeout);
-			if (callBack) {
-				PPD_DEBUG("Now running timer's callback");
-				callBack(this);
-			}
+			PPD_DEBUG("Now running timer's callback");
+			callBackFunction(this);
 		};
 		this->m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
 	}
@@ -38,11 +38,9 @@ bool RaritanTimer::stop() {
 		return false;
 	this->m_toutcbhandle.removeFromSelector();
 	duration=0;
-	callBack=nullptr;
 	return true;
 }
 
-uint16_t RaritanTimer::getRemaining() {
-	/* TODO: not implemented */
-	return duration/2;	/* FIXME: Fake */
+bool RaritanTimer::isRunning() {
+	return started;
 }
