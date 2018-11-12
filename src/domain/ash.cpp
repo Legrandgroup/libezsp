@@ -77,7 +77,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
 {
   std::vector<uint8_t> lo_msg;
 
-  lo_msg.push_back(0x80+ackNum);
+  lo_msg.push_back(static_cast<uint8_t>(0x80+ackNum));
 
   uint16_t crc = computeCRC(lo_msg);
   lo_msg.push_back(static_cast<uint8_t>(crc>>8));
@@ -294,7 +294,7 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
       for (auto i = 0; i < 8; i++) {
           bool bit = ((i_msg.at(cnt) >> (7 - i) & 1) == 1);
           bool c15 = ((lo_crc >> 15 & 1) == 1);
-          lo_crc <<= 1U;
+          lo_crc = static_cast<uint16_t>(lo_crc << 1U);
           if (c15 ^ bit) {
               lo_crc ^= polynomial;
           }

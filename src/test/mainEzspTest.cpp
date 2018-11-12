@@ -129,8 +129,8 @@ void CAppDemo::stackInit()
   {
     l_payload.clear();
     l_payload.push_back(l_config[loop].id);
-    l_payload.push_back(l_config[loop].value&0xFF);
-    l_payload.push_back(l_config[loop].value>>8);
+    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value&0xFF));
+    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value>>8));
     dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
   }
 
