@@ -59,7 +59,7 @@ public:
 	 * @param serialPortName The name of the serial port to open (eg: "/dev/ttyUSB0")
 	 * @param baudRate The baudrate to enforce on the serial port
 	 */
-	virtual void open(const std::string& serialPortName, unsigned int baudRate = 57600);
+	void open(const std::string& serialPortName, unsigned int baudRate = 57600);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -74,12 +74,12 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const void* buf, size_t cnt);
 
 	/**
 	 * @brief Close the serial port
 	 */
-	virtual void close();
+	void close();
 
 private:
 	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */

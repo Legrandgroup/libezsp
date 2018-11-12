@@ -11,7 +11,7 @@ class RaritanTimerFactory : public ITimerFactory {
 public:
 	RaritanTimerFactory(RaritanEventLoop& eventLoop);
 	~RaritanTimerFactory();
-	virtual ITimer* create() const;
+	ITimer* create() const;
 private:
 	RaritanEventLoop& m_eventLoop;
 };
