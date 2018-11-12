@@ -80,13 +80,13 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg.push_back(0x80+ackNum);
 
   uint16_t crc = computeCRC(lo_msg);
-  lo_msg.push_back((uint8_t)(crc>>8));
-  lo_msg.push_back((uint8_t)(crc&0xFF));
+  lo_msg.push_back(static_cast<int8_t>(crc>>8));
+  lo_msg.push_back(static_cast<int8_t>(crc&0xFF));
 
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); }
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} ); }
 
   return lo_msg;
 }
@@ -95,7 +95,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
 {
   std::vector<uint8_t> lo_msg;
 
-  lo_msg.push_back((frmNum << 4) + ackNum );
+  lo_msg.push_back(static_cast<int8_t>((frmNum << 4) + ackNum) );
   frmNum = (frmNum + 1) & 0x07;
 
   if( 0 != i_data.at(0) )
@@ -118,13 +118,13 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   }
 
   uint16_t crc = computeCRC(lo_msg);
-  lo_msg.push_back((uint8_t)(crc>>8));
-  lo_msg.push_back((uint8_t)(crc&0xFF));
+  lo_msg.push_back(static_cast<int8_t>(crc>>8));
+  lo_msg.push_back(static_cast<int8_t>(crc&0xFF));
 
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *pTimer){this->Timeout();} ); }
+  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} ); }
 
   return lo_msg;
 }
@@ -161,9 +161,9 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   if (escape) {
                       escape = false;
                       if ((data & 0x20) == 0) {
-                          data = (uint8_t) (data + 0x20);
+                          data = static_cast<int8_t>(data + 0x20);
                       } else {
-                          data = (uint8_t) (data & 0xDF);
+                          data = static_cast<int8_t>(data & 0xDF);
                       }
                   } else if (data == 0x7D) {
                       escape = true;
@@ -262,8 +262,10 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
       case ASH_OFF_BYTE:
           // XOFF: Stop transmissionUsed in XON/XOFF flow control. Always ignored if received by the NCP.
           break;
+/*          
       case ASH_TIMEOUT:
           break;
+*/          
       default:
           if (in_msg.size() >= ASH_MAX_LENGTH) {
               in_msg.clear();
@@ -288,11 +290,11 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
   uint16_t lo_crc = 0xFFFF; // initial value
   uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
 
-  for (int cnt = 0; cnt < i_msg.size(); cnt++) {
-      for (int i = 0; i < 8; i++) {
+  for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
+      for (auto i = 0; i < 8; i++) {
           bool bit = ((i_msg.at(cnt) >> (7 - i) & 1) == 1);
           bool c15 = ((lo_crc >> 15 & 1) == 1);
-          lo_crc <<= 1;
+          lo_crc <<= 1U;
           if (c15 ^ bit) {
               lo_crc ^= polynomial;
           }
@@ -308,7 +310,7 @@ vector<uint8_t> CAsh::stuffedOutputData(vector<uint8_t> i_msg)
 {
   vector<uint8_t> lo_msg;
 
-  for (int cnt = 0; cnt < i_msg.size(); cnt++) {
+  for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       switch (i_msg.at(cnt)) {
           case 0x7E:
               lo_msg.push_back( 0x7D );
@@ -355,9 +357,9 @@ vector<uint8_t> CAsh::dataRandomise(vector<uint8_t> i_data, uint8_t start)
         lo_data.push_back(i_data.at(cnt) ^ rand);
 
         if ((rand & 0x01) == 0) {
-            rand = rand >> 1;
+            rand = static_cast<int8_t>(rand >> 1);
         } else {
-            rand = (rand >> 1) ^ 0xb8;
+            rand = static_cast<int8_t>((rand >> 1) ^ 0xb8);
         }
     }
 

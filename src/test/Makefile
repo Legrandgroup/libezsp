@@ -1,4 +1,4 @@
-CXXFLAGS = -W -Wall -pedantic -std=c++11 -Weffc++
+CXXFLAGS = -W -Wall -pedantic -std=c++11 -Wno-unused-parameter # -Weffc++
 #LIBCGICC_CXXFLAGS = $(pkg-config --cflags cgicc)
 LDFLAGS = 
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc

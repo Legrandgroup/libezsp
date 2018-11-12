@@ -9,7 +9,7 @@ CEzspDongle::CEzspDongle( CEzspHandler *ipCb )
 {
     pUart = nullptr;
     pCb = ipCb;
-    ash = new CAsh((CAshCallback*)this, nullptr);
+    ash = new CAsh(static_cast<CAshCallback*>(this), nullptr);
 }
 
 CEzspDongle::~CEzspDongle()

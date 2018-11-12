@@ -106,6 +106,9 @@ std::vector<uint8_t> COutZbMessage::GetEZSPMessage(void)
       lo_msg.push_back( multicast_non_member_radius );
     }
     break;
+
+    default:
+    break;
   }
 
   lo_msg.push_back( msg_tag );
