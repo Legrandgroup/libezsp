@@ -8,35 +8,30 @@
 
 
 CAppDemo::CAppDemo(IUartDriver *uartDriver) : dongle(this) { 
+    app_state = APP_NOT_INIT;
     // uart
     if( dongle.open(uartDriver) )
     {
-        // first request stack protocol version
-        std::vector<uint8_t> payload;
-        payload.push_back(6U);
-        dongle.sendCommand(EZSP_VERSION,payload,[&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
-            
-            if( EZSP_VERSION == i_cmd )
-            {
-                // check if the wanted protocol version, and display stack version
-                if( 6 == i_msg_receive.at(0) )
-                {
-                    // all is good
-                    std::cout << "Stack version : " << i_msg_receive.at(2) << "." << i_msg_receive.at(3);
+        std::cout << "CAppDemo open success !" << std::endl;
+        app_state = APP_INIT_IN_PROGRESS;
+    }
+}
 
-                    // configure stack for this application
-                    stackInit();
-                }
-                else
-                {
-                    std::cout << "EZSP version Not supported !" << std::endl;
-                }
-            }
-            else
-            {
-                std::cout << "EZSP Response call for another command !!! How it is possible : " << i_cmd << std::endl;
-            }
-        });
+void CAppDemo::dongleState( EDongleState i_state )
+{
+    std::cout << "CAppDemo::dongleState : " << i_state << std::endl;
+
+    if( DONGLE_READY == i_state )
+    {
+        if( APP_INIT_IN_PROGRESS == app_state )
+        {
+            app_state = APP_READY;
+            dongleInit();
+        }
+    }
+    else if( DONGLE_REMOVE == i_state )
+    {
+        // \todo manage this !
     }
 }
 
@@ -65,9 +60,53 @@ void CAppDemo::ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
  *  
  */
 
+void CAppDemo::dongleInit()
+{
+    // first request stack protocol version
+    std::vector<uint8_t> payload;
+    payload.push_back(6U);
+    dongle.sendCommand(EZSP_VERSION,payload,[&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+        
+        if( EZSP_VERSION == i_cmd )
+        {
+            // check if the wanted protocol version, and display stack version
+            if( 6 == i_msg_receive.at(0) )
+            {
+                // all is good
+                std::stringstream bufDump;
+
+                // prtocol
+                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << ".";
+
+                // type
+                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[1]) << ".";
+
+                // version
+                uint16_t l_version = i_msg_receive[2] + (i_msg_receive[3]<<8);
+                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(l_version);
+
+                std::cout << "Stack version : " << bufDump.str() << std::endl;                    
+
+                // configure stack for this application
+                stackInit();
+                std::cout << "stackInit() finished !" << std::endl; 
+            }
+            else
+            {
+                std::cout << "EZSP version Not supported !" << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "EZSP Response call for another command !!! How it is possible : " << i_cmd << std::endl;
+        }
+    });
+}
+
 void CAppDemo::stackInit()
 {
   std::vector<uint8_t> l_payload;
+
   SEzspConfig l_config[] = {
     {EZSP_CONFIG_PACKET_BUFFER_COUNT,24},
     {EZSP_CONFIG_NEIGHBOR_TABLE_SIZE,16},
@@ -131,7 +170,10 @@ void CAppDemo::stackInit()
     l_payload.push_back(l_config[loop].id);
     l_payload.push_back(static_cast<uint8_t>(l_config[loop].value&0xFF));
     l_payload.push_back(static_cast<uint8_t>(l_config[loop].value>>8));
-    dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
+    std::cout << "CAppDemo::stackInit : EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
+    dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){ 
+        std::cout << "CAppDemo::stackInit : EZSP_SET_CONFIGURATION_VALUE RSP : " << unsigned(i_msg_receive.at(0)) << std::endl;
+        });
   }
 
   // set policy
@@ -140,6 +182,7 @@ void CAppDemo::stackInit()
     l_payload.clear();
     l_payload.push_back(l_policy[loop].id);
     l_payload.push_back(l_policy[loop].decision);
+    std::cout << "CAppDemo::stackInit : EZSP_SET_POLICY : " << unsigned(l_policy[loop].id) << std::endl;
     dongle.sendCommand(EZSP_SET_POLICY, l_payload);
   }
 
@@ -162,6 +205,7 @@ void CAppDemo::stackInit()
         if( EZSP_ADD_ENDPOINT == i_cmd )
         {
             // configuration finished, initialize zigbee pro stack
+            std::cout << "CAppDemo::stackInit : Request zigbee pro stack to start :)" << std::endl;
             dongle.sendCommand(EZSP_NETWORK_INIT);
         }
         else
