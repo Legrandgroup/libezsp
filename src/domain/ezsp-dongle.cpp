@@ -5,10 +5,11 @@
 #include "ezsp-dongle.h"
 
 
-CEzspDongle::CEzspDongle( CEzspHandler *ipCb )
+CEzspDongle::CEzspDongle( CDongleHandler *ipCb )
 {
+    wait_rsp = false;
     pUart = nullptr;
-    pCb = ipCb;
+    pHandler = ipCb;
     ash = new CAsh(static_cast<CAshCallback*>(this), nullptr);
 }
 
@@ -49,10 +50,34 @@ bool CEzspDongle::open(IUartDriver *ipUart)
                 lo_success = false;
                 pUart = nullptr;
             }
+            else
+            {
+                std::cout << "CEzspDongle::open register uart !" << std::endl;
+                uartIncomingDataHandler.registerObserver(this);
+                pUart->setIncomingDataHandler(&uartIncomingDataHandler);
+            }
         }
     }
 
     return lo_success;
+}
+
+void CEzspDongle::ashCbInfo( EAshInfo info ) 
+{ 
+    std::cout <<  "ashCbInfo : " << info << std::endl; 
+
+    if( ASH_STATE_CHANGE == info )
+    {
+        // inform upper layer that dongle is ready !
+        if( ash->isConnected() )
+        {
+            pHandler->dongleState( DONGLE_READY );
+        }
+        else
+        {
+            pHandler->dongleState( DONGLE_REMOVE );
+        }
+    }
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
@@ -73,44 +98,48 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
       {
         size_t l_size;
 
+        //std::cout << "CEzspDongle::handleInputData ash message decoded" << std::endl;
+
         // send ack
         std::vector<uint8_t> l_msg = ash->AckFrame();
         pUart->write(l_size, l_msg.data(), l_msg.size());
 
-        if( nullptr != pCb ) {
-            pCb->ashRxMessage(lo_msg);
+        if( nullptr != pHandler ) {
+            pHandler->ashRxMessage(lo_msg);
             EzspProcess( lo_msg );
         }
+
+        // remove waiting message and send next
+        if( wait_rsp )
+        {
+            sendingMsgQueue.pop();
+            wait_rsp = false;
+            sendNextMsg();
+        }
+
       }    
 }
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload, 
                                 std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> callBackFunction )
 {
-    // encode command using ash and write to uart
-    std::vector<uint8_t> li_data;
-    std::vector<uint8_t> l_enc_data;
-    size_t l_size;
+    sMsg l_msg;
 
-    li_data.clear();
-    li_data.push_back(static_cast<uint8_t>(i_cmd));
-    for( size_t loop=0; loop< i_cmd_payload.size(); loop++ )
-    {
-        li_data.push_back(i_cmd_payload.at(loop));
-    }
+    l_msg.i_cmd = i_cmd;
+    l_msg.payload = i_cmd_payload;
+    l_msg.cb = callBackFunction;
+    
+    sendingMsgQueue.push(l_msg);
 
-    l_enc_data = ash->DataFrame(li_data);
-    if( nullptr != pUart )
-    {
-        pUart->write(l_size, l_enc_data.data(), l_enc_data.size());
-    }
-
-    // store callback for answer
-    if( nullptr != callBackFunction )
-    {
-        rspCbTable.push_back({i_cmd,callBackFunction});
-    }
+    sendNextMsg();
 }
+
+
+/**
+ * 
+ * PRIVATE
+ * 
+ */
 
 void CEzspDongle::EzspProcess( std::vector<uint8_t> i_rx_msg )
 {
@@ -154,24 +183,54 @@ void CEzspDongle::EzspProcess( std::vector<uint8_t> i_rx_msg )
         case EZSP_INCOMING_BOOTLOAD_MESSAGE_HANDLER :
         case EZSP_BOOTLOAD_TRANSMIT_COMPLETE_HANDLER :
         {
-            pCb->ezspHandler( l_cmd, i_rx_msg );
+            pHandler->ezspHandler( l_cmd, i_rx_msg );
         }
         break;
 
         default :
         {
             // verify that callback are associate to this command
-            for(size_t loop=0; loop<rspCbTable.size(); loop++)
+            sMsg l_msg = sendingMsgQueue.front();
+            if( l_msg.i_cmd == l_cmd )
             {
-                if( rspCbTable.at(loop).i_cmd == l_cmd )
+                if( nullptr != l_msg.cb )
                 {
-                    rspCbTable.at(loop).cb(l_cmd,i_rx_msg);
-                    rspCbTable.erase(rspCbTable.begin()+loop);
-                    loop = 0;
+                    l_msg.cb(l_cmd,i_rx_msg);
                 }
             }
-
         }
         break;
     }
 }
+
+
+void CEzspDongle::sendNextMsg( void )
+{
+    if( (!wait_rsp) && (!sendingMsgQueue.empty()) )
+    {
+        sMsg l_msg = sendingMsgQueue.front();
+
+        // encode command using ash and write to uart
+        std::vector<uint8_t> li_data;
+        std::vector<uint8_t> l_enc_data;
+        size_t l_size;
+
+        li_data.clear();
+        li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
+        for( size_t loop=0; loop< l_msg.payload.size(); loop++ )
+        {
+            li_data.push_back(l_msg.payload.at(loop));
+        }
+
+        //-- std::cout << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
+        l_enc_data = ash->DataFrame(li_data);
+        if( nullptr != pUart )
+        {
+            //-- std::cout << "CEzspDongle::sendCommand pUart->write" << std::endl;
+            pUart->write(l_size, l_enc_data.data(), l_enc_data.size());
+
+            wait_rsp = true;
+        }
+    }
+}
+

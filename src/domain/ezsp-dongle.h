@@ -3,6 +3,8 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <queue>
 
 #include "ezsp-enum.h"
 #include "IUartDriver.h"
@@ -10,25 +12,39 @@
 #include "zigbee-message.h"
 #include "out-zigbee-message.h"
 
-class CEzspHandler
+typedef enum
+{
+    DONGLE_READY,
+    DONGLE_REMOVE
+}EDongleState;
+
+class CDongleHandler
 {
 public:
-    virtual ~CEzspHandler() {}
+    virtual ~CDongleHandler() {}
+    virtual void dongleState( EDongleState i_state ) = 0;
     virtual void ashRxMessage( std::vector<uint8_t> i_message ) = 0;
     virtual void ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) = 0;
 };
 
-
+/*
 typedef struct sRspCb
 {
     EEzspCmd i_cmd;
     std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> cb;
 }SRspCb;
+*/
+typedef struct sMsg
+{
+    EEzspCmd i_cmd;
+    std::vector<uint8_t> payload;
+    std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> cb;
+}SMsg;
 
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( CEzspHandler *ipCb );
+    CEzspDongle( CDongleHandler *ipCb );
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
 
@@ -51,22 +67,24 @@ public:
     /**
      * callback de reception de l'uart
      */
-    virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen);
+    void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
     /**
      * callabck d'information de l'ash
      */
-    virtual void ashCbInfo( EAshInfo info ) { std::cout <<  "ashCbInfo : " << info << std::endl; };
+    void ashCbInfo( EAshInfo info );
 
 private:
     IUartDriver *pUart;
     CAsh *ash;
-    CEzspHandler *pHandler;
-    CEzspHandler *pCb;
-
-    std::vector<SRspCb> rspCbTable;
+    CDongleHandler *pHandler;
+    GenericAsyncDataInputObservable uartIncomingDataHandler;
+    std::queue<SMsg> sendingMsgQueue;
+    bool wait_rsp;
+    //std::vector<SRspCb> rspCbTable;
 
     void EzspProcess( std::vector<uint8_t> i_rx_msg );
+    void sendNextMsg( void );
 
 };
 
