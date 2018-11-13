@@ -2,6 +2,9 @@
  * 
  * */
 
+// #include <iostream>
+#include <list>
+
 #include "ash.h"
 
 using namespace std;
@@ -53,6 +56,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     vector<uint8_t> lo_msg;
 
     if( nullptr != pTimer ){ pTimer->stop(); }
+    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
 
     lo_msg.push_back(0xC0);
 
@@ -132,13 +136,20 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
 std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
 {
   bool inputError = false;
+  std::list<uint8_t> li_data;
   std::vector<uint8_t> lo_msg;
   uint8_t val;
 
-  while( !i_data->empty() && lo_msg.empty() )
+  // make a copy of i_data in a list
+  for( size_t loop=0; loop< i_data->size(); loop++ )
   {
-    val = i_data->front();
-    i_data->erase(i_data->begin());
+      li_data.push_back(i_data->at(loop));
+  }
+
+  while( !li_data.empty() && lo_msg.empty() )
+  {
+    val = li_data.front();
+    li_data.pop_front();
     switch( val )
     {
       case ASH_CANCEL_BYTE:
@@ -149,6 +160,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
           inputError = false;
           break;
       case ASH_FLAG_BYTE:
+            //-- std::cout << "CAsh::decode ASH_FLAG_BYTE" << std::endl;
           // Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
@@ -175,11 +187,13 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
               // Check CRC
               if (computeCRC(lo_msg) != 0) {
                   lo_msg.clear();
+                  //-- std::cout << "CAsh::decode Wrong CRC" << std::endl;
               }
               else
               {
                 if ((lo_msg.at(0) & 0x80) == 0) {
                   // DATA;
+                  //-- std::cout << "CAsh::decode DATA" << std::endl;
 
                   // update ack number, use incoming frm number
                   ackNum = ((lo_msg.at(0)>>4&0x07) + 1) & 0x07;
@@ -190,13 +204,14 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   if( 0xFF == lo_msg.at(2) )
                   {
                     // WARNING for all frames except "VersionRequest" frame, add exteded header
-                    lo_msg.erase(i_data->begin()+2);
-                    lo_msg.erase(i_data->begin()+2);
+                    lo_msg.erase(lo_msg.begin()+2);
+                    lo_msg.erase(lo_msg.begin()+2);
                   }
 
                 }
                 else if ((lo_msg.at(0) & 0x60) == 0x00) {
                   // ACK;
+                  //-- std::cout << "CAsh::decode ACK" << std::endl;
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
                   if( nullptr != pTimer ){ pTimer->stop(); }
@@ -206,6 +221,8 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                 else if ((lo_msg.at(0) & 0x60) == 0x20) {
                   // NAK;
                   frmNum = lo_msg.at(0) & 0x07;
+
+                  //-- std::cout << "CAsh::decode NACK" << std::endl;
 
                   //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
                   lo_msg.clear();
@@ -217,10 +234,12 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                   // RST;
                   lo_msg.clear();
                   //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
+                  //-- std::cout << "CAsh::decode RST" << std::endl;
                 }
                 else if (lo_msg.at(0) == 0xC1) {
                   // RSTACK;
                   //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
+                  //-- std::cout << "CAsh::decode RSTACK" << std::endl;
 
                   lo_msg.clear();
                   if( !stateConnected )
@@ -228,16 +247,19 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
                     /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
                     if( nullptr != pTimer ){ pTimer->stop(); }
                     stateConnected = true;
+                    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
                   }
                 }
                 else if (lo_msg.at(0) == 0xC2) {
                   // ERROR;
                   //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
+                  //-- std::cout << "CAsh::decode ERROR" << std::endl;
                   lo_msg.clear();
                 }
                 else
                 {
                   //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
+                  //-- std::cout << "CAsh::decode UNKNOWN" << std::endl;
                   lo_msg.clear();
                 }
               }

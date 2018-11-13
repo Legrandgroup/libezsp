@@ -10,7 +10,8 @@
 typedef enum {
   ASH_RESET_FAILED,
   ASH_ACK,
-  ASH_NACK
+  ASH_NACK,
+  ASH_STATE_CHANGE
 }EAshInfo;
 
 class CAshCallback
