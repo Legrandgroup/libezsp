@@ -9,9 +9,11 @@
 
 typedef enum
 {
-    APP_NOT_INIT,
-    APP_INIT_IN_PROGRESS,
-    APP_READY
+    APP_NOT_INIT, // starting state
+    APP_READY,  // default state if no action in progress
+    APP_ERROR,  // something wrong
+    APP_INIT_IN_PROGRESS, // dongle init in progress
+    APP_FORM_NWK_IN_PROGRESS // form a network in progress
 }EAppState;
 
 class CAppDemo : public CDongleHandler
@@ -30,7 +32,9 @@ private:
     CEzspDongle dongle;
     EAppState app_state;
 
+    void setAppState( EAppState i_state );
     void dongleInit();
     void stackInit();
+    void formHaNetwork();
 };
 

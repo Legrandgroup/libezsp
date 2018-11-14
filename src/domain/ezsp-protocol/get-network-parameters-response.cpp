@@ -11,7 +11,7 @@ CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(std::vector<uint8_t> 
     status = static_cast<EEmberStatus>(raw_message.at(0));
     node_type = static_cast<EmberNodeType>(raw_message.at(1));
     raw_message.erase(raw_message.begin(),raw_message.begin()+2);
-    parameters.setWithRaw(raw_message);
+    parameters.setRaw(raw_message);
 }
 
 std::string CGetNetworkParamtersResponse::String()
