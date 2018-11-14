@@ -6,7 +6,7 @@
 #include <vector>
 #include <queue>
 
-#include "ezsp-enum.h"
+#include "ezsp-protocol/ezsp-enum.h"
 #include "IUartDriver.h"
 #include "ash.h"
 #include "zigbee-message.h"

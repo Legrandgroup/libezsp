@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "mainEzspTest.h"
+#include "../domain/ezsp-protocol/get-network-parameters-response.h"
 
 
 CAppDemo::CAppDemo(IUartDriver *uartDriver) : dongle(this) { 
@@ -108,18 +109,17 @@ void CAppDemo::stackInit()
   std::vector<uint8_t> l_payload;
 
   SEzspConfig l_config[] = {
-    {EZSP_CONFIG_PACKET_BUFFER_COUNT,24},
-    {EZSP_CONFIG_NEIGHBOR_TABLE_SIZE,16},
+    {EZSP_CONFIG_NEIGHBOR_TABLE_SIZE,32},
     {EZSP_CONFIG_APS_UNICAST_MESSAGE_COUNT,10},
     {EZSP_CONFIG_BINDING_TABLE_SIZE,0},
-    {EZSP_CONFIG_ADDRESS_TABLE_SIZE,8},
+    {EZSP_CONFIG_ADDRESS_TABLE_SIZE,64},
     {EZSP_CONFIG_MULTICAST_TABLE_SIZE,8},
-    {EZSP_CONFIG_ROUTE_TABLE_SIZE, 16},
-    {EZSP_CONFIG_DISCOVERY_TABLE_SIZE, 8},
+    {EZSP_CONFIG_ROUTE_TABLE_SIZE, 32},
+    {EZSP_CONFIG_DISCOVERY_TABLE_SIZE, 16},
     {EZSP_CONFIG_STACK_PROFILE, 2},
     {EZSP_CONFIG_SECURITY_LEVEL, 5},
-    {EZSP_CONFIG_MAX_HOPS, 30},
-    {EZSP_CONFIG_MAX_END_DEVICE_CHILDREN, 6},
+    {EZSP_CONFIG_MAX_HOPS, 15},
+    {EZSP_CONFIG_MAX_END_DEVICE_CHILDREN, 32}, // define number of sleepy end device directly attached to dongle
     {EZSP_CONFIG_INDIRECT_TRANSMISSION_TIMEOUT, 3000},
     {EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT, 5},
     {EZSP_CONFIG_MOBILE_NODE_POLL_TIMEOUT, 20},
@@ -151,6 +151,7 @@ void CAppDemo::stackInit()
     {EZSP_CONFIG_TRANSIENT_KEY_TIMEOUT_S, 300},
     {EZSP_CONFIG_BROADCAST_MIN_ACKS_NEEDED, 1},
     {EZSP_CONFIG_TC_REJOINS_USING_WELL_KNOWN_KEY_TIMEOUT_S, 600},
+    {EZSP_CONFIG_PACKET_BUFFER_COUNT,0xFF}, // use all remain memory for in/out radio packets
   };
   #define l_config_size (sizeof(l_config)/sizeof(SEzspConfig))
 
@@ -173,7 +174,7 @@ void CAppDemo::stackInit()
     std::cout << "CAppDemo::stackInit : EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
     dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){ 
         std::cout << "CAppDemo::stackInit : EZSP_SET_CONFIGURATION_VALUE RSP : " << unsigned(i_msg_receive.at(0)) << std::endl;
-        });
+    });
   }
 
   // set policy
@@ -202,15 +203,26 @@ void CAppDemo::stackInit()
   l_payload.push_back(0);
   dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
         
-        if( EZSP_ADD_ENDPOINT == i_cmd )
-        {
+        // configuration finished, initialize zigbee pro stack
+        std::cout << "CAppDemo::stackInit : Request zigbee pro stack to start :)" << std::endl;
+        dongle.sendCommand(EZSP_NETWORK_INIT, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
             // configuration finished, initialize zigbee pro stack
-            std::cout << "CAppDemo::stackInit : Request zigbee pro stack to start :)" << std::endl;
-            dongle.sendCommand(EZSP_NETWORK_INIT);
-        }
-        else
-        {
-            std::cout << "EZSP Response call for another command !!! How it is possible : " << i_cmd << std::endl;
-        }
+            std::cout << "CAppDemo::stackInit : Request zigbee pro state" << std::endl;
+            dongle.sendCommand(EZSP_NETWORK_STATE, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+                if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
+                {
+                    // we decide to create an HA1.2 network
+                    
+                }
+                else
+                {
+                    // we retrieve network information
+                    dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+                        CGetNetworkParamtersResponse l_rsp(i_msg_receive);
+                        std::cout << l_rsp.String() << std::endl;
+                    });
+                }
+            });
+        });
     });
 }

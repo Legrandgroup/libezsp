@@ -2,6 +2,7 @@
  * 
  * 
  */
+#pragma once
 
 #include "../domain/ezsp-dongle.h"
 #include "../spi/IUartDriver.h"

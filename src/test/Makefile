@@ -14,6 +14,9 @@ OBJECTFILES = mainEzspTestLinux.o \
 			  ../domain/zbmessage/apsoption.o \
 			  ../domain/zbmessage/aps.o \
 			  ../domain/zbmessage/out-zigbee-message.o \
+			  ../domain/ezsp-protocol/ezsp-enum.o \
+			  ../domain/ezsp-protocol/get-network-parameters-response.o \
+			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
 			  ../spi/serial/SerialTimerFactory.o \

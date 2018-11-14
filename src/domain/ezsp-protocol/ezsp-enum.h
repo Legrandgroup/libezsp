@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 typedef enum
 {
@@ -819,5 +820,78 @@ enum
 
 #define EZSP_ENERGY_SCAN 0x00
 #define EZSP_ACTIVE_SCAN 0x01
+
+typedef enum
+{
+  /**
+   * Normally devices use MAC Association to join a network, which
+   * respects the "permit joining" flag in the MAC Beacon. This value
+   * should be used by default.
+   */
+  EMBER_USE_MAC_ASSOCIATION = 0x00,
+  /**
+   * For those networks where the "permit joining" flag is never turned
+   * on, they will need to use a ZigBee NWK Rejoin. This value
+   * causes the rejoin to be sent without NWK security and the Trust
+   * Center will be asked to send the NWK key to the device. The
+   * NWK key sent to the device can be encrypted with the device's
+   * corresponding Trust Center link key. That is determined by the
+   * ::EmberJoinDecision on the Trust Center returned by the
+   * ::emberTrustCenterJoinHandler().
+   */
+  EMBER_USE_NWK_REJOIN = 0x01,
+  /**
+   * For those networks where the "permit joining" flag is never turned
+   * on, they will need to use a NWK Rejoin. If those devices have
+   * been preconfigured with the NWK key (including sequence
+   * number) they can use a secured rejoin. This is only necessary for
+   * end devices since they need a parent. Routers can simply use
+   * the ::EMBER_USE_NWK_COMMISSIONING join method below.
+   */
+  EMBER_USE_NWK_REJOIN_HAVE_NWK_KEY = 0x02,
+  /**
+   * For those networks where all network and security information is
+   * known ahead of time, a router device may be commissioned such
+   * that it does not need to send any messages to begin
+   * communicating on the network.
+   */
+  EMBER_USE_NWK_COMMISSIONING = 0x03
+}EmberJoinMethod;
+
+typedef uint16_t EmberNodeId;
+
+typedef enum
+{
+  /**
+   * Device is not joined.
+   */
+  EMBER_UNKNOWN_DEVICE = 0x00,
+  /**
+   * Will relay messages and can act as a parent to other nodes.
+   */
+  EMBER_COORDINATOR = 0x01,
+  /**
+   * Will relay messages and can act as a parent to other nodes.
+   */
+  EMBER_ROUTER = 0x02,
+  /**
+   * Communicates only with its parent and will not relay messages.
+   */
+  EMBER_END_DEVICE = 0x03,
+  /**
+   * An end device whose radio can be turned off to save power. The
+   * application must poll to receive messages.
+   */
+  EMBER_SLEEPY_END_DEVICE = 0x04
+}EmberNodeType;
+
+
+class CEzspEnum{
+  public:
+    static std::string EmberNodeTypeToString( EmberNodeType in );
+    static std::string EEmberStatusToString( EEmberStatus in );
+    static std::string EmberJoinMethodToString( EmberJoinMethod in );
+};
+
 
 #endif // EZSP_ENUM_H

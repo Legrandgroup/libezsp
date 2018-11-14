@@ -4,7 +4,7 @@
 
 #include "out-zigbee-message.h"
 
-#include "ezsp-enum.h"
+#include "../ezsp-protocol/ezsp-enum.h"
 
 
 void COutZbMessage::SetState( EOutMsgState i_state )
