@@ -886,11 +886,42 @@ typedef enum
 }EmberNodeType;
 
 
+typedef enum
+{
+  E_OUT_MSG_BR_DEST_ALL_DEVICES = 0xFFFF,
+  E_OUT_MSG_BR_DEST_NON_SLEEPY = 0xFFFD,
+  E_OUT_MSG_BR_DEST_ROUTER_ONLY = 0xFFFC
+}EOutBroadcastDestination;
+
+typedef enum
+{
+  EMBER_TRUST_CENTER_LINK_KEY = 0x01,
+  EMBER_CURRENT_NETWORK_KEY = 0x03,
+  EMBER_NEXT_NETWORK_KEY = 0x04,
+  EMBER_APPLICATION_LINK_KEY = 0x05
+}EmberKeyType;
+
+typedef enum
+{
+  EMBER_KEY_HAS_SEQUENCE_NUMBER = 0x0001,
+  EMBER_KEY_HAS_OUTGOING_FRAME_COUNTER = 0x0002,
+  EMBER_KEY_HAS_INCOMING_FRAME_COUNTER = 0x0004,
+  EMBER_KEY_HAS_PARTNER_EUI64 = 0x0008
+}EmberKeyStructBitmask;
+
+#define EMBER_KEY_DATA_BYTE_SIZE  16
+typedef std::vector<uint8_t> EmberKeyData;
+
+#define EMBER_EUI64_BYTE_SIZE  8
+typedef std::vector<uint8_t> EmberEUI64;
+
 class CEzspEnum{
   public:
     static std::string EmberNodeTypeToString( EmberNodeType in );
     static std::string EEmberStatusToString( EEmberStatus in );
     static std::string EmberJoinMethodToString( EmberJoinMethod in );
+    static std::string EEzspCmdToString( EEzspCmd in );
+    static std::string EmberKeyTypeToString( EmberKeyType in );
 };
 
 

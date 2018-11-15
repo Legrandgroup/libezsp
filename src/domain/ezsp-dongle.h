@@ -27,13 +27,7 @@ public:
     virtual void ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) = 0;
 };
 
-/*
-typedef struct sRspCb
-{
-    EEzspCmd i_cmd;
-    std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> cb;
-}SRspCb;
-*/
+
 typedef struct sMsg
 {
     EEzspCmd i_cmd;
@@ -81,11 +75,8 @@ private:
     GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
-    //std::vector<SRspCb> rspCbTable;
 
-    void EzspProcess( std::vector<uint8_t> i_rx_msg );
     void sendNextMsg( void );
-
 };
 
 #endif // EZSP_DONGLE_H

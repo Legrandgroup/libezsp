@@ -64,7 +64,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
 
 void CEzspDongle::ashCbInfo( EAshInfo info ) 
 { 
-    std::cout <<  "ashCbInfo : " << info << std::endl; 
+    std::cout <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl; 
 
     if( ASH_STATE_CHANGE == info )
     {
@@ -93,9 +93,9 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
     lo_msg = ash->decode(&li_data);
 
-      // send incomming mesage to application
-      if( !lo_msg.empty() )
-      {
+    // send incomming mesage to application
+    if( !lo_msg.empty() )
+    {
         size_t l_size;
 
         //std::cout << "CEzspDongle::handleInputData ash message decoded" << std::endl;
@@ -104,20 +104,40 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         std::vector<uint8_t> l_msg = ash->AckFrame();
         pUart->write(l_size, l_msg.data(), l_msg.size());
 
-        if( nullptr != pHandler ) {
-            pHandler->ashRxMessage(lo_msg);
-            EzspProcess( lo_msg );
-        }
+        // call handler
 
-        // remove waiting message and send next
-        if( wait_rsp )
+        // low level
+        if( nullptr != pHandler ) { pHandler->ashRxMessage(lo_msg); }
+
+        // ezsp
+        // extract ezsp command
+        EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
+        // keep only payload
+        lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
+
+        // response to a sending command
+        sMsg l_msgQ = sendingMsgQueue.front();
+        if( l_msgQ.i_cmd == l_cmd )
         {
+            if( nullptr != l_msgQ.cb )
+            {
+                l_msgQ.cb(l_cmd,lo_msg);
+            }
+
+            // remove waiting message and send next
             sendingMsgQueue.pop();
             wait_rsp = false;
             sendNextMsg();
         }
-
-      }    
+        else
+        {
+            // ezsp callback
+            if( nullptr != pHandler ) 
+            { 
+                pHandler->ezspHandler( l_cmd, lo_msg ); 
+            }
+        }
+    }    
 }
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload, 
@@ -140,69 +160,6 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
  * PRIVATE
  * 
  */
-
-void CEzspDongle::EzspProcess( std::vector<uint8_t> i_rx_msg )
-{
-    EEzspCmd l_cmd = static_cast<EEzspCmd>(i_rx_msg.at(2));
-
-    // keep only payload
-    i_rx_msg.erase(i_rx_msg.begin(),i_rx_msg.begin()+3);
-
-    // first manage handler and then search if callback is associate to a particular request
-    switch( l_cmd )
-    {
-        case EZSP_TIMER_HANDLER :
-        case EZSP_DEBUG_HANDLER :
-        case EZSP_STACK_STATUS_HANDLER :
-        case EZSP_ENERGY_SCAN_RESULT_HANDLER :
-        case EZSP_NETWORK_FOUND_HANDLER :
-        case EZSP_SCAN_COMPLETE_HANDLER :
-        case EZSP_CHILD_JOIN_HANDLER :
-        case EZSP_REMOTE_SET_BINDING_HANDLER :
-        case EZSP_REMOTE_DELETE_BINDING_HANDLER :
-        case EZSP_MESSAGE_SENT_HANDLER :
-        case EZSP_POLL_COMPLETE_HANDLER :
-        case EZSP_POLL_HANDLER :
-        case EZSP_INCOMING_SENDER_EUI64_HANDLER :
-        case EZSP_INCOMING_MESSAGE_HANDLER :
-        case EZSP_INCOMING_ROUTE_RECORD_HANDLER :
-        case EZSP_INCOMING_MANY_TO_ONE_ROUTE_REQUEST_HANDLER :
-        case EZSP_INCOMING_ROUTE_ERROR_HANDLER :
-        case EZSP_ID_CONFLICT_HANDLER :
-        case EZSP_MAC_PASSTHROUGH_MESSAGE_HANDLER :
-        case EZSP_MAC_FILTER_MATCH_MESSAGE_HANDLER :
-        case EZSP_RAW_TRANSMIT_COMPLETE_HANDLER :
-        case EZSP_SWITCH_NETWORK_KEY_HANDLER :
-        case EZSP_ZIGBEE_KEY_ESTABLISHMENT_HANDLER :
-        case EZSP_TRUST_CENTER_JOIN_HANDLER :
-        case EZSP_GENERATE_CBKE_KEYS_HANDLER :
-        case EZSP_CALCULATE_SMACS_HANDLER :
-        case EZSP_DSA_SIGN_HANDLER :
-        case EZSP_DSA_VERIFY_HANDLER :
-        case EZSP_MFGLIB_RX_HANDLER :
-        case EZSP_INCOMING_BOOTLOAD_MESSAGE_HANDLER :
-        case EZSP_BOOTLOAD_TRANSMIT_COMPLETE_HANDLER :
-        {
-            pHandler->ezspHandler( l_cmd, i_rx_msg );
-        }
-        break;
-
-        default :
-        {
-            // verify that callback are associate to this command
-            sMsg l_msg = sendingMsgQueue.front();
-            if( l_msg.i_cmd == l_cmd )
-            {
-                if( nullptr != l_msg.cb )
-                {
-                    l_msg.cb(l_cmd,i_rx_msg);
-                }
-            }
-        }
-        break;
-    }
-}
-
 
 void CEzspDongle::sendNextMsg( void )
 {

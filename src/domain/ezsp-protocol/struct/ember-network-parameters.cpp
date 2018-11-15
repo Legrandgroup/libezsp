@@ -90,15 +90,15 @@ std::string CEmberNetworkParameters::String()
     std::stringstream buf;
 
     buf << "EmberNetworkParameters : { ";
-    buf << "[extend_pan_id : "<< std::hex << std::setw(16) << std::setfill('0') << extend_pan_id << "]";
-    buf << "[pan_id : "<< std::hex << std::setw(4) << std::setfill('0') << pan_id << "]";
-    buf << "[radio_tx_power : "<< std::hex << std::setw(2) << std::setfill('0') << radio_tx_power << "]";
-    buf << "[radio_channel : "<< std::hex << std::setw(2) << std::setfill('0') << radio_channel << "]";
+    buf << "[extend_pan_id : "<< std::hex << std::setw(16) << std::setfill('0') << unsigned(extend_pan_id) << "]";
+    buf << "[pan_id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(pan_id) << "]";
+    buf << "[radio_tx_power : "<< std::dec << unsigned(radio_tx_power) << "]";
+    buf << "[radio_channel : "<< std::dec << unsigned(radio_channel) << "]";
     buf << "[join_method : "<< CEzspEnum::EmberJoinMethodToString(join_method) << "]";
-    buf << "[nwk_manager_id : "<< std::hex << std::setw(4) << std::setfill('0') << nwk_manager_id << "]";
-    buf << "[nwk_update_id : "<< std::hex << std::setw(2) << std::setfill('0') << nwk_update_id << "]";
-    buf << "[channels : "<< std::hex << std::setw(8) << std::setfill('0') << channels << "]";
-    buf << " }" << std::endl;
+    buf << "[nwk_manager_id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(nwk_manager_id) << "]";
+    buf << "[nwk_update_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(nwk_update_id) << "]";
+    buf << "[channels : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(channels) << "]";
+    buf << " }";
 
     return buf.str();
 }

@@ -31,10 +31,15 @@ public:
 private:
     CEzspDongle dongle;
     EAppState app_state;
+    uint8_t child_idx;
 
     void setAppState( EAppState i_state );
     void dongleInit();
     void stackInit();
     void formHaNetwork();
+    bool OpenNetwork( uint8_t i_timeout );
+    bool CloseNetwork( void );
+    void SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg);
+    void startDiscoverProduct();
 };
 

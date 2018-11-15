@@ -44,6 +44,7 @@ public:
 
     bool isConnected(void){ return stateConnected; }
 
+    static std::string EAshInfoToString( EAshInfo in );
 
 private:
     uint8_t ackNum;

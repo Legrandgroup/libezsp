@@ -8,6 +8,7 @@
 
 #include "mainEzspTest.h"
 #include "../domain/ezsp-protocol/get-network-parameters-response.h"
+#include "../domain/ezsp-protocol/struct/ember-key-struct.h"
 #include "../domain/ezsp-protocol/ezsp-enum.h"
 
 
@@ -39,6 +40,7 @@ void CAppDemo::dongleState( EDongleState i_state )
 }
 
 void CAppDemo::ashRxMessage( std::vector<uint8_t> i_message ) {
+    // Callback to catch incomming ash raw message, for debug purpose
 /*    
     std::stringstream bufDump;
 
@@ -50,10 +52,32 @@ void CAppDemo::ashRxMessage( std::vector<uint8_t> i_message ) {
 }
 
 void CAppDemo::ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
+    std::cout << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
+
     if( EZSP_STACK_STATUS_HANDLER == i_cmd )
     {
         std::cout << "CAppDemo::ezspHandler : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_message.at(0))) << std::endl;
         setAppState(APP_READY);
+
+        // we open network, so we can enter new devices
+        OpenNetwork( 10 );
+
+        // we retrieve network information and key
+        std::vector<uint8_t> l_payload;
+        dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+            CGetNetworkParamtersResponse l_rsp(i_msg_receive);
+            std::cout << l_rsp.String() << std::endl;
+        });
+        l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
+        dongle.sendCommand(EZSP_GET_KEY, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+            EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+            i_msg_receive.erase(i_msg_receive.begin());
+            CEmberKeyStruct l_rsp(i_msg_receive);
+            std::cout << "EZSP_GET_KEY status : " << CEzspEnum::EEmberStatusToString(l_status) << ", " << l_rsp.String() << std::endl;
+        });
+
+        // start discover of existing product inside network
+        startDiscoverProduct();
     }
     else
     {
@@ -237,23 +261,17 @@ void CAppDemo::stackInit()
   dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
         
         // configuration finished, initialize zigbee pro stack
-        //std::cout << "CAppDemo::stackInit : Request zigbee pro stack to start :)" << std::endl;
+        std::cout << "CAppDemo::stackInit Call EZSP_NETWORK_INIT" << std::endl;
         dongle.sendCommand(EZSP_NETWORK_INIT, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
             // configuration finished, initialize zigbee pro stack
-            //std::cout << "CAppDemo::stackInit : Request zigbee pro state" << std::endl;
+            std::cout << "CAppDemo::stackInit Call EZSP_NETWORK_STATE" << std::endl;
             dongle.sendCommand(EZSP_NETWORK_STATE, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+                std::cout << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
                 if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
                 {
                     // we decide to create an HA1.2 network
+                    std::cout << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
                     formHaNetwork();
-                }
-                else
-                {
-                    // we retrieve network information
-                    dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS, std::vector<uint8_t>(), [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
-                        CGetNetworkParamtersResponse l_rsp(i_msg_receive);
-                        std::cout << l_rsp.String() << std::endl;
-                    });
                 }
             });
         });
@@ -346,4 +364,137 @@ void CAppDemo::formHaNetwork()
         //set new state
         setAppState(APP_FORM_NWK_IN_PROGRESS);
     }
+}
+
+/**
+ * @brief OpenNetwork : open current network
+ * @param i_timeout : timeout for open network in second
+ * @return true if action is possible
+ */
+bool CAppDemo::OpenNetwork( uint8_t i_timeout )
+{
+    bool lo_success = false;
+
+    // check validity of command
+    if( APP_READY == app_state )
+    {
+        std::vector<uint8_t> i_payload;
+
+        i_payload.push_back(i_timeout);
+        std::cout << "CAppDemo::OpenNetwork Call EZSP_PERMIT_JOINING" << std::endl;
+        dongle.sendCommand(EZSP_PERMIT_JOINING, i_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+            std::cout << "CAppDemo::OpenNetwork EZSP_PERMIT_JOINING return : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+        });
+
+        // use zdp frame
+        CZigBeeMsg l_msg;
+        std::vector<uint8_t> l_payload;
+
+        l_payload.push_back(i_timeout);
+        l_payload.push_back(1);
+
+        l_msg.SetZdo( 0x0036, l_payload );
+
+        SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
+
+        lo_success = true;
+    }
+
+    return lo_success;
+}
+
+/**
+ * @brief CloseNetwork : open current network
+ * @return true if action is possible
+ */
+bool CAppDemo::CloseNetwork( void )
+{
+    bool lo_success = false;
+
+    // check validity of command
+    if( APP_READY == app_state )
+    {
+        std::vector<uint8_t> i_payload;
+
+        i_payload.push_back(0);
+        dongle.sendCommand(EZSP_PERMIT_JOINING,i_payload);
+
+        // use zdp frame
+        CZigBeeMsg l_msg;
+        std::vector<uint8_t> l_payload;
+
+        l_payload.push_back(0);
+        l_payload.push_back(1);
+
+        l_msg.SetZdo( 0x0036, l_payload );
+
+        SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
+
+        lo_success = true;
+    }
+
+  return lo_success;
+}
+
+/**
+ * @brief SendBroadcast : send broadcast zigbee message
+ * @param i_destination : type of node concern by broadcast
+ * @param radius : The message will be delivered to all nodes within radius hops of the sender.
+ *                  A radius of zero is converted to EMBER_MAX_HOPS.
+ * @param i_msg : meassge to send
+ */
+void CAppDemo::SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg)
+{
+  // COutZbMessage l_zb_msg = COutZbMessage();
+  // l_zb_msg.SetBroadcastMessage( i_destination, i_radius, i_msg );
+
+    std::vector<uint8_t> l_payload;
+    std::vector<uint8_t> l_zb_msg = i_msg.Get();
+
+    // destination
+    l_payload.push_back( static_cast<uint8_t>(i_destination&0xFF) );
+    l_payload.push_back( static_cast<uint8_t>((i_destination>>8)&0xFF) );
+
+    // aps frame
+    std::vector<uint8_t> v_tmp = i_msg.GetAps()->GetEmberAPS();
+    l_payload.insert(l_payload.end(), v_tmp.begin(), v_tmp.end());
+
+    // radius
+    l_payload.push_back( i_radius );
+ 
+    // message tag : not used for this simplier demo
+    l_payload.push_back( 0 );
+
+    // message length
+    l_payload.push_back( static_cast<uint8_t>(l_zb_msg.size()) );
+
+    // message content
+    l_payload.insert(l_payload.end(), l_zb_msg.begin(), l_zb_msg.end());
+
+
+    dongle.sendCommand(EZSP_SEND_BROADCAST, l_payload, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+        std::cout << "CAppDemo::SendBroadcast EZSP_SEND_BROADCAST return : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+    });
+}
+
+void CAppDemo::startDiscoverProduct()
+{
+    // pour l'exemple on ne lit que la table enfant du dongle, on assume qu'il n'y a pas d'autre routeur dans le réseau
+    // lire table enfant du dongle
+    std::vector<uint8_t> l_param;
+    child_idx = 0;
+    l_param.push_back(child_idx);
+    dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param, [&](EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive){
+        std::cout << "EZSP_GET_CHILD_DATA return  at index : " << unsigned(child_idx) << ", status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+        if( EMBER_SUCCESS == i_msg_receive.at(0) )
+        {
+            // todo ecrire une class structure EmberChildData pour décoder la trame
+
+            // appeler la fonction de nouveau produit
+
+            // lire l'entrée suivante
+            // ATTENTION Fonction ré-entrante !!!!
+        }
+    });
+    
 }

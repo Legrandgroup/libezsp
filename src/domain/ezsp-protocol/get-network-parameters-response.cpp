@@ -22,7 +22,7 @@ std::string CGetNetworkParamtersResponse::String()
     buf << "[status : "<< CEzspEnum::EEmberStatusToString(status) << "]";
     buf << "[modeType : "<< CEzspEnum::EmberNodeTypeToString(node_type) << "]";
     buf << "["<< parameters.String() << "]";
-    buf << " }" << std::endl;
+    buf << " }";
 
     return buf.str();
 }
