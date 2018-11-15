@@ -10,7 +10,6 @@
 #include "IUartDriver.h"
 #include "ash.h"
 #include "zigbee-message.h"
-#include "out-zigbee-message.h"
 
 typedef enum
 {
