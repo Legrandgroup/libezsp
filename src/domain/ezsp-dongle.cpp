@@ -5,11 +5,14 @@
 #include "ezsp-dongle.h"
 
 
-CEzspDongle::CEzspDongle( CDongleHandler *ipCb )
+CEzspDongle::CEzspDongle( CEzspDongleObserver* ip_observer )
 {
     wait_rsp = false;
     pUart = nullptr;
-    pHandler = ipCb;
+    if( nullptr != ip_observer )
+    {
+        registerObserver(ip_observer);
+    }
     ash = new CAsh(static_cast<CAshCallback*>(this), nullptr);
 }
 
@@ -71,11 +74,11 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         // inform upper layer that dongle is ready !
         if( ash->isConnected() )
         {
-            pHandler->dongleState( DONGLE_READY );
+            notifyObserversOfDongleState( DONGLE_READY );
         }
         else
         {
-            pHandler->dongleState( DONGLE_REMOVE );
+            notifyObserversOfDongleState( DONGLE_REMOVE );
         }
     }
 }
@@ -106,48 +109,34 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
         // call handler
 
-        // low level
-        if( nullptr != pHandler ) { pHandler->ashRxMessage(lo_msg); }
-
         // ezsp
         // extract ezsp command
         EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
         // keep only payload
         lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
 
+        // notify observers
+        notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
+
+
         // response to a sending command
         sMsg l_msgQ = sendingMsgQueue.front();
         if( l_msgQ.i_cmd == l_cmd )
         {
-            if( nullptr != l_msgQ.cb )
-            {
-                l_msgQ.cb(l_cmd,lo_msg);
-            }
-
             // remove waiting message and send next
             sendingMsgQueue.pop();
             wait_rsp = false;
             sendNextMsg();
         }
-        else
-        {
-            // ezsp callback
-            if( nullptr != pHandler ) 
-            { 
-                pHandler->ezspHandler( l_cmd, lo_msg ); 
-            }
-        }
     }    
 }
 
-void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload, 
-                                std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> callBackFunction )
+void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload )
 {
     sMsg l_msg;
 
     l_msg.i_cmd = i_cmd;
     l_msg.payload = i_cmd_payload;
-    l_msg.cb = callBackFunction;
     
     sendingMsgQueue.push(l_msg);
 
@@ -191,3 +180,28 @@ void CEzspDongle::sendNextMsg( void )
     }
 }
 
+
+/**
+ * Managing Observer of this class
+ */
+bool CEzspDongle::registerObserver(CEzspDongleObserver* observer)
+{
+    return this->observers.emplace(observer).second;
+}
+
+bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
+{
+    return static_cast<bool>(this->observers.erase(observer));
+}
+
+void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {
+	for(auto observer : this->observers) {
+		observer->handleDongleState(i_state);
+	}
+}
+
+void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
+	for(auto observer : this->observers) {
+		observer->handleEzspRxMessage(i_cmd, i_message);
+	}
+}    

@@ -9,39 +9,24 @@
 #include "ezsp-protocol/ezsp-enum.h"
 #include "IUartDriver.h"
 #include "ash.h"
-#include "zigbee-message.h"
-
-typedef enum
-{
-    DONGLE_READY,
-    DONGLE_REMOVE
-}EDongleState;
-
-class CDongleHandler
-{
-public:
-    virtual ~CDongleHandler() {}
-    virtual void dongleState( EDongleState i_state ) = 0;
-    virtual void ashRxMessage( std::vector<uint8_t> i_message ) = 0;
-    virtual void ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) = 0;
-};
+#include "ezsp-dongle-observer.h"
 
 
 typedef struct sMsg
 {
     EEzspCmd i_cmd;
     std::vector<uint8_t> payload;
-    std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> cb;
 }SMsg;
 
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( CDongleHandler *ipCb );
-    CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
+    CEzspDongle( CEzspDongleObserver* ip_observer = nullptr );
+	CEzspDongle() = delete; // Construction without arguments is not allowed
+    CEzspDongle(const CEzspDongleObserver&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
 
-    CEzspDongle& operator=(const CEzspDongle&) = delete; /* No assignment allowed (pointer data members) */
+    CEzspDongle& operator=(const CEzspDongleObserver&) = delete; /* No assignment allowed (pointer data members) */
 
     /**
      * Open connetion to dongle of type ezsp
@@ -52,8 +37,7 @@ public:
     /**
      * Send Ezsp Command
      */
-    void sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload = std::vector<uint8_t>(), 
-                        std::function<void (EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive)> callBackFunction = nullptr );
+    void sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload = std::vector<uint8_t>() );
 
 
 
@@ -67,15 +51,27 @@ public:
      */
     void ashCbInfo( EAshInfo info );
 
+    /**
+     * Managing Observer of this class
+     */
+	bool registerObserver(CEzspDongleObserver* observer);
+	bool unregisterObserver(CEzspDongleObserver* observer); 
+
 private:
     IUartDriver *pUart;
     CAsh *ash;
-    CDongleHandler *pHandler;
     GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
 
     void sendNextMsg( void );
+
+    /**
+     * Notify Observer of this class
+     */
+    std::set<CEzspDongleObserver*> observers;
+    void notifyObserversOfDongleState( EDongleState i_state );
+    void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );     
 };
 
 #endif // EZSP_DONGLE_H
