@@ -15,16 +15,22 @@ mainEzspTestRaritan_SRCS = mainEzspTestRaritan.cpp \
 	domain/zbmessage/zclframecontrol.cpp \
 	domain/zbmessage/apsoption.cpp \
 	domain/zbmessage/aps.cpp \
-	domain/zbmessage/out-zigbee-message.cpp \
+	domain/zigbee-tools/zigbee-messaging.cpp \
+	domain/zigbee-tools/zigbee-networking.cpp \
 	domain/ezsp-protocol/ezsp-enum.cpp \
 	domain/ezsp-protocol/get-network-parameters-response.cpp \
+	domain/ezsp-protocol/struct/ember-key-struct.cpp \
 	domain/ezsp-protocol/struct/ember-network-parameters.cpp \
+	domain/ezsp-protocol/struct/ember-child-data-struct.cpp \
 	test/mainEzspTest.cpp \
 	domain/ezsp-dongle.cpp \
 	domain/ash.cpp \
 	spi/GenericAsyncDataInputObservable.cpp \
 	spi/raritan/RaritanUartDriver.cpp \
-	spi/raritan/RaritanEventLoop.cpp
+	spi/raritan/RaritanEventLoop.cpp \
+	
+
+#	domain/zbmessage/out-zigbee-message.cpp
 
 mainEzspTestRaritan_LIBS = -lpp_base
 
