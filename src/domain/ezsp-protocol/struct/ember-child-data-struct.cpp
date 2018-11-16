@@ -47,7 +47,7 @@ void CEmberChildDataStruct::setRaw(std::vector<uint8_t> raw_message)
 */    
 }
 
-std::string CEmberChildDataStruct::String()
+std::string CEmberChildDataStruct::String() const
 {
     std::stringstream buf;
 

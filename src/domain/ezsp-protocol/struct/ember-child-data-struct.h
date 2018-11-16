@@ -66,13 +66,12 @@ class CEmberChildDataStruct
         /**
          * For display
          */
-        std::string String();
-        /*
+        std::string String() const;
+	
         friend std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data){
             out << data.String();
             return out;
         }
-        */
 
     private:
         EmberEUI64 eui64; // The EUI64 of the child
