@@ -147,24 +147,27 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   return lo_msg;
 }
 
-std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> *i_data)
+std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
 {
   bool inputError = false;
-  std::list<uint8_t> li_data;
+  //std::list<uint8_t> li_data;
   std::vector<uint8_t> lo_msg;
   uint8_t val;
 
   // make a copy of i_data in a list
+  /*
   for( size_t loop=0; loop< i_data->size(); loop++ )
   {
       li_data.push_back(i_data->at(loop));
   }
+  */
 
-  while( !li_data.empty() && lo_msg.empty() )
+  while( !i_data.empty() && lo_msg.empty() )
   {
-    val = li_data.front();
+    val = i_data.front();
     std::cout << ">" << std::hex << std::setw(2) << std::setfill('0') << unsigned(val) << "\n";
-    li_data.pop_front();
+    //i_data.pop_front();
+    i_data.erase(i_data.begin());
     switch( val )
     {
       case ASH_CANCEL_BYTE:

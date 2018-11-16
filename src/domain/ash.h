@@ -40,7 +40,7 @@ public:
 
     std::vector<uint8_t> DataFrame(std::vector<uint8_t> i_data);
 
-    std::vector<uint8_t> decode(std::vector<uint8_t> *i_data);
+    std::vector<uint8_t> decode(std::vector<uint8_t> &i_data);
 
     bool isConnected(void){ return stateConnected; }
 

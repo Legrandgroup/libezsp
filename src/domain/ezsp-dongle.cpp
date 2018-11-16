@@ -94,39 +94,42 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         li_data.push_back(dataIn[loop]);
     }
 
-    lo_msg = ash->decode(&li_data);
-
-    // send incomming mesage to application
-    if( !lo_msg.empty() )
+    while( !li_data.empty())
     {
-        size_t l_size;
+        lo_msg = ash->decode(li_data);
 
-        //std::cout << "CEzspDongle::handleInputData ash message decoded" << std::endl;
-
-        // send ack
-        std::vector<uint8_t> l_msg = ash->AckFrame();
-        pUart->write(l_size, l_msg.data(), l_msg.size());
-
-        // call handler
-
-        // ezsp
-        // extract ezsp command
-        EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
-        // keep only payload
-        lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
-
-        // notify observers
-        notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
-
-
-        // response to a sending command
-        sMsg l_msgQ = sendingMsgQueue.front();
-        if( l_msgQ.i_cmd == l_cmd )
+        // send incomming mesage to application
+        if( !lo_msg.empty() )
         {
-            // remove waiting message and send next
-            sendingMsgQueue.pop();
-            wait_rsp = false;
-            sendNextMsg();
+            size_t l_size;
+
+            //std::cout << "CEzspDongle::handleInputData ash message decoded" << std::endl;
+
+            // send ack
+            std::vector<uint8_t> l_msg = ash->AckFrame();
+            pUart->write(l_size, l_msg.data(), l_msg.size());
+
+            // call handler
+
+            // ezsp
+            // extract ezsp command
+            EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
+            // keep only payload
+            lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
+
+            // notify observers
+            notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
+
+
+            // response to a sending command
+            sMsg l_msgQ = sendingMsgQueue.front();
+            if( l_msgQ.i_cmd == l_cmd )
+            {
+                // remove waiting message and send next
+                sendingMsgQueue.pop();
+                wait_rsp = false;
+                sendNextMsg();
+            }
         }
     }    
 }
