@@ -5,6 +5,8 @@
 #pragma once
 
 #include "../domain/ezsp-dongle.h"
+#include "../domain/zigbee-tools/zigbee-networking.h"
+#include "../domain/zigbee-tools/zigbee-messaging.h"
 #include "../spi/IUartDriver.h"
 
 typedef enum
@@ -16,7 +18,7 @@ typedef enum
     APP_FORM_NWK_IN_PROGRESS // form a network in progress
 }EAppState;
 
-class CAppDemo : public CDongleHandler
+class CAppDemo : public CEzspDongleObserver
 {
 public:
     CAppDemo(IUartDriver *uartDriver);
@@ -24,22 +26,18 @@ public:
     /**
      * Callback
      */
-    void dongleState( EDongleState i_state );
-    void ashRxMessage( std::vector<uint8_t> i_message );
-    void ezspHandler( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+    void handleDongleState( EDongleState i_state );
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
     CEzspDongle dongle;
+    CZigbeeNetworking zb_nwk;
+    CZigbeeMessaging zb_messaging;
     EAppState app_state;
-    uint8_t child_idx;
 
     void setAppState( EAppState i_state );
     void dongleInit();
     void stackInit();
-    void formHaNetwork();
-    bool OpenNetwork( uint8_t i_timeout );
-    bool CloseNetwork( void );
-    void SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg);
-    void startDiscoverProduct();
+    
 };
 

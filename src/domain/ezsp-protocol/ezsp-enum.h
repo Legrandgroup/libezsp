@@ -915,6 +915,12 @@ typedef std::vector<uint8_t> EmberKeyData;
 #define EMBER_EUI64_BYTE_SIZE  8
 typedef std::vector<uint8_t> EmberEUI64;
 
+typedef enum
+{
+    DONGLE_READY,
+    DONGLE_REMOVE
+}EDongleState;
+
 class CEzspEnum{
   public:
     static std::string EmberNodeTypeToString( EmberNodeType in );

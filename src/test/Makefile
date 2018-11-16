@@ -17,6 +17,9 @@ OBJECTFILES = mainEzspTestLinux.o \
 			  ../domain/ezsp-protocol/get-network-parameters-response.o \
 			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \
 			  ../domain/ezsp-protocol/struct/ember-key-struct.o \
+			  ../domain/ezsp-protocol/struct/ember-child-data-struct.o \
+			  ../domain/zigbee-tools/zigbee-networking.o \
+			  ../domain/zigbee-tools/zigbee-messaging.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
 			  ../spi/serial/SerialTimerFactory.o \
