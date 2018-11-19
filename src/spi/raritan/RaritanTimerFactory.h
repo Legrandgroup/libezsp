@@ -11,7 +11,7 @@ class RaritanTimerFactory : public ITimerFactory {
 public:
 	RaritanTimerFactory(RaritanEventLoop& eventLoop);
 	~RaritanTimerFactory();
-	ITimer* create() const;
+	std::unique_ptr<ITimer> create() const;
 private:
 	RaritanEventLoop& m_eventLoop;
 };

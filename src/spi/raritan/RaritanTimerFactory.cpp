@@ -13,6 +13,6 @@ RaritanTimerFactory::~RaritanTimerFactory() {
 
 }
 
-ITimer* RaritanTimerFactory::create() const {
+std::unique_ptr<ITimer> RaritanTimerFactory::create() const {
 	return new RaritanTimer(m_eventLoop);
 }

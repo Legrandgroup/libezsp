@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ITimer.h"
+#include <memory>	// For std::unique_ptr
 
 /**
  * @class ITimerFactory
@@ -22,5 +23,5 @@ public:
 	 *
 	 * @return The new instance allocated
 	 */
-	virtual ITimer* create() const = 0;
+	virtual std::unique_ptr<ITimer> create() const = 0;
 };
