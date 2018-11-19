@@ -13,7 +13,6 @@ test_raritan_SRCS = test_raritan.cpp \
 	RaritanUartDriver.cpp \
 	RaritanEventLoop.cpp
 	
-#ezsp_raritan_SRCS = testtool.cpp
 test_raritan_LIBS = -lpp_base
 
 include $(PP_BUILD_SYS_DIR)/Top.mk
