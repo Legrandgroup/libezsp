@@ -1,11 +1,10 @@
 /**
- * 
- * */
+ * @file ash.cpp
+ **/
 
 #include <iostream>
 #include <list>
 #include <map>
-#include <iomanip>
 
 #include "ash.h"
 
@@ -154,7 +153,6 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
   while( !i_data.empty() && lo_msg.empty() )
   {
     val = i_data.front();
-    //-- std::cout << ">" << std::hex << std::setw(2) << std::setfill('0') << unsigned(val) << "\n";
     i_data.erase(i_data.begin());
     switch( val )
     {

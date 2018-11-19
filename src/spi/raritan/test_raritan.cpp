@@ -28,7 +28,7 @@ int main() {
 	RaritanEventLoop eventLoop;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	RaritanTimerFactory factory(eventLoop);
-	ITimer* newTimer=factory.create();
+	std::unique_ptr<ITimer> newTimer(factory.create());
 	newTimer->start(10000, [](ITimer* triggeringTimer) {
 		std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
@@ -38,8 +38,11 @@ int main() {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 	uartDriver.open("/dev/ttyUSB0", 57600);
 
+	unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
+	size_t written;
+	uartDriver.write(written, buf, 5);
+
 	eventLoop.run();
 
-	delete newTimer;
 	return 0;
 }
