@@ -2,6 +2,8 @@ include ../../../../Config.mk
 
 MODULE_DEPS = $(LIBC_COMPONENT) $(LIBSTDCXX_COMPONENT) libpp_base
 
+test_raritan_CPPFLAGS += -I../..
+
 test_raritan_MODULE_NAME = test_log
 
 TARGET_PRGS = test-raritan
