@@ -38,6 +38,10 @@ int main() {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 	uartDriver.open("/dev/ttyUSB0", 57600);
 
+	unsigned char buf[5] = { 0x1a, 0xc0, 0x38, 0xbc, 0x7e};
+	size_t written;
+	uartDriver.write(written, buf, 5);
+
 	eventLoop.run();
 
 	return 0;
