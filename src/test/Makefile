@@ -6,6 +6,7 @@ LDFLAGS = -L/home/seb/_DEV/serial/compiled/lib -lserial -lpthread
 EXEC = testEzsp
 OBJECTFILES = mainEzspTestLinux.o \
 			  mainEzspTest.o \
+			  dummy_db.o\
 			  ../domain/ezsp-dongle.o \
 			  ../domain/ash.o \
 			  ../domain/zbmessage/zigbee-message.o \
@@ -13,6 +14,7 @@ OBJECTFILES = mainEzspTestLinux.o \
 			  ../domain/zbmessage/zclframecontrol.o \
 			  ../domain/zbmessage/apsoption.o \
 			  ../domain/zbmessage/aps.o \
+			  ../domain/zbmessage/zdp-enum.o \
 			  ../domain/ezsp-protocol/ezsp-enum.o \
 			  ../domain/ezsp-protocol/get-network-parameters-response.o \
 			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \

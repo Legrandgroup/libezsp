@@ -117,3 +117,19 @@ std::string CEzspEnum::EmberKeyTypeToString( EmberKeyType in )
     auto   it  = MyEnumStrings.find(in);
     return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;    
 }
+
+
+std::string CEzspEnum::EmberIncomingMessageTypeToString( EmberIncomingMessageType in )
+{
+    const std::map<EmberIncomingMessageType,std::string> MyEnumStrings {
+        { EMBER_INCOMING_UNICAST, "EMBER_INCOMING_UNICAST" },
+        { EMBER_INCOMING_UNICAST_REPLY, "EMBER_INCOMING_UNICAST_REPLY" },
+        { EMBER_INCOMING_MULTICAST, "EMBER_INCOMING_MULTICAST" },
+        { EMBER_INCOMING_MULTICAST_LOOPBACK, "EMBER_INCOMING_MULTICAST_LOOPBACK" },
+        { EMBER_INCOMING_BROADCAST, "EMBER_INCOMING_BROADCAST" },
+        { EMBER_INCOMING_BROADCAST_LOOPBACK, "EMBER_INCOMING_BROADCAST_LOOPBACK" },
+        { EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST, "EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST" }
+    };
+    auto   it  = MyEnumStrings.find(in);
+    return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;      
+};

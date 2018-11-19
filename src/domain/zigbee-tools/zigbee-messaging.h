@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#include <vector>
+
 #include "../ezsp-dongle-observer.h"
 #include "../ezsp-dongle.h"
 #include "../zbmessage/zigbee-message.h"
@@ -10,9 +12,19 @@
 class CZigbeeMessaging : public CEzspDongleObserver
 {
 public:
-    CZigbeeMessaging( CEzspDongle &i_dongle );
+    CZigbeeMessaging( CEzspDongle &i_dongle, ITimerFactory &i_timer_factory );
 
     void SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg);
+    void SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg );
+
+    /**
+     * @brief SendSpecificCommand : Permit to send a ZDO unicast command
+     * @param i_node_id     : short address of destination
+     * @param i_cmd_id      : command
+     * @param payload       : payload of command
+     * @return true if message can be send
+     */
+    void SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, std::vector<uint8_t> payload );
     
     /**
      * Observer
@@ -22,4 +34,5 @@ public:
 
 private:
     CEzspDongle &dongle;
+    ITimerFactory &timer_factory; // needed in the future to well manage retry/timeout on unicast zigbee message
 };

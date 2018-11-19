@@ -4,6 +4,6 @@ SerialTimerFactory::SerialTimerFactory() { };
 
 SerialTimerFactory::~SerialTimerFactory() { };
 
-ITimer* SerialTimerFactory::create() const {
-	return new SerialTimer();
+std::unique_ptr<ITimer> SerialTimerFactory::create() const {
+	return std::unique_ptr<ITimer>(new SerialTimer());
 }

@@ -14,11 +14,13 @@ class CZigbeeNetworking : public CEzspDongleObserver
 public:
     CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 
+    void stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size);
+
     void formHaNetwork();
     void OpenNetwork( uint8_t i_timeout );
     void CloseNetwork( void );
     
-    void startDiscoverProduct();
+    void startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct = nullptr);
 
     /**
      * Observer
@@ -30,4 +32,5 @@ private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     uint8_t child_idx;
+    std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
 };

@@ -29,6 +29,12 @@ public:
   std::vector<uint8_t> GetEmberAPS(void);
   void SetEmberAPS( std::vector<uint8_t> i_data );
 
+  // usefull
+  /**
+   * retrieve size in byte of APS structure
+   */
+  static uint8_t getSize(){ return 11; };
+
   // variables
   /** */
   uint16_t cluster_id;

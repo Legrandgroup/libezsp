@@ -10,6 +10,7 @@
 #include "IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
+#include "../spi/ITimerFactory.h"
 
 
 typedef struct sMsg
@@ -21,7 +22,7 @@ typedef struct sMsg
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongleObserver&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
@@ -58,6 +59,7 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer); 
 
 private:
+    ITimerFactory &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;
     GenericAsyncDataInputObservable uartIncomingDataHandler;

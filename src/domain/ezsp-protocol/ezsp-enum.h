@@ -802,7 +802,7 @@ enum
   EMBER_OUTGOING_BROADCAST
 };
 
-enum
+typedef enum
 {
   /** Unicast. */
   EMBER_INCOMING_UNICAST,
@@ -815,8 +815,10 @@ enum
   /** Broadcast. */
   EMBER_INCOMING_BROADCAST,
   /** Broadcast sent by the local device. */
-  EMBER_INCOMING_BROADCAST_LOOPBACK
-};
+  EMBER_INCOMING_BROADCAST_LOOPBACK,
+  /** Many to one route request. */
+  EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST
+}EmberIncomingMessageType;
 
 #define EZSP_ENERGY_SCAN 0x00
 #define EZSP_ACTIVE_SCAN 0x01
@@ -858,6 +860,7 @@ typedef enum
   EMBER_USE_NWK_COMMISSIONING = 0x03
 }EmberJoinMethod;
 
+#define INVALID_NODE_ID 0xFFFF
 typedef uint16_t EmberNodeId;
 
 typedef enum
@@ -928,6 +931,7 @@ class CEzspEnum{
     static std::string EmberJoinMethodToString( EmberJoinMethod in );
     static std::string EEzspCmdToString( EEzspCmd in );
     static std::string EmberKeyTypeToString( EmberKeyType in );
+    static std::string EmberIncomingMessageTypeToString( EmberIncomingMessageType in );
 };
 
 

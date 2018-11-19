@@ -5,7 +5,7 @@
 #include "ezsp-dongle.h"
 
 
-CEzspDongle::CEzspDongle( CEzspDongleObserver* ip_observer )
+CEzspDongle::CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer ): timer_factory(i_timer_factory)
 {
     wait_rsp = false;
     pUart = nullptr;
@@ -13,7 +13,7 @@ CEzspDongle::CEzspDongle( CEzspDongleObserver* ip_observer )
     {
         registerObserver(ip_observer);
     }
-    ash = new CAsh(static_cast<CAshCallback*>(this), nullptr);
+    ash = new CAsh(static_cast<CAshCallback*>(this), timer_factory);
 }
 
 CEzspDongle::~CEzspDongle()

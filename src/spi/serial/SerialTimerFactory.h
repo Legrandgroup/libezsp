@@ -7,5 +7,5 @@ class SerialTimerFactory : public ITimerFactory {
 public:
 	SerialTimerFactory();
 	~SerialTimerFactory();
-	ITimer* create() const;
+	std::unique_ptr<ITimer> create() const;
 };

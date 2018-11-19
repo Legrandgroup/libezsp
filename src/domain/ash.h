@@ -3,8 +3,9 @@
 
 #include <cstdint>
 #include <vector>
+#include <memory>	// For std::unique_ptr
 
-#include "ITimer.h"
+#include "../spi/ITimerFactory.h"
 
 
 typedef enum {
@@ -28,7 +29,7 @@ public:
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
-    CAsh(CAshCallback *ipCb, ITimer *ipTimer);
+    CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory);
 
     CAsh(const CAsh&) = delete;
 
@@ -51,7 +52,7 @@ private:
     uint8_t frmNum;
     uint8_t seq_num;
     bool stateConnected;
-    ITimer *pTimer;
+    std::unique_ptr<ITimer> timer;
     CAshCallback *pCb;
 
     std::vector<uint8_t> in_msg;

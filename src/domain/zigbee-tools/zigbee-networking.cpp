@@ -11,7 +11,8 @@
 #include "../ezsp-protocol/struct/ember-child-data-struct.h"
 
 
-CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ): dongle(i_dongle), zb_messaging(i_zb_messaging)
+CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ): dongle(i_dongle), zb_messaging(i_zb_messaging),
+    discoverCallbackFct(nullptr)
 {
     dongle.registerObserver(this);
 }
@@ -43,7 +44,10 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
                 std::cout << l_rsp.String() << std::endl;
 
                 // appeler la fonction de nouveau produit
-                // \todo
+                if( nullptr != discoverCallbackFct )
+                {
+                    discoverCallbackFct(l_rsp.getType(), l_rsp.getEui64(), l_rsp.getId());
+                }
 
                 // lire l'entrée suivante
                 std::vector<uint8_t> l_param;
@@ -51,7 +55,6 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
                 l_param.push_back(child_idx);
                 dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
             }
-
         }
         break;
         case EZSP_SET_INITIAL_SECURITY_STATE:
@@ -71,6 +74,27 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
             }
         }
         break;
+        case EZSP_SET_CONFIGURATION_VALUE:
+        { 
+            if( 0 != i_msg_receive.at(0) ) {
+                std::cout << "EZSP_SET_CONFIGURATION_VALUE RSP : " << unsigned(i_msg_receive.at(0)) << std::endl;
+            }
+        }
+        break;
+        case EZSP_ADD_ENDPOINT:
+        {
+            // configuration finished, initialize zigbee pro stack
+            std::cout << "Call EZSP_NETWORK_INIT" << std::endl;
+            dongle.sendCommand(EZSP_NETWORK_INIT);
+        }
+        break;
+        case EZSP_NETWORK_INIT:
+        {
+            // configuration finished, initialize zigbee pro stack
+            std::cout << "Call EZSP_NETWORK_STATE" << std::endl;
+            dongle.sendCommand(EZSP_NETWORK_STATE);
+        }
+        break;        
         case EZSP_FORM_NETWORK:
         {
             std::string status_str = CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0)));
@@ -82,6 +106,48 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         break;
     }
 
+}
+
+void CZigbeeNetworking::stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size)
+{
+  std::vector<uint8_t> l_payload;
+
+  // set config
+  for(uint8_t loop=0; loop<l_config_size; loop++ )
+  {
+    l_payload.clear();
+    l_payload.push_back(l_config[loop].id);
+    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value&0xFF));
+    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value>>8));
+    //std::cout << "EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
+    dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
+  }
+
+  // set policy
+  for(uint8_t loop=0; loop<l_policy_size; loop++ )
+  {
+    l_payload.clear();
+    l_payload.push_back(l_policy[loop].id);
+    l_payload.push_back(l_policy[loop].decision);
+    //std::cout << "EZSP_SET_POLICY : " << unsigned(l_policy[loop].id) << std::endl;
+    dongle.sendCommand(EZSP_SET_POLICY, l_payload);
+  }
+
+  // add endpoint
+  l_payload.clear();
+  l_payload.push_back(1); // ep number
+  l_payload.push_back(0x04U); // profile id
+  l_payload.push_back(0x01U);
+  l_payload.push_back(0x07U); // device id
+  l_payload.push_back(0x00U);
+  l_payload.push_back(0); // flags
+  l_payload.push_back(1); // in cluster count
+  l_payload.push_back(1); // out cluster count
+  l_payload.push_back(0); // in cluster
+  l_payload.push_back(0);
+  l_payload.push_back(0); // out cluster
+  l_payload.push_back(0);
+  dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
 }
 
 void CZigbeeNetworking::formHaNetwork()
@@ -193,7 +259,7 @@ void CZigbeeNetworking::CloseNetwork( void )
 }
 
 
-void CZigbeeNetworking::startDiscoverProduct()
+void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct)
 {
     // pour l'exemple on ne lit que la table enfant du dongle, on assume qu'il n'y a pas d'autre routeur dans le réseau
     // lire table enfant du dongle
@@ -201,5 +267,6 @@ void CZigbeeNetworking::startDiscoverProduct()
     child_idx = 0;
     l_param.push_back(child_idx);
     dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
-    
+
+    discoverCallbackFct = i_discoverCallbackFct;  
 }

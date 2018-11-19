@@ -27,7 +27,7 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh(CAshCallback *ipCb, ITimer *ipTimer)
+CAsh::CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory)
 {
     in_msg.clear();
     ackNum = 0;
@@ -35,7 +35,7 @@ CAsh::CAsh(CAshCallback *ipCb, ITimer *ipTimer)
     seq_num = 0;
     stateConnected = false;
     pCb = ipCb;
-    pTimer = ipTimer;
+    timer = i_timer_factory.create();
 }
 
 void CAsh::Timeout(void)
@@ -57,7 +57,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     stateConnected = false;
     vector<uint8_t> lo_msg;
 
-    if( nullptr != pTimer ){ pTimer->stop(); }
+    timer->stop();
     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
 
     lo_msg.push_back(0xC0);
@@ -71,10 +71,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    if( nullptr != pTimer )
-    { 
-        pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
-    }
+    timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
 
     return lo_msg;
 }
@@ -104,7 +101,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} ); }
+  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
 
   return lo_msg;
 }
@@ -142,7 +139,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  if( nullptr != pTimer ){ pTimer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} ); }
+  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
 
   return lo_msg;
 }
@@ -154,19 +151,10 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
   std::vector<uint8_t> lo_msg;
   uint8_t val;
 
-  // make a copy of i_data in a list
-  /*
-  for( size_t loop=0; loop< i_data->size(); loop++ )
-  {
-      li_data.push_back(i_data->at(loop));
-  }
-  */
-
   while( !i_data.empty() && lo_msg.empty() )
   {
     val = i_data.front();
-    std::cout << ">" << std::hex << std::setw(2) << std::setfill('0') << unsigned(val) << "\n";
-    //i_data.pop_front();
+    //-- std::cout << ">" << std::hex << std::setw(2) << std::setfill('0') << unsigned(val) << "\n";
     i_data.erase(i_data.begin());
     switch( val )
     {
@@ -232,7 +220,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                   //-- std::cout << "CAsh::decode ACK" << std::endl;
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
-                  if( nullptr != pTimer ){ pTimer->stop(); }
+                  timer->stop();
 
                   if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
                 }
@@ -244,7 +232,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
 
                   //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
                   lo_msg.clear();
-                  if( nullptr != pTimer ){ pTimer->stop(); }
+                  timer->stop();
                   
                   if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
                 }
@@ -263,7 +251,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                   if( !stateConnected )
                   {
                     /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-                    if( nullptr != pTimer ){ pTimer->stop(); }
+                    timer->stop();
                     stateConnected = true;
                     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
                   }

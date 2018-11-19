@@ -8,6 +8,8 @@
 #include "../domain/zigbee-tools/zigbee-networking.h"
 #include "../domain/zigbee-tools/zigbee-messaging.h"
 #include "../spi/IUartDriver.h"
+#include "../spi/ITimerFactory.h"
+#include "dummy_db.h"
 
 typedef enum
 {
@@ -21,7 +23,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver
 {
 public:
-    CAppDemo(IUartDriver *uartDriver);
+    CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory);
 
     /**
      * Callback
@@ -34,6 +36,7 @@ private:
     CZigbeeNetworking zb_nwk;
     CZigbeeMessaging zb_messaging;
     EAppState app_state;
+    Cdb db;
 
     void setAppState( EAppState i_state );
     void dongleInit();
