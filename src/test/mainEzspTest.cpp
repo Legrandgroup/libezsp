@@ -392,19 +392,27 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
                     if( E_FRM_TYPE_GENERAL == zbMsg.GetZCLHeader()->GetFrmCtrl()->GetFrmType() )
                     {
-                        // to be inprove : report attribute general command
+                        // to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
                         if( 0x0A == zbMsg.GetZCLHeader()->GetCmdId() )
                         {
-                            //uint16_t attr_id = 
+                            uint16_t attr_id = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(0)+(zbMsg.GetPaylaod()->at(1)<<8));
+                            uint8_t data_type = zbMsg.GetPaylaod()->at(2);
 
                             if( 0x0402 == zbMsg.GetAps()->cluster_id )
                             {
-                                std::cout << "Receive Temperature !!" << std::endl;
-                                if( 0x00 == )
+                                if( 0x00 == attr_id )
+                                {
+                                    uint16_t value_raw = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(3)+(zbMsg.GetPaylaod()->at(4)<<8));
+                                    std::cout << ">>> Temperature : " << float(value_raw / 100) << "°C\n";
+                                }
                             }
                             else if( 0x0405 == zbMsg.GetAps()->cluster_id )
                             {
-                                std::cout << "Receive Humidity !!" << std::endl;
+                                if( 0x00 == attr_id )
+                                {
+                                    uint16_t value_raw = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(3)+(zbMsg.GetPaylaod()->at(4)<<8));
+                                    std::cout << ">>> Relative Humidity : " << float(value_raw / 100) << "%\n";
+                                }
                             }
                         }
                     }
