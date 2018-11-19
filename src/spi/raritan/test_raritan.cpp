@@ -28,7 +28,7 @@ int main() {
 	RaritanEventLoop eventLoop;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	RaritanTimerFactory factory(eventLoop);
-	ITimer* newTimer=factory.create();
+	std::unique_ptr<ITimer> newTimer(factory.create());
 	newTimer->start(10000, [](ITimer* triggeringTimer) {
 		std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
@@ -40,6 +40,5 @@ int main() {
 
 	eventLoop.run();
 
-	delete newTimer;
 	return 0;
 }

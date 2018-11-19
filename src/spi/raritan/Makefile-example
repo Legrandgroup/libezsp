@@ -11,6 +11,8 @@ TARGET_PRGS = test-raritan
 test_raritan_SRCS = test_raritan.cpp \
 	../GenericAsyncDataInputObservable.cpp \
 	RaritanUartDriver.cpp \
+	RaritanTimer.cpp \
+	RaritanTimerFactory.cpp \
 	RaritanEventLoop.cpp
 	
 test_raritan_LIBS = -lpp_base
