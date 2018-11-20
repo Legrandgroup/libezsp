@@ -43,11 +43,9 @@ int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
 	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
 	if (result == PP_OK) {
-		PPD_DEBUG("Successfully wrote %d bytes", cnt);
+		//PPD_DEBUG("Successfully wrote %d bytes", cnt);
 		return 0;
 	}
-	//if (result != PP_OK && result == 0)	/* Never reached, PP_OK is 0, but it is here to enforce the values in base class IUartDriver */
-	//	return -1;
 	PPD_WARN("Failed writing %d bytes", cnt);
 	return result;
 }
