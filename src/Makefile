@@ -9,7 +9,7 @@ mainEzspTestRaritan_MODULE_NAME = test_log
 TARGET_PRGS = mainEzspTestRaritan
 
 mainEzspTestRaritan_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Isrc/domain/ezsp-protocol -Itest
-mainEzspTestRaritan_SRCS = mainEzspTestRaritan.cpp \
+mainEzspTestRaritan_SRCS = test/mainEzspTestRaritan.cpp \
 	domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
 	domain/zbmessage/zclframecontrol.cpp \
