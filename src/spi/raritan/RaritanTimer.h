@@ -6,6 +6,7 @@
 
 #include "../ITimer.h"
 #include "RaritanEventLoop.h"
+#include <pp/Selector.h>
 
 /**
  * @brief Concrete implementation of ITimer using the Raritan framework

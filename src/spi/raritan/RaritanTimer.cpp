@@ -12,14 +12,19 @@ RaritanTimer::~RaritanTimer() {
 }
 
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
-	if (started)
-		return false;
+	PPD_DEBUG("Starting timer %p for %dms", this, timeout);
 
-	if (!callBackFunction)
+	if (started)
+		this->stop();
+
+	if (!callBackFunction) {
+		PPD_WARN("Invalid callback function provided during start()");
 		return false;
+	}
 
 	duration = timeout;
 	if (duration == 0) {
+		PPD_DEBUG("Timeout set to 0, directly running callback function");
 		callBackFunction(this);
 	}
 	else {
@@ -28,19 +33,24 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 			PPD_DEBUG("Now running timer's callback");
 			callBackFunction(this);
 		};
-		this->m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
+		m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
+		started=true;
 	}
 	return true;
 }
 
 bool RaritanTimer::stop() {
-	if (!started)
+	PPD_DEBUG("Stopping timer %p", this);
+	if (!started) {
+		PPD_WARN("Got a request to stop a timer that was not running");
 		return false;
-	this->m_toutcbhandle.removeFromSelector();
+	}
+	m_toutcbhandle.removeFromSelector();
+	started=false;
 	duration=0;
 	return true;
 }
 
 bool RaritanTimer::isRunning() {
-	return started;
+	return m_toutcbhandle.isCallbackPending();
 }
