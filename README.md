@@ -11,6 +11,19 @@ If you compile in the Raritan environment, you will just have to clone this code
 ./Build
 ```
 
+Note that the UART device for communication with the transceiver (eg: /dev/ttyUSB0) is hardcoded inside the code (file `src/test/mainEzspTest*.cpp`)
+
+Once the binary has been copied over to the target, you can simply run it.
+
+When launched for the first time, the dongle will first create a network.
+Each time the sample binary process is launched, it will open its network for any device to join for a limited period of time. You can thus enter a sensor in the network at this moment by pressing the button on the device.
+
+The sample process will then automatically discover sensors and bind to temperature and humidity, and configure reporting to be sent to the dongle by the sensor.
+
+Finally, the sensor will periodically send updated values of temperature/humidty, they will displayed in real time on the output stream of the sample process.
+
+In order to force the sensor to send a report, you can also press 4 times on the button.
+
 ## For developpers
 
 ### Source code organisation
