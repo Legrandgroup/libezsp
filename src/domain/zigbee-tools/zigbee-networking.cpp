@@ -51,7 +51,7 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
 
                 // lire l'entrée suivante
                 std::vector<uint8_t> l_param;
-                child_idx += 1;
+                child_idx++;
                 l_param.push_back(child_idx);
                 dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
             }
@@ -155,7 +155,7 @@ void CZigbeeNetworking::formHaNetwork()
     // set HA policy
     std::vector<uint8_t> payload;
     uint16_t l_security_bitmak = 0;
-    std::srand(std::time(nullptr));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     payload.push_back(EZSP_TRUST_CENTER_POLICY); // EZSP_TRUST_CENTER_POLICY
     payload.push_back(0x01); // EZSP_ALLOW_PRECONFIGURED_KEY_JOINS
