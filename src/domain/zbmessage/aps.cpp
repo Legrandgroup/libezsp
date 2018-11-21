@@ -3,8 +3,9 @@
  */
 
 #include "aps.h"
+#include "byte-manip.h"
 
-CAPSFrame::CAPSFrame()
+CAPSFrame::CAPSFrame() : cluster_id(0), dest_ep(0), group_id(0), option(), profile_id(0), sequence(0), src_ep(0)
 {
 }
 
@@ -31,22 +32,22 @@ std::vector<uint8_t> CAPSFrame::GetEmberAPS(void)
   std::vector<uint8_t> lo_aps;
   uint16_t l_option;
 
-  lo_aps.push_back( profile_id & 0xFF );
-  lo_aps.push_back( profile_id >> 8 );
+  lo_aps.push_back( u16_get_lo_u8(profile_id) );
+  lo_aps.push_back( u16_get_hi_u8(profile_id) );
 
-  lo_aps.push_back( cluster_id & 0xFF );
-  lo_aps.push_back( cluster_id >> 8 );
+  lo_aps.push_back( u16_get_lo_u8(cluster_id) );
+  lo_aps.push_back( u16_get_hi_u8(cluster_id) );
 
   lo_aps.push_back( src_ep );
 
   lo_aps.push_back( dest_ep );
 
   l_option = option.GetEmberApsOption();
-  lo_aps.push_back( l_option & 0xFF );
-  lo_aps.push_back( l_option >> 8 );
+  lo_aps.push_back( u16_get_lo_u8(l_option) );
+  lo_aps.push_back( u16_get_hi_u8(l_option) );
 
-  lo_aps.push_back( group_id & 0xFF );
-  lo_aps.push_back( group_id >> 8 );
+  lo_aps.push_back( u16_get_lo_u8(group_id) );
+  lo_aps.push_back( u16_get_hi_u8(group_id) );
 
   lo_aps.push_back( sequence );
 
@@ -57,25 +58,26 @@ void CAPSFrame::SetEmberAPS(std::vector<uint8_t> i_data )
 {
   uint8_t l_idx = 0;
 
-  profile_id = (i_data.at(l_idx)&0xFF)|((i_data.at(l_idx+1)&0xFF)<<8);
-  l_idx += 2;
+  profile_id = dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx));
+  l_idx++;
+  l_idx++;
 
-  cluster_id = (i_data.at(l_idx)&0xFF)|((i_data.at(l_idx+1)&0xFF)<<8);
-  l_idx += 2;
+  cluster_id = dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx));
+  l_idx++;
+  l_idx++;
 
-  src_ep = (i_data.at(l_idx)&0xFF);
-  l_idx += 1;
+  src_ep = i_data.at(l_idx++);
 
-  dest_ep = (i_data.at(l_idx)&0xFF);
-  l_idx += 1;
+  dest_ep = i_data.at(l_idx++);
 
-  option.SetEmberApsOption( ((i_data.at(l_idx)&0xFF)|((i_data.at(l_idx+1)&0xFF)<<8)) );
-  l_idx += 2;
+  option.SetEmberApsOption( dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx)) );
+  l_idx++;
+  l_idx++;
 
-  group_id = (i_data.at(l_idx)&0xFF)|((i_data.at(l_idx+1)&0xFF)<<8);
-  l_idx += 2;
+  group_id = dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx));
+  l_idx++;
+  l_idx++;
 
-  sequence = i_data.at(l_idx)&0xFF;
-  l_idx += 1;
+  sequence = i_data.at(l_idx++);
 }
 

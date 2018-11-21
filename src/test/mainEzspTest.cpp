@@ -12,6 +12,7 @@
 #include "../domain/ezsp-protocol/ezsp-enum.h"
 #include "../domain/zbmessage/zdp-enum.h"
 #include "../domain/zbmessage/zigbee-message.h"
+#include "../domain/byte-manip.h"
 
 
 CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) : 
@@ -80,8 +81,8 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
                     // retrieve information about device, starting by discover list of active endpoint
                     std::vector<uint8_t> payload;
-                    payload.push_back(static_cast<uint8_t>(i_id&0xFF));
-                    payload.push_back(static_cast<uint8_t>((i_id>>8)&0xFF));
+                    payload.push_back(u16_get_lo_u8(i_id));
+                    payload.push_back(u16_get_hi_u8(i_id));
 
                     zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
                 }
@@ -127,7 +128,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[1]) << ".";
 
                 // version
-                uint16_t l_version = i_msg_receive[2] + (i_msg_receive[3]<<8);
+                uint16_t l_version = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(l_version);
 
                 std::cout << "Stack version : " << bufDump.str() << std::endl;                    
@@ -162,16 +163,16 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
         {
             // the most important function where all zigbee incomming message arrive
             EmberIncomingMessageType type = static_cast<EmberIncomingMessageType>(i_msg_receive.at(0));
-            std::vector<uint8_t>l_aps_raw;
-            for(uint8_t loop=0;loop<CAPSFrame::getSize();loop++){l_aps_raw.push_back(i_msg_receive.at(1+loop));}
-            uint8_t last_hop_lqi = i_msg_receive.at(1+CAPSFrame::getSize());
-            uint8_t last_hop_rssi = i_msg_receive.at(2+CAPSFrame::getSize());
-            EmberNodeId sender = static_cast<EmberNodeId>(i_msg_receive.at(3+CAPSFrame::getSize())+(i_msg_receive.at(4+CAPSFrame::getSize())<<8));
-            uint8_t binding_idx = i_msg_receive.at(5+CAPSFrame::getSize());
-            uint8_t address_idx = i_msg_receive.at(6+CAPSFrame::getSize());
-            uint8_t msg_length = i_msg_receive.at(7+CAPSFrame::getSize());
+            std::vector<uint8_t> l_aps_raw;
+            for(uint8_t loop=0;loop<CAPSFrame::getSize();loop++){l_aps_raw.push_back(i_msg_receive.at(1U+loop));}
+            //uint8_t last_hop_lqi = i_msg_receive.at(1U+CAPSFrame::getSize());
+            uint8_t last_hop_rssi = i_msg_receive.at(2U+CAPSFrame::getSize());
+            EmberNodeId sender = static_cast<EmberNodeId>(dble_u8_to_u16(i_msg_receive.at(4U+CAPSFrame::getSize()), i_msg_receive.at(3U+CAPSFrame::getSize())));
+            //uint8_t binding_idx = i_msg_receive.at(5U+CAPSFrame::getSize());
+            //uint8_t address_idx = i_msg_receive.at(6U+CAPSFrame::getSize());
+            uint8_t msg_length = i_msg_receive.at(7U+CAPSFrame::getSize());
             std::vector<uint8_t>l_msg_raw;
-            for(uint8_t loop=0;loop<msg_length;loop++){l_msg_raw.push_back(i_msg_receive.at(8+CAPSFrame::getSize()+loop));}
+            for(uint8_t loop=0;loop<msg_length;loop++){l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrame::getSize()+loop));}
 
             std::cout << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) << 
                 ", last hop rssi : " << unsigned(last_hop_rssi) << 
@@ -196,11 +197,11 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             case ZDP_ACTIVE_EP:
                             {
                                 // byte 0 is for sequence number, ignore it!
-                                uint8_t status = zbMsg.GetPaylaod()->at(1);
-                                EmberNodeId address = static_cast<EmberNodeId>(zbMsg.GetPaylaod()->at(2)+(zbMsg.GetPaylaod()->at(3)<<8));
-                                uint8_t ep_count = zbMsg.GetPaylaod()->at(4);
+                                uint8_t status = zbMsg.GetPaylaod()->at(1U);
+                                EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPaylaod()->at(3U), zbMsg.GetPaylaod()->at(2U)));
+                                uint8_t ep_count = zbMsg.GetPaylaod()->at(4U);
                                 std::vector<uint8_t> ep_list;
-                                for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPaylaod()->at(5+loop));}
+                                for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPaylaod()->at(5U+loop));}
 
                                 // DEBUG
                                 std::cout << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
@@ -211,8 +212,8 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 for(uint8_t loop=0; loop<ep_list.size();loop++)
                                 {
                                     payload.clear();
-                                    payload.push_back(static_cast<uint8_t>(address&0xFF));
-                                    payload.push_back(static_cast<uint8_t>((address>>8)&0xFF));
+                                    payload.push_back(u16_get_lo_u8(address));
+                                    payload.push_back(u16_get_hi_u8(address));
                                     payload.push_back(ep_list.at(loop));
                                     zb_messaging.SendZDOCommand(address,ZDP_SIMPLE_DESC,payload);
                                 }
@@ -223,29 +224,28 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             {
                                 // for this simple exemple when we receive a simple descriptor we loop on cluster server and we bind each cluster who is interresting for us.
                                 // byte 0 is for sequence number, ignore it!
-                                uint8_t status = zbMsg.GetPaylaod()->at(1);
+                                uint8_t status = zbMsg.GetPaylaod()->at(1U);
 
                                 if( 0 == status )
                                 {
-                                    EmberNodeId address = static_cast<EmberNodeId>(zbMsg.GetPaylaod()->at(2)+(zbMsg.GetPaylaod()->at(3)<<8));
-                                    uint8_t lentgh = zbMsg.GetPaylaod()->at(4);
-                                    uint8_t endpoint = zbMsg.GetPaylaod()->at(5);
-                                    uint16_t profile_id = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(6)+(zbMsg.GetPaylaod()->at(7)<<8));
-                                    uint16_t device_id = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(8)+(zbMsg.GetPaylaod()->at(9)<<8));
-                                    uint8_t version = zbMsg.GetPaylaod()->at(10);
-                                    uint8_t in_count = zbMsg.GetPaylaod()->at(11);
-                                    uint8_t out_count = zbMsg.GetPaylaod()->at(12+(2*in_count));
+                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPaylaod()->at(3U), zbMsg.GetPaylaod()->at(2U)));
+                                    uint8_t lentgh = zbMsg.GetPaylaod()->at(4U);
+                                    uint8_t endpoint = zbMsg.GetPaylaod()->at(5U);
+                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPaylaod()->at(7U), zbMsg.GetPaylaod()->at(6U));
+                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPaylaod()->at(9U), zbMsg.GetPaylaod()->at(8U));
+                                    uint8_t version = zbMsg.GetPaylaod()->at(10U);
+                                    uint8_t in_count = zbMsg.GetPaylaod()->at(11U);
+                                    uint8_t out_count = zbMsg.GetPaylaod()->at(12U+(2U*in_count));
                                     std::vector<uint16_t> in_list;
                                     for(uint8_t loop=0; loop<in_count; loop++)
                                     {
-                                        in_list.push_back(static_cast<uint16_t>(zbMsg.GetPaylaod()->at(12+(2*loop))+(zbMsg.GetPaylaod()->at(13+(2*loop))<<8)));
+                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPaylaod()->at(13U+(2U*loop)), zbMsg.GetPaylaod()->at(12U+(2U*loop))));
                                     }
                                     std::vector<uint16_t> out_list;
                                     for(uint8_t loop=0; loop<out_count; loop++)
                                     {
-                                        out_list.push_back(static_cast<uint16_t>(zbMsg.GetPaylaod()->at(13+(2*in_count)+(2*loop))+(zbMsg.GetPaylaod()->at(14+(2*in_count)+(2*loop))<<8)));
+                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPaylaod()->at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPaylaod()->at(13U+(2U*in_count)+(2U*loop))));
                                     }
-
 
                                     std::stringstream buf;
                                     buf << CZdpEnum::ToString(zdp_low) << " Response : " << 
@@ -352,16 +352,16 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             // we receive a device announce because a child join or rejoin network, start a discover endpoint process
 
                             // byte 0 is for sequence number, ignore it!
-                            EmberNodeId address = static_cast<EmberNodeId>(zbMsg.GetPaylaod()->at(1)+(zbMsg.GetPaylaod()->at(2)<<8));
+                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPaylaod()->at(2U), zbMsg.GetPaylaod()->at(1U));
                             EmberEUI64 eui64;
-                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPaylaod()->at(3+loop)); }
+                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPaylaod()->at(3U+loop)); }
 
                             // add to database
                             db.addProduct( eui64, address );
 
                             std::vector<uint8_t> payload;
-                            payload.push_back(static_cast<uint8_t>(address&0xFF));
-                            payload.push_back(static_cast<uint8_t>((address>>8)&0xFF));
+                            payload.push_back(u16_get_lo_u8(address));
+                            payload.push_back(u16_get_hi_u8(address));
 
                             zb_messaging.SendZDOCommand( address, ZDP_ACTIVE_EP, payload );
                         }
@@ -395,23 +395,23 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                         // to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
                         if( 0x0A == zbMsg.GetZCLHeader()->GetCmdId() )
                         {
-                            uint16_t attr_id = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(0)+(zbMsg.GetPaylaod()->at(1)<<8));
-                            uint8_t data_type = zbMsg.GetPaylaod()->at(2);
+                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPaylaod()->at(1), zbMsg.GetPaylaod()->at(0));
+                            //uint8_t data_type = zbMsg.GetPaylaod()->at(2);
 
                             if( 0x0402 == zbMsg.GetAps()->cluster_id )
                             {
                                 if( 0x00 == attr_id )
                                 {
-                                    uint16_t value_raw = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(3)+(zbMsg.GetPaylaod()->at(4)<<8));
-                                    std::cout << ">>> Temperature : " << float(value_raw / 100) << "°C\n";
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPaylaod()->at(4), zbMsg.GetPaylaod()->at(3));
+                                    std::cout << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
                                 }
                             }
                             else if( 0x0405 == zbMsg.GetAps()->cluster_id )
                             {
                                 if( 0x00 == attr_id )
                                 {
-                                    uint16_t value_raw = static_cast<uint16_t>(zbMsg.GetPaylaod()->at(3)+(zbMsg.GetPaylaod()->at(4)<<8));
-                                    std::cout << ">>> Relative Humidity : " << float(value_raw / 100) << "%\n";
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPaylaod()->at(4), zbMsg.GetPaylaod()->at(3));
+                                    std::cout << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
                                 }
                             }
                         }

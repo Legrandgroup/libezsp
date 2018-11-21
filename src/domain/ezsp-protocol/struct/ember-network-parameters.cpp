@@ -6,21 +6,22 @@
 
 #include "ember-network-parameters.h"
 
+#include "../../byte-manip.h"
 
 void CEmberNetworkParameters::setRaw(std::vector<uint8_t> raw_message)
 {
-    extend_pan_id = static_cast<uint64_t>(
-        raw_message.at(0) |
-        (raw_message.at(1)<<8) |
-        (raw_message.at(2)<<16) |
-        (raw_message.at(3)<<24) |
-        (raw_message.at(4)<<32) |
-        (raw_message.at(5)<<40) |
-        (raw_message.at(6)<<48) |
-        (raw_message.at(7)<<56)
+    extend_pan_id = (
+        static_cast<uint64_t>(raw_message.at(0)) |
+        static_cast<uint64_t>(raw_message.at(1))<<8 |
+        static_cast<uint64_t>(raw_message.at(2))<<16 |
+        static_cast<uint64_t>(raw_message.at(3))<<24 |
+        static_cast<uint64_t>(raw_message.at(4))<<32 |
+        static_cast<uint64_t>(raw_message.at(5))<<40 |
+        static_cast<uint64_t>(raw_message.at(6))<<48 |
+        static_cast<uint64_t>(raw_message.at(7))<<56
     );
 
-    pan_id = static_cast<uint16_t>(raw_message.at(8) | (raw_message.at(9)<<8));
+    pan_id = dble_u8_to_u16(raw_message.at(9), raw_message.at(8));
 
     radio_tx_power = raw_message.at(10);
 
@@ -28,15 +29,15 @@ void CEmberNetworkParameters::setRaw(std::vector<uint8_t> raw_message)
 
     join_method = static_cast<EmberJoinMethod>(raw_message.at(12));
 
-    nwk_manager_id = static_cast<EmberNodeId>(raw_message.at(13) | (raw_message.at(14)<<8));
+    nwk_manager_id = static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(14), raw_message.at(13)));
 
     nwk_update_id = raw_message.at(15);
 
-    channels = static_cast<uint32_t>(
-        raw_message.at(16) | 
-        (raw_message.at(17)<<8) |
-        (raw_message.at(18)<<16) |
-        (raw_message.at(19)<<24)
+    channels = (
+        static_cast<uint32_t>(raw_message.at(16)) |
+        static_cast<uint32_t>(raw_message.at(17))<<8 |
+        static_cast<uint32_t>(raw_message.at(18))<<16 |
+        static_cast<uint32_t>(raw_message.at(19))<<24
     );
 
 }
@@ -57,8 +58,8 @@ std::vector<uint8_t> CEmberNetworkParameters::getRaw()
 
 
     // pan_id
-    raw_message.push_back(static_cast<uint8_t>(pan_id&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((pan_id>>8)&0xFF));
+    raw_message.push_back(u16_get_lo_u8(pan_id));
+    raw_message.push_back(u16_get_hi_u8(pan_id));
 
     // radio_tx_power
     raw_message.push_back(static_cast<uint8_t>(radio_tx_power));

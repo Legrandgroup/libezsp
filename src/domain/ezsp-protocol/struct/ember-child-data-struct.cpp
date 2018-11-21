@@ -6,6 +6,7 @@
 
 #include "ember-child-data-struct.h"
 
+#include "../../byte-manip.h"
 
 void CEmberChildDataStruct::setRaw(std::vector<uint8_t> raw_message)
 {
@@ -17,13 +18,13 @@ void CEmberChildDataStruct::setRaw(std::vector<uint8_t> raw_message)
 
     type = static_cast<EmberNodeType>(raw_message.at(EMBER_EUI64_BYTE_SIZE));
 
-    id = static_cast<EmberNodeId>(raw_message.at(EMBER_EUI64_BYTE_SIZE+1) | (raw_message.at(EMBER_EUI64_BYTE_SIZE+2)<<8));
+    id = static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(EMBER_EUI64_BYTE_SIZE+2), raw_message.at(EMBER_EUI64_BYTE_SIZE+1)));
 
-    phy = static_cast<uint8_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+3));
+    phy = raw_message.at(EMBER_EUI64_BYTE_SIZE+3);
 
-    power = static_cast<uint8_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+4));
+    power = raw_message.at(EMBER_EUI64_BYTE_SIZE+4);
 
-    timeout = static_cast<uint8_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+5));
+    timeout = raw_message.at(EMBER_EUI64_BYTE_SIZE+5);
 /*
     if( raw_message.size() > 17 ) // todo associate to node type
     {
@@ -33,16 +34,16 @@ void CEmberChildDataStruct::setRaw(std::vector<uint8_t> raw_message)
             gpdIeeeAddress.push_back(raw_message.at(EMBER_EUI64_BYTE_SIZE+6+loop));
         }
 
-        sourceId = static_cast<uint32_t>(
-            raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+7) | 
-            (raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+8)<<8) |
-            (raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+9)<<16) |
-            (raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+10)<<24)
+        sourceId = (
+            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+7)) |
+            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+8))<<8 |
+            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+9))<<16 |
+            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+10))<<24
         );     
 
-        applicationId = static_cast<uint8_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+11));
+        applicationId = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+11);
         
-        endpoint = static_cast<uint8_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+12));
+        endpoint = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+12);
     }
 */    
 }

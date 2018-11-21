@@ -43,17 +43,26 @@ CAPSOption::CAPSOption()
 
 uint16_t CAPSOption::GetEmberApsOption(void)
 {
-  uint16_t lo_option;
+  uint16_t lo_option = 0;
 
-  lo_option = ((encryption<<5)&0x0020);
-  lo_option |= ((retry<<6)&0x0040);
-  lo_option |= ((enable_route_discovery<<8)&0x0100);
-  lo_option |= ((force_route_discovery<<9)&0x0200);
-  lo_option |= ((src_ieee<<10)&0x0400);
-  lo_option |= ((dest_ieee<<11)&0x0800);
-  lo_option |= ((enable_addr_discovery<<12)&0x1000);
-  lo_option |= ((zdo_rsp_requiered<<14)&0x4000);
-  lo_option |= ((fragment<<15)&0x8000);
+  if (encryption)
+      lo_option |= 0x0020;
+  if (retry)
+      lo_option |= 0x0040;
+  if (enable_route_discovery)
+      lo_option |= 0x0100;
+  if (force_route_discovery)
+      lo_option |= 0x0200;
+  if (src_ieee)
+      lo_option |= 0x0400;
+  if (dest_ieee)
+      lo_option |= 0x0800;
+  if (enable_addr_discovery)
+      lo_option |= 0x1000;
+  if (zdo_rsp_requiered)
+      lo_option |= 0x4000;
+  if (fragment)
+      lo_option |= 0x8000;
 
   return lo_option;
 }

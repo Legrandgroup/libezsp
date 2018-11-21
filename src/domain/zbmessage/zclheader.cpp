@@ -4,6 +4,7 @@
 
 #include "zclheader.h"
 
+#include "../byte-manip.h"
 
 CZCLHeader::CZCLHeader()
 {
@@ -85,8 +86,8 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void)
   lo_data.push_back(frm_ctrl.GetFrmCtrlByte());
   if( frm_ctrl.IsManufacturerCodePresent() )
   {
-    lo_data.push_back( (uint8_t)(manufacturer_code&0xFF) );
-    lo_data.push_back( (uint8_t)((manufacturer_code>>8)&0xFF) );
+    lo_data.push_back( u16_get_lo_u8(manufacturer_code) );
+    lo_data.push_back( u16_get_hi_u8(manufacturer_code) );
   }
   lo_data.push_back(transaction_number);
   lo_data.push_back(cmd_id);
@@ -97,19 +98,15 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void)
 uint8_t CZCLHeader::SetZCLHeader(std::vector<uint8_t> i_data )
 {
   uint8_t l_idx = 0;
-  frm_ctrl.SetFrmCtrlByte(i_data.at(l_idx)&0xFF);
-  l_idx += 1;
+  frm_ctrl.SetFrmCtrlByte(i_data.at(l_idx++));
   if( frm_ctrl.IsManufacturerCodePresent() )
   {
-    manufacturer_code = i_data.at(l_idx)&0xFF;
-    l_idx += 1;
-    manufacturer_code |= ((i_data.at(l_idx)&0xFF)<<8);
-    l_idx += 1;
+    manufacturer_code = dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx));
+    l_idx++;
+    l_idx++;
   }
-  transaction_number = i_data.at(l_idx)&0xFF;
-  l_idx += 1;
-  cmd_id = i_data.at(l_idx)&0xFF;
-  l_idx += 1;
+  transaction_number = i_data.at(l_idx++);
+  cmd_id = i_data.at(l_idx++);
 
   return l_idx;
 }

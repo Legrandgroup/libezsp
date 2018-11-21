@@ -33,8 +33,8 @@ public:
 
 private:
     CEzspDongle dongle;
-    CZigbeeNetworking zb_nwk;
     CZigbeeMessaging zb_messaging;
+    CZigbeeNetworking zb_nwk;
     EAppState app_state;
     Cdb db;
 

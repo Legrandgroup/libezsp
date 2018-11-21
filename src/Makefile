@@ -2,14 +2,14 @@ include ../../Config.mk
 
 MODULE_DEPS = $(LIBC_COMPONENT) $(LIBSTDCXX_COMPONENT) libpp_base
 
-CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -g -O0 -Wno-error=unused-parameter -Wno-unused-parameter -Wno-error #-Weffc++
+CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -g -O0 -Wno-error=unused-parameter -Wno-unused-parameter #-Weffc++
 
 mainEzspTestRaritan_MODULE_NAME = test_log
 
 TARGET_PRGS = mainEzspTestRaritan
 
 mainEzspTestRaritan_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Isrc/domain/ezsp-protocol -Itest
-mainEzspTestRaritan_SRCS = mainEzspTestRaritan.cpp \
+mainEzspTestRaritan_SRCS = test/mainEzspTestRaritan.cpp \
 	domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
 	domain/zbmessage/zclframecontrol.cpp \

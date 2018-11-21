@@ -18,8 +18,8 @@ typedef enum
 
 typedef enum
 {
-  E_SW_CODE_SHORT,
-  E_SW_CODE_EVO2
+  E_SW_CODE_SHORT = 0,
+  E_SW_CODE_EVO2 = 1
 }EZCLFrameCtrlSoftwareCode;
 
 class CZCLFrameControl
