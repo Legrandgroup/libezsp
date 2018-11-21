@@ -28,8 +28,7 @@ uint8_t CZCLFrameControl::GetFrmCtrlByte()
 {
   uint8_t lo_byte = 0;
 
-  if (frame_type == E_FRM_TYPE_SPECIFIC)
-      lo_byte |= 0x03;
+  lo_byte = frame_type & 0x03;
   if (manufacturer_code_present)
       lo_byte |= 0x04;
   if (direction == E_DIR_SERVER_TO_CLIENT)
