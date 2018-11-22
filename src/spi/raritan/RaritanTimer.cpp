@@ -30,7 +30,7 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 	else {
 		auto tcb = [this,timeout,callBackFunction](pp::Selector::TimedCbHandle&) {
 			PPD_DEBUG("Timeout reached after %u", timeout);
-			PPD_DEBUG("Now running timer's callback");
+			PPD_DEBUG("Now running %p timer's callback", this);
 			callBackFunction(this);
 		};
 		m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
