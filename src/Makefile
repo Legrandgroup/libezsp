@@ -10,6 +10,8 @@ TARGET_PRGS = mainEzspTestRaritan
 
 mainEzspTestRaritan_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Isrc/domain/ezsp-protocol -Iexample
 mainEzspTestRaritan_SRCS = example/mainEzspTestRaritan.cpp \
+	example/CAppDemo.cpp \
+	example/dummy_db.cpp \
 	domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
 	domain/zbmessage/zclframecontrol.cpp \
@@ -30,8 +32,6 @@ mainEzspTestRaritan_SRCS = example/mainEzspTestRaritan.cpp \
 	spi/raritan/RaritanTimerFactory.cpp \
 	spi/raritan/RaritanTimer.cpp \
 	spi/raritan/RaritanEventLoop.cpp \
-	example/mainEzspTest.cpp \
-	example/dummy_db.cpp \
 	
 
 #	domain/zbmessage/out-zigbee-message.cpp

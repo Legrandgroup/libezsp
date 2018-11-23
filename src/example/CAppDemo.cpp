@@ -1,12 +1,10 @@
-
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <ctime>
 #include <map>
 
-#include "mainEzspTest.h"
+#include "CAppDemo.h"
 #include "../domain/ezsp-protocol/get-network-parameters-response.h"
 #include "../domain/ezsp-protocol/struct/ember-key-struct.h"
 #include "../domain/ezsp-protocol/ezsp-enum.h"

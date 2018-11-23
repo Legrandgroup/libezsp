@@ -9,8 +9,7 @@
 #include "spi/raritan/RaritanEventLoop.h"
 #include "spi/raritan/RaritanUartDriver.h"
 #include "spi/raritan/RaritanTimerFactory.h"
-#include "mainEzspTest.h"
-#include "domain/byte-manip.h"
+#include "CAppDemo.h"
 
 using namespace std;
 
