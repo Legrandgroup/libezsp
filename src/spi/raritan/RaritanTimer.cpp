@@ -14,8 +14,10 @@ RaritanTimer::~RaritanTimer() {
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
 	PPD_DEBUG("Starting timer %p for %dms", this, timeout);
 
-	if (started)
+	if (started) {
+		PPD_DEBUG("First stopping the already existing timer %p before starting again", this);
 		this->stop();
+	}
 
 	if (!callBackFunction) {
 		PPD_WARN("Invalid callback function provided during start()");
