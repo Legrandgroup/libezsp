@@ -1,7 +1,7 @@
 # libezsp
 
 C++ library to send/receive wireless traffic to/from a UART transceiver using the EZSP protocol from Silicon Labs.
-A sample demo program is located in src/test/
+A sample demo program is located in `src/example/mainEzspTest.cpp` and `src/example/CAppDemo.cpp`
 
 ## For users
 
@@ -11,7 +11,7 @@ If you compile in the Raritan environment, you will just have to clone this code
 ./Build
 ```
 
-Note that the UART device for communication with the transceiver (eg: /dev/ttyUSB0) is hardcoded inside the code (file `src/test/mainEzspTest*.cpp`)
+Note that the UART device for communication with the transceiver (eg: /dev/ttyUSB0) is hardcoded inside the code (file `src/example/mainEzspTest.cpp`)
 
 Once the binary has been copied over to the target, you can simply run it.
 
@@ -34,4 +34,4 @@ This repository is organised following DDD conventions
 * `src/spi` contains the adapters for platform-specific implementations of timers and serial port access
 * `src/spi/serial` contains the concrete implementations of adapters for Linux (using libserialcpp and std::thread)
 * `src/spi/raritan` contains the concrete implementations of adapters for the Raritan framework (using selectors and an event-driven main loop)
-* `src/test` contains a sample demo program to read and report sensor values from a zigbee network
+* `src/example` contains a sample demo program to read and report sensor values from a zigbee network
