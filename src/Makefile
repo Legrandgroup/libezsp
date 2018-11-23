@@ -4,12 +4,12 @@ MODULE_DEPS = $(LIBC_COMPONENT) $(LIBSTDCXX_COMPONENT) libpp_base
 
 CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -g -O0 -Wno-error=unused-parameter -Wno-unused-parameter #-Weffc++
 
-mainEzspTestRaritan_MODULE_NAME = test_log
+mainEzspTest_MODULE_NAME = test_log
 
-TARGET_PRGS = mainEzspTestRaritan
+TARGET_PRGS = mainEzspTest
 
-mainEzspTestRaritan_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Isrc/domain/ezsp-protocol -Iexample
-mainEzspTestRaritan_SRCS = example/mainEzspTestRaritan.cpp \
+mainEzspTest_CPPFLAGS += -Ispi -Idomain -Idomain/zbmessage -Isrc/domain/ezsp-protocol -Iexample
+mainEzspTest_SRCS = example/mainEzspTest.cpp \
 	example/CAppDemo.cpp \
 	example/dummy_db.cpp \
 	domain/zbmessage/zigbee-message.cpp \
@@ -33,9 +33,6 @@ mainEzspTestRaritan_SRCS = example/mainEzspTestRaritan.cpp \
 	spi/raritan/RaritanTimer.cpp \
 	spi/raritan/RaritanEventLoop.cpp \
 	
-
-#	domain/zbmessage/out-zigbee-message.cpp
-
-mainEzspTestRaritan_LIBS = -lpp_base
+mainEzspTest_LIBS = -lpp_base
 
 include $(PP_BUILD_SYS_DIR)/Top.mk
