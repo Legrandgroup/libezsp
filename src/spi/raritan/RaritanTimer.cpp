@@ -1,5 +1,7 @@
 /**
  * @file RaritanTimer.cpp
+ *
+ * @brief Concrete implementation of ITimer using the Raritan framework
  */
 
 #include "RaritanTimer.h"

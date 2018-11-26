@@ -1,5 +1,7 @@
 /**
  * @file RaritanTimerFactory.cpp
+ *
+ * @brief Concrete implementation of a ITimer factory returning RaritanTimer objects
  */
 
 #include "RaritanTimerFactory.h"

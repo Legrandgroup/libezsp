@@ -30,7 +30,7 @@ public:
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
 	 *
-	 * @param GenericAsyncDataInputObservable A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
+	 * @param uartIncomingDataHandler A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */

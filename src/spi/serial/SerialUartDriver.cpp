@@ -1,5 +1,7 @@
 /**
  * @file SerialUartDriver.cpp
+ *
+ * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
 #include "SerialUartDriver.h"

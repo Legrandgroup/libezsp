@@ -1,5 +1,7 @@
 /**
  * @file RaritanUartDriver.cpp
+ *
+ * @brief Concrete implementation of a UART driver using Raritan's framework
  */
 
 #include "RaritanUartDriver.h"

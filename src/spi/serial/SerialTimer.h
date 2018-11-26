@@ -1,5 +1,7 @@
 /**
  * @file SerialTimer.h
+ *
+ * @brief Concrete implementation of ITimer using C++11 threads
  */
 
 #pragma once

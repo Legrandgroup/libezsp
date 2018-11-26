@@ -1,5 +1,7 @@
 /**
  * @file RaritanTimer.h
+ *
+ * @brief Concrete implementation of ITimer using the Raritan framework
  */
 
 #pragma once
