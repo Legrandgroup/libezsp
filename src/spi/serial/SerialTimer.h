@@ -48,7 +48,7 @@ public:
 	bool isRunning();
 
 private:
-	std::thread waitingThread;
-	std::condition_variable cv;
-	std::mutex cv_m;
+	std::thread waitingThread;	/*!< The thread that will wait for the specified timeout and will then run the callback */
+	std::condition_variable cv;	/*!< A condition variable that allows to unlock the wait performed by waitingThread (this allows stopping that secondary thread) */
+	std::mutex cv_m;	/*!< A mutex to handle access to variable cv */
 };
