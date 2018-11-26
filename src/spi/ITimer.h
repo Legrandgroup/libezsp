@@ -1,5 +1,9 @@
 /**
  * @file ITimer.h
+ *
+ * @brief Abstract interface to which must conforms implementations of classes that handle timed callbacks
+ *
+ * Used as a dependency inversion paradigm
  */
 
 #pragma once
@@ -8,8 +12,6 @@
 #include <functional> // For std::function
 
 /**
- * @class ITimer
- *
  * @brief Abstract class to execute a callback after a given timeout
  */
 class ITimer {

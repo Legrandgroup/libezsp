@@ -1,3 +1,7 @@
+/**
+ * @file SerialTimer.h
+ */
+
 #pragma once
 
 #include "../ITimer.h"
@@ -6,7 +10,7 @@
 #include <condition_variable>
 
 /**
- * @brief Concrete implementation of ITimer using the C++11
+ * @brief Concrete implementation of ITimer using C++11 threads
  */
 class SerialTimer : public ITimer {
 public:

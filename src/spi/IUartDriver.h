@@ -1,7 +1,7 @@
 /**
- * \file IUartDriver.h
+ * @file IUartDriver.h
  *
- * \brief Abstract interface to which must conforms concrete implementations of classes that manipulate UARTs
+ * @brief Abstract interface to which must conforms concrete implementations of classes that manipulate UARTs
  *
  * Used as a dependency inversion paradigm
  */
@@ -12,8 +12,6 @@
 #include <string>
 
 /**
- * @class IUartDriver
- *
  * @brief Abstract class that manipulate UARTs
  */
 class IUartDriver {

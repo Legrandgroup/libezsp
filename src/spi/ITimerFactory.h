@@ -1,5 +1,9 @@
 /**
  * @file ITimerFactory.h
+ *
+ * @brief Abstract interface to which must conforms implementations of factory classes that generate ITimer objects
+ *
+ * Used as a dependency inversion paradigm
  */
 #pragma once
 
@@ -7,8 +11,6 @@
 #include <memory>	// For std::unique_ptr
 
 /**
- * @class ITimerFactory
- *
  * @brief Abstract factory to create ITimer instances
  */
 class ITimerFactory {

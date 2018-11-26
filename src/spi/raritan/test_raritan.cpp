@@ -7,11 +7,29 @@
 #include <iostream>	// FIXME: for std::cout during debug
 #include <iomanip>	// FIXME: for std::hex during debug
 
+/**
+ * @brief Observer class for sending debugging output logs for incoming serial data
+ */
 class DebuggerDisplayer : public IAsyncDataInputObserver {
 public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param displayName A prefix to use for each notification from the observable
+	 */
 	DebuggerDisplayer(const std::string& displayName): name(displayName) {};
+
+	/**
+	 * @brief Destructor
+	 */
 	~DebuggerDisplayer() {};
 
+	/**
+	 * @brief Handler invoked for each input data
+	 *
+	 * @param dataIn The pointer to the incoming bytes buffer
+	 * @param dataLen The size of the data to read inside dataIn
+	 */
 	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) {
 		std::stringstream bufDump;
 
@@ -21,7 +39,7 @@ public:
 		std::cout << this->name << ": Received buffer " << bufDump.str() << std::endl;
 	};
 private :
-	std::string name;
+	std::string name;	/*!< The prefix "nickname" for this observer */
 };
 
 int main() {

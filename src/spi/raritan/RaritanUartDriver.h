@@ -1,5 +1,7 @@
 /**
  * @file RaritanUartDriver.h
+ *
+ * @brief Concrete implementation of a UART driver using Raritan's framework
  */
 
 #pragma once
@@ -10,6 +12,9 @@
 #include "../IUartDriver.h"
 #include "RaritanEventLoop.h"
 
+/**
+ * @brief Class to interact with a UART in the Raritan framework
+ */
 class UartDriverRaritan : public IUartDriver {
 public:
 	/**
@@ -49,7 +54,7 @@ public:
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
 	 *
-	 * @param GenericAsyncDataInputObservable A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
+	 * @param uartIncomingDataHandler A pointer to the new handler (the eventual previous handler that might have been set at construction will be dropped)
 	 */
 	void setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler);
 

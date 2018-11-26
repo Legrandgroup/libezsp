@@ -1,5 +1,7 @@
 /**
- * @filevSerialUartDriver.h
+ * @file SerialUartDriver.h
+ *
+ * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
 #pragma once
@@ -10,9 +12,19 @@
 #include <thread>
 #include "serial/serial.h"
 
+/**
+ * @brief Class to interact with a UART using libserialcpp
+ */
 class UartDriverSerial : public IUartDriver {
 public:
+	/**
+	 * @brief Default constructor
+	 */
 	UartDriverSerial();
+
+	/**
+	 * @brief Destructor
+	 */
 	~UartDriverSerial();
 
 	/**

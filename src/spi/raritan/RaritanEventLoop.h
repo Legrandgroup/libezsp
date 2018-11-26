@@ -1,13 +1,21 @@
 /**
  * @file RaritanEventLoop.h
+ *
+ * @brief Allows manipulating the main loop in the Raritan framwork
  */
 
 #pragma once
 
 #include <pp/Selector.h>
 
+/**
+ * @brief Class to manipulate the main loop in the Raritan framwork
+ */
 class RaritanEventLoop {
 public:
+	/**
+	 * @brief Default constructor
+	 */
 	RaritanEventLoop();
 
 	/**
@@ -17,6 +25,8 @@ public:
 
 	/**
 	 * @brief Get the main loop selector
+	 *
+	 * @return The main loop selector as a reference
 	 */
 	pp::Selector& getSelector();
 
