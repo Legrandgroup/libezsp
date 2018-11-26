@@ -1,5 +1,5 @@
 /**
- * @file mainEzscpTest
+ * @file mainEzspTest.cpp
  * 
  * @brief Sample code for driving a dongle in the Raritan framework or using libserialcpp
  */

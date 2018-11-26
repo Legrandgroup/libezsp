@@ -1,5 +1,7 @@
 /**
- * 
+ * @file dummy_db.cpp
+ *
+ * @brief Dummy database, just to have link between eui64 and short address
  */
 
 #include "dummy_db.h"

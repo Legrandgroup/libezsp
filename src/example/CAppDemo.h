@@ -1,6 +1,7 @@
 /**
  * @file CAppDemo.h
  */
+
 #pragma once
 
 #include "../domain/ezsp-dongle.h"

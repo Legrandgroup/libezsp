@@ -1,5 +1,7 @@
 /**
- * Dummy database, just to have link between eui64 and short address
+ * @file dummy_db.h
+ *
+ * @brief Dummy database, just to have link between eui64 and short address
  */
 #pragma once
 
