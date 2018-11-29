@@ -1,7 +1,8 @@
-CXXFLAGS = -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g # -Weffc++
-#LIBCGICC_CXXFLAGS = $(pkg-config --cflags cgicc)
-LDFLAGS = -L/home/seb/_DEV/serial/compiled/lib -lserial -lpthread
-#LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
+LOCAL_LDFLAGS ?= -L/home/seb/_DEV/serial/compiled/li
+LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
+
+CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g # -Weffc++
+LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
 
 EXEC = testEzsp
 OBJECTFILES = mainEzspTest.o \
@@ -28,7 +29,7 @@ OBJECTFILES = mainEzspTest.o \
 			  ../spi/serial/SerialTimer.o
 
 CLEANFILES = $(OBJECTFILES) $(EXEC)
-INC = -I../spi -I../domain -I../domain/zbmessage -I/home/seb/_DEV/serial/compiled/include
+INC = $(LOCAL_INC) -I../spi -I../domain -I../domain/zbmessage
 
 all: $(EXEC)
 
