@@ -4,9 +4,9 @@ LDFLAGS = -L/home/seb/_DEV/serial/compiled/lib -lserial -lpthread
 #LIBCGICC_LDFLAGS = $(pkg-config --libs cgicc) -lcgicc
 
 EXEC = testEzsp
-OBJECTFILES = mainEzspTestLinux.o \
-			  mainEzspTest.o \
-			  dummy_db.o\
+OBJECTFILES = mainEzspTest.o \
+			  CAppDemo.o \
+			  dummy_db.o \
 			  ../domain/ezsp-dongle.o \
 			  ../domain/ash.o \
 			  ../domain/zbmessage/zigbee-message.o \
