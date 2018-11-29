@@ -132,4 +132,4 @@ std::string CEzspEnum::EmberIncomingMessageTypeToString( EmberIncomingMessageTyp
     };
     auto   it  = MyEnumStrings.find(in);
     return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;      
-};
+}
