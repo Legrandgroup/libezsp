@@ -19,6 +19,9 @@ typedef struct sMsg
     std::vector<uint8_t> payload;
 }SMsg;
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
@@ -73,7 +76,9 @@ private:
      */
     std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
-    void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );     
+    void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
 };
+
+#include <pp/official_api_end.h>
 
 #endif // EZSP_DONGLE_H

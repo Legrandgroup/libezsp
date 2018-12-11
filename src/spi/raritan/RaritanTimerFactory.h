@@ -9,6 +9,9 @@
 #include "../ITimerFactory.h"
 #include "RaritanEventLoop.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 /**
  * @brief Factory class to generate RaritanTimer objects
  */
@@ -35,3 +38,5 @@ public:
 private:
 	RaritanEventLoop& m_eventLoop;	/*!< The Raritan event loop */
 };
+
+#include <pp/official_api_end.h>

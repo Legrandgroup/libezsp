@@ -8,6 +8,9 @@
 
 #include <pp/Selector.h>
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 /**
  * @brief Class to manipulate the main loop in the Raritan framwork
  */
@@ -33,3 +36,5 @@ public:
 private:
 	pp::Selector& m_selector;	/*!< The main loop selector */
 };
+
+#include <pp/official_api_end.h>

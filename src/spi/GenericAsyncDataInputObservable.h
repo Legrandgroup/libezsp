@@ -11,6 +11,9 @@
 #include <cstdlib>	// For size_t
 #include "IAsyncDataInputObserver.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 /**
  * @brief An observable class that will invoke method handleInputData() on all its observers when new async data is received
  */
@@ -47,3 +50,5 @@ public:
 private:
 	std::set<IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
 };
+
+#include <pp/official_api_end.h>

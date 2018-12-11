@@ -10,6 +10,8 @@
 #include <vector>
 #include <cstdlib>	// For size_t
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
 /**
  * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
  */
@@ -33,3 +35,5 @@ public:
 	 */
 	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) = 0;
 };
+
+#include <pp/official_api_end.h>

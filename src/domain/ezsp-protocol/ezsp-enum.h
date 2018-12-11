@@ -9,6 +9,9 @@
 #include <vector>
 #include <string>
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 typedef enum
 {
   E_IN_MSG_TYPE_UNICAST,
@@ -934,5 +937,6 @@ class CEzspEnum{
     static std::string EmberIncomingMessageTypeToString( EmberIncomingMessageType in );
 };
 
+#include <pp/official_api_end.h>
 
 #endif // EZSP_ENUM_H

@@ -5,6 +5,9 @@
 
 #include "../ezsp-enum.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 class CEmberKeyStruct
 {
     public:
@@ -65,3 +68,5 @@ class CEmberKeyStruct
         uint8_t sequenceNumber;
         EmberEUI64 partnerEUI64;
 };
+
+#include <pp/official_api_end.h>
