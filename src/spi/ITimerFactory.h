@@ -10,6 +10,9 @@
 #include "ITimer.h"
 #include <memory>	// For std::unique_ptr
 
+
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
 /**
  * @brief Abstract factory to create ITimer instances
  */
@@ -27,3 +30,5 @@ public:
 	 */
 	virtual std::unique_ptr<ITimer> create() const = 0;
 };
+
+#include <pp/official_api_end.h>

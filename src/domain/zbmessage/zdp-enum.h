@@ -5,6 +5,9 @@
 
 #include <string>
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 #define ZDP_HIGHT_BYTE_REQUEST  0x00
 #define ZDP_HIGHT_BYTE_RESPONSE 0x80
 
@@ -33,3 +36,5 @@ class CZdpEnum{
   public:
     static std::string ToString( EZdpLowByte in );
 };
+
+#include <pp/official_api_end.h>

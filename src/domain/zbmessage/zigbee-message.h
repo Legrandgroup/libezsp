@@ -7,6 +7,8 @@
 #include "aps.h"
 #include "zclheader.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
 class CZigBeeMsg
 {
 public:
@@ -90,5 +92,7 @@ private:
   /** Payload */
   std::vector<uint8_t> payload;
 };
+
+#include <pp/official_api_end.h>
 
 #endif // ZIGBEE_MESSAGE_H

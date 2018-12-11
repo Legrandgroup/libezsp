@@ -9,6 +9,9 @@
 #include "../ezsp-dongle.h"
 #include "../zbmessage/zigbee-message.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 class CZigbeeNetworking : public CEzspDongleObserver
 {
 public:
@@ -34,3 +37,5 @@ private:
     uint8_t child_idx;
     std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
 };
+
+#include <pp/official_api_end.h>

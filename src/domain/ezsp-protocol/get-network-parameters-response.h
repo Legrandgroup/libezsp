@@ -7,6 +7,9 @@
 #include "ezsp-enum.h"
 #include "struct/ember-network-parameters.h"
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+
 class CGetNetworkParamtersResponse
 {
     public:
@@ -37,3 +40,5 @@ class CGetNetworkParamtersResponse
         EmberNodeType node_type;
         CEmberNetworkParameters parameters;
 };
+
+#include <pp/official_api_end.h>

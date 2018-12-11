@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <functional> // For std::function
 
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
 /**
  * @brief Abstract class to execute a callback after a given timeout
  */
@@ -54,3 +56,5 @@ protected:
 public:
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
+
+#include <pp/official_api_end.h>
