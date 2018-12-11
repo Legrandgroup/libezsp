@@ -7,7 +7,7 @@
 #include <queue>
 
 #include "ezsp-protocol/ezsp-enum.h"
-#include "IUartDriver.h"
+#include "../spi/IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
 #include "../spi/ITimerFactory.h"
