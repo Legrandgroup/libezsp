@@ -17,7 +17,7 @@ public:
 	 * @brief Default constructor
 	 */
 	RaritanEventLoop();
-
+	RaritanEventLoop(pp::Selector &selector);
 	/**
 	 * @brief Run the main loop
 	 */
