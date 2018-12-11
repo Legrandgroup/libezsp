@@ -16,7 +16,7 @@ void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t>
     {
         case EZSP_MESSAGE_SENT_HANDLER:
         {
-            std::cout << "EZSP_MESSAGE_SENT_HANDLER return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(16))) << std::endl;
+            // std::cout << "EZSP_MESSAGE_SENT_HANDLER return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(16))) << std::endl;
         }
         break;
 
