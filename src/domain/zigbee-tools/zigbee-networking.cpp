@@ -25,23 +25,23 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
     {
         case EZSP_PERMIT_JOINING:
         {
-            std::cout << "EZSP_PERMIT_JOINING return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+            // std::cout << "EZSP_PERMIT_JOINING return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
         }
         break;
 
         case EZSP_SEND_BROADCAST:
         {
-            std::cout << "EZSP_SEND_BROADCAST return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+            // std::cout << "EZSP_SEND_BROADCAST return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
         }
         break;
         case EZSP_GET_CHILD_DATA:
         {
-            std::cout << "EZSP_GET_CHILD_DATA return  at index : " << unsigned(child_idx) << ", status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+            // std::cout << "EZSP_GET_CHILD_DATA return  at index : " << unsigned(child_idx) << ", status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
             if( EMBER_SUCCESS == i_msg_receive.at(0) )
             {
                 i_msg_receive.erase(i_msg_receive.begin());
                 CEmberChildDataStruct l_rsp(i_msg_receive);
-                std::cout << l_rsp.String() << std::endl;
+                // std::cout << l_rsp.String() << std::endl;
 
                 // appeler la fonction de nouveau produit
                 if( nullptr != discoverCallbackFct )
@@ -59,8 +59,8 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         break;
         case EZSP_SET_INITIAL_SECURITY_STATE:
         {
-            std::string status_str = CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0)));
-            std::cout << "EZSP_SET_INITIAL_SECURITY_STATE status : " << status_str << std::endl;
+            // std::string status_str = CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0)));
+            // std::cout << "EZSP_SET_INITIAL_SECURITY_STATE status : " << status_str << std::endl;
             if( EMBER_SUCCESS == i_msg_receive.at(0) )
             {
                 CEmberNetworkParameters payload;
@@ -75,30 +75,30 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         }
         break;
         case EZSP_SET_CONFIGURATION_VALUE:
-        { 
-            if( 0 != i_msg_receive.at(0) ) {
-                std::cout << "EZSP_SET_CONFIGURATION_VALUE RSP : " << unsigned(i_msg_receive.at(0)) << std::endl;
-            }
+        {
+            // if( 0 != i_msg_receive.at(0) ) {
+                // std::cout << "EZSP_SET_CONFIGURATION_VALUE RSP : " << unsigned(i_msg_receive.at(0)) << std::endl;
+            // }
         }
         break;
         case EZSP_ADD_ENDPOINT:
         {
             // configuration finished, initialize zigbee pro stack
-            std::cout << "Call EZSP_NETWORK_INIT" << std::endl;
+            // std::cout << "Call EZSP_NETWORK_INIT" << std::endl;
             dongle.sendCommand(EZSP_NETWORK_INIT);
         }
         break;
         case EZSP_NETWORK_INIT:
         {
             // configuration finished, initialize zigbee pro stack
-            std::cout << "Call EZSP_NETWORK_STATE" << std::endl;
+            // std::cout << "Call EZSP_NETWORK_STATE" << std::endl;
             dongle.sendCommand(EZSP_NETWORK_STATE);
         }
-        break;        
+        break;
         case EZSP_FORM_NETWORK:
         {
-            std::string status_str = CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0)));
-            std::cout << "EZSP_FORM_NETWORK status : " << status_str << std::endl;
+            // std::string status_str = CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0)));
+            // std::cout << "EZSP_FORM_NETWORK status : " << status_str << std::endl;
         }
         break;
 

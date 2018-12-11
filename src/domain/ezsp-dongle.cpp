@@ -55,7 +55,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
             }
             else
             {
-                std::cout << "CEzspDongle::open register uart !" << std::endl;
+                // std::cout << "CEzspDongle::open register uart !" << std::endl;
                 uartIncomingDataHandler.registerObserver(this);
                 pUart->setIncomingDataHandler(&uartIncomingDataHandler);
             }
@@ -65,9 +65,9 @@ bool CEzspDongle::open(IUartDriver *ipUart)
     return lo_success;
 }
 
-void CEzspDongle::ashCbInfo( EAshInfo info ) 
-{ 
-    std::cout <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl; 
+void CEzspDongle::ashCbInfo( EAshInfo info )
+{
+    // std::cout <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
 
     if( ASH_STATE_CHANGE == info )
     {
