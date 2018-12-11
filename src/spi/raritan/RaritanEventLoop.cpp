@@ -10,6 +10,10 @@ RaritanEventLoop::RaritanEventLoop() : m_selector(*pp::SelectorSingleton::getIns
 
 }
 
+RaritanEventLoop::RaritanEventLoop(pp::Selector &selector) : m_selector(selector) {
+
+}
+
 void RaritanEventLoop::run() {
 	this->m_selector.run();
 }
