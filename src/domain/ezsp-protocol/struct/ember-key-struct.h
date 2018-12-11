@@ -28,7 +28,7 @@ class CEmberKeyStruct
          * The type of the key.
          */
         EmberKeyType getType(){ return type; }
-            
+
         /**
          * The actual key data.
          */
