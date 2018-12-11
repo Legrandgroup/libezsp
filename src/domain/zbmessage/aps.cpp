@@ -1,9 +1,9 @@
 /**
- * 
+ *
  */
 
 #include "aps.h"
-#include "byte-manip.h"
+#include "../byte-manip.h"
 
 CAPSFrame::CAPSFrame() : cluster_id(0), dest_ep(0), group_id(0), option(), profile_id(0), sequence(0), src_ep(0)
 {
