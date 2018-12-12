@@ -2,7 +2,7 @@ include ../../Config.mk
 
 MODULE_DEPS = $(LIBC_COMPONENT) $(LIBSTDCXX_COMPONENT) libpp_base
 
-CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -g -O0 -Wno-error=unused-parameter -Wno-unused-parameter #-Weffc++
+CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -DUSE_RARITAN -g -O0 -Wno-error=unused-parameter -Wno-unused-parameter #-Weffc++
 
 mainEzspTest_MODULE_NAME = test_log
 

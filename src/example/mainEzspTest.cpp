@@ -10,10 +10,12 @@
 #include "../spi/serial/SerialUartDriver.h"
 #include "../spi/serial/SerialTimerFactory.h"
 #include <string>
-#else
+#elseif USE_RARITAN
 #include "../spi/raritan/RaritanEventLoop.h"
 #include "../spi/raritan/RaritanUartDriver.h"
 #include "../spi/raritan/RaritanTimerFactory.h"
+#else
+#error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif
 #include "CAppDemo.h"
 
@@ -24,7 +26,7 @@ int main( void )
 #ifdef USE_SERIALCPP
     UartDriverSerial uartDriver;
     SerialTimerFactory timerFactory;
-#else
+#elseif USE_RARITAN
     RaritanEventLoop eventLoop;
     UartDriverRaritan uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
@@ -39,7 +41,7 @@ int main( void )
 #ifdef USE_SERIALCPP
     std::string line;
     std::getline(std::cin, line);
-#else
+#elseif USE_RARITAN
     eventLoop.run();
 #endif
 
