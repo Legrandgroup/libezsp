@@ -30,7 +30,7 @@ public:
     /**
      * Observer
      */
-    void handleDongleState( EDongleState i_state ){;}
+    void handleDongleState( EDongleState /* i_state */ ) {;}
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
