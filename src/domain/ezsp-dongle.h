@@ -1,5 +1,4 @@
-#ifndef EZSP_DONGLE_H
-#define EZSP_DONGLE_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -84,5 +83,3 @@ private:
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
-
-#endif // EZSP_DONGLE_H

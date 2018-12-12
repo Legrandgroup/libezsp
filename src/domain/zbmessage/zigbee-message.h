@@ -1,5 +1,4 @@
-#ifndef ZIGBEE_MESSAGE_H
-#define ZIGBEE_MESSAGE_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -98,5 +97,3 @@ private:
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
-
-#endif // ZIGBEE_MESSAGE_H

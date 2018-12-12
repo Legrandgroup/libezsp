@@ -1,5 +1,4 @@
-#ifndef ASH_H
-#define ASH_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -62,6 +61,3 @@ private:
     std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
     void Timeout(void);
 };
-
-
-#endif // ASH_H

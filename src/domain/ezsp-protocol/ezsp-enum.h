@@ -2,8 +2,7 @@
  * 
  */
 
-#ifndef EZSP_ENUM_H
-#define EZSP_ENUM_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -942,5 +941,3 @@ class CEzspEnum{
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
-
-#endif // EZSP_ENUM_H
