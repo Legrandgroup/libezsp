@@ -9,8 +9,10 @@
 #include "../ezsp-dongle.h"
 #include "../zbmessage/zigbee-message.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 class CZigbeeNetworking : public CEzspDongleObserver
 {
@@ -38,4 +40,6 @@ private:
     std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

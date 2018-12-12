@@ -9,8 +9,10 @@
 #include "../ezsp-dongle.h"
 #include "../zbmessage/zigbee-message.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 class CZigbeeMessaging : public CEzspDongleObserver
 {
@@ -40,4 +42,6 @@ private:
     ITimerFactory &timer_factory; // needed in the future to well manage retry/timeout on unicast zigbee message
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

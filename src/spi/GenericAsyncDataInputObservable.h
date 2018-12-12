@@ -11,8 +11,10 @@
 #include <cstdlib>	// For size_t
 #include "IAsyncDataInputObserver.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 /**
  * @brief An observable class that will invoke method handleInputData() on all its observers when new async data is received
@@ -51,4 +53,6 @@ private:
 	std::set<IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

@@ -10,8 +10,11 @@
 #include <vector>
 #include <cstdlib>	// For size_t
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
+
 /**
  * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
  */
@@ -36,4 +39,6 @@ public:
 	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) = 0;
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN
