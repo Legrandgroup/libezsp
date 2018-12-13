@@ -6,6 +6,8 @@ CXXFLAGS += $(FW_CXXFLAGS_VISIBILITY) -DUSE_RARITAN -g -O0 -Wno-error=unused-par
 
 TARGET_SHARED_LIBNAMES = libezsp
 
+libezsp_MODULE_NAME = test_log
+
 libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
 	domain/zbmessage/zclframecontrol.cpp \
