@@ -12,8 +12,10 @@
 #include "../IUartDriver.h"
 #include "RaritanEventLoop.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 /**
  * @brief Class to interact with a UART in the Raritan framework
@@ -96,4 +98,6 @@ private:
 	GenericAsyncDataInputObservable* m_data_input_observable;	/*!< The observable that will notify observers when new bytes are available on the UART */
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

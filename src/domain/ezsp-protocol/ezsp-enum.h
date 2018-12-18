@@ -2,15 +2,16 @@
  * 
  */
 
-#ifndef EZSP_ENUM_H
-#define EZSP_ENUM_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
 #include <string>
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 typedef enum
 {
@@ -937,6 +938,6 @@ class CEzspEnum{
     static std::string EmberIncomingMessageTypeToString( EmberIncomingMessageType in );
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
-
-#endif // EZSP_ENUM_H
+#endif // USE_RARITAN

@@ -1,5 +1,4 @@
-#ifndef EZSP_DONGLE_H
-#define EZSP_DONGLE_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -19,8 +18,10 @@ typedef struct sMsg
     std::vector<uint8_t> payload;
 }SMsg;
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
@@ -79,6 +80,6 @@ private:
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
-
-#endif // EZSP_DONGLE_H
+#endif // USE_RARITAN
