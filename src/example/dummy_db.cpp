@@ -6,7 +6,13 @@
 
 #include "dummy_db.h"
 
-bool Cdb::addProduct(EmberEUI64 i_eui64, EmberNodeId i_addr)
+Cdb::Cdb() :
+	dongleEui64(),
+	products()
+{
+}
+
+bool Cdb::addProduct(const EmberEUI64 i_eui64, const EmberNodeId i_addr)
 {
     bool lo_adding = false;
     // check if already present
@@ -20,7 +26,7 @@ bool Cdb::addProduct(EmberEUI64 i_eui64, EmberNodeId i_addr)
     return lo_adding;
 }
 
-EmberNodeId Cdb::getProductAddress(EmberEUI64 i_eui64)
+EmberNodeId Cdb::getProductAddress(const EmberEUI64 i_eui64) const
 {
     EmberNodeId l_addr = INVALID_NODE_ID;
 
@@ -35,7 +41,7 @@ EmberNodeId Cdb::getProductAddress(EmberEUI64 i_eui64)
     return l_addr;
 }
 
-EmberEUI64 Cdb::getProductEui(EmberNodeId i_addr)
+EmberEUI64 Cdb::getProductEui(const EmberNodeId i_addr) const
 {
     EmberEUI64 l_eui;
 

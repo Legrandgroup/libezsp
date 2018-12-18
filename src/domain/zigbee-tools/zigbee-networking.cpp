@@ -11,7 +11,10 @@
 #include "../ezsp-protocol/struct/ember-child-data-struct.h"
 
 
-CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ): dongle(i_dongle), zb_messaging(i_zb_messaging),
+CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
+	dongle(i_dongle),
+	zb_messaging(i_zb_messaging),
+	child_idx(0),
     discoverCallbackFct(nullptr)
 {
     dongle.registerObserver(this);

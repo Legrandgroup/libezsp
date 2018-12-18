@@ -26,15 +26,15 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory)
+CAsh::CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory) :
+	ackNum(0),
+	frmNum(0),
+	seq_num(0),
+	stateConnected(false),
+	timer(i_timer_factory.create()),
+	pCb(ipCb),
+	in_msg()
 {
-    in_msg.clear();
-    ackNum = 0;
-    frmNum = 0;
-    seq_num = 0;
-    stateConnected = false;
-    pCb = ipCb;
-    timer = i_timer_factory.create();
 }
 
 void CAsh::Timeout(void)

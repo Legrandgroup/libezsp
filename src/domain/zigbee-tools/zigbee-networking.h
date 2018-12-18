@@ -19,6 +19,11 @@ class CZigbeeNetworking : public CEzspDongleObserver
 public:
     CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 
+    CZigbeeNetworking() = delete; /* Construction without arguments is not allowed */
+    CZigbeeNetworking(const CZigbeeNetworking&) = delete; /* No copy construction allowed */
+
+    CZigbeeNetworking& operator=(CZigbeeNetworking) = delete; /* No assignment allowed */
+
     void stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size);
 
     void formHaNetwork();

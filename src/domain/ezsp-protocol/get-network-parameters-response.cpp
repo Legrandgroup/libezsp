@@ -1,20 +1,22 @@
 /**
- * 
+ * @file get-network-parameters-response.cpp
+ *
+ * @brief Handles decoding of the current network parameters.
  */
 
 #include <sstream>
 
 #include "get-network-parameters-response.h"
 
-CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(std::vector<uint8_t> raw_message)
+CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message) :
+	status(static_cast<EEmberStatus>(raw_message.at(0))),
+	node_type(static_cast<EmberNodeType>(raw_message.at(1))),
+	parameters(raw_message,2)
+
 {
-    status = static_cast<EEmberStatus>(raw_message.at(0));
-    node_type = static_cast<EmberNodeType>(raw_message.at(1));
-    raw_message.erase(raw_message.begin(),raw_message.begin()+2);
-    parameters.setRaw(raw_message);
 }
 
-std::string CGetNetworkParamtersResponse::String()
+std::string CGetNetworkParamtersResponse::String() const
 {
     std::stringstream buf;
 
@@ -25,4 +27,9 @@ std::string CGetNetworkParamtersResponse::String()
     buf << " }";
 
     return buf.str();
+}
+
+std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data){
+    out << data.String();
+    return out;
 }

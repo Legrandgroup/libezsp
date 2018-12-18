@@ -3,6 +3,7 @@
  *
  * @brief Dummy database, just to have link between eui64 and short address
  */
+
 #pragma once
 
 #include <vector>
@@ -21,10 +22,12 @@ public:
 class Cdb
 {
 public:
-    bool addProduct(EmberEUI64 i_eui64, EmberNodeId i_addr);
+	Cdb();
 
-    EmberNodeId getProductAddress(EmberEUI64 i_eui64);
-    EmberEUI64 getProductEui(EmberNodeId i_addr);
+    bool addProduct(const EmberEUI64 i_eui64, const EmberNodeId i_addr);
+
+    EmberNodeId getProductAddress(const EmberEUI64 i_eui64) const;
+    EmberEUI64 getProductEui(const EmberNodeId i_addr) const;
 
     // awfull, just to be quick
     EmberEUI64 dongleEui64;
