@@ -4,7 +4,7 @@ LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g # -Weffc++
 LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
 
-EXEC = testEzsp
+EXEC = mainEzspTest
 OBJECTFILES = mainEzspTest.o \
 			  CAppDemo.o \
 			  dummy_db.o \
