@@ -1,5 +1,4 @@
-#ifndef ZIGBEE_MESSAGE_H
-#define ZIGBEE_MESSAGE_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -7,8 +6,10 @@
 #include "aps.h"
 #include "zclheader.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 class CZigBeeMsg
 {
 public:
@@ -93,6 +94,6 @@ private:
   std::vector<uint8_t> payload;
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
-
-#endif // ZIGBEE_MESSAGE_H
+#endif // USE_RARITAN

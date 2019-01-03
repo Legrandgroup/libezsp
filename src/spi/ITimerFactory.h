@@ -10,9 +10,11 @@
 #include "ITimer.h"
 #include <memory>	// For std::unique_ptr
 
-
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
+
 /**
  * @brief Abstract factory to create ITimer instances
  */
@@ -31,4 +33,6 @@ public:
 	virtual std::unique_ptr<ITimer> create() const = 0;
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

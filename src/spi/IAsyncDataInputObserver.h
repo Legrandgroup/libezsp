@@ -1,39 +1,58 @@
 /**
- * @file IAsyncDataInputObserver.h
+ * @file GenericAsyncDataInputObservable.h
  *
- * @brief Abstract interface to which must conforms implementations of classes that get asynchronous notifications on incoming data
- *
- * Used as a dependency inversion paradigm
+ * @brief Allows asynchronous notification of input data
  */
+
 #pragma once
 
+#include <set>
 #include <vector>
 #include <cstdlib>	// For size_t
+#include "IAsyncDataInputObserver.h"
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
+
 /**
- * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
+ * @brief An observable class that will invoke method handleInputData() on all its observers when new async data is received
  */
-class IAsyncDataInputObserver {
+class GenericAsyncDataInputObservable {
 public:
-	/**
-	 * @brief Default constructor
-	 */
-	IAsyncDataInputObserver() {};
+	GenericAsyncDataInputObservable();
+	virtual ~GenericAsyncDataInputObservable();
 
 	/**
-	 * @brief Default destructor
-	 */
-	virtual ~IAsyncDataInputObserver() {};
-
-	/**
-	 * @brief Handler invoked for each input data
+	 * @brief Register a new observer
 	 *
-	 * @param dataIn The pointer to the incoming bytes buffer
-	 * @param dataLen The size of the data to read inside dataIn
+	 * @param observer The new observer to add to the notification list
+	 * @return true if the observer was successfully added
 	 */
-	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) = 0;
+
+	bool registerObserver(IAsyncDataInputObserver* observer);
+
+	/**
+	 * @brief Register a new observer
+	 *
+	 * @param observer The new observer to remove from the notification list
+	 * @return true if the observer was successfully removed
+	 */
+	bool unregisterObserver(IAsyncDataInputObserver* observer);
+
+	/**
+	 * @brief Trigger a new notification to all registerd observers
+	 *
+	 * @param inputData A pointer to the incoming bytes buffer
+	 * @param inputDataLen A size of the data to read inside buffer inputData
+	 */
+	void notifyObservers(const unsigned char* inputData, const size_t inputDataLen);
+
+private:
+	std::set<IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

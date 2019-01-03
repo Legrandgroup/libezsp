@@ -1,5 +1,4 @@
-#ifndef ZCLFRAMECONTROL_H
-#define ZCLFRAMECONTROL_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -65,5 +64,3 @@ private:
   /** software version indication, MSP : 0 for short frame (no deviceid and battery fields), 1 for long frame (generation 2.1) */
   EZCLFrameCtrlSoftwareCode software_code;
 };
-
-#endif // ZCLFRAMECONTROL_H

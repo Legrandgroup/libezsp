@@ -2,8 +2,7 @@
  * 
  */
 
-#ifndef APSOPTION_H
-#define APSOPTION_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -51,5 +50,3 @@ public:
   */
   bool zdo_rsp_requiered;
 };
-
-#endif // APSOPTION_H

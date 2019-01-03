@@ -5,8 +5,10 @@
 
 #include <string>
 
+#ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 #define ZDP_HIGHT_BYTE_REQUEST  0x00
 #define ZDP_HIGHT_BYTE_RESPONSE 0x80
@@ -37,4 +39,6 @@ class CZdpEnum{
     static std::string ToString( EZdpLowByte in );
 };
 
+#ifdef USE_RARITAN
 #include <pp/official_api_end.h>
+#endif // USE_RARITAN

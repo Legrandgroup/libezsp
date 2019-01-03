@@ -1,5 +1,4 @@
-#ifndef ZCLHEADER_H
-#define ZCLHEADER_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -88,5 +87,3 @@ private:
   /** */
   uint8_t transaction_number;
 };
-
-#endif // ZCLHEADER_H
