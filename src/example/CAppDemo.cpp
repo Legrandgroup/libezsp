@@ -17,14 +17,14 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) : 
-    dongle(i_timer_factory,this), zb_messaging(dongle,i_timer_factory), zb_nwk(dongle, zb_messaging) 
+CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory& i_timer_factory, ILogger& loggerToUse) :
+    logger(loggerToUse), dongle(i_timer_factory,this), zb_messaging(dongle,i_timer_factory), zb_nwk(dongle, zb_messaging)
 {
     setAppState(APP_NOT_INIT);
     // uart
     if( dongle.open(uartDriver) )
     {
-        std::cout << "CAppDemo open success !" << std::endl;
+        logger.log(ILogger::LOG_LEVEL::TRACE, "CAppDemo open success !");
         dongle.registerObserver(this);
         setAppState(APP_INIT_IN_PROGRESS);
     }

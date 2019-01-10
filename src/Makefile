@@ -28,6 +28,7 @@ libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	spi/raritan/RaritanTimerFactory.cpp \
 	spi/raritan/RaritanTimer.cpp \
 	spi/raritan/RaritanEventLoop.cpp \
+	spi/raritan/RaritanLogger.cpp \
 
 libezsp_LIBS = -lpp_base
 
