@@ -1,21 +1,21 @@
 /**
- * @file SerialTimer.cpp
+ * @file CppThreadsTimer.cpp
  *
  * @brief Concrete implementation of ITimer using C++11 threads
  */
 
-#include "SerialTimer.h"
+#include "CppThreadsTimer.h"
 
 #include <chrono>
 #include <iostream>
 
-SerialTimer::SerialTimer() :  waitingThread(), cv(), cv_m() { }
+CppThreadsTimer::CppThreadsTimer() :  waitingThread(), cv(), cv_m() { }
 
-SerialTimer::~SerialTimer() {
+CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();
 }
 
-bool SerialTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
+bool CppThreadsTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
 
 	if (this->started) {
 		return false;
@@ -41,7 +41,7 @@ bool SerialTimer::start(uint16_t timeout, std::function<void (ITimer* triggering
 	return true;
 }
 
-bool SerialTimer::stop() {
+bool CppThreadsTimer::stop() {
 
 	if (! this->started) {
 		return false;
@@ -57,7 +57,7 @@ bool SerialTimer::stop() {
 	return true;
 }
 
-bool SerialTimer::isRunning() {
+bool CppThreadsTimer::isRunning() {
 	return this->started;
 }
 

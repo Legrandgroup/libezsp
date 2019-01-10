@@ -1,5 +1,5 @@
 #include "SerialUartDriver.h"
-#include "SerialTimerFactory.h"
+#include "CppThreadsTimerFactory.h"
 #include "../GenericAsyncDataInputObservable.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
@@ -49,9 +49,9 @@ int main() {
 	SerialUartDriver uartDriver;
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
-	SerialTimerFactory serialTimerFactory;
-	ITimer *serialTimer = serialTimerFactory.create();
-	serialTimer->start(10000, [](ITimer* triggeringTimer) {
+	CppThreadsTimerFactory timerFactory;
+	ITimer *timer = timerFactory.create();
+	timer->start(10000, [](ITimer* triggeringTimer) {
 			std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
 
@@ -61,7 +61,7 @@ int main() {
 	uartDriver.write(written, buf, 5);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-	serialTimer->stop();
+	timer->stop();
 
 	for(;;) { }
 

@@ -8,7 +8,7 @@
 
 #ifdef USE_SERIALCPP
 #include "../spi/serial/SerialUartDriver.h"
-#include "../spi/cppthreads/SerialTimerFactory.h"
+#include "../spi/cppthreads/CppThreadsTimerFactory.h"
 #include <string>
 #else
 #ifdef USE_RARITAN
@@ -27,7 +27,7 @@ int main( void )
 {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
-    SerialTimerFactory timerFactory;
+    CppThreadsTimerFactory timerFactory;
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
