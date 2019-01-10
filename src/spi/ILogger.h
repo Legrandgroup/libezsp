@@ -84,6 +84,11 @@ public:
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	virtual void logD(const char *format, ...) = 0;
+	
+	/*
+	 * TODO: also allow logging via std::streambufs
+	 * See http://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html
+	 */
 
 };
 
