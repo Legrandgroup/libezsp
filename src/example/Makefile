@@ -25,8 +25,8 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/zigbee-tools/zigbee-messaging.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
-			  ../spi/serial/SerialTimerFactory.o \
-			  ../spi/serial/SerialTimer.o
+			  ../spi/cppthreads/SerialTimerFactory.o \
+			  ../spi/cppthreads/SerialTimer.o
 
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 INC = $(LOCAL_INC) -I../spi -I../domain -I../domain/zbmessage

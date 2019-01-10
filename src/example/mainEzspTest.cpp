@@ -8,7 +8,7 @@
 
 #ifdef USE_SERIALCPP
 #include "../spi/serial/SerialUartDriver.h"
-#include "../spi/serial/SerialTimerFactory.h"
+#include "../spi/cppthreads/SerialTimerFactory.h"
 #include <string>
 #else
 #ifdef USE_RARITAN
