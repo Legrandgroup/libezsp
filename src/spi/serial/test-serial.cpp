@@ -46,7 +46,7 @@ int main() {
 	DebuggerDisplayer disp("Debugger displayer");
 	uartIncomingDataHandler.registerObserver(&disp);
 
-	UartDriverSerial uartDriver;
+	SerialUartDriver uartDriver;
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
 	SerialTimerFactory serialTimerFactory;

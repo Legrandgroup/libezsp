@@ -26,7 +26,7 @@ using namespace std;
 int main( void )
 {
 #ifdef USE_SERIALCPP
-    UartDriverSerial uartDriver;
+    SerialUartDriver uartDriver;
     SerialTimerFactory timerFactory;
 #endif
 #ifdef USE_RARITAN
