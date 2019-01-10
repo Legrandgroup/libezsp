@@ -31,7 +31,7 @@ int main( void )
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
-    UartDriverRaritan uartDriver(eventLoop);
+    RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
 #endif
 

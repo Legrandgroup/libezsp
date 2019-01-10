@@ -7,18 +7,18 @@
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
 
-UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
+RaritanUartDriver::RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 }
 
-UartDriverRaritan::~UartDriverRaritan() {
+RaritanUartDriver::~RaritanUartDriver() {
 	this->close();
 }
 
-void UartDriverRaritan::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
+void RaritanUartDriver::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
 	m_data_input_observable = uartIncomingDataHandler;
 }
 
-void UartDriverRaritan::open(const std::string& serialPortName, unsigned int baudRate) {
+void RaritanUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
 	pp::Tty::UPtr tmpSerialPortUPTR;
 	pp::Tty::open(tmpSerialPortUPTR, serialPortName,
 		pp::FileDescriptor::AF_READ_WRITE,
@@ -41,7 +41,7 @@ void UartDriverRaritan::open(const std::string& serialPortName, unsigned int bau
 	this->m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
 }
 
-int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int RaritanUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
 	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
 	if (result == PP_OK) {
@@ -52,6 +52,6 @@ int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	return result;
 }
 
-void UartDriverRaritan::close() {
+void RaritanUartDriver::close() {
 	m_serial_tty = nullptr; // TODO: Test this (is the port closed when serial port descriptor goes out of scope?)
 }

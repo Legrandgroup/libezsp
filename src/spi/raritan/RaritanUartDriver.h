@@ -20,14 +20,14 @@
 /**
  * @brief Class to interact with a UART in the Raritan framework
  */
-class UartDriverRaritan : public IUartDriver {
+class RaritanUartDriver : public IUartDriver {
 public:
 	/**
 	 * @brief Default constructor
 	 *
 	 * Construction without arguments is not allowed
 	 */
-	UartDriverRaritan() = delete;
+	RaritanUartDriver() = delete;
 
 	/**
 	 * @brief Constructor
@@ -35,26 +35,26 @@ public:
 	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
 	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
 	 */
-	UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+	RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
 
 	/**
 	 * @brief Copy constructor
 	 *
 	 * Copy construction is forbidden on this class
 	 */
-	UartDriverRaritan(const UartDriverRaritan& other) = delete;
+	RaritanUartDriver(const RaritanUartDriver& other) = delete;
 
 	/**
 	 * @brief Assignment operator
 	 *
 	 * Copy construction is forbidden on this class
 	 */
-	UartDriverRaritan& operator=(const UartDriverRaritan& other) = delete;
+	RaritanUartDriver& operator=(const RaritanUartDriver& other) = delete;
 
 	/**
 	 * @brief Destructor
 	 */
-	~UartDriverRaritan();
+	~RaritanUartDriver();
 
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
