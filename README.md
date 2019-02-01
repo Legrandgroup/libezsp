@@ -17,7 +17,7 @@ The newly generated binary will be located in `../install_root/bin/mainEzspTest`
 mainEzspTest
 ```
 
-### Using libserialcpp, under Linux
+### Using libserialcpp and C++11 threads under Linux
 
 In order to compile for Linux, you will first need a working installation of [libserialcpp](https://github.com/Legrandgroup/serial)
 Let's assumethe code for libserialcpp is checked out in directory `~/serial` (this will be the assumption in all lines below)
