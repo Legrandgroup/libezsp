@@ -4,7 +4,7 @@ LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
 LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
 
-EXEC = testEzsp
+EXEC = mainEzspTest
 OBJECTFILES = mainEzspTest.o \
 			  CAppDemo.o \
 			  dummy_db.o \
@@ -25,8 +25,8 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/zigbee-tools/zigbee-messaging.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
-			  ../spi/serial/SerialTimerFactory.o \
-			  ../spi/serial/SerialTimer.o
+			  ../spi/cppthreads/CppThreadsTimerFactory.o \
+			  ../spi/cppthreads/CppThreadsTimer.o
 
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 INC = $(LOCAL_INC) -I../spi -I../domain -I../domain/zbmessage

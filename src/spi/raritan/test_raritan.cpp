@@ -51,7 +51,7 @@ int main() {
 		std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
 	DebuggerDisplayer disp("Debugger displayer");
-	UartDriverRaritan uartDriver(eventLoop);
+	RaritanUartDriver uartDriver(eventLoop);
 	uartIncomingDataHandler.registerObserver(&disp); // Seb ne veut pas se préoccuper du type de l'UART et enregistrer l'observer après la construction uartDriver.
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 	uartDriver.open("/dev/ttyUSB0", 57600);
