@@ -64,7 +64,7 @@ public:
   CZCLHeader *GetZCLHeader(void){ return p_zcl_header; }
 
   // payload
-  std::vector<uint8_t> *GetPaylaod(void){ return &payload; }
+  std::vector<uint8_t> *GetPayload(void){ return &payload; }
 
   // concatenate
   /**
