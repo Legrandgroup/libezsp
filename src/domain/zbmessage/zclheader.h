@@ -1,3 +1,9 @@
+/**
+ * @file zclheader.h
+ *
+ * @brief Handles encoding/decoding of ZCL headers
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -7,11 +13,47 @@
 
 #define LG_MAN_CODE 0x1021
 
+class CZCLHeader; /* Forward declaration */
+void swap(CZCLHeader& first, CZCLHeader& second); /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
+
 class CZCLHeader
 {
 public:
   CZCLHeader();
-  CZCLHeader( std::vector<uint8_t> i_data ) { SetZCLHeader(i_data); }
+
+  /**
+   * @brief Constructor from a buffer
+   *
+   * @param[in] i_data The buffer to parse in order to construct this instance
+   * @param[out] o_idx The number of bytes used (in buffer i_data) to construct the ZCL header
+   */
+  CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx);
+
+  /**
+   * @brief Copy constructor
+   *
+   * @param other The object to copy from
+   */
+  CZCLHeader(const CZCLHeader& other);
+
+  /**
+   * @brief Assignment operator
+   * @param other The object to assign to the lhs
+   *
+   * @return The object that has been assigned the value of \p other
+   */
+  CZCLHeader& operator=(CZCLHeader other);
+
+  /**
+   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZCLHeader
+   *
+   * This function will swap all attributes of \p first and \p second
+   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+   *
+   * @param first The first object
+   * @param second The second object
+   */
+  friend void (::swap)(CZCLHeader& first, CZCLHeader& second);
 
   // high level
 
@@ -20,8 +62,8 @@ public:
    * @param i_cmd_id       : command identifier
    * @param i_direction    : model direction
    */
-  void SetMSPSpecific( uint16_t i_profile_id, uint8_t i_cmd_id,
-                         EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number = 0 );
+  void SetMSPSpecific( const uint16_t i_profile_id, const uint8_t i_cmd_id,
+                         const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number = 0 );
 
   /**
    * @brief SetMSPGeneral  : build default msp cluster general ZCL header
@@ -30,16 +72,16 @@ public:
    * @param i_direction    : model direction
    * @param i_transaction_number
    */
-  void SetMSPGeneral( uint16_t i_profile_id, uint8_t i_cmd_id,
-                        EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number = 0 );
+  void SetMSPGeneral( const uint16_t i_profile_id, const uint8_t i_cmd_id,
+                        const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number = 0 );
 
   /**
    * @brief SetPublicSpecific : build default public cluster specific ZCL header
    * @param i_cmd_id       : command identifier
    * @param i_direction    : model direction
    */
-  void SetPublicSpecific( uint16_t i_manufacturer_id, uint8_t i_cmd_id,
-                                      EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number );
+  void SetPublicSpecific( const uint16_t i_manufacturer_id, const uint8_t i_cmd_id,
+                                      const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number );
 
   /**
    * @brief SetPublicGeneral  : build default public cluster general ZCL header
@@ -48,42 +90,35 @@ public:
    * @param i_direction    : model direction
    * @param i_transaction_number
    */
-  void SetPublicGeneral(uint16_t i_manufacturer_id, uint8_t i_cmd_id,
-                                  EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number );
+  void SetPublicGeneral(const uint16_t i_manufacturer_id, const uint8_t i_cmd_id,
+                                  const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number );
 
   // frame control
-  CZCLFrameControl *GetFrmCtrl(void) { return &frm_ctrl; }
-  void SetFrameControl( CZCLFrameControl i_frm_ctrl ) { frm_ctrl.SetFrmCtrl( i_frm_ctrl ); }
+  CZCLFrameControl GetFrmCtrl(void) const { return frm_ctrl; }
+  void SetFrameControl( const CZCLFrameControl& i_frm_ctrl ) { frm_ctrl=i_frm_ctrl ; }
 
   // manufacturer code
-  uint16_t GetManCode(void) { return manufacturer_code; }
-  void SetManCode( uint16_t i_code ) { manufacturer_code = i_code; }
+  uint16_t GetManCode(void) const { return manufacturer_code; }
+  void SetManCode( const uint16_t i_code ) { manufacturer_code = i_code; }
 
   // transaction number
-  uint8_t GetTransactionNb(void) { return transaction_number; }
-  void SetTransactionNb( uint8_t i_tr_nb ) { transaction_number = i_tr_nb; }
+  uint8_t GetTransactionNb(void) const { return transaction_number; }
+  void SetTransactionNb( const uint8_t i_tr_nb ) { transaction_number = i_tr_nb; }
 
   // command id
-  uint8_t GetCmdId( void ) { return cmd_id; }
-  void SetCmdId( uint8_t i_cmd_id ) { cmd_id = i_cmd_id; }
+  uint8_t GetCmdId( void ) const { return cmd_id; }
+  void SetCmdId( const uint8_t i_cmd_id ) { cmd_id = i_cmd_id; }
 
   // concatenate
-  std::vector<uint8_t> GetZCLHeader(void);
-  /**
-   * @brief SetZCLHeader : parse zcl header from data buffer
-   * @param i_data : data buffer
-   * @return size of header in byte
-   */
-  uint8_t SetZCLHeader( std::vector<uint8_t> i_data );
-
+  std::vector<uint8_t> GetZCLHeader(void) const;
 
 private:
-  /** */
-  uint8_t cmd_id;
   /** */
   CZCLFrameControl frm_ctrl;
   /** legrand : 0x1021 */
   uint16_t manufacturer_code;
   /** */
   uint8_t transaction_number;
+  /** */
+  uint8_t cmd_id;
 };

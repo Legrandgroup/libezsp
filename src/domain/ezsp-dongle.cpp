@@ -4,16 +4,19 @@
 
 #include "ezsp-dongle.h"
 
-
-CEzspDongle::CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer ): timer_factory(i_timer_factory)
+CEzspDongle::CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+	timer_factory(i_timer_factory),
+	pUart(nullptr),
+	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
+	uartIncomingDataHandler(),
+	sendingMsgQueue(),
+	wait_rsp(false),
+	observers()
 {
-    wait_rsp = false;
-    pUart = nullptr;
     if( nullptr != ip_observer )
     {
         registerObserver(ip_observer);
     }
-    ash = new CAsh(static_cast<CAshCallback*>(this), timer_factory);
 }
 
 CEzspDongle::~CEzspDongle()
@@ -210,4 +213,4 @@ void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<ui
 	for(auto observer : this->observers) {
 		observer->handleEzspRxMessage(i_cmd, i_message);
 	}
-}    
+}

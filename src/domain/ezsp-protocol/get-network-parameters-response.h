@@ -1,6 +1,9 @@
 /**
- * Returns the current network parameters.
+ * @file get-network-parameters-response.h
+ *
+ * @brief Handles decoding of the current network parameters.
  */
+
 #pragma once
 
 
@@ -15,27 +18,65 @@
 class CGetNetworkParamtersResponse
 {
     public:
-        CGetNetworkParamtersResponse(std::vector<uint8_t> raw_message);
+        /**
+         * @brief Default constructor
+         *
+         * Construction without arguments is not allowed
+         */
+        CGetNetworkParamtersResponse() = delete;
 
         /**
-         * An EmberStatus value indicating success or the reason for failure.
+         * @brief Construction from a buffer
+         *
+         * @param raw_message The buffer to construct from
          */
-        EEmberStatus getStatus(){ return status; }
+        CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message);
 
         /**
-         * An EmberNodeType value indicating the current node type.
+         * @brief Copy constructor
+         *
+         * Copy construction is forbidden on this class
          */
-        EmberNodeType getNodeType(){ return node_type; }
+        CGetNetworkParamtersResponse(const CGetNetworkParamtersResponse& other) = delete;
 
         /**
-         * The current network parameters.
+         * @brief Assignment operator
+         *
+         * Assignment is forbidden on this class
          */
-        CEmberNetworkParameters getParameters(){ return parameters; }
+        CGetNetworkParamtersResponse& operator=(const CGetNetworkParamtersResponse& other) = delete;
 
         /**
-         * Retrieve a string for display
+         * @brief An EmberStatus value indicating success or the reason for failure.
          */
-        std::string String();
+        EEmberStatus getStatus() const { return status; }
+
+        /**
+         * @brief An EmberNodeType value indicating the current node type.
+         */
+        EmberNodeType getNodeType() const { return node_type; }
+
+        /**
+         * @brief The current network parameters.
+         */
+        CEmberNetworkParameters getParameters() const { return parameters; }
+
+        /**
+         * @brief Dump this instance as a string
+         *
+         * @return The resulting string
+         */
+        std::string String() const;
+
+        /**
+         * @brief Serialize to an iostream
+         *
+         * @param out The original output stream
+         * @param data The object to serialize
+         *
+         * @return The new output stream with serialized data appended
+         */
+        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data);
 
     private:
         EEmberStatus status;

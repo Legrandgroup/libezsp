@@ -18,9 +18,12 @@
 
 
 CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) : 
-    dongle(i_timer_factory,this), zb_messaging(dongle,i_timer_factory), zb_nwk(dongle, zb_messaging) 
+	dongle(i_timer_factory, this),
+	zb_messaging(dongle, i_timer_factory),
+	zb_nwk(dongle, zb_messaging),
+	app_state(APP_NOT_INIT),
+	db()
 {
-    setAppState(APP_NOT_INIT);
     // uart
     if( dongle.open(uartDriver) )
     {
@@ -187,23 +190,23 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 CZigBeeMsg zbMsg;
                 zbMsg.Set(l_aps_raw,l_msg_raw);
 
-                if( 0 == zbMsg.GetAps()->src_ep )
+                if( 0 == zbMsg.GetAps().src_ep )
                 {
-                    EZdpLowByte zdp_low = static_cast<EZdpLowByte>(zbMsg.GetAps()->cluster_id&0xFF);
+                    EZdpLowByte zdp_low = static_cast<EZdpLowByte>(u16_get_lo_u8(zbMsg.GetAps().cluster_id));
 
                     // Zigbee Device Object
-                    if( ZDP_HIGHT_BYTE_RESPONSE == static_cast<uint8_t>(zbMsg.GetAps()->cluster_id>>8))
+                    if( ZDP_HIGHT_BYTE_RESPONSE == u16_get_hi_u8(zbMsg.GetAps().cluster_id))
                     {
                         switch(zdp_low)
                         {
                             case ZDP_ACTIVE_EP:
                             {
                                 // byte 0 is for sequence number, ignore it!
-                                uint8_t status = zbMsg.GetPayload()->at(1U);
-                                EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload()->at(3U), zbMsg.GetPayload()->at(2U)));
-                                uint8_t ep_count = zbMsg.GetPayload()->at(4U);
+                                uint8_t status = zbMsg.GetPayload().at(1U);
+                                EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+                                uint8_t ep_count = zbMsg.GetPayload().at(4U);
                                 std::vector<uint8_t> ep_list;
-                                for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload()->at(5U+loop));}
+                                for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload().at(5U+loop));}
 
                                 // DEBUG
                                 std::cout << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
@@ -226,27 +229,27 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             {
                                 // for this simple exemple when we receive a simple descriptor we loop on cluster server and we bind each cluster who is interresting for us.
                                 // byte 0 is for sequence number, ignore it!
-                                uint8_t status = zbMsg.GetPayload()->at(1U);
+                                uint8_t status = zbMsg.GetPayload().at(1U);
 
                                 if( 0 == status )
                                 {
-                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload()->at(3U), zbMsg.GetPayload()->at(2U)));
-                                    uint8_t lentgh = zbMsg.GetPayload()->at(4U);
-                                    uint8_t endpoint = zbMsg.GetPayload()->at(5U);
-                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPayload()->at(7U), zbMsg.GetPayload()->at(6U));
-                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPayload()->at(9U), zbMsg.GetPayload()->at(8U));
-                                    uint8_t version = zbMsg.GetPayload()->at(10U);
-                                    uint8_t in_count = zbMsg.GetPayload()->at(11U);
-                                    uint8_t out_count = zbMsg.GetPayload()->at(12U+(2U*in_count));
+                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+                                    uint8_t lentgh = zbMsg.GetPayload().at(4U);
+                                    uint8_t endpoint = zbMsg.GetPayload().at(5U);
+                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPayload().at(7U), zbMsg.GetPayload().at(6U));
+                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPayload().at(9U), zbMsg.GetPayload().at(8U));
+                                    uint8_t version = zbMsg.GetPayload().at(10U);
+                                    uint8_t in_count = zbMsg.GetPayload().at(11U);
+                                    uint8_t out_count = zbMsg.GetPayload().at(12U+(2U*in_count));
                                     std::vector<uint16_t> in_list;
                                     for(uint8_t loop=0; loop<in_count; loop++)
                                     {
-                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPayload()->at(13U+(2U*loop)), zbMsg.GetPayload()->at(12U+(2U*loop))));
+                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(13U+(2U*loop)), zbMsg.GetPayload().at(12U+(2U*loop))));
                                     }
                                     std::vector<uint16_t> out_list;
                                     for(uint8_t loop=0; loop<out_count; loop++)
                                     {
-                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPayload()->at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPayload()->at(13U+(2U*in_count)+(2U*loop))));
+                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPayload().at(13U+(2U*in_count)+(2U*loop))));
                                     }
 
                                     std::stringstream buf;
@@ -354,9 +357,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             // we receive a device announce because a child join or rejoin network, start a discover endpoint process
 
                             // byte 0 is for sequence number, ignore it!
-                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload()->at(2U), zbMsg.GetPayload()->at(1U));
+                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload().at(2U), zbMsg.GetPayload().at(1U));
                             EmberEUI64 eui64;
-                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPayload()->at(3U+loop)); }
+                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPayload().at(3U+loop)); }
 
                             // add to database
                             db.addProduct( eui64, address );
@@ -380,39 +383,39 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     // applicative zigbee message
                     std::stringstream buf;
                     buf << "ZCL : " << 
-                        "[ endpoint : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetAps()->src_ep) << "]" <<
-                        "[ cluster : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(zbMsg.GetAps()->cluster_id) << "]" <<
-                        "[ type : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader()->GetFrmCtrl()->GetFrmType()) << "]" <<
-                        "[ command : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader()->GetCmdId()) << "]" <<
+                        "[ endpoint : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetAps().src_ep) << "]" <<
+                        "[ cluster : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(zbMsg.GetAps().cluster_id) << "]" <<
+                        "[ type : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader().GetFrmCtrl().GetFrmType()) << "]" <<
+                        "[ command : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader().GetCmdId()) << "]" <<
                         "[ Data : ";
-                    for(uint8_t loop=0; loop<zbMsg.GetPayload()->size(); loop++)
+                    for(uint8_t loop=0; loop<zbMsg.GetPayload().size(); loop++)
                     {
-                         buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload()->at(loop)) << ", "; 
+                         buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload().at(loop)) << ", ";
                     }
                     buf << "]";
                     std::cout << buf.str() << std::endl;                    
 
-                    if( E_FRM_TYPE_GENERAL == zbMsg.GetZCLHeader()->GetFrmCtrl()->GetFrmType() )
+                    if( E_FRM_TYPE_GENERAL == zbMsg.GetZCLHeader().GetFrmCtrl().GetFrmType() )
                     {
                         // to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
-                        if( 0x0A == zbMsg.GetZCLHeader()->GetCmdId() )
+                        if( 0x0A == zbMsg.GetZCLHeader().GetCmdId() )
                         {
-                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPayload()->at(1), zbMsg.GetPayload()->at(0));
-                            //uint8_t data_type = zbMsg.GetPayload()->at(2);
+                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPayload().at(1), zbMsg.GetPayload().at(0));
+                            //uint8_t data_type = zbMsg.GetPayload().at(2);
 
-                            if( 0x0402 == zbMsg.GetAps()->cluster_id )
+                            if( 0x0402 == zbMsg.GetAps().cluster_id )
                             {
                                 if( 0x00 == attr_id )
                                 {
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload()->at(4), zbMsg.GetPayload()->at(3));
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
                                     std::cout << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
                                 }
                             }
-                            else if( 0x0405 == zbMsg.GetAps()->cluster_id )
+                            else if( 0x0405 == zbMsg.GetAps().cluster_id )
                             {
                                 if( 0x00 == attr_id )
                                 {
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload()->at(4), zbMsg.GetPayload()->at(3));
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
                                     std::cout << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
                                 }
                             }
@@ -462,7 +465,7 @@ void CAppDemo::setAppState( EAppState i_state )
         { APP_FORM_NWK_IN_PROGRESS, "APP_FORM_NWK_IN_PROGRESS" },
     };
 
-    auto   it  = MyEnumStrings.find(app_state);
+    auto  it  = MyEnumStrings.find(app_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */
     std::string error_str = it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
     std::cout << "APP State change : " << error_str << std::endl;
 }

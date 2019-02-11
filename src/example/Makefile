@@ -1,7 +1,7 @@
 LOCAL_LDFLAGS ?= -L/home/seb/_DEV/serial/compiled/li
 LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 
-CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g # -Weffc++
+CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
 LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
 
 EXEC = mainEzspTest

@@ -1,6 +1,9 @@
 /**
- * A structure containing a child node's data.
+ * @file ember-child-data-struct.h
+ *
+ * @brief A structure containing a child node's data.
  */
+
 #pragma once
 
 #include "../ezsp-enum.h"
@@ -8,70 +11,93 @@
 class CEmberChildDataStruct
 {
     public:
-        CEmberChildDataStruct(std::vector<uint8_t> raw_message){ setRaw(raw_message); }
-
-        // little endian encoded
-        void setRaw(std::vector<uint8_t> raw_message);
+        /**
+         * @brief Default constructor
+         *
+         * Construction without arguments is not allowed
+         */
+        CEmberChildDataStruct() = delete;
 
         /**
-         * The EUI64 of the child
+         * @brief Construction from a buffer
+         *
+         * @param raw_message The buffer to construct from
          */
-        EmberEUI64 getEui64(){ return eui64; }
+        CEmberChildDataStruct(const std::vector<uint8_t>& raw_message);
 
         /**
-         * The node type of the child
+         * @brief Assignment operator
+         *
+         * Copy construction is forbidden on this class
          */
-        EmberNodeType getType() { return type; }
+        CEmberChildDataStruct& operator=(const CEmberChildDataStruct& other) = delete;
 
         /**
-         * The short address of the child
+         * @brief The EUI64 of the child
          */
-        EmberNodeId getId(){ return id; }
+        EmberEUI64 getEui64() const { return eui64; }
 
         /**
-         * The phy of the child
+         * @brief The node type of the child
          */
-        uint8_t getPhy(){ return phy; }
+        EmberNodeType getType() const { return type; }
 
         /**
-         * The power of the child
+         * @brief The short address of the child
          */
-        uint8_t getPower(){ return power; }
+        EmberNodeId getId() const { return id; }
+
+        /**
+         * @brief The phy of the child
+         */
+        uint8_t getPhy() const { return phy; }
+
+        /**
+         * @brief The power of the child
+         */
+        uint8_t getPower() const { return power; }
 
         /**
          * The timeout of the child
          */
-        uint8_t getTimeout() { return timeout; }
+        uint8_t getTimeout() const { return timeout; }
 
         /**
-         * The GPD's EUI64.
+         * @brief The GPD's EUI64.
          */
-        EmberEUI64 getGpdIeeeAddress(){ return gpdIeeeAddress; }
+        EmberEUI64 getGpdIeeeAddress() const { return gpdIeeeAddress; }
 
         /**
-         * The GPD's source ID.
+         * @brief The GPD's source ID.
          */
-        uint32_t getSourceId() { return sourceId; }
+        uint32_t getSourceId() const { return sourceId; }
 
         /**
-         * The GPD Application ID.
+         * @brief The GPD Application ID.
          */
-        uint8_t getApplicationId(){ return applicationId; }
+        uint8_t getApplicationId() const { return applicationId; }
 
         /**
-         * The GPD endpoint.
+         * @brief The GPD endpoint.
          */
-        uint8_t getEndpoint(){ return endpoint; }
+        uint8_t getEndpoint() const { return endpoint; }
 
         /**
-         * For display
+         * @brief Dump this instance as a string
+         *
+         * @return The resulting string
          */
         std::string String() const;
-	
-        friend std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data){
-            out << data.String();
-            return out;
-        }
+
+        /**
+         * @brief Serialize to an iostream
+         *
+         * @param out The original output stream
+         * @param data The object to serialize
+         *
+         * @return The new output stream with serialized data appended
+         */
+        friend std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data);
 
     private:
         EmberEUI64 eui64; // The EUI64 of the child

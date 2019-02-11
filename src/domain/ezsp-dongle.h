@@ -11,7 +11,6 @@
 #include "ezsp-dongle-observer.h"
 #include "../spi/ITimerFactory.h"
 
-
 typedef struct sMsg
 {
     EEzspCmd i_cmd;
@@ -28,31 +27,31 @@ class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 public:
     CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
-    CEzspDongle(const CEzspDongleObserver&) = delete; /* No copy construction allowed (pointer data members) */
+    CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
 
-    CEzspDongle& operator=(const CEzspDongleObserver&) = delete; /* No assignment allowed (pointer data members) */
+    CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 
     /**
-     * Open connetion to dongle of type ezsp
+     * @brief Open connetion to dongle of type ezsp
      */
     bool open(IUartDriver *ipUart);
 
 
     /**
-     * Send Ezsp Command
+     * @brief Send Ezsp Command
      */
     void sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload = std::vector<uint8_t>() );
 
 
 
     /**
-     * callback de reception de l'uart
+     * @brief Callback invoked on UART received bytes
      */
     void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
     /**
-     * callabck d'information de l'ash
+     * @brief Callback invoked on ASH info
      */
     void ashCbInfo( EAshInfo info );
 
