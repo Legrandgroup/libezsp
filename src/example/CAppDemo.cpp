@@ -229,50 +229,27 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             {
                                 // for this simple exemple when we receive a simple descriptor we loop on cluster server and we bind each cluster who is interresting for us.
                                 // byte 0 is for sequence number, ignore it!
-<<<<<<< HEAD
-                                uint8_t status = zbMsg.GetPaylaod().at(1U);
+                                uint8_t status = zbMsg.GetPayload().at(1U);
 
                                 if( 0 == status )
                                 {
-                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPaylaod().at(3U), zbMsg.GetPaylaod().at(2U)));
-                                    uint8_t lentgh = zbMsg.GetPaylaod().at(4U);
-                                    uint8_t endpoint = zbMsg.GetPaylaod().at(5U);
-                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPaylaod().at(7U), zbMsg.GetPaylaod().at(6U));
-                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPaylaod().at(9U), zbMsg.GetPaylaod().at(8U));
-                                    uint8_t version = zbMsg.GetPaylaod().at(10U);
-                                    uint8_t in_count = zbMsg.GetPaylaod().at(11U);
-                                    uint8_t out_count = zbMsg.GetPaylaod().at(12U+(2U*in_count));
+                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+                                    uint8_t lentgh = zbMsg.GetPayload().at(4U);
+                                    uint8_t endpoint = zbMsg.GetPayload().at(5U);
+                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPayload().at(7U), zbMsg.GetPayload().at(6U));
+                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPayload().at(9U), zbMsg.GetPayload().at(8U));
+                                    uint8_t version = zbMsg.GetPayload().at(10U);
+                                    uint8_t in_count = zbMsg.GetPayload().at(11U);
+                                    uint8_t out_count = zbMsg.GetPayload().at(12U+(2U*in_count));
                                     std::vector<uint16_t> in_list;
                                     for(uint8_t loop=0; loop<in_count; loop++)
                                     {
-                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPaylaod().at(13U+(2U*loop)), zbMsg.GetPaylaod().at(12U+(2U*loop))));
-=======
-                                uint8_t status = zbMsg.GetPayload()->at(1U);
-
-                                if( 0 == status )
-                                {
-                                    EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload()->at(3U), zbMsg.GetPayload()->at(2U)));
-                                    uint8_t lentgh = zbMsg.GetPayload()->at(4U);
-                                    uint8_t endpoint = zbMsg.GetPayload()->at(5U);
-                                    uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPayload()->at(7U), zbMsg.GetPayload()->at(6U));
-                                    uint16_t device_id = dble_u8_to_u16(zbMsg.GetPayload()->at(9U), zbMsg.GetPayload()->at(8U));
-                                    uint8_t version = zbMsg.GetPayload()->at(10U);
-                                    uint8_t in_count = zbMsg.GetPayload()->at(11U);
-                                    uint8_t out_count = zbMsg.GetPayload()->at(12U+(2U*in_count));
-                                    std::vector<uint16_t> in_list;
-                                    for(uint8_t loop=0; loop<in_count; loop++)
-                                    {
-                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPayload()->at(13U+(2U*loop)), zbMsg.GetPayload()->at(12U+(2U*loop))));
->>>>>>> master
+                                        in_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(13U+(2U*loop)), zbMsg.GetPayload().at(12U+(2U*loop))));
                                     }
                                     std::vector<uint16_t> out_list;
                                     for(uint8_t loop=0; loop<out_count; loop++)
                                     {
-<<<<<<< HEAD
-                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPaylaod().at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPaylaod().at(13U+(2U*in_count)+(2U*loop))));
-=======
-                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPayload()->at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPayload()->at(13U+(2U*in_count)+(2U*loop))));
->>>>>>> master
+                                        out_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPayload().at(13U+(2U*in_count)+(2U*loop))));
                                     }
 
                                     std::stringstream buf;
@@ -380,15 +357,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             // we receive a device announce because a child join or rejoin network, start a discover endpoint process
 
                             // byte 0 is for sequence number, ignore it!
-<<<<<<< HEAD
-                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPaylaod().at(2U), zbMsg.GetPaylaod().at(1U));
+                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload().at(2U), zbMsg.GetPayload().at(1U));
                             EmberEUI64 eui64;
-                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPaylaod().at(3U+loop)); }
-=======
-                            EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload()->at(2U), zbMsg.GetPayload()->at(1U));
-                            EmberEUI64 eui64;
-                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPayload()->at(3U+loop)); }
->>>>>>> master
+                            for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++){ eui64.push_back(zbMsg.GetPayload().at(3U+loop)); }
 
                             // add to database
                             db.addProduct( eui64, address );
@@ -417,15 +388,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                         "[ type : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader().GetFrmCtrl().GetFrmType()) << "]" <<
                         "[ command : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader().GetCmdId()) << "]" <<
                         "[ Data : ";
-<<<<<<< HEAD
-                    for(uint8_t loop=0; loop<zbMsg.GetPaylaod().size(); loop++)
+                    for(uint8_t loop=0; loop<zbMsg.GetPayload().size(); loop++)
                     {
-                         buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPaylaod().at(loop)) << ", ";
-=======
-                    for(uint8_t loop=0; loop<zbMsg.GetPayload()->size(); loop++)
-                    {
-                         buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload()->at(loop)) << ", "; 
->>>>>>> master
+                         buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload().at(loop)) << ", ";
                     }
                     buf << "]";
                     std::cout << buf.str() << std::endl;                    
@@ -435,23 +400,14 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                         // to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
                         if( 0x0A == zbMsg.GetZCLHeader().GetCmdId() )
                         {
-<<<<<<< HEAD
-                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPaylaod().at(1), zbMsg.GetPaylaod().at(0));
-                            //uint8_t data_type = zbMsg.GetPaylaod().at(2);
-=======
-                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPayload()->at(1), zbMsg.GetPayload()->at(0));
-                            //uint8_t data_type = zbMsg.GetPayload()->at(2);
->>>>>>> master
+                            uint16_t attr_id = dble_u8_to_u16(zbMsg.GetPayload().at(1), zbMsg.GetPayload().at(0));
+                            //uint8_t data_type = zbMsg.GetPayload().at(2);
 
                             if( 0x0402 == zbMsg.GetAps().cluster_id )
                             {
                                 if( 0x00 == attr_id )
                                 {
-<<<<<<< HEAD
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPaylaod().at(4), zbMsg.GetPaylaod().at(3));
-=======
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload()->at(4), zbMsg.GetPayload()->at(3));
->>>>>>> master
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
                                     std::cout << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
                                 }
                             }
@@ -459,11 +415,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             {
                                 if( 0x00 == attr_id )
                                 {
-<<<<<<< HEAD
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPaylaod().at(4), zbMsg.GetPaylaod().at(3));
-=======
-                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload()->at(4), zbMsg.GetPayload()->at(3));
->>>>>>> master
+                                    uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
                                     std::cout << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
                                 }
                             }
