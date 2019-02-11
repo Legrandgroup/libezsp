@@ -11,7 +11,7 @@
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),
-	m_data_input_observable(),
+	m_data_input_observable(nullptr),
 	m_read_thread_alive(false),
 	m_read_messages_thread() { }
 
@@ -53,7 +53,8 @@ void SerialUartDriver::open(const std::string& serialPortName, unsigned int baud
 			while (this->m_read_thread_alive) {
 				try {
 					rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
-					this->m_data_input_observable->notifyObservers(readData, rdcnt);
+					if (this->m_data_input_observable)
+						this->m_data_input_observable->notifyObservers(readData, rdcnt);
 				}
 				catch (std::exception& e) {
 					std::cerr << "Exception in read: " << e.what() << std::endl;
@@ -83,8 +84,3 @@ void SerialUartDriver::close() {
 		this->m_serial_port.close();
 	}
 }
-
-/*void SerialUartDriver::threadRead(void) {
-
-
-}*/
