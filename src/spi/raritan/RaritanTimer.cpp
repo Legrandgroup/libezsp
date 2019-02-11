@@ -46,7 +46,6 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 bool RaritanTimer::stop() {
 	PPD_DEBUG("Stopping timer %p", this);
 	if (!started) {
-		PPD_WARN("Got a request to stop a timer that was not running");
 		return false;
 	}
 	m_toutcbhandle.removeFromSelector();
