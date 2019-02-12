@@ -30,16 +30,15 @@ int main( void )
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
-//    ConsoleLogger logger; // TODO
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
     RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
-    RaritanLogger logger;
 #endif
 
-    //logger.log(RaritanLogger::LOG_LEVEL::INFO, "Starting ezsp test program\n");
+    plog(ILogger::LOG_LEVEL::INFO, "Starting ezsp test program\n");
+    plogE("Starting ezsp test program\n");
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

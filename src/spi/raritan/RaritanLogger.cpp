@@ -6,6 +6,7 @@
 
 #include "RaritanLogger.h"
 #include <pp/diag.h>
+#include <cstdarg>
 
 RaritanLogger::RaritanLogger() {
 }
@@ -13,7 +14,7 @@ RaritanLogger::RaritanLogger() {
 RaritanLogger::~RaritanLogger() {
 }
 
-void RaritanLogger::log(const ILogger::LOG_LEVEL log_level, const char *format, ...) {
+void RaritanLogger::outputGenericLog(const ILogger::LOG_LEVEL log_level, const char *format, ...) {
 
 	va_list args;
 

@@ -7,15 +7,25 @@
 #pragma once
 
 #include "../ILogger.h"
-#include <pp/diag.h>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+#define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
 /**
- * @brief Class to interact with a UART in the Raritan framework
+ * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking log()
+ */
+#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
+#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().outputErrorLog
+#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().outputWarningLog
+#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().outputInfoLog
+#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().outputDebugLog
+#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().outputTraceLog
+
+/**
+ * @brief Class to interact with the logger in the Raritan framework
  */
 class RaritanLogger : public ILogger {
 public:
@@ -49,7 +59,7 @@ public:
 	 * @param log_level The level of the log to generate
 	 * @param format The printf-style format followed by a variable list of arguments
 	 */
-	void log(const ILogger::LOG_LEVEL log_level, const char *format, ...);
+	void outputGenericLog(const ILogger::LOG_LEVEL log_level, const char *format, ...);
 
 };
 
