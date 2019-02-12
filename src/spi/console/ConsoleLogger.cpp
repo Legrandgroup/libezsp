@@ -17,6 +17,7 @@ ConsoleLogger::~ConsoleLogger() {
 void ConsoleLogger::outputErrorLog(const char *format, ...) {
 
 	va_list args;
+	va_start(args, format);
 	fprintf(stderr, format, args);
 	va_end(args);
 }
@@ -24,6 +25,7 @@ void ConsoleLogger::outputErrorLog(const char *format, ...) {
 void ConsoleLogger::outputWarningLog(const char *format, ...) {
 
 	va_list args;
+	va_start(args, format);
 	fprintf(stderr, format, args);
 	va_end(args);
 }
@@ -31,6 +33,7 @@ void ConsoleLogger::outputWarningLog(const char *format, ...) {
 void ConsoleLogger::outputInfoLog(const char *format, ...) {
 
 	va_list args;
+	va_start(args, format);
 	printf(format, args);
 	va_end(args);
 }
@@ -38,6 +41,7 @@ void ConsoleLogger::outputInfoLog(const char *format, ...) {
 void ConsoleLogger::outputDebugLog(const char *format, ...) {
 
 	va_list args;
+	va_start(args, format);
 	printf(format, args);
 	va_end(args);
 }
@@ -45,6 +49,7 @@ void ConsoleLogger::outputDebugLog(const char *format, ...) {
 void ConsoleLogger::outputTraceLog(const char *format, ...) {
 
 	va_list args;
+	va_start(args, format);
 	printf(format, args);
 	va_end(args);
 }

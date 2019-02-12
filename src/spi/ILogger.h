@@ -6,7 +6,21 @@
  * Used as a dependency inversion paradigm
  */
 
-#pragma once
+/**
+ * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking log()
+ */
+#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
+#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().outputErrorLog
+#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().outputWarningLog
+#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().outputInfoLog
+#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().outputDebugLog
+#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().outputTraceLog
+
+/* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
+ * The code below, however, will be include once, so it is "manually" protected from multiple includes using an #ifdef directive
+ */
+#ifndef __ILOGGER_H__
+#define __ILOGGER_H__
 
 #include <string>
 #include <cstdarg>
@@ -32,14 +46,11 @@
  * }
  * @endcode
  *
- * and finally, so as to ease to use of the logger in the code, the following defines should also be implemented in the SPI header:
+ * and finally, so as to ease to use of the logger in the code, commodity defines are provided (allowing to invoke plog() calles rather than specific getInstance() ones.
+ * In order to make this work, SINGLETON_LOGGER_CLASS_NAME should be defined in the SPI header BEFORE this header is included. Here is an example for a logger class MySpecializedLogger that derives from ILogger:
  * @code
- * #define plog MySpecializedLogger::getInstance().outputGenericLog
- * #define plogE MySpecializedLogger::getInstance().outputErrorLog
- * #define plogW MySpecializedLogger::getInstance().outputWarningLog
- * #define plogI MySpecializedLogger::getInstance().outputInfoLog
- * #define plogD MySpecializedLogger::getInstance().outputDebugLog
- * #define plogT MySpecializedLogger::getInstance().outputTraceLog
+ * #define SINGLETON_LOGGER_CLASS_NAME MySpecializedLogger
+ * #include "ILogger.h"
  * @endcode
  */
 class ILogger {
@@ -150,3 +161,5 @@ public:
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
+
+#endif // __ILOGGER_H__

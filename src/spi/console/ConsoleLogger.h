@@ -6,18 +6,8 @@
 
 #pragma once
 
-#include "../ILogger.h"
-
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
-/**
- * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking log()
- */
-#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
-#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().outputErrorLog
-#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().outputWarningLog
-#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().outputInfoLog
-#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().outputDebugLog
-#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().outputTraceLog
+#include "../ILogger.h"
 
 /**
  * @brief Class to interact with a console logger
