@@ -44,12 +44,39 @@ public:
 	~RaritanLogger();
 
 	/**
-	 * @brief Log a message
+	 * @brief Log an error message
 	 *
-	 * @param log_level The level of the log to generate
 	 * @param format The printf-style format followed by a variable list of arguments
 	 */
-	void outputGenericLog(const ILogger::LOG_LEVEL log_level, const char *format, ...);
+	void outputErrorLog(const char *format, ...);
+
+	/**
+	 * @brief Log a warning message
+	 *
+	 * @param format The printf-style format followed by a variable list of arguments
+	 */
+	void outputWarningLog(const char *format, ...);
+
+	/**
+	 * @brief Log an info message
+	 *
+	 * @param format The printf-style format followed by a variable list of arguments
+	 */
+	void outputInfoLog(const char *format, ...);
+
+	/**
+	 * @brief Log a debug message
+	 *
+	 * @param format The printf-style format followed by a variable list of arguments
+	 */
+	void outputDebugLog(const char *format, ...);
+
+	/**
+	 * @brief Log a trace message
+	 *
+	 * @param format The printf-style format followed by a variable list of arguments
+	 */
+	void outputTraceLog(const char *format, ...);
 
 };
 

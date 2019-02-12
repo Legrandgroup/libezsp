@@ -14,27 +14,42 @@ RaritanLogger::RaritanLogger() {
 RaritanLogger::~RaritanLogger() {
 }
 
-void RaritanLogger::outputGenericLog(const ILogger::LOG_LEVEL log_level, const char *format, ...) {
+void ConsoleLogger::outputErrorLog(const char *format, ...) {
 
 	va_list args;
-
 	va_start(args, format);
-	switch (log_level) {
-	case ILogger::LOG_LEVEL::ERROR:
-		PPD_ERR(format, args);
-		break;
-	case ILogger::LOG_LEVEL::WARNING:
-		PPD_WARN(format, args);
-		break;
-	case ILogger::LOG_LEVEL::INFO:
-		PPD_INFO(format, args);
-		break;
-	case ILogger::LOG_LEVEL::DEBUG:
-		PPD_DEBUG(format, args);
-		break;
-	case ILogger::LOG_LEVEL::TRACE:
-		PPD_TRACE(format, args);
-		break;
-	}
+	PPD_ERR(format, args);
+	va_end(args);
+}
+
+void ConsoleLogger::outputWarningLog(const char *format, ...) {
+
+	va_list args;
+	va_start(args, format);
+	PPD_WARN(format, args);
+	va_end(args);
+}
+
+void ConsoleLogger::outputInfoLog(const char *format, ...) {
+
+	va_list args;
+	va_start(args, format);
+	PPD_INFO(format, args);
+	va_end(args);
+}
+
+void ConsoleLogger::outputDebugLog(const char *format, ...) {
+
+	va_list args;
+	va_start(args, format);
+	PPD_DEBUG(format, args);
+	va_end(args);
+}
+
+void ConsoleLogger::outputTraceLog(const char *format, ...) {
+
+	va_list args;
+	va_start(args, format);
+	PPD_TRACE(format, args);
 	va_end(args);
 }
