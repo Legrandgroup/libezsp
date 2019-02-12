@@ -25,6 +25,7 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/zigbee-tools/zigbee-messaging.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
+			  ../spi/console/ConsoleLogger.o \
 			  ../spi/cppthreads/CppThreadsTimerFactory.o \
 			  ../spi/cppthreads/CppThreadsTimer.o
 

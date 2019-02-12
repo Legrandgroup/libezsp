@@ -9,7 +9,7 @@
 #ifdef USE_SERIALCPP
 #include "../spi/serial/SerialUartDriver.h"
 #include "../spi/cppthreads/CppThreadsTimerFactory.h"
-//#include "../spi/serial/ConsoleLogger.h"
+#include "../spi/console/ConsoleLogger.h"
 #include <string>
 #else
 #ifdef USE_RARITAN
