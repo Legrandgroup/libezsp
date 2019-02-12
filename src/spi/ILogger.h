@@ -24,6 +24,7 @@
 
 #include <string>
 #include <cstdarg>
+#include <streambuf>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -53,7 +54,7 @@
  * #include "ILogger.h"
  * @endcode
  */
-class ILogger {
+class ILogger : public std::streambuf {
 public:
 	typedef enum {
 		ERROR = 0,
@@ -155,6 +156,12 @@ public:
 	 * TODO: also allow logging via std::streambufs
 	 * See http://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html
 	 */
+
+protected:
+		/* central output function
+		 * - print characters in uppercase mode
+		 */
+		virtual int overflow(int c) = 0;
 
 };
 

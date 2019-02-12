@@ -80,6 +80,8 @@ public:
 	 */
 	void outputTraceLog(const char *format, ...);
 
+	virtual int overflow(int c);
+
 };
 
 #ifdef USE_RARITAN
