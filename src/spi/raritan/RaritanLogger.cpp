@@ -14,7 +14,13 @@ RaritanLogger::RaritanLogger() {
 RaritanLogger::~RaritanLogger() {
 }
 
-void ConsoleLogger::outputErrorLog(const char *format, ...) {
+RaritanLogger& RaritanLogger::getInstance() {
+	static ConsoleLogger instance; /* Unique instance of the singleton */
+
+	return instance;
+}
+
+void RaritanLogger::outputErrorLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -22,7 +28,7 @@ void ConsoleLogger::outputErrorLog(const char *format, ...) {
 	va_end(args);
 }
 
-void ConsoleLogger::outputWarningLog(const char *format, ...) {
+void RaritanLogger::outputWarningLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -30,7 +36,7 @@ void ConsoleLogger::outputWarningLog(const char *format, ...) {
 	va_end(args);
 }
 
-void ConsoleLogger::outputInfoLog(const char *format, ...) {
+void RaritanLogger::outputInfoLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -38,7 +44,7 @@ void ConsoleLogger::outputInfoLog(const char *format, ...) {
 	va_end(args);
 }
 
-void ConsoleLogger::outputDebugLog(const char *format, ...) {
+void RaritanLogger::outputDebugLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -46,7 +52,7 @@ void ConsoleLogger::outputDebugLog(const char *format, ...) {
 	va_end(args);
 }
 
-void ConsoleLogger::outputTraceLog(const char *format, ...) {
+void RaritanLogger::outputTraceLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);

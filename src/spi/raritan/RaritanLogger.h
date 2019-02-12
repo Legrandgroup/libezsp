@@ -32,6 +32,13 @@ public:
 	RaritanLogger(const RaritanLogger& other);
 
 	/**
+	 * @brief Get a reference to the singleton (only instance) of this logger class
+	 *
+	 * @return The unique instance as a reference
+	 */
+	static RaritanLogger& getInstance();
+
+	/**
 	 * @brief Assignment operator
 	 *
 	 * Copy construction is forbidden on this class

@@ -14,6 +14,12 @@ ConsoleLogger::ConsoleLogger() {
 ConsoleLogger::~ConsoleLogger() {
 }
 
+ConsoleLogger& ConsoleLogger::getInstance() {
+	static ConsoleLogger instance; /* Unique instance of the singleton */
+
+	return instance;
+}
+
 void ConsoleLogger::outputErrorLog(const char *format, ...) {
 
 	va_list args;

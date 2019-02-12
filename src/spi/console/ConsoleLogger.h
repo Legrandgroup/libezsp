@@ -27,13 +27,11 @@ public:
 	ConsoleLogger(const ConsoleLogger& other);
 
 	/**
-	 * Get a reference to the only instance of ConsoleLogger
+	 * @brief Get a reference to the singleton (only instance) of this logger class
+	 *
+	 * @return The unique instance as a reference
 	 */
-	static ConsoleLogger& getInstance() {
-		static ConsoleLogger instance; /* Unique instance of the singleton */
-
-		return instance;
-	}
+	static ConsoleLogger& getInstance();
 
 	/**
 	 * @brief Assignment operator
