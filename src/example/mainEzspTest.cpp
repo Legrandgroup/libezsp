@@ -39,11 +39,11 @@ int main( void )
     RaritanLogger logger;
 #endif
 
-    logger.log(RaritanLogger::LOG_LEVEL::INFO, "Starting ezsp test program\n");
+    //logger.log(RaritanLogger::LOG_LEVEL::INFO, "Starting ezsp test program\n");
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 
-    CAppDemo app(&uartDriver, timerFactory, logger);
+    CAppDemo app(&uartDriver, timerFactory);
 
 #ifdef USE_SERIALCPP
     std::string line;

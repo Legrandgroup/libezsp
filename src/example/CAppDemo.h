@@ -24,7 +24,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver
 {
 public:
-    CAppDemo(IUartDriver *uartDriver, ITimerFactory& i_timer_factory, ILogger& loggerToUse);
+    CAppDemo(IUartDriver *uartDriver, ITimerFactory& i_timer_factory);
 
     /**
      * Callback
@@ -38,7 +38,6 @@ private:
     void stackInit();
 
 private:
-    ILogger& logger;
     CEzspDongle dongle;
     CZigbeeMessaging zb_messaging;
     CZigbeeNetworking zb_nwk;
