@@ -1,16 +1,52 @@
 /**
+ * @file zclheader.cpp
  * 
+ * @brief Handles encoding/decoding of ZCL headers
  */
 
 #include "zclheader.h"
 
 #include "../byte-manip.h"
 
-CZCLHeader::CZCLHeader()
+CZCLHeader::CZCLHeader() :
+	frm_ctrl(),
+	manufacturer_code(LG_MAN_CODE),
+	transaction_number(0),
+	cmd_id(0)
 {
-  manufacturer_code = LG_MAN_CODE;
-  transaction_number = 0;
-  cmd_id = 0;
+}
+
+/**
+ * The i_data buffer contains the input bytes to decode.
+ * First byte is the frm_ctrl
+ * If manufacturer code is present, is is located in a 2-bytes value at offsets 1 and 2
+ * followed by a 1-byte transaction number
+ * followed by a 1-byte command id
+ *
+ * Total of bytes expected: 5 (if manufacturer code is present) or 3 otherwise
+ */
+CZCLHeader::CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx) :
+	frm_ctrl(i_data.at(0)),
+	manufacturer_code(frm_ctrl.IsManufacturerCodePresent()?dble_u8_to_u16(i_data.at(2), i_data.at(1)):0),
+	transaction_number(frm_ctrl.IsManufacturerCodePresent()?i_data.at(3):i_data.at(1)),
+	cmd_id(frm_ctrl.IsManufacturerCodePresent()?i_data.at(4):i_data.at(2))
+{
+  if( frm_ctrl.IsManufacturerCodePresent() )
+  {
+    o_idx=5;	/* When manufacturer code is present, the header is 5-bytes long */
+  }
+  else
+  {
+    o_idx=3;	/* otherwise, it is 3-bytes long */
+  }
+}
+
+CZCLHeader::CZCLHeader(const CZCLHeader& other) :
+	frm_ctrl(other.frm_ctrl),
+	manufacturer_code(other.manufacturer_code),
+	transaction_number(other.transaction_number),
+	cmd_id(other.cmd_id)
+{
 }
 
 /**
@@ -18,7 +54,7 @@ CZCLHeader::CZCLHeader()
  * @param i_cmd_id       : command identifier
  * @param i_direction    : model direction
  */
-void CZCLHeader::SetMSPSpecific( uint16_t i_profile_id, uint8_t i_cmd_id, EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number )
+void CZCLHeader::SetMSPSpecific( const uint16_t i_profile_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number )
 {
   cmd_id = i_cmd_id;
   frm_ctrl.SetDirection( i_direction );
@@ -32,8 +68,8 @@ void CZCLHeader::SetMSPSpecific( uint16_t i_profile_id, uint8_t i_cmd_id, EZCLFr
  * @param i_direction    : model direction
  * @param i_transaction_number
  */
-void CZCLHeader::SetMSPGeneral( uint16_t i_profile_id, uint8_t i_cmd_id,
-                                EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number )
+void CZCLHeader::SetMSPGeneral( const uint16_t i_profile_id, const uint8_t i_cmd_id,
+                                const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number )
 {
   cmd_id = i_cmd_id;
   frm_ctrl.SetDirection( i_direction );
@@ -46,7 +82,7 @@ void CZCLHeader::SetMSPGeneral( uint16_t i_profile_id, uint8_t i_cmd_id,
  * @param i_cmd_id       : command identifier
  * @param i_direction    : model direction
  */
-void CZCLHeader::SetPublicSpecific( uint16_t i_manufacturer_id, uint8_t i_cmd_id, EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number )
+void CZCLHeader::SetPublicSpecific( const uint16_t i_manufacturer_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number )
 {
   cmd_id = i_cmd_id;
   frm_ctrl.SetDirection( i_direction );
@@ -65,8 +101,8 @@ void CZCLHeader::SetPublicSpecific( uint16_t i_manufacturer_id, uint8_t i_cmd_id
  * @param i_direction    : model direction
  * @param i_transaction_number
  */
-void CZCLHeader::SetPublicGeneral( uint16_t i_manufacturer_id, uint8_t i_cmd_id,
-                                EZCLFrameCtrlDirection i_direction, uint8_t i_transaction_number )
+void CZCLHeader::SetPublicGeneral( const uint16_t i_manufacturer_id, const uint8_t i_cmd_id,
+                                const EZCLFrameCtrlDirection i_direction, const uint8_t i_transaction_number )
 {
   cmd_id = i_cmd_id;
   frm_ctrl.SetDirection( i_direction );
@@ -79,7 +115,7 @@ void CZCLHeader::SetPublicGeneral( uint16_t i_manufacturer_id, uint8_t i_cmd_id,
   manufacturer_code = i_manufacturer_id;
 }
 
-std::vector<uint8_t> CZCLHeader::GetZCLHeader(void)
+std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
 {
   std::vector<uint8_t> lo_data;
 
@@ -95,19 +131,23 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void)
   return lo_data;
 }
 
-uint8_t CZCLHeader::SetZCLHeader(std::vector<uint8_t> i_data )
+/**
+ * This method is a friend of CZigBeeMsg class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(CZCLHeader& first, CZCLHeader& second) /* nothrow */
 {
-  uint8_t l_idx = 0;
-  frm_ctrl.SetFrmCtrlByte(i_data.at(l_idx++));
-  if( frm_ctrl.IsManufacturerCodePresent() )
-  {
-    manufacturer_code = dble_u8_to_u16(i_data.at(l_idx+1U), i_data.at(l_idx));
-    l_idx++;
-    l_idx++;
-  }
-  transaction_number = i_data.at(l_idx++);
-  cmd_id = i_data.at(l_idx++);
+  using std::swap;	// Enable ADL
 
-  return l_idx;
+  swap(first.frm_ctrl, second.frm_ctrl);
+  swap(first.manufacturer_code, second.manufacturer_code);
+  swap(first.transaction_number, second.transaction_number);
+  swap(first.cmd_id, second.cmd_id);
+  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
+CZCLHeader& CZCLHeader::operator=(CZCLHeader other)
+{
+  swap(*this, other);
+  return *this;
+}

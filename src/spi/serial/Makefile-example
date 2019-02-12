@@ -6,8 +6,8 @@ LDFLAGS = -L/home/nicolas/soft_raritan/serial/install/lib -lserial -lpthread
 EXEC = test-program
 OBJECTFILES = SerialUartDriver.o \
 			  ../GenericAsyncDataInputObservable.o \
-			  SerialTimerFactory.o \
-			  SerialTimer.o \
+			  CppThreadsTimerFactory.o \
+			  CppThreadsTimer.o \
 			  test-serial.o
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 
