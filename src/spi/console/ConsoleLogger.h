@@ -9,6 +9,25 @@
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
 #include "../ILogger.h"
 
+class ConsoleErrorLogger : public ILoggerError {
+public:
+	ConsoleErrorLogger();
+
+	virtual ~ConsoleErrorLogger();
+
+	virtual void log(const char *format, ...);
+
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c);
+};
+
 /**
  * @brief Class to interact with a console logger
  */
@@ -17,7 +36,7 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ConsoleLogger();
+	ConsoleLogger(ILoggerError& errorLogger);
 
 	/**
 	 * @brief Copy constructor

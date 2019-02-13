@@ -8,14 +8,37 @@
 #include <cstdarg>
 #include <cstdio>
 
-ConsoleLogger::ConsoleLogger() {
+ConsoleErrorLogger::ConsoleErrorLogger() { }
+
+ConsoleErrorLogger::~ConsoleErrorLogger() { }
+
+void ConsoleErrorLogger::log(const char *format, ...) {
+
+	va_list args;
+	va_start(args, format);
+	fprintf(stderr, format, args);
+	va_end(args);
+}
+
+int ConsoleErrorLogger::overflow(int c) {
+	if (c != EOF) {
+		if (putchar(c) == EOF) {
+			return EOF;
+		}
+	}
+	return c;
+}
+
+static ConsoleErrorLogger consoleErrorLogger;
+
+ConsoleLogger::ConsoleLogger(ILoggerError& errorLogger) : ILogger(errorLogger) {
 }
 
 ConsoleLogger::~ConsoleLogger() {
 }
 
 ConsoleLogger& ConsoleLogger::getInstance() {
-	static ConsoleLogger instance; /* Unique instance of the singleton */
+	static ConsoleLogger instance(consoleErrorLogger); /* Unique instance of the singleton */
 
 	return instance;
 }
@@ -71,3 +94,4 @@ int ConsoleLogger::overflow(int c) {
 }
 
 std::ostream ILogger::loggerStream(&ConsoleLogger::getInstance());
+

@@ -38,6 +38,25 @@
 #endif // USE_RARITAN
 
 
+class ILoggerError : public std::streambuf {
+public:
+	ILoggerError() { }
+
+	virtual ~ILoggerError() { }
+
+	virtual void log(const char *format, ...) = 0;
+
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c) = 0;
+};
+
 /**
  * @brief Abstract singleton class to output log messages
  *
@@ -74,7 +93,7 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	ILogger() {	}
+	ILogger(ILoggerError& errorLogger) : errorLogger(errorLogger) { }
 
 	/**
 	 * @brief Destructor
@@ -174,6 +193,7 @@ protected:
 	virtual int overflow(int c) = 0;
 
 public:
+	ILoggerError& errorLogger;
 	static std::ostream loggerStream;
 };
 
