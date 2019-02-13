@@ -146,7 +146,7 @@ public:
 		va_start(args, format);
 		switch (logLevel) {
 		case ILogger::LOG_LEVEL::ERROR:
-			this->outputErrorLog(format, args);
+			this->errorLogger.log(format, args);
 			break;
 		case ILogger::LOG_LEVEL::WARNING:
 			this->outputWarningLog(format, args);
@@ -155,7 +155,7 @@ public:
 			this->outputInfoLog(format, args);
 			break;
 		case ILogger::LOG_LEVEL::DEBUG:
-			this->outputDebugLog(format, args);
+			this->debugLogger.log(format, args);
 			break;
 		case ILogger::LOG_LEVEL::TRACE:
 			this->outputTraceLog(format, args);
@@ -163,15 +163,6 @@ public:
 		}
 		va_end(args);
 	}
-
-	/**
-	 * @brief Log an error message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-	virtual void outputErrorLog(const char *format, ...) = 0;
 
 	/**
 	 * @brief Log a warning message
@@ -191,15 +182,6 @@ public:
 	 */
 	virtual void outputInfoLog(const char *format, ...) = 0;
 
-	/**
-	 * @brief Log a debug message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-	virtual void outputDebugLog(const char *format, ...) = 0;
-	
 	/**
 	 * @brief Log a trace message
 	 *
