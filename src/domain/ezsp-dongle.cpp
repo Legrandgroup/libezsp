@@ -1,8 +1,9 @@
 /**
- * 
+ * @file ezsp-dongle.cpp
  */
 
 #include "ezsp-dongle.h"
+#include "../spi/GenericLogger.h"
 
 CEzspDongle::CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
@@ -58,7 +59,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
             }
             else
             {
-                std::cout << "CEzspDongle::open register uart !" << std::endl;
+                clog << "CEzspDongle::open register uart !" << std::endl;
                 uartIncomingDataHandler.registerObserver(this);
                 pUart->setIncomingDataHandler(&uartIncomingDataHandler);
             }
@@ -70,7 +71,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
 
 void CEzspDongle::ashCbInfo( EAshInfo info ) 
 { 
-    std::cout <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl; 
+    clog <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
 
     if( ASH_STATE_CHANGE == info )
     {
@@ -106,7 +107,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         {
             size_t l_size;
 
-            //std::cout << "CEzspDongle::handleInputData ash message decoded" << std::endl;
+            //clog << "CEzspDongle::handleInputData ash message decoded" << std::endl;
 
             // send ack
             std::vector<uint8_t> l_msg = ash->AckFrame();
@@ -177,11 +178,11 @@ void CEzspDongle::sendNextMsg( void )
             li_data.push_back(l_msg.payload.at(loop));
         }
 
-        //-- std::cout << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
+        //-- clog << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
         l_enc_data = ash->DataFrame(li_data);
         if( nullptr != pUart )
         {
-            //-- std::cout << "CEzspDongle::sendCommand pUart->write" << std::endl;
+            //-- clog << "CEzspDongle::sendCommand pUart->write" << std::endl;
             pUart->write(l_size, l_enc_data.data(), l_enc_data.size());
 
             wait_rsp = true;
