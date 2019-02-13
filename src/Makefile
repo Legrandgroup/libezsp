@@ -7,7 +7,6 @@ CFLAGS = $(FW_CFLAGS_3RDPARTY)
 
 TARGET_SHARED_LIBNAMES = libezsp
 
-libezsp_MODULE_NAME = test_log
 
 libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
