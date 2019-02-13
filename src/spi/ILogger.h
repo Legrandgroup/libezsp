@@ -18,8 +18,21 @@
 
 /**
  * @brief The defines below allow to log directly through an ostream
+ *
+ * clog is a default logger stream
+ * clogE is the error logger stream
+ * thus
+ * @code
+ * clogE << "Error!";
+ * @endcode
+ * is equivalent to
+ * @code
+ * plogE("Error");
+ * @endcode
  */
-#define clog ILogger::loggerStream
+#define clog ILogger::loggerDebugStream
+#define clogE ILogger::loggerErrorStream
+#define clogD ILogger::loggerDebugStream
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
  * The code below, however, will be include once, so it is "manually" protected from multiple includes using an #ifdef directive
@@ -38,17 +51,68 @@
 #endif // USE_RARITAN
 
 
+/**
+ * @brief Abstract class to output error log messages
+ *
+ * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
+ */
 class ILoggerError : public std::streambuf {
 public:
 	ILoggerError() { }
 
 	virtual ~ILoggerError() { }
 
+	/**
+	 * @brief Output a log message
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @param format The format to use
+	 */
 	virtual void log(const char *format, ...) = 0;
 
 protected:
 	/**
 	 * @brief Receive one character of an output stream
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @note This is the method allowing to implement an ostream out of this class
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c) = 0;
+};
+
+/**
+ * @brief Abstract class to output debug log messages
+ *
+ * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
+ */
+class ILoggerDebug : public std::streambuf {
+public:
+	ILoggerDebug() { }
+
+	virtual ~ILoggerDebug() { }
+
+	/**
+	 * @brief Output a log message
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @param format The format to use
+	 */
+	virtual void log(const char *format, ...) = 0;
+
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @note This is the method allowing to implement an ostream out of this class
 	 *
 	 * @param c The new character
 	 *
@@ -93,7 +157,10 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	ILogger(ILoggerError& errorLogger) : errorLogger(errorLogger) { }
+	ILogger(ILoggerError& errorLogger, ILoggerDebug& debugLogger) :
+		errorLogger(errorLogger),
+		debugLogger(debugLogger) {
+	}
 
 	/**
 	 * @brief Destructor
@@ -177,24 +244,11 @@ public:
 	 */
 	virtual void outputTraceLog(const char *format, ...) = 0;
 
-	/*
-	 * TODO: also allow logging via std::streambufs
-	 * See http://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html
-	 */
-
-protected:
-	/**
-	 * @brief Receive one character of an output stream
-	 *
-	 * @param c The new character
-	 *
-	 * @return The character that has actually been printed out to the log
-	 */
-	virtual int overflow(int c) = 0;
-
 public:
-	ILoggerError& errorLogger;
-	static std::ostream loggerStream;
+	ILoggerError& errorLogger;	/*!< The enclosed error debugger handler instance */
+	ILoggerDebug& debugLogger;	/*!< The enclosed debug debugger handler instance */
+	static std::ostream loggerErrorStream;	/*!< A global error ostream */
+	static std::ostream loggerDebugStream;	/*!< A global debug ostream */
 };
 
 #ifdef USE_RARITAN

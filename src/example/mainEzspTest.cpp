@@ -36,7 +36,7 @@ int main( void )
     RaritanTimerFactory timerFactory(eventLoop);
 #endif
 
-    clog << "Starting ezsp test program\n";
+    clogE << "Starting ezsp test program\n";
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

@@ -59,7 +59,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
             }
             else
             {
-                clog << "CEzspDongle::open register uart !" << std::endl;
+                clogD << "CEzspDongle::open register uart !" << std::endl;
                 uartIncomingDataHandler.registerObserver(this);
                 pUart->setIncomingDataHandler(&uartIncomingDataHandler);
             }
@@ -71,7 +71,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
 
 void CEzspDongle::ashCbInfo( EAshInfo info ) 
 { 
-    clog <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
+    clogD <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
 
     if( ASH_STATE_CHANGE == info )
     {
@@ -107,7 +107,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         {
             size_t l_size;
 
-            //clog << "CEzspDongle::handleInputData ash message decoded" << std::endl;
+            //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
 
             // send ack
             std::vector<uint8_t> l_msg = ash->AckFrame();
@@ -178,11 +178,11 @@ void CEzspDongle::sendNextMsg( void )
             li_data.push_back(l_msg.payload.at(loop));
         }
 
-        //-- clog << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
+        //-- clogD << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
         l_enc_data = ash->DataFrame(li_data);
         if( nullptr != pUart )
         {
-            //-- clog << "CEzspDongle::sendCommand pUart->write" << std::endl;
+            //-- clogD << "CEzspDongle::sendCommand pUart->write" << std::endl;
             pUart->write(l_size, l_enc_data.data(), l_enc_data.size());
 
             wait_rsp = true;
