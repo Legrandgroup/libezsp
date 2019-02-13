@@ -54,7 +54,7 @@ int ConsoleDebugLogger::overflow(int c) {
 
 static ConsoleDebugLogger consoleDebugLogger;	/* Create a unique instance of the consoleErrorLogger that will be used to handle debug logs */
 
-ConsoleLogger::ConsoleLogger(ILoggerError& errorLogger, ILoggerDebug& debugLogger) :
+ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger) :
 		ILogger(errorLogger, debugLogger) {
 }
 

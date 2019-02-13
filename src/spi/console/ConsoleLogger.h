@@ -12,7 +12,7 @@
 /**
  * @brief Class to implement error message logging
  */
-class ConsoleErrorLogger : public ILoggerError {
+class ConsoleErrorLogger : public ILoggerStream {
 public:
 	ConsoleErrorLogger();
 
@@ -34,7 +34,7 @@ protected:
 /**
  * @brief Class to implement debug message logging
  */
-class ConsoleDebugLogger : public ILoggerDebug {
+class ConsoleDebugLogger : public ILoggerStream {
 public:
 	ConsoleDebugLogger();
 
@@ -64,7 +64,7 @@ public:
 	 * @param errorLogger The logger to use for error messages
 	 * @param debugLogger The logger to use for debug messages
 	 */
-	ConsoleLogger(ILoggerError& errorLogger, ILoggerDebug& debugLogger);
+	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger);
 
 	/**
 	 * @brief Copy constructor

@@ -52,50 +52,15 @@
 
 
 /**
- * @brief Abstract class to output error log messages
+ * @brief Abstract class to implement and ostream-compatilbe message logger
  *
  * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
  */
-class ILoggerError : public std::streambuf {
+class ILoggerStream : public std::streambuf {
 public:
-	ILoggerError() { }
+	ILoggerStream() { }
 
-	virtual ~ILoggerError() { }
-
-	/**
-	 * @brief Output a log message
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 *
-	 * @param format The format to use
-	 */
-	virtual void log(const char *format, ...) = 0;
-
-protected:
-	/**
-	 * @brief Receive one character of an output stream
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 *
-	 * @note This is the method allowing to implement an ostream out of this class
-	 *
-	 * @param c The new character
-	 *
-	 * @return The character that has actually been printed out to the log
-	 */
-	virtual int overflow(int c) = 0;
-};
-
-/**
- * @brief Abstract class to output debug log messages
- *
- * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
- */
-class ILoggerDebug : public std::streambuf {
-public:
-	ILoggerDebug() { }
-
-	virtual ~ILoggerDebug() { }
+	virtual ~ILoggerStream() { }
 
 	/**
 	 * @brief Output a log message
@@ -143,7 +108,7 @@ protected:
  * #include "ILogger.h"
  * @endcode
  */
-class ILogger : public std::streambuf {
+class ILogger {
 public:
 	typedef enum {
 		ERROR = 0,
@@ -157,7 +122,7 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	ILogger(ILoggerError& errorLogger, ILoggerDebug& debugLogger) :
+	ILogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger) :
 		errorLogger(errorLogger),
 		debugLogger(debugLogger) {
 	}
@@ -245,8 +210,8 @@ public:
 	virtual void outputTraceLog(const char *format, ...) = 0;
 
 public:
-	ILoggerError& errorLogger;	/*!< The enclosed error debugger handler instance */
-	ILoggerDebug& debugLogger;	/*!< The enclosed debug debugger handler instance */
+	ILoggerStream& errorLogger;	/*!< The enclosed error debugger handler instance */
+	ILoggerStream& debugLogger;	/*!< The enclosed debug debugger handler instance */
 	static std::ostream loggerErrorStream;	/*!< A global error ostream */
 	static std::ostream loggerDebugStream;	/*!< A global debug ostream */
 };
