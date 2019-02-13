@@ -91,11 +91,3 @@ protected:
 	virtual int overflow(int c);
 
 };
-
-class ConsoleLoggerOStream {
-public:
-	static std::ostream& get() {
-		return ConsoleLoggerOStream::loggerStream;
-	}
-	static std::ostream loggerStream;
-};

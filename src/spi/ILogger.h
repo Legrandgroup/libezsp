@@ -16,6 +16,11 @@
 #define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().outputDebugLog
 #define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().outputTraceLog
 
+/**
+ * @brief The defines below allow to log directly through an ostream
+ */
+#define clog ILogger::loggerStream
+
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
  * The code below, however, will be include once, so it is "manually" protected from multiple includes using an #ifdef directive
  */
@@ -168,6 +173,8 @@ protected:
 	 */
 	virtual int overflow(int c) = 0;
 
+public:
+	static std::ostream loggerStream;
 };
 
 #ifdef USE_RARITAN

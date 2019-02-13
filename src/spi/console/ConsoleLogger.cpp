@@ -70,4 +70,4 @@ int ConsoleLogger::overflow(int c) {
 	return c;
 }
 
-std::ostream ConsoleLoggerOStream::loggerStream(&ConsoleLogger::getInstance());
+std::ostream ILogger::loggerStream(&ConsoleLogger::getInstance());
