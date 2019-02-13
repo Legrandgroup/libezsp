@@ -39,8 +39,7 @@ int main( void )
 
     plog(ILogger::LOG_LEVEL::INFO, "Starting ezsp test program\n");
     plogE("Starting ezsp test program\n");
-    std::ostream stream(&ConsoleLogger::getInstance());
-    stream << "Test stream" << std::endl;
+    ConsoleLoggerOStream::get() << "Test stream" << std::endl;
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

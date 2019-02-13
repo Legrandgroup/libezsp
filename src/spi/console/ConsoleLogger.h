@@ -80,10 +80,22 @@ public:
 	 */
 	void outputTraceLog(const char *format, ...);
 
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
 	virtual int overflow(int c);
 
 };
 
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
+class ConsoleLoggerOStream {
+public:
+	static std::ostream& get() {
+		return ConsoleLoggerOStream::loggerStream;
+	}
+	static std::ostream loggerStream;
+};

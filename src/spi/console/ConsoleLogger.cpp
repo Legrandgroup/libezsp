@@ -7,7 +7,6 @@
 #include "ConsoleLogger.h"
 #include <cstdarg>
 #include <cstdio>
-#include <locale>	// For debug (toupper())
 
 ConsoleLogger::ConsoleLogger() {
 }
@@ -63,10 +62,7 @@ void ConsoleLogger::outputTraceLog(const char *format, ...) {
 
 int ConsoleLogger::overflow(int c) {
 	if (c != EOF) {
-		// convert lowercase to uppercase
-		c = std::toupper(static_cast<char>(c),getloc());
-
-		// and write the character to the standard output
+		//c = std::toupper(static_cast<char>(c),getloc());
 		if (putchar(c) == EOF) {
 			return EOF;
 		}
@@ -74,3 +70,4 @@ int ConsoleLogger::overflow(int c) {
 	return c;
 }
 
+std::ostream ConsoleLoggerOStream::loggerStream(&ConsoleLogger::getInstance());

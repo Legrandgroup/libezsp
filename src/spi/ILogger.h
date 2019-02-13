@@ -25,6 +25,7 @@
 #include <string>
 #include <cstdarg>
 #include <streambuf>
+#include <ostream>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -158,10 +159,14 @@ public:
 	 */
 
 protected:
-		/* central output function
-		 * - print characters in uppercase mode
-		 */
-		virtual int overflow(int c) = 0;
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c) = 0;
 
 };
 
