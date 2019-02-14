@@ -60,12 +60,42 @@ public:
 };
 
 /**
+ * @brief Class to implement warning message logging
+ */
+class ConsoleWarningLogger : public ConsoleStderrLogger {
+public:
+	ConsoleWarningLogger() :
+		ConsoleStderrLogger(LOG_LEVEL::WARNING) {
+	}
+};
+
+/**
+ * @brief Class to implement info message logging
+ */
+class ConsoleInfoLogger : public ConsoleStdoutLogger {
+public:
+	ConsoleInfoLogger() :
+		ConsoleStdoutLogger(LOG_LEVEL::INFO) {
+	}
+};
+
+/**
  * @brief Class to implement debug message logging
  */
 class ConsoleDebugLogger : public ConsoleStdoutLogger {
 public:
 	ConsoleDebugLogger() :
 		ConsoleStdoutLogger(LOG_LEVEL::DEBUG) {
+	}
+};
+
+/**
+ * @brief Class to implement trace message logging
+ */
+class ConsoleTraceLogger : public ConsoleStdoutLogger {
+public:
+	ConsoleTraceLogger() :
+		ConsoleStdoutLogger(LOG_LEVEL::TRACE) {
 	}
 };
 
@@ -78,9 +108,12 @@ public:
 	 * @brief Default constructor
 	 *
 	 * @param errorLogger The logger to use for error messages
+	 * @param warningLogger The logger to use for warning messages
+	 * @param infoLogger The logger to use for info messages
 	 * @param debugLogger The logger to use for debug messages
+	 * @param traceLogger The logger to use for trace messages
 	 */
-	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger);
+	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
 
 	/**
 	 * @brief Copy constructor
@@ -102,25 +135,4 @@ public:
 	 * Copy construction is forbidden on this class, as it is a singleton
 	 */
 	ConsoleLogger& operator=(const ConsoleLogger& other) = delete;
-
-	/**
-	 * @brief Log a warning message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputWarningLog(const char *format, ...);
-
-	/**
-	 * @brief Log an info message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputInfoLog(const char *format, ...);
-
-	/**
-	 * @brief Log a trace message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputTraceLog(const char *format, ...);
 };

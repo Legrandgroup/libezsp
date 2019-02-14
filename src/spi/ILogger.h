@@ -32,6 +32,8 @@
  */
 #define clog ILogger::loggerDebugStream
 #define clogE ILogger::loggerErrorStream
+#define clogW ILogger::loggerWarningStream
+#define clogI ILogger::loggerInfoStream
 #define clogD ILogger::loggerDebugStream
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
@@ -148,9 +150,12 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	ILogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger) :
+	ILogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
 		errorLogger(errorLogger),
-		debugLogger(debugLogger) {
+		warningLogger(warningLogger),
+		infoLogger(infoLogger),
+		debugLogger(debugLogger),
+		traceLogger(traceLogger) {
 	}
 
 	/**
@@ -166,7 +171,10 @@ public:
 	virtual void setLogLevel(const LOG_LEVEL logLevel) {
 		/* Dispatch the requested loglevel to all enclosed loggers */
 		this->errorLogger.setMinEnabledLogLevel(logLevel);
+		this->warningLogger.setMinEnabledLogLevel(logLevel);
+		this->infoLogger.setMinEnabledLogLevel(logLevel);
 		this->debugLogger.setMinEnabledLogLevel(logLevel);
+		this->traceLogger.setMinEnabledLogLevel(logLevel);
 	}
 
 	/**
@@ -186,53 +194,32 @@ public:
 			this->errorLogger.log(format, args);
 			break;
 		case LOG_LEVEL::WARNING:
-			this->outputWarningLog(format, args);
+			this->warningLogger.log(format, args);
 			break;
 		case LOG_LEVEL::INFO:
-			this->outputInfoLog(format, args);
+			this->infoLogger.log(format, args);
 			break;
 		case LOG_LEVEL::DEBUG:
 			this->debugLogger.log(format, args);
 			break;
 		case LOG_LEVEL::TRACE:
-			this->outputTraceLog(format, args);
+			this->traceLogger.log(format, args);
 			break;
 		}
 		va_end(args);
 	}
 
-	/**
-	 * @brief Log a warning message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-	virtual void outputWarningLog(const char *format, ...) = 0;
-
-	/**
-	 * @brief Log an info message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-	virtual void outputInfoLog(const char *format, ...) = 0;
-
-	/**
-	 * @brief Log a trace message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
-	 */
-	virtual void outputTraceLog(const char *format, ...) = 0;
-
 public:
 	ILoggerStream& errorLogger;	/*!< The enclosed error debugger handler instance */
+	ILoggerStream& warningLogger;	/*!< The enclosed warning debugger handler instance */
+	ILoggerStream& infoLogger;	/*!< The enclosed info debugger handler instance */
 	ILoggerStream& debugLogger;	/*!< The enclosed debug debugger handler instance */
+	ILoggerStream& traceLogger;	/*!< The enclosed trace debugger handler instance */
 	static std::ostream loggerErrorStream;	/*!< A global error ostream */
+	static std::ostream loggerWarningStream;	/*!< A global warning ostream */
+	static std::ostream loggerInfoStream;	/*!< A global info ostream */
 	static std::ostream loggerDebugStream;	/*!< A global debug ostream */
+	static std::ostream loggerTraceStream;	/*!< A global trace ostream */
 };
 
 #ifdef USE_RARITAN
