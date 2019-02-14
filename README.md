@@ -60,12 +60,4 @@ In order to force the sensor to send a report, you can also press 4 times on the
 
 ## For developpers
 
-### Source code organisation
-
-This repository is organised following DDD conventions:
-
-* `src/domain` contains most of the library code (EZSP/ASH encoding/decoding and protocol sequence implementation)
-* `src/spi` contains the adapters for platform-specific implementations of timers and serial port access
-* `src/spi/serial` contains the concrete implementations of adapters for Linux (using libserialcpp and std::thread)
-* `src/spi/raritan` contains the concrete implementations of adapters for the Raritan framework (using selectors and an event-driven main loop)
-* `src/example` contains a sample demo program to read and report sensor values from a zigbee network
+The developper-specific information can be found in [src/README.md]
