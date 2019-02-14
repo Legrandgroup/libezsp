@@ -21,7 +21,43 @@ public:
 	 */
 	ConsoleStderrLogger(const LOG_LEVEL logLevel);
 
+	/**
+	 * @brief Copy constructor
+	 *
+	 * @param other The object instance to construct from
+	 */
+	ConsoleStderrLogger(const ConsoleStderrLogger& other);
+
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~ConsoleStderrLogger();
+
+	/**
+	 * @brief Output a log message
+	 *
+	 * @param format The format to use
+	 */
 	virtual void log(const char *format, ...);
+
+	/**
+	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStderrLogger
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(ConsoleStderrLogger& first, ConsoleStderrLogger& second);
+
+	/**
+	 * @brief Assignment operator
+	 * @param other The object to assign to the lhs
+	 *
+	 * @return The object that has been assigned the value of @p other
+	 */
+	ConsoleStderrLogger& operator=(ConsoleStderrLogger other);
 
 protected:
 	/**
@@ -47,11 +83,42 @@ public:
 	ConsoleStdoutLogger(const LOG_LEVEL logLevel);
 
 	/**
+	 * @brief Copy constructor
+	 *
+	 * @param other The object instance to construct from
+	 */
+	ConsoleStdoutLogger(const ConsoleStdoutLogger& other);
+
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~ConsoleStdoutLogger();
+
+	/**
 	 * @brief Output a log message
 	 *
 	 * @param format The format to use
 	 */
 	virtual void log(const char *format, ...);
+
+	/**
+	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStdoutLogger
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second);
+
+	/**
+	 * @brief Assignment operator
+	 * @param other The object to assign to the lhs
+	 *
+	 * @return The object that has been assigned the value of @p other
+	 */
+	ConsoleStdoutLogger& operator=(ConsoleStdoutLogger other);
 
 protected:
 	/**
