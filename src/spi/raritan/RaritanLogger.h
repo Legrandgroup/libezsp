@@ -15,22 +15,106 @@
 #endif // USE_RARITAN
 
 /**
- * @brief Class to interact with the logger in the Raritan framework
+ * @brief Class to implement error message logging
  */
-class RaritanLogger : public ILogger {
+class RaritanGenericLogger : public ILoggerStream {
 public:
 	/**
-	 * @brief Default constructor
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
 	 */
-	RaritanLogger();
+	RaritanGenericLogger(const LOG_LEVEL logLevel);
 
 	/**
 	 * @brief Copy constructor
 	 *
-	 * Copy construction is forbidden on this class
+	 * @param other The object instance to construct from
 	 */
-	RaritanLogger(const RaritanLogger& other);
+	RaritanGenericLogger(const RaritanErrorLogger& other);
 
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~RaritanGenericLogger();
+
+	/**
+	 * @brief Output a log message
+	 *
+	 * @param format The format to use
+	 */
+	virtual void log(const char *format, ...);
+
+	/**
+	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanErrorLogger
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(RaritanGenericLogger& first, RaritanGenericLogger& second);
+
+	/**
+	 * @brief Assignment operator
+	 * @param other The object to assign to the lhs
+	 *
+	 * @return The object that has been assigned the value of @p other
+	 */
+	RaritanGenericLogger& operator=(RaritanGenericLogger other);
+
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c);
+};
+
+/**
+ * @brief Class to implement error message logging, specializing the generic class RaritanGenericLogger
+ */
+class RaritanErrorLogger : public RaritanGenericLogger {
+public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 */
+	RaritanErrorLogger(const LOG_LEVEL logLevel) :
+		RaritanGenericLogger(LOG_LEVEL::ERROR) {
+	}
+
+	virtual void log(const char *format, ...);
+
+protected:
+	virtual int overflow(int c);
+};
+
+
+/**
+ * @brief Class to interact with the logger in the Raritan framework
+ */
+class RaritanLogger : public ILogger {
+private:
+	/**
+	 * @brief Default constructor
+	 *
+	 * @param errorLogger The logger to use for error messages
+	 * @param warningLogger The logger to use for warning messages
+	 * @param infoLogger The logger to use for info messages
+	 * @param debugLogger The logger to use for debug messages
+	 * @param traceLogger The logger to use for trace messages
+	 */
+	RaritanLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
+
+	~RaritanLogger();
+
+public:
 	/**
 	 * @brief Get a reference to the singleton (only instance) of this logger class
 	 *
@@ -41,50 +125,9 @@ public:
 	/**
 	 * @brief Assignment operator
 	 *
-	 * Copy construction is forbidden on this class
+	 * Copy construction is forbidden on this class, as it is a singleton
 	 */
-	RaritanLogger& operator=(const RaritanLogger& other) = delete;
-
-	/**
-	 * @brief Destructor
-	 */
-	~RaritanLogger();
-
-	/**
-	 * @brief Log an error message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputErrorLog(const char *format, ...);
-
-	/**
-	 * @brief Log a warning message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputWarningLog(const char *format, ...);
-
-	/**
-	 * @brief Log an info message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputInfoLog(const char *format, ...);
-
-	/**
-	 * @brief Log a debug message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputDebugLog(const char *format, ...);
-
-	/**
-	 * @brief Log a trace message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputTraceLog(const char *format, ...);
-
+	RaritanLogger& operator=(const ConsoleLogger& other) = delete;
 };
 
 #ifdef USE_RARITAN
