@@ -12,6 +12,9 @@ ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL logLevel) :
 		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
+ConsoleStderrLogger::~ConsoleStderrLogger() {
+}
+
 void ConsoleStderrLogger::log(const char *format, ...) {
 
 	va_list args;
@@ -58,6 +61,9 @@ static ConsoleTraceLogger consoleTraceLogger;	/* Create a unique instance of the
 
 ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
 		ILogger(errorLogger, warningLogger, infoLogger, debugLogger, traceLogger) {
+}
+
+ConsoleLogger::~ConsoleLogger() {
 }
 
 ConsoleLogger& ConsoleLogger::getInstance() {
