@@ -7,7 +7,17 @@
  */
 
 /**
- * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking log()
+ * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking plog()
+ *
+ * plog() takes at least two arguments: the first one is the log level, the second is the format (following printf convention), followed by as many argument as required by the format string
+ * plogE() is a shortcut for the error logging, thus
+ * @code
+ * plogE("Hello %!", "World");
+ * @endcode
+ * is equivalent to
+ * @code
+ * plog(LOG_LEVEL::ERROR, "Hello %!", "World");
+ * @endcode
  */
 #define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
 #define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().outputErrorLog
@@ -64,9 +74,28 @@ typedef enum {
 } LOG_LEVEL;
 
 /**
- * @brief Abstract class to implement and ostream-compatilbe message logger
+ * @brief Abstract class to implement and ostream-compatible message logger
  *
  * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
+ *
+ * A concrete implementation that specializes the ILogger class should also derive logger implementations from ILoggerStream, then instanciate each of these loggers statically in their concrete implementation .cpp file:
+ * @code
+ * static MyErrorLogger myErrorLoggerInstance;
+ * @endcode
+ *
+ * Once this is done, the myErrorLoggerInstance instance will be provided as the error logger as argument of the ILogger constructor:
+ * @code
+ * class MySpecializedLogger : public ILogger {
+ *
+ *     ....
+ *
+ *     static MySpecializedLogger& getInstance() {
+ *         static MySpecializedLogger instance(myErrorLoggerInstance, ...);
+ *         return instance;
+ *     }
+ * };
+ * @endcode
+ *
  */
 class ILoggerStream : public std::streambuf {
 public:
@@ -132,10 +161,20 @@ protected:
  *
  * @warning In addition to deriving from this class, subclasses will need to implement a singleton pattern by declaring a getInstance() method like the following:
  * @code
- * static MySpecializedLogger& getInstance() {
- *     static MySpecializedLogger instance;
- *     return instance;
- * }
+ * class MySpecializedLogger : public ILogger {
+ *
+ *     ....
+ *
+ *     static MySpecializedLogger& getInstance() {
+ *         static MySpecializedLogger instance(myErrorLoggerInstance, myWarningLoggerInstance, ...);
+ *         return instance;
+ *     }
+ * };
+ * @endcode
+ *
+ * Also, streams will have to be instanciated for each logger so that an ostream can be used to output to this logger. For example, for our error logger instance, we will also add in the concrete implementation .cpp file:
+ * @code
+ * std::ostream ILogger::loggerErrorStream(&MySpecializedLogger::getInstance().errorLogger);
  * @endcode
  *
  * and finally, so as to ease to use of the logger in the code, commodity defines are provided (allowing to invoke plog() calles rather than specific getInstance() ones.
