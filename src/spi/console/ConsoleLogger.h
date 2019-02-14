@@ -12,11 +12,9 @@
 /**
  * @brief Class to implement error message logging
  */
-class ConsoleErrorLogger : public ILoggerStream {
+class ConsoleStderrLogger : public ILoggerStream {
 public:
-	ConsoleErrorLogger();
-
-	virtual ~ConsoleErrorLogger();
+	ConsoleStderrLogger(const LOG_LEVEL logLevel);
 
 	virtual void log(const char *format, ...);
 
@@ -34,11 +32,9 @@ protected:
 /**
  * @brief Class to implement debug message logging
  */
-class ConsoleDebugLogger : public ILoggerStream {
+class ConsoleStdoutLogger : public ILoggerStream {
 public:
-	ConsoleDebugLogger();
-
-	virtual ~ConsoleDebugLogger();
+	ConsoleStdoutLogger(const LOG_LEVEL logLevel);
 
 	virtual void log(const char *format, ...);
 
@@ -51,6 +47,26 @@ protected:
 	 * @return The character that has actually been printed out to the log
 	 */
 	virtual int overflow(int c);
+};
+
+/**
+ * @brief Class to implement error message logging
+ */
+class ConsoleErrorLogger : public ConsoleStderrLogger {
+public:
+	ConsoleErrorLogger() :
+		ConsoleStderrLogger(LOG_LEVEL::ERROR) {
+	}
+};
+
+/**
+ * @brief Class to implement debug message logging
+ */
+class ConsoleDebugLogger : public ConsoleStdoutLogger {
+public:
+	ConsoleDebugLogger() :
+		ConsoleStdoutLogger(LOG_LEVEL::DEBUG) {
+	}
 };
 
 /**
@@ -88,18 +104,6 @@ public:
 	ConsoleLogger& operator=(const ConsoleLogger& other) = delete;
 
 	/**
-	 * @brief Destructor
-	 */
-	~ConsoleLogger();
-
-	/**
-	 * @brief Log an error message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputErrorLog(const char *format, ...);
-
-	/**
 	 * @brief Log a warning message
 	 *
 	 * @param format The printf-style format followed by a variable list of arguments
@@ -112,13 +116,6 @@ public:
 	 * @param format The printf-style format followed by a variable list of arguments
 	 */
 	void outputInfoLog(const char *format, ...);
-
-	/**
-	 * @brief Log a debug message
-	 *
-	 * @param format The printf-style format followed by a variable list of arguments
-	 */
-	void outputDebugLog(const char *format, ...);
 
 	/**
 	 * @brief Log a trace message

@@ -8,11 +8,11 @@
 #include <cstdarg>
 #include <cstdio>
 
-ConsoleErrorLogger::ConsoleErrorLogger() { }
+ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL logLevel) :
+		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+}
 
-ConsoleErrorLogger::~ConsoleErrorLogger() { }
-
-void ConsoleErrorLogger::log(const char *format, ...) {
+void ConsoleStderrLogger::log(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -20,7 +20,7 @@ void ConsoleErrorLogger::log(const char *format, ...) {
 	va_end(args);
 }
 
-int ConsoleErrorLogger::overflow(int c) {
+int ConsoleStderrLogger::overflow(int c) {
 	if (c != EOF) {
 		if (putchar(c) == EOF) {
 			return EOF;
@@ -29,13 +29,11 @@ int ConsoleErrorLogger::overflow(int c) {
 	return c;
 }
 
-static ConsoleErrorLogger consoleErrorLogger;	/* Create a unique instance of the consoleErrorLogger that will be used to handle error logs */
+ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL logLevel) :
+		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+}
 
-ConsoleDebugLogger::ConsoleDebugLogger() { }
-
-ConsoleDebugLogger::~ConsoleDebugLogger() { }
-
-void ConsoleDebugLogger::log(const char *format, ...) {
+void ConsoleStdoutLogger::log(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
@@ -43,7 +41,7 @@ void ConsoleDebugLogger::log(const char *format, ...) {
 	va_end(args);
 }
 
-int ConsoleDebugLogger::overflow(int c) {
+int ConsoleStdoutLogger::overflow(int c) {
 	if (c != EOF) {
 		if (putchar(c) == EOF) {
 			return EOF;
@@ -52,27 +50,17 @@ int ConsoleDebugLogger::overflow(int c) {
 	return c;
 }
 
-static ConsoleDebugLogger consoleDebugLogger;	/* Create a unique instance of the consoleErrorLogger that will be used to handle debug logs */
+static ConsoleErrorLogger consoleErrorLogger;	/* Create a unique instance of the ConsoleErrorLogger that will be used to handle error logs */
+static ConsoleDebugLogger consoleDebugLogger;	/* Create a unique instance of the ConsoleDebugLogger that will be used to handle debug logs */
 
 ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& debugLogger) :
 		ILogger(errorLogger, debugLogger) {
-}
-
-ConsoleLogger::~ConsoleLogger() {
 }
 
 ConsoleLogger& ConsoleLogger::getInstance() {
 	static ConsoleLogger instance(consoleErrorLogger, consoleDebugLogger); /* Unique instance of the singleton */
 
 	return instance;
-}
-
-void ConsoleLogger::outputErrorLog(const char *format, ...) {
-
-	va_list args;
-	va_start(args, format);
-	fprintf(stderr, format, args);
-	va_end(args);
 }
 
 void ConsoleLogger::outputWarningLog(const char *format, ...) {
@@ -84,14 +72,6 @@ void ConsoleLogger::outputWarningLog(const char *format, ...) {
 }
 
 void ConsoleLogger::outputInfoLog(const char *format, ...) {
-
-	va_list args;
-	va_start(args, format);
-	printf(format, args);
-	va_end(args);
-}
-
-void ConsoleLogger::outputDebugLog(const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);

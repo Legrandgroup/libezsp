@@ -50,6 +50,16 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+/**
+ * @brief Log level description
+ */
+typedef enum {
+	ERROR = 0,
+	WARNING,
+	INFO,
+	DEBUG,
+	TRACE
+} LOG_LEVEL;
 
 /**
  * @brief Abstract class to implement and ostream-compatilbe message logger
@@ -58,9 +68,30 @@
  */
 class ILoggerStream : public std::streambuf {
 public:
-	ILoggerStream() { }
+	ILoggerStream(const LOG_LEVEL logLevel, const bool enabled = true) :
+		logLevel(logLevel),
+		enabled(enabled) {
+	}
 
 	virtual ~ILoggerStream() { }
+
+	/**
+	 * @brief Enable/disable this logger output
+	 *
+	 * @param enabled Should this logger be enabled?
+	 */
+	virtual void setEnable(const bool enabled = true) {
+		this->enabled = enabled;
+	}
+
+	/**
+	 * @brief Set the minimum log level that is enabling loggers
+	 *
+	 * @param minLevel The minimum level that is enabled. If the logLevel value of this logger corresponds to this level or higher, then this logger will be enabled otherwise, it will be disabled.
+	 */
+	virtual void setMinEnabledLogLevel(const LOG_LEVEL minLevel) {
+		this->enabled = (this->logLevel > minLevel);
+	}
 
 	/**
 	 * @brief Output a log message
@@ -84,6 +115,10 @@ protected:
 	 * @return The character that has actually been printed out to the log
 	 */
 	virtual int overflow(int c) = 0;
+
+protected:
+	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger */
+	bool enabled;	/*!< Is this logger currently enabled. */
 };
 
 /**
@@ -110,15 +145,6 @@ protected:
  */
 class ILogger {
 public:
-	typedef enum {
-		ERROR = 0,
-		WARNING,
-		INFO,
-		DEBUG,
-		TRACE
-	} LOG_LEVEL;
-
-public:
 	/**
 	 * @brief Constructor
 	 */
@@ -133,31 +159,42 @@ public:
 	virtual ~ILogger() { }
 
 	/**
+	 * @brief Set logging level
+	 *
+	 * @param logLevel The minimum level that is enabled. If the logLevel value of this logger corresponds to this level or higher, then this logger will be enabled otherwise, it will be disabled.
+	 */
+	virtual void setLogLevel(const LOG_LEVEL logLevel) {
+		/* Dispatch the requested loglevel to all enclosed loggers */
+		this->errorLogger.setMinEnabledLogLevel(logLevel);
+		this->debugLogger.setMinEnabledLogLevel(logLevel);
+	}
+
+	/**
 	 * @brief Generic message logger method
 	 *
 	 * This method will dispatch to the appropriate logging method based on the logLevel argument
 	 *
-	 * @param log_level The level of the log to generate
+	 * @param logLevel The level of the log to generate
 	 * @param format The printf-style format followed by a variable list of arguments
 	 */
-	virtual void outputGenericLog(const ILogger::LOG_LEVEL logLevel, const char *format, ...) {
+	virtual void outputGenericLog(const LOG_LEVEL logLevel, const char *format, ...) {
 		va_list args;
 
 		va_start(args, format);
 		switch (logLevel) {
-		case ILogger::LOG_LEVEL::ERROR:
+		case LOG_LEVEL::ERROR:
 			this->errorLogger.log(format, args);
 			break;
-		case ILogger::LOG_LEVEL::WARNING:
+		case LOG_LEVEL::WARNING:
 			this->outputWarningLog(format, args);
 			break;
-		case ILogger::LOG_LEVEL::INFO:
+		case LOG_LEVEL::INFO:
 			this->outputInfoLog(format, args);
 			break;
-		case ILogger::LOG_LEVEL::DEBUG:
+		case LOG_LEVEL::DEBUG:
 			this->debugLogger.log(format, args);
 			break;
-		case ILogger::LOG_LEVEL::TRACE:
+		case LOG_LEVEL::TRACE:
 			this->outputTraceLog(format, args);
 			break;
 		}
