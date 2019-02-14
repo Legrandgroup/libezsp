@@ -1,6 +1,7 @@
 #include "SerialUartDriver.h"
 #include "CppThreadsTimerFactory.h"
 #include "../GenericAsyncDataInputObservable.h"
+#include "../GenericLogger.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
 #include <iostream>	// FIXME: for std::cout during debug
@@ -35,7 +36,7 @@ public:
 		for (size_t i =0; i<dataLen; i++) {
 			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(dataIn[i]) << " ";
 		}
-		std::cout << this->name << ": Received buffer " << bufDump.str() << std::endl;
+		clogI << this->name << ": Received buffer " << bufDump.str() << std::endl;
 	};
 private :
 	std::string name;	/*!< The prefix "nickname" for this observer */
@@ -52,7 +53,7 @@ int main() {
 	CppThreadsTimerFactory timerFactory;
 	ITimer *timer = timerFactory.create();
 	timer->start(10000, [](ITimer* triggeringTimer) {
-			std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
+		clogI << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
 
 	uartDriver.open("/dev/ttyUSB0", 57600);
