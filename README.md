@@ -61,4 +61,4 @@ In order to force the sensor to send a report, you can also press 4 times on the
 
 ## For developpers
 
-The developper-specific information can be found in (src/README.md)
+The developper-specific information can be found in [src/README.md](src/README.md)
