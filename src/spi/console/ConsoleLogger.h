@@ -14,6 +14,11 @@
  */
 class ConsoleStderrLogger : public ILoggerStream {
 public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 */
 	ConsoleStderrLogger(const LOG_LEVEL logLevel);
 
 	virtual void log(const char *format, ...);
@@ -34,8 +39,18 @@ protected:
  */
 class ConsoleStdoutLogger : public ILoggerStream {
 public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 */
 	ConsoleStdoutLogger(const LOG_LEVEL logLevel);
 
+	/**
+	 * @brief Output a log message
+	 *
+	 * @param format The format to use
+	 */
 	virtual void log(const char *format, ...);
 
 protected:
@@ -54,6 +69,9 @@ protected:
  */
 class ConsoleErrorLogger : public ConsoleStderrLogger {
 public:
+	/**
+	 * @brief Default constructor, creating an error logger, based on ConsoleStderrLogger
+	 */
 	ConsoleErrorLogger() :
 		ConsoleStderrLogger(LOG_LEVEL::ERROR) {
 	}
@@ -64,6 +82,9 @@ public:
  */
 class ConsoleWarningLogger : public ConsoleStderrLogger {
 public:
+	/**
+	 * @brief Default constructor, creating a warning logger, based on ConsoleStderrLogger
+	 */
 	ConsoleWarningLogger() :
 		ConsoleStderrLogger(LOG_LEVEL::WARNING) {
 	}
@@ -74,6 +95,9 @@ public:
  */
 class ConsoleInfoLogger : public ConsoleStdoutLogger {
 public:
+	/**
+	 * @brief Default constructor, creating an info logger, based on ConsoleStdoutLogger
+	 */
 	ConsoleInfoLogger() :
 		ConsoleStdoutLogger(LOG_LEVEL::INFO) {
 	}
@@ -84,6 +108,9 @@ public:
  */
 class ConsoleDebugLogger : public ConsoleStdoutLogger {
 public:
+	/**
+	 * @brief Default constructor, creating a debug logger, based on ConsoleStdoutLogger
+	 */
 	ConsoleDebugLogger() :
 		ConsoleStdoutLogger(LOG_LEVEL::DEBUG) {
 	}
@@ -94,6 +121,9 @@ public:
  */
 class ConsoleTraceLogger : public ConsoleStdoutLogger {
 public:
+	/**
+	 * @brief Default constructor, creating a trace logger, based on ConsoleStdoutLogger
+	 */
 	ConsoleTraceLogger() :
 		ConsoleStdoutLogger(LOG_LEVEL::TRACE) {
 	}
@@ -103,7 +133,7 @@ public:
  * @brief Class to interact with a console logger
  */
 class ConsoleLogger : public ILogger {
-public:
+private:
 	/**
 	 * @brief Default constructor
 	 *
@@ -115,13 +145,9 @@ public:
 	 */
 	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
 
-	/**
-	 * @brief Copy constructor
-	 *
-	 * Copy construction is forbidden on this class, as it is a singleton
-	 */
-	ConsoleLogger(const ConsoleLogger& other);
+	~ConsoleLogger();
 
+public:
 	/**
 	 * @brief Get a reference to the singleton (only instance) of this logger class
 	 *

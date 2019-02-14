@@ -99,11 +99,27 @@ typedef enum {
  */
 class ILoggerStream : public std::streambuf {
 public:
+	/**
+	 * @brief Default constructor
+	 *
+	 * Construction without arguments is not allowed. See the specific constructor for how to instanciate a ILoggerStream
+	 */
+	ILoggerStream() = delete;
+
+	/**
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @param enabled Is this logger enabled (this can be reset later on using method setEnable()
+	 */
 	ILoggerStream(const LOG_LEVEL logLevel, const bool enabled = true) :
 		logLevel(logLevel),
 		enabled(enabled) {
 	}
 
+	/**
+	 * @brief Destructor
+	 */
 	virtual ~ILoggerStream() { }
 
 	/**
@@ -125,7 +141,7 @@ public:
 	}
 
 	/**
-	 * @brief Output a log message
+	 * @brief Handle a log message
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 *
@@ -153,7 +169,9 @@ protected:
 };
 
 /**
- * @brief Abstract singleton class to output log messages
+ * @brief Class to output log messages
+ *
+ * @note This class implements the singleton design pattern (in the lazy way).
  *
  * Specialized loggers should derive from this virtual class in order to provide a concrete implementation of a logging mechanism.
  *
@@ -201,6 +219,13 @@ public:
 	 * @brief Destructor
 	 */
 	virtual ~ILogger() { }
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * Copy construction is forbidden on this class, as it is a singleton
+	 */
+	ILogger(const ILogger& other) = delete;
 
 	/**
 	 * @brief Set logging level
