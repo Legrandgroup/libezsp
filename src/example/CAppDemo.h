@@ -24,7 +24,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver
 {
 public:
-    CAppDemo(IUartDriver *uartDriver, ITimerFactory& i_timer_factory);
+    CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory);
 
     /**
      * Callback

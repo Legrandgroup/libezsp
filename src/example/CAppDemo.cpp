@@ -17,9 +17,9 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory& i_timer_factory) :
-	dongle(i_timer_factory,this),
-	zb_messaging(dongle,i_timer_factory),
+CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) : 
+	dongle(i_timer_factory, this),
+	zb_messaging(dongle, i_timer_factory),
 	zb_nwk(dongle, zb_messaging),
 	app_state(APP_NOT_INIT),
 	db()
