@@ -164,7 +164,7 @@ protected:
 	virtual int overflow(int c) = 0;
 
 protected:
-	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger */
+	const LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger, set at construction, then read only */
 	bool enabled;	/*!< Is this logger currently enabled. */
 };
 
