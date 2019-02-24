@@ -13,7 +13,7 @@ TEST(node_tests, dummy_test) {
 	NOTIFYPASS();
 }
 
-#ifdef 0
+#if 0
 TEST(node_tests, dummy_optional_test) {
 	const char* expected_result=NULL;
 
