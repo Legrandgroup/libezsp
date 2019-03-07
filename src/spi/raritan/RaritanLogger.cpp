@@ -25,6 +25,8 @@ int RaritanGenericLogger::overflow(int c) {
 			this->m_buffer = "";
 		}
 		else {
+			if (c>0xff)
+				return EOF;
 			this->m_buffer += static_cast<char>(c & 0xff);
 		}
 	}
@@ -79,10 +81,34 @@ void RaritanWarningLogger::log(const char *format, ...) {
 	va_end(args);
 }
 
+/**
+ * This method is a friend of RaritanInfoLogger class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+ */
+void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) /* nothrow */ {
+	using std::swap;	// Enable ADL
+
+	swap(first.logLevel, second.logLevel);
+	swap(first.enabled, second.enabled);
+	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+}
+
+RaritanInfoLogger& RaritanInfoLogger::operator=(RaritanInfoLogger other) {
+	::swap(*this, other);
+	return *this;
+}
+
+void RaritanInfoLogger::log(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	PPD_INFO(format, args);
+	va_end(args);
+}
+
 
 static RaritanErrorLogger raritanErrorLogger;	/* Create a unique instance of the RaritanErrorLogger that will be used to handle error logs */
 static RaritanWarningLogger raritanWarningLogger;	/* Create a unique instance of the RaritanWarningLogger that will be used to handle warning logs */
-//static RaritanInfoLogger raritanInfoLogger;	/* Create a unique instance of the RaritanInfoLogger that will be used to handle info logs */
+static RaritanInfoLogger raritanInfoLogger;	/* Create a unique instance of the RaritanInfoLogger that will be used to handle info logs */
 //static RaritanDebugLogger raritanDebugLogger;	/* Create a unique instance of the RaritanDebugLogger that will be used to handle debug logs */
 //static RaritanTraceLogger raritanTraceLogger;	/* Create a unique instance of the RaritanTraceLogger that will be used to handle trace logs */
 
@@ -95,7 +121,7 @@ RaritanLogger::~RaritanLogger() {
 
 RaritanLogger& RaritanLogger::getInstance() {
 	/* FIXME: for now we use error logger impl for all logging types */
-	static RaritanLogger instance(raritanErrorLogger, raritanWarningLogger, raritanErrorLogger, raritanErrorLogger, raritanErrorLogger); /* Unique instance of the singleton */
+	static RaritanLogger instance(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanErrorLogger, raritanErrorLogger); /* Unique instance of the singleton */
 
 	return instance;
 }
