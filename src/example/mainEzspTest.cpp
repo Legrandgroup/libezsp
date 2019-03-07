@@ -8,7 +8,7 @@
 
 #ifdef USE_SERIALCPP
 #include "../spi/serial/SerialUartDriver.h"
-#include "../spi/serial/SerialTimerFactory.h"
+#include "../spi/cppthreads/CppThreadsTimerFactory.h"
 #include <string>
 #else
 #ifdef USE_RARITAN
@@ -19,6 +19,7 @@
 #error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
+#include "GenericLogger.h"
 #include "CAppDemo.h"
 
 using namespace std;
@@ -26,16 +27,18 @@ using namespace std;
 int main( void )
 {
 #ifdef USE_SERIALCPP
-    UartDriverSerial uartDriver;
-    SerialTimerFactory timerFactory;
+    SerialUartDriver uartDriver;
+    CppThreadsTimerFactory timerFactory;
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
-    UartDriverRaritan uartDriver(eventLoop);
+    RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
+
+    RaritanLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 
-    cout << "Starting ezsp test program !" << endl;
+    clogI << "Starting ezsp test program (error)\n";
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

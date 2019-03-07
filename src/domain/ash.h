@@ -24,15 +24,16 @@ public:
 class CAsh
 {
 public:
+    CAsh() = delete; /* Construction without arguments is not allowed */
     /**
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
     CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory);
 
-    CAsh(const CAsh&) = delete;
+    CAsh(const CAsh&) = delete; /* No copy construction allowed */
 
-    CAsh& operator=(const CAsh&) = delete;
+    CAsh& operator=(CAsh) = delete; /* No assignment allowed */
 
     std::vector<uint8_t> resetNCPFrame(void);
 

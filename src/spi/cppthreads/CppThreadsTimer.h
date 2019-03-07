@@ -1,5 +1,5 @@
 /**
- * @file SerialTimer.h
+ * @file CppThreadsTimer.h
  *
  * @brief Concrete implementation of ITimer using C++11 threads
  */
@@ -14,18 +14,18 @@
 /**
  * @brief Concrete implementation of ITimer using C++11 threads
  */
-class SerialTimer : public ITimer {
+class CppThreadsTimer : public ITimer {
 public:
 
 	/**
 	 * @brief Default constructor
 	 */
-	SerialTimer();
+	CppThreadsTimer();
 
 	/**
 	 * @brief Destructor
 	 */
-	~SerialTimer();
+	~CppThreadsTimer();
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time

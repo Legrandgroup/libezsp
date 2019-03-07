@@ -7,6 +7,7 @@ CFLAGS = $(FW_CFLAGS_3RDPARTY)
 
 TARGET_SHARED_LIBNAMES = libezsp
 
+libezsp_MODULE_NAME = test_log
 
 libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/zclheader.cpp \
@@ -28,6 +29,7 @@ libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	spi/raritan/RaritanTimerFactory.cpp \
 	spi/raritan/RaritanTimer.cpp \
 	spi/raritan/RaritanEventLoop.cpp \
+	spi/raritan/RaritanLogger.cpp \
 
 libezsp_LIBS = -lpp_base
 

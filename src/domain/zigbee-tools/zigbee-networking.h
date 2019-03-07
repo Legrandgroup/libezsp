@@ -1,5 +1,5 @@
 /**
- *
+ * @file zigbee-networking.h
  */
 #pragma once
 
@@ -19,19 +19,24 @@ class CZigbeeNetworking : public CEzspDongleObserver
 public:
     CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 
+    CZigbeeNetworking() = delete; /* Construction without arguments is not allowed */
+    CZigbeeNetworking(const CZigbeeNetworking&) = delete; /* No copy construction allowed */
+
+    CZigbeeNetworking& operator=(CZigbeeNetworking) = delete; /* No assignment allowed */
+
     void stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size);
 
     void formHaNetwork();
     void OpenNetwork( uint8_t i_timeout );
     void CloseNetwork( void );
-
+    
     void startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct = nullptr);
 
     /**
      * Observer
      */
-    void handleDongleState( EDongleState /* i_state */ ) {;}
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleDongleState( EDongleState i_state ){;}
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );    
 
 private:
     CEzspDongle &dongle;

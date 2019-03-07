@@ -1,6 +1,9 @@
 /**
- * 
+ * @file ember-child-data-struct.cpp
+ *
+ * @brief A structure containing a child node's data.
  */
+
 #include <sstream>
 #include <iomanip>
 
@@ -8,44 +11,41 @@
 
 #include "../../byte-manip.h"
 
-void CEmberChildDataStruct::setRaw(std::vector<uint8_t> raw_message)
+CEmberChildDataStruct::CEmberChildDataStruct(const std::vector<uint8_t>& raw_message) :
+	eui64(),
+	type(static_cast<EmberNodeType>(raw_message.at(EMBER_EUI64_BYTE_SIZE))),
+	id(static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(EMBER_EUI64_BYTE_SIZE+2), raw_message.at(EMBER_EUI64_BYTE_SIZE+1)))),
+	phy(raw_message.at(EMBER_EUI64_BYTE_SIZE+3)),
+	power(raw_message.at(EMBER_EUI64_BYTE_SIZE+4)),
+	timeout(raw_message.at(EMBER_EUI64_BYTE_SIZE+5)),
+	gpdIeeeAddress(),	/* FIXME */
+	sourceId(),	/* FIXME */
+	applicationId(), /* FIXME */
+	endpoint() /* FIXME */
 {
-    eui64.clear();
     for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
     {
         eui64.push_back(raw_message.at(loop));
     }
-
-    type = static_cast<EmberNodeType>(raw_message.at(EMBER_EUI64_BYTE_SIZE));
-
-    id = static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(EMBER_EUI64_BYTE_SIZE+2), raw_message.at(EMBER_EUI64_BYTE_SIZE+1)));
-
-    phy = raw_message.at(EMBER_EUI64_BYTE_SIZE+3);
-
-    power = raw_message.at(EMBER_EUI64_BYTE_SIZE+4);
-
-    timeout = raw_message.at(EMBER_EUI64_BYTE_SIZE+5);
-/*
-    if( raw_message.size() > 17 ) // todo associate to node type
-    {
-        gpdIeeeAddress.clear();
-        for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
-        {
-            gpdIeeeAddress.push_back(raw_message.at(EMBER_EUI64_BYTE_SIZE+6+loop));
-        }
-
-        sourceId = (
-            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+7)) |
-            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+8))<<8 |
-            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+9))<<16 |
-            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+10))<<24
-        );     
-
-        applicationId = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+11);
-        
-        endpoint = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+12);
-    }
-*/    
+    //    if( raw_message.size() > 17 ) // todo associate to node type
+    //    {
+    //        gpdIeeeAddress.clear();
+    //        for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
+    //        {
+    //            gpdIeeeAddress.push_back(raw_message.at(EMBER_EUI64_BYTE_SIZE+6+loop));
+    //        }
+    //
+    //        sourceId = (
+    //            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+7)) |
+    //            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+8))<<8 |
+    //            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+9))<<16 |
+    //            static_cast<uint32_t>(raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+10))<<24
+    //        );
+    //
+    //        applicationId = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+11);
+    //
+    //        endpoint = raw_message.at(EMBER_EUI64_BYTE_SIZE+EMBER_EUI64_BYTE_SIZE+12);
+    //    }
 }
 
 std::string CEmberChildDataStruct::String() const
@@ -72,4 +72,9 @@ std::string CEmberChildDataStruct::String() const
     buf << " }";
 
     return buf.str();
+}
+
+std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data){
+    out << data.String();
+    return out;
 }

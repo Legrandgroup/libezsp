@@ -7,24 +7,21 @@
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
 
-UartDriverRaritan::UartDriverRaritan(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
+RaritanUartDriver::RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 }
 
-UartDriverRaritan::~UartDriverRaritan() {
+RaritanUartDriver::~RaritanUartDriver() {
 	this->close();
 }
 
-void UartDriverRaritan::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
+void RaritanUartDriver::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
 	m_data_input_observable = uartIncomingDataHandler;
 }
 
-int UartDriverRaritan::open(const std::string& serialPortName, unsigned int baudRate) {
+int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
 	pp::Tty::UPtr tmpSerialPortUPTR;
 	int err;
-	if (PP_FAILED(err = pp::Tty::open(tmpSerialPortUPTR, serialPortName,
-		pp::FileDescriptor::AF_READ_WRITE,
-		pp::FileDescriptor::CF_OPEN_EXISTING)))
-	{
+	if (PP_FAILED(err = pp::Tty::open(tmpSerialPortUPTR, serialPortName, pp::FileDescriptor::AF_READ_WRITE, pp::FileDescriptor::CF_OPEN_EXISTING)))	{
 		return err;
 	}
 
@@ -36,7 +33,7 @@ int UartDriverRaritan::open(const std::string& serialPortName, unsigned int baud
 			unsigned char readData[256];
 			size_t rdcnt;
 			int error;
-			if (PP_FAILED(error = this->m_serial_tty->read(rdcnt, readData, sizeof(readData)/sizeof(unsigned char)))){
+			if (PP_FAILED(error = this->m_serial_tty->read(rdcnt, readData, sizeof(readData)/sizeof(unsigned char)))) {
 				PPD_ERR_VAL(error, "Tty.read()");
 				return;
 			}
@@ -46,13 +43,13 @@ int UartDriverRaritan::open(const std::string& serialPortName, unsigned int baud
 			//this->m_eventLoop.getSelector().stopAsync();
 		}
 	};
-	m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
+	this->m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
 	return PP_OK;
 }
 
-int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int RaritanUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
-	int result = m_serial_tty->write(writtenCnt, buf, cnt);
+	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
 	if (result == PP_OK) {
 		//PPD_DEBUG("Successfully wrote %d bytes", cnt);
 		return 0;
@@ -61,6 +58,6 @@ int UartDriverRaritan::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	return result;
 }
 
-void UartDriverRaritan::close() {
+void RaritanUartDriver::close() {
 	m_serial_tty = nullptr; // TODO: Test this (is the port closed when serial port descriptor goes out of scope?)
 }

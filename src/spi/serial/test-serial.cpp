@@ -1,6 +1,7 @@
 #include "SerialUartDriver.h"
-#include "SerialTimerFactory.h"
+#include "CppThreadsTimerFactory.h"
 #include "../GenericAsyncDataInputObservable.h"
+#include "../GenericLogger.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
 #include <iostream>	// FIXME: for std::cout during debug
@@ -35,7 +36,7 @@ public:
 		for (size_t i =0; i<dataLen; i++) {
 			bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(dataIn[i]) << " ";
 		}
-		std::cout << this->name << ": Received buffer " << bufDump.str() << std::endl;
+		clogI << this->name << ": Received buffer " << bufDump.str() << std::endl;
 	};
 private :
 	std::string name;	/*!< The prefix "nickname" for this observer */
@@ -46,13 +47,13 @@ int main() {
 	DebuggerDisplayer disp("Debugger displayer");
 	uartIncomingDataHandler.registerObserver(&disp);
 
-	UartDriverSerial uartDriver;
+	SerialUartDriver uartDriver;
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
-	SerialTimerFactory serialTimerFactory;
-	ITimer *serialTimer = serialTimerFactory.create();
-	serialTimer->start(10000, [](ITimer* triggeringTimer) {
-			std::cout << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
+	CppThreadsTimerFactory timerFactory;
+	ITimer *timer = timerFactory.create();
+	timer->start(10000, [](ITimer* triggeringTimer) {
+		clogI << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
 
 	uartDriver.open("/dev/ttyUSB0", 57600);
@@ -61,7 +62,7 @@ int main() {
 	uartDriver.write(written, buf, 5);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-	serialTimer->stop();
+	timer->stop();
 
 	for(;;) { }
 

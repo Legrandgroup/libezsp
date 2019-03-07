@@ -1,6 +1,9 @@
 /**
- * A structure containing a key and its associated data.
+ * @file ember-key-struct.h
+ *
+ * @brief A structure containing a key and its associated data.
  */
+
 #pragma once
 
 #include "../ezsp-enum.h"
@@ -13,53 +16,86 @@
 class CEmberKeyStruct
 {
     public:
-        CEmberKeyStruct(std::vector<uint8_t> raw_message){ setRaw(raw_message); }
-
-        // little endian encoded
-        void setRaw(std::vector<uint8_t> raw_message);
+        /**
+         * @brief Default constructor
+         *
+         * Construction without arguments is not allowed
+         */
+        CEmberKeyStruct() = delete;
 
         /**
-         * A bitmask indicating the presence of data within the
-         * various fields in the structure.
+         * @brief Construction from a buffer
+         *
+         * @param raw_message The buffer to construct from
          */
-        EmberKeyStructBitmask getBitmask(){ return bitmask; }
+        CEmberKeyStruct(const std::vector<uint8_t>& raw_message);
 
         /**
-         * The type of the key.
+         * @brief Copy constructor
+         *
+         * Copy construction is forbidden on this class
          */
-        EmberKeyType getType(){ return type; }
+        CEmberKeyStruct(const CEmberKeyStruct& other) = delete;
 
         /**
-         * The actual key data.
+         * @brief Assignment operator
+         *
+         * Assignment is forbidden on this class
          */
-        EmberKeyData getKey(){ return key; }
+        CEmberKeyStruct& operator=(const CEmberKeyStruct& other) = delete;
 
         /**
-         * The outgoing frame counter associated with the key.
+         * @brief A bitmask indicating the presence of data within the various fields in the structure.
          */
-        uint32_t getOutgoingFrameCounter(){ return outgoingFrameCounter; }
+        EmberKeyStructBitmask getBitmask() const { return bitmask; }
+
+        /**
+         * @brief The type of the key.
+         */
+        EmberKeyType getType() const { return type; }
+            
+        /**
+         * @brief The actual key data.
+         */
+        EmberKeyData getKey() const { return key; }
+
+        /**
+         * @brief The outgoing frame counter associated with the key.
+         */
+        uint32_t getOutgoingFrameCounter() const { return outgoingFrameCounter; }
 
         /**
          * The frame counter of the partner device associated
          * with the key.
          */
-        uint32_t getIncomingFrameCounter(){ return incomingFrameCounter; }
+        uint32_t getIncomingFrameCounter() const { return incomingFrameCounter; }
 
         /**
-         * The sequence number associated with the key.
+         * @brief The sequence number associated with the key.
          */
-        uint8_t getSequenceNumber(){ return sequenceNumber; }
+        uint8_t getSequenceNumber() const { return sequenceNumber; }
 
         /**
-         * The IEEE address of the partner device also in
-         * possession of the key.
+         * @brief The IEEE address of the partner device also in possession of the key.
          */
-        EmberEUI64 getPartnerEUI64(){ return partnerEUI64; }
+        EmberEUI64 getPartnerEUI64() const { return partnerEUI64; }
 
         /**
-         * For display
+         * @brief Dump this instance as a string
+         *
+         * @return The resulting string
          */
-        std::string String();
+        std::string String() const;
+
+        /**
+         * @brief Serialize to an iostream
+         *
+         * @param out The original output stream
+         * @param data The object to serialize
+         *
+         * @return The new output stream with serialized data appended
+         */
+        friend std::ostream& operator<< (std::ostream& out, const CEmberKeyStruct& data);
 
     private:
         EmberKeyStructBitmask bitmask;

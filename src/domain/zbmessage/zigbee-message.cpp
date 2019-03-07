@@ -1,40 +1,29 @@
 /**
+ * @file zigbee-message.cpp
  * 
+ * @brief Handles encoding/decoding of a zigbee message
  */
 
 #include "zigbee-message.h"
 
-CZigBeeMsg::CZigBeeMsg()
+CZigBeeMsg::CZigBeeMsg() :
+	aps(),
+	zcl_header(),
+	use_zcl_header(false),
+	payload()
 {
-  p_zcl_header = nullptr;
 }
 
-CZigBeeMsg::CZigBeeMsg(const CZigBeeMsg& i_msg)
+CZigBeeMsg::CZigBeeMsg(const CZigBeeMsg& i_msg) :
+	aps(i_msg.aps),
+	zcl_header(i_msg.zcl_header),
+	use_zcl_header(i_msg.use_zcl_header),
+	payload(i_msg.payload)
 {
-  // copy all elements of class
-  /** APS */
-  aps = i_msg.aps;
-
-  /** ZCL Header */
-  p_zcl_header = nullptr;
-  if( nullptr != i_msg.p_zcl_header )
-  {
-    p_zcl_header = new CZCLHeader();
-    *p_zcl_header = *i_msg.p_zcl_header;
-  }
-
-  /** Payload */
-  payload.clear();
-  payload = i_msg.payload;
 }
 
 CZigBeeMsg::~CZigBeeMsg()
 {
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-    p_zcl_header = nullptr;
-  }
 }
 
 /**
@@ -49,19 +38,15 @@ CZigBeeMsg::~CZigBeeMsg()
  * @param i_src_ieee    : address ieee to use as source of message
  * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
  */
-void CZigBeeMsg::SetSpecific( uint16_t i_profile_id, uint16_t i_manufacturer_code, uint8_t i_endpoint, uint16_t i_cluster_id, uint8_t i_cmd_id,
-                              EZCLFrameCtrlDirection i_direction, std::vector<uint8_t> i_payload,
-                              uint64_t i_src_ieee, uint8_t i_transaction_number, uint16_t i_grp_id )
+void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+                              const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload,
+                              const uint64_t i_src_ieee, const uint8_t i_transaction_number, const uint16_t i_grp_id )
 {
   aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
 
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-  }
-  p_zcl_header = new CZCLHeader();
-
-  p_zcl_header->SetPublicSpecific( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
+  zcl_header = CZCLHeader();
+  use_zcl_header = true;
+  zcl_header.SetPublicSpecific( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
 
   payload = i_payload;
 }
@@ -77,19 +62,15 @@ void CZigBeeMsg::SetSpecific( uint16_t i_profile_id, uint16_t i_manufacturer_cod
  * @param i_src_ieee    : address ieee to use as source of message
  * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
  */
-void CZigBeeMsg::SetGeneral(uint16_t i_profile_id, uint16_t i_manufacturer_code, uint8_t i_endpoint, uint16_t i_cluster_id, uint8_t i_cmd_id,
-                 EZCLFrameCtrlDirection i_direction, std::vector<uint8_t> i_payload , uint64_t i_src_ieee,
-                 uint8_t i_transaction_number, uint16_t i_grp_id)
+void CZigBeeMsg::SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+                 const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                 const uint8_t i_transaction_number, const uint16_t i_grp_id)
 {
   aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
 
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-  }
-  p_zcl_header = new CZCLHeader();
-
-  p_zcl_header->SetPublicGeneral( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
+  zcl_header = CZCLHeader();
+  use_zcl_header = true;
+  zcl_header.SetPublicGeneral( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
 
   payload = i_payload;
 }
@@ -100,14 +81,12 @@ void CZigBeeMsg::SetGeneral(uint16_t i_profile_id, uint16_t i_manufacturer_code,
  * @param i_payload : payload for command
  * @param i_transaction_number : transaction sequence number
  */
-void CZigBeeMsg::SetZdo(uint16_t i_cmd_id, std::vector<uint8_t> i_payload, uint8_t i_transaction_number)
+void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number)
 {
   aps.SetDefaultAPS( 0x0000, i_cmd_id, 0x00 );
 
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-  }
+  zcl_header = CZCLHeader();
+  use_zcl_header = false;
 
   payload = i_payload;
   payload.insert( payload.begin(), i_transaction_number );
@@ -119,23 +98,24 @@ void CZigBeeMsg::SetZdo(uint16_t i_cmd_id, std::vector<uint8_t> i_payload, uint8
  * @param i_aps : aps data
  * @param i_msg : message data included header (ZCL and/or MSP)
  */
-void CZigBeeMsg::Set(std::vector<uint8_t> i_aps, std::vector<uint8_t> i_msg )
+void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_t>& i_msg )
 {
   uint8_t l_idx = 0;
 
   aps.SetEmberAPS( i_aps );
 
   // ZCL header
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-  }
   // no ZCL Header for ZDO message
   if( 0U != aps.src_ep )
   {
-    p_zcl_header = new CZCLHeader();
-    l_idx = p_zcl_header->SetZCLHeader( i_msg );
+    zcl_header = CZCLHeader(i_msg, l_idx);
+    use_zcl_header = true;
   }
+  else
+  {
+    use_zcl_header = false;
+  }
+
 
   // payload
   for(uint16_t loop=l_idx; loop<i_msg.size(); loop++)
@@ -148,13 +128,13 @@ void CZigBeeMsg::Set(std::vector<uint8_t> i_aps, std::vector<uint8_t> i_msg )
  * @brief Get : format zigbee message frame with header
  * @return return zigbee message with header
  */
-std::vector<uint8_t> CZigBeeMsg::Get( void )
+std::vector<uint8_t> CZigBeeMsg::Get( void ) const
 {
   std::vector<uint8_t> lo_msg;
 
-  if( nullptr != p_zcl_header )
+  if( use_zcl_header )
   {
-    std::vector<uint8_t> v_tmp = p_zcl_header->GetZCLHeader();
+    std::vector<uint8_t> v_tmp = zcl_header.GetZCLHeader();
     lo_msg.insert(lo_msg.end(), v_tmp.begin(), v_tmp.end());
   }
 
@@ -163,29 +143,25 @@ std::vector<uint8_t> CZigBeeMsg::Get( void )
   return lo_msg;
 }
 
-// operator
-CZigBeeMsg& CZigBeeMsg::operator= (const CZigBeeMsg& i_msg)
+/**
+ * This method is a friend of CZigBeeMsg class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(CZigBeeMsg& first, CZigBeeMsg& second) /* nothrow */
 {
-  // copy all elements of class
-  /** APS */
-  aps = i_msg.aps;
+  using std::swap;	// Enable ADL
 
-  /** ZCL Header */
-  if( nullptr != p_zcl_header )
-  {
-    delete p_zcl_header;
-    p_zcl_header = nullptr;
-  }
-  if( nullptr != i_msg.p_zcl_header )
-  {
-    p_zcl_header = new CZCLHeader();
-    *p_zcl_header = *i_msg.p_zcl_header;
-  }
+  swap(first.aps, second.aps);
+  swap(first.zcl_header, second.zcl_header);
+  swap(first.use_zcl_header, second.use_zcl_header);
+  swap(first.payload, second.payload);
+  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+}
 
-  /** Payload */
-  payload.clear();
-  payload = i_msg.payload;
-
+CZigBeeMsg& CZigBeeMsg::operator=(CZigBeeMsg other)
+{
+  swap(*this, other);
   return *this;
 }
+
 

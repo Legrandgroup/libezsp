@@ -15,31 +15,31 @@
 /**
  * @brief Class to interact with a UART using libserialcpp
  */
-class UartDriverSerial : public IUartDriver {
+class SerialUartDriver : public IUartDriver {
 public:
 	/**
 	 * @brief Default constructor
 	 */
-	UartDriverSerial();
+	SerialUartDriver();
 
 	/**
 	 * @brief Destructor
 	 */
-	~UartDriverSerial();
+	~SerialUartDriver();
 
 	/**
 	 * @brief Copy constructor
 	 *
 	 * Copy construction is forbidden on this class
 	 */
-	UartDriverSerial(const UartDriverSerial& other) = delete;
+	SerialUartDriver(const SerialUartDriver& other) = delete;
 
 	/**
 	 * @brief Assignment operator
 	 *
 	 * Copy construction is forbidden on this class
 	 */
-	UartDriverSerial& operator=(const UartDriverSerial& other) = delete;
+	SerialUartDriver& operator=(const SerialUartDriver& other) = delete;
 
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART

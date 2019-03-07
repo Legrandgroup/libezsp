@@ -1,3 +1,9 @@
+/**
+ * @file zigbee-message.h
+ *
+ * @brief Handles encoding/decoding of a zigbee message
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -10,13 +16,45 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+class CZigBeeMsg; /* Forward declaration */
+void swap(CZigBeeMsg& first, CZigBeeMsg& second); /* Declaration before qualifying ::swap() as friend for class CZigBeeMsg */
+
 class CZigBeeMsg
 {
 public:
   CZigBeeMsg();
+  /**
+   * @brief Copy constructor
+   *
+   * @param other The object to copy from
+   */
   CZigBeeMsg(const CZigBeeMsg& i_msg);
+
+  /**
+   * @brief Destructor
+   */
   ~CZigBeeMsg();
 
+  /**
+   * @brief Assignment operator
+   * @param other The object to assign to the lhs
+   *
+   * @return The object that has been assigned the value of \p other
+   */
+  CZigBeeMsg& operator=(CZigBeeMsg other);
+
+  /**
+   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZigBeeMsg
+   *
+   * This function will swap all attributes of \p first and \p second
+   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+   *
+   * @param first The first object
+   * @param second The second object
+   */
+  friend void (::swap)(CZigBeeMsg& first, CZigBeeMsg& second);
+  
   // high level
 
   /**
@@ -30,9 +68,9 @@ public:
    * @param i_src_ieee    : address ieee to use as source of message
    * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
    */
-  void SetSpecific(uint16_t i_profile_id, uint16_t i_manufacturer_code, uint8_t i_endpoint, uint16_t i_cluster_id, uint8_t i_cmd_id,
-                    EZCLFrameCtrlDirection i_direction, std::vector<uint8_t> i_payload , uint64_t i_src_ieee,
-                    uint8_t i_transaction_number = 0, uint16_t i_grp_id = 0);
+  void SetSpecific(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+                    const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                    const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0);
 
   /**
    * @brief SetGeneral   : build a basic cluster general message
@@ -45,9 +83,9 @@ public:
    * @param i_src_ieee    : address ieee to use as source of message
    * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
    */
-  void SetGeneral(uint16_t i_profile_id, uint16_t i_manufacturer_code, uint8_t i_endpoint, uint16_t i_cluster_id, uint8_t i_cmd_id,
-                   EZCLFrameCtrlDirection i_direction, std::vector<uint8_t> i_payload , uint64_t i_src_ieee,
-                   uint8_t i_transaction_number = 0, uint16_t i_grp_id = 0 );
+  void SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+                   const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                   const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0 );
 
   /**
    * @brief CZigBeeMsg::SetZdo : fill a ZDO message
@@ -55,16 +93,16 @@ public:
    * @param i_payload : payload for command
    * @param i_transaction_number : transaction sequence number
    */
-  void SetZdo(uint16_t i_cmd_id, std::vector<uint8_t> i_payload, uint8_t i_transaction_number = 0);
+  void SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number = 0);
 
   // aps
-  CAPSFrame *GetAps(void) { return &aps; }
+  CAPSFrame GetAps(void) const { return aps; }
 
   // ZCL Header
-  CZCLHeader *GetZCLHeader(void){ return p_zcl_header; }
+  CZCLHeader GetZCLHeader(void) const { return zcl_header; }
 
   // payload
-  std::vector<uint8_t> *GetPayload(void){ return &payload; }
+  std::vector<uint8_t> GetPayload(void) const { return payload; }
 
   // concatenate
   /**
@@ -72,23 +110,23 @@ public:
    * @param i_aps : aps data
    * @param i_msg : message data included header (ZCL and/or MSP)
    */
-  void Set( std::vector<uint8_t> i_aps, std::vector<uint8_t> i_msg );
+  void Set( const std::vector<uint8_t>& i_aps, const std::vector<uint8_t>& i_msg );
 
   /**
    * @brief Get : format zigbee message frame with header
    * @return return zigbee message with header
    */
-  std::vector<uint8_t> Get( void );
-
-  // operator
-  CZigBeeMsg& operator= (const CZigBeeMsg& i_msg);
+  std::vector<uint8_t> Get( void ) const;
 
 private:
   /** APS */
   CAPSFrame aps;
 
   /** ZCL Header */
-  CZCLHeader *p_zcl_header;
+  CZCLHeader zcl_header;
+
+  /** Do we have a valid content in attribute zcl_header? */
+  bool use_zcl_header;
 
   /** Payload */
   std::vector<uint8_t> payload;

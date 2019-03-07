@@ -1,6 +1,9 @@
 /**
- * 
+ * @file ember-key-struct.cpp
+ *
+ * @brief A structure containing a key and its associated data.
  */
+
 #include <sstream>
 #include <iomanip>
 
@@ -8,37 +11,34 @@
 
 #include "../../byte-manip.h"
 
-void CEmberKeyStruct::setRaw(std::vector<uint8_t> raw_message)
+CEmberKeyStruct::CEmberKeyStruct(const std::vector<uint8_t>& raw_message) :
+	bitmask(static_cast<EmberKeyStructBitmask>(dble_u8_to_u16(raw_message.at(1), raw_message.at(0)))),
+	type(static_cast<EmberKeyType>(raw_message.at(2))),
+	key(),
+	outgoingFrameCounter(
+		static_cast<uint32_t>(raw_message.at(19)) |
+		static_cast<uint32_t>(raw_message.at(20))<<8 |
+		static_cast<uint32_t>(raw_message.at(21))<<16 |
+		static_cast<uint32_t>(raw_message.at(22))<<24),
+	incomingFrameCounter(
+		static_cast<uint32_t>(raw_message.at(23)) |
+		static_cast<uint32_t>(raw_message.at(24))<<8 |
+		static_cast<uint32_t>(raw_message.at(25))<<16 |
+		static_cast<uint32_t>(raw_message.at(26))<<24),
+	sequenceNumber(static_cast<EmberKeyType>(raw_message.at(27))),
+	partnerEUI64()
 {
-    bitmask = static_cast<EmberKeyStructBitmask>(dble_u8_to_u16(raw_message.at(1), raw_message.at(0)));
-    type = static_cast<EmberKeyType>(raw_message.at(2));
-    key.clear();
     for(uint8_t loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++)
     {
         key.push_back( raw_message.at(3U+loop) );
     }
-    outgoingFrameCounter = (
-        static_cast<uint32_t>(raw_message.at(19)) |
-        static_cast<uint32_t>(raw_message.at(20))<<8 |
-        static_cast<uint32_t>(raw_message.at(21))<<16 |
-        static_cast<uint32_t>(raw_message.at(22))<<24
-    );        
-    incomingFrameCounter = (
-        static_cast<uint32_t>(raw_message.at(23)) |
-        static_cast<uint32_t>(raw_message.at(24))<<8 |
-        static_cast<uint32_t>(raw_message.at(25))<<16 |
-        static_cast<uint32_t>(raw_message.at(26))<<24
-    );   
-    sequenceNumber = static_cast<EmberKeyType>(raw_message.at(27));
-    partnerEUI64.clear();
     for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
     {
         partnerEUI64.push_back(raw_message.at(28U+loop));
     }
 }
 
-
-std::string CEmberKeyStruct::String()
+std::string CEmberKeyStruct::String() const
 {
     std::stringstream buf;
 
@@ -57,4 +57,9 @@ std::string CEmberKeyStruct::String()
     buf << " }";
 
     return buf.str();
+}
+
+std::ostream& operator<< (std::ostream& out, const CEmberKeyStruct& data){
+    out << data.String();
+    return out;
 }
