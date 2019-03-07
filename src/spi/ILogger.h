@@ -109,12 +109,12 @@ public:
 	/**
 	 * @brief Constructor
 	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
-	 * @param enabled Is this logger enabled (this can be reset later on using method setEnable()
+	 * @param setLogLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @param isEnabled Is this logger enabled (this can be reset later on using method setEnable()
 	 */
-	ILoggerStream(const LOG_LEVEL logLevel, const bool enabled = true) :
-		logLevel(logLevel),
-		enabled(enabled) {
+	ILoggerStream(const LOG_LEVEL setLogLevel, const bool isEnabled = true) :
+		logLevel(setLogLevel),
+		enabled(isEnabled) {
 	}
 
 	/**
@@ -127,8 +127,8 @@ public:
 	 *
 	 * @param enabled Should this logger be enabled?
 	 */
-	virtual void setEnable(const bool enabled = true) {
-		this->enabled = enabled;
+	virtual void setEnabled(const bool enable = true) {
+		this->enabled = enable;
 	}
 
 	/**
@@ -206,13 +206,19 @@ class ILogger {
 public:
 	/**
 	 * @brief Constructor
+	 *
+	 * @param usedErrorLogger The logger stream to use for error messages
+	 * @param usedWarningLogger The logger stream to use for warning messages
+	 * @param usedInfoLogger The logger stream to use for info messages
+	 * @param usedDebugLogger The logger stream to use for debug messages
+	 * @param usedTraceLogger The logger stream to use for trace messages
 	 */
-	ILogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
-		errorLogger(errorLogger),
-		warningLogger(warningLogger),
-		infoLogger(infoLogger),
-		debugLogger(debugLogger),
-		traceLogger(traceLogger) {
+	ILogger(ILoggerStream& usedErrorLogger, ILoggerStream& usedWarningLogger, ILoggerStream& usedInfoLogger, ILoggerStream& usedDebugLogger, ILoggerStream& usedTraceLogger) :
+		errorLogger(usedErrorLogger),
+		warningLogger(usedWarningLogger),
+		infoLogger(usedInfoLogger),
+		debugLogger(usedDebugLogger),
+		traceLogger(usedTraceLogger) {
 	}
 
 	/**

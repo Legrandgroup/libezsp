@@ -8,9 +8,9 @@
 #include <pp/diag.h>
 #include <cstdarg>
 
-RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel),
-		buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
+RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL setLogLevel) :
+		ILoggerStream(setLogLevel),
+		m_buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
 { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
@@ -18,10 +18,10 @@ RaritanGenericLogger::~RaritanGenericLogger() {
 }
 
 /**
- * This method is a friend of RaritanGenericLogger class
+ * This method is a friend of RaritanErrorLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(RaritanGenericLogger& first, RaritanGenericLogger& second) /* nothrow */ {
+void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -29,7 +29,7 @@ void swap(RaritanGenericLogger& first, RaritanGenericLogger& second) /* nothrow 
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
-RaritanGenericLogger& RaritanGenericLogger::operator=(RaritanGenericLogger other) {
+RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
 	::swap(*this, other);
 	return *this;
 }
@@ -44,12 +44,12 @@ void RaritanErrorLogger::log(const char *format, ...) {
 int RaritanErrorLogger::overflow(int c) {
 	if (c != EOF) {
 		fprintf(stderr, "RaritanErrorLogger operator<<: New output character: '%c' (%02X)\n", c ,c);
-		if (c == EOL) {
-			this->log("%s", this->buffer.c_str());
-			this->buffer = "";
+		if (c == '\n') {
+			this->log("%s", this->m_buffer.c_str());
+			this->m_buffer = "";
 		}
 		else {
-			this->buffer += c;
+			this->m_buffer += static_cast<char>(c & 0xff);
 		}
 	}
 	return c;
@@ -61,8 +61,8 @@ static RaritanErrorLogger raritanErrorLogger;	/* Create a unique instance of the
 //static RaritanDebugLogger raritanDebugLogger;	/* Create a unique instance of the RaritanDebugLogger that will be used to handle debug logs */
 //static RaritanTraceLogger raritanTraceLogger;	/* Create a unique instance of the RaritanTraceLogger that will be used to handle trace logs */
 
-RaritanLogger::RaritanLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
-		ILogger(errorLogger, warningLogger, infoLogger, debugLogger, traceLogger) {
+RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& usedWarningLogger, ILoggerStream& usedInfoLogger, ILoggerStream& usedDebugLogger, ILoggerStream& usedTraceLogger) :
+		ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
 }
 
 RaritanLogger::~RaritanLogger() {

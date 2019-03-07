@@ -8,6 +8,7 @@
 
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
 #include "../ILogger.h"
+#include <string>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -22,57 +23,25 @@ public:
 	/**
 	 * @brief Constructor
 	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @param setLogLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
 	 */
-	RaritanGenericLogger(const LOG_LEVEL logLevel);
+	RaritanGenericLogger(const LOG_LEVEL setLogLevel);
 
 	/**
 	 * @brief Copy constructor
 	 *
 	 * @param other The object instance to construct from
 	 */
-	RaritanGenericLogger(const RaritanErrorLogger& other);
+	RaritanGenericLogger(const RaritanGenericLogger& other);
 
 	/**
 	 * @brief Destructor
 	 */
 	virtual ~RaritanGenericLogger();
 
-	/**
-	 * @brief Output a log message
-	 *
-	 * @param format The format to use
-	 */
-	virtual void log(const char *format, ...);
-
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanErrorLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(RaritanGenericLogger& first, RaritanGenericLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	RaritanGenericLogger& operator=(RaritanGenericLogger other);
-
 protected:
-	/**
-	 * @brief Receive one character of an output stream
-	 *
-	 * @param c The new character
-	 *
-	 * @return The character that has actually been printed out to the log
-	 */
-	virtual int overflow(int c);
+	/* Member variables (attributes) */
+	std::string m_buffer;	/*!< The currently built buffer (used when outputting to log using ostream's operator<< */
 };
 
 /**
@@ -85,17 +54,40 @@ public:
 	 *
 	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
 	 */
-	RaritanErrorLogger(const LOG_LEVEL logLevel) :
+	RaritanErrorLogger() :
 		RaritanGenericLogger(LOG_LEVEL::ERROR) {
 	}
 
 	virtual void log(const char *format, ...);
 
-protected:
-	virtual int overflow(int c);
+	/**
+	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanErrorLogger
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(RaritanErrorLogger& first, RaritanErrorLogger& second);
 
-/* Member variables (attributes) */
-	std::string buffer;	/*!< The currently built buffer (used when outputting to log using ostream's operator<< */
+	/**
+	 * @brief Assignment operator
+	 * @param other The object to assign to the lhs
+	 *
+	 * @return The object that has been assigned the value of @p other
+	 */
+	RaritanErrorLogger& operator=(RaritanErrorLogger other);
+
+protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c);
 };
 
 
@@ -130,7 +122,7 @@ public:
 	 *
 	 * Copy construction is forbidden on this class, as it is a singleton
 	 */
-	RaritanLogger& operator=(const ConsoleLogger& other) = delete;
+	RaritanLogger& operator=(const RaritanLogger& other) = delete;
 };
 
 #ifdef USE_RARITAN
