@@ -73,6 +73,10 @@ typedef enum {
 	TRACE
 } LOG_LEVEL;
 
+/* FIXME: current implementation uses std::streambuf::overflow(), causing invokation of writes for each character, and thus forcing to re-implement line-split for Raritan's logger
+ * we could use a better implementation like:
+ * https://stackoverflow.com/questions/2638654/redirect-c-stdclog-to-syslog-on-unix
+ */
 /**
  * @brief Abstract class to implement and ostream-compatible message logger
  *
