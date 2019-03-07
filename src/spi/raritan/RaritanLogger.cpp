@@ -9,7 +9,9 @@
 #include <cstdarg>
 
 RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+		ILoggerStream(logLevel),
+		buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
+{ /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 RaritanGenericLogger::~RaritanGenericLogger() {
@@ -33,13 +35,17 @@ RaritanGenericLogger& RaritanGenericLogger::operator=(RaritanGenericLogger other
 }
 
 void RaritanErrorLogger::log(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
 	PPD_ERR(format, args);
+	va_end(args);
 }
 
 int RaritanErrorLogger::overflow(int c) {
 	if (c != EOF) {
+		fprintf(stderr, "RaritanErrorLogger operator<<: New output character: '%c' (%02X)\n", c ,c);
 		if (c == EOL) {
-			PPD_ERR(this->buffer);
+			this->log("%s", this->buffer.c_str());
 			this->buffer = "";
 		}
 		else {

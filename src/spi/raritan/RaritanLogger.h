@@ -93,6 +93,9 @@ public:
 
 protected:
 	virtual int overflow(int c);
+
+/* Member variables (attributes) */
+	std::string buffer;	/*!< The currently built buffer (used when outputting to log using ostream's operator<< */
 };
 
 
