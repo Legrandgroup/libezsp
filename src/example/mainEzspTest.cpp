@@ -39,8 +39,7 @@ int main( void )
     clogE << "Starting ezsp test program (error)\n";
     clogW << "Starting ezsp test program (warning)\n";
     clogI << "Starting ezsp test program (info)\n";
-
-    return 0;
+    clogD << "Starting ezsp test program (debug)\n";
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

@@ -183,6 +183,48 @@ public:
 	RaritanInfoLogger& operator=(RaritanInfoLogger other);
 };
 
+/**
+ * @brief Class to implement debug message logging, specializing the generic class RaritanGenericLogger
+ */
+class RaritanDebugLogger : public RaritanGenericLogger {
+public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 */
+	RaritanDebugLogger() :
+		RaritanGenericLogger(LOG_LEVEL::DEBUG) {
+	}
+
+	/**
+	 * @brief Handle a log message
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @param format The format to use
+	 */
+	virtual void log(const char *format, ...);
+
+	/**
+	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanDebugLogger
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(RaritanDebugLogger& first, RaritanDebugLogger& second);
+
+	/**
+	 * @brief Assignment operator
+	 * @param other The object to assign to the lhs
+	 *
+	 * @return The object that has been assigned the value of @p other
+	 */
+	RaritanDebugLogger& operator=(RaritanDebugLogger other);
+};
 
 /**
  * @brief Class to interact with the logger in the Raritan framework
