@@ -17,6 +17,20 @@ RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL setLogLevel) :
 RaritanGenericLogger::~RaritanGenericLogger() {
 }
 
+int RaritanGenericLogger::overflow(int c) {
+	if (c != EOF) {
+		fprintf(stderr, "RaritanGenericLogger operator<<: New output character: '%c' (%02X)... current buffer: \"%s\"\n", c ,c, this->m_buffer.c_str());
+		if (c == '\n') {
+			this->log(this->m_buffer.c_str());
+			this->m_buffer = "";
+		}
+		else {
+			this->m_buffer += static_cast<char>(c & 0xff);
+		}
+	}
+	return c;
+}
+
 /**
  * This method is a friend of RaritanErrorLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm

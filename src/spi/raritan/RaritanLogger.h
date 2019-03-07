@@ -40,6 +40,16 @@ public:
 	virtual ~RaritanGenericLogger();
 
 protected:
+	/**
+	 * @brief Receive one character of an output stream
+	 *
+	 * @param c The new character
+	 *
+	 * @return The character that has actually been printed out to the log
+	 */
+	virtual int overflow(int c);
+
+protected:
 	/* Member variables (attributes) */
 	std::string m_buffer;	/*!< The currently built buffer (used when outputting to log using ostream's operator<< */
 };
@@ -58,6 +68,13 @@ public:
 		RaritanGenericLogger(LOG_LEVEL::ERROR) {
 	}
 
+	/**
+	 * @brief Handle a log message
+	 *
+	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 *
+	 * @param format The format to use
+	 */
 	virtual void log(const char *format, ...);
 
 	/**
