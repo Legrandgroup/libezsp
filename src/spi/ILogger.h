@@ -20,11 +20,11 @@
  * @endcode
  */
 #define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
-#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().outputErrorLog
-#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().outputWarningLog
-#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().outputInfoLog
-#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().outputDebugLog
-#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().outputTraceLog
+#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().errorLogger.log
+#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().warningLogger.log
+#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().infoLogger.log
+#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
+#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().traceLogger.log
 
 /**
  * @brief The defines below allow to log directly through an ostream
@@ -141,6 +141,15 @@ public:
 	 */
 	virtual void unmute() {
 		this->muted = false;
+	}
+
+	/**
+	 * @brief Is this logger currently allowed to output?
+	 *
+	 * @return true if this logger outputs, or false if it is either disabled or muted
+	 */
+	virtual bool isOutputting() const {
+		return (this->enabled && !this->muted);
 	}
 
 	/**

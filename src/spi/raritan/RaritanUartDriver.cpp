@@ -6,6 +6,7 @@
 
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
+#include "../GenericLogger.h"
 
 RaritanUartDriver::RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 }
@@ -34,10 +35,12 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 			size_t rdcnt;
 			int error;
 			if (PP_FAILED(error = this->m_serial_tty->read(rdcnt, readData, sizeof(readData)/sizeof(unsigned char)))) {
-				PPD_ERR_VAL(error, "Tty.read()");
+				clogE << "Tty.read(): " << error << "\n";
 				return;
 			}
-			PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
+
+			if (RaritanLogger::getInstance().debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
+				PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
 			if (this->m_data_input_observable)
 				this->m_data_input_observable->notifyObservers(readData, rdcnt);
 			//this->m_eventLoop.getSelector().stopAsync();
@@ -48,13 +51,14 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 }
 
 int RaritanUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
-	PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
+	if (RaritanLogger::getInstance().debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
+		PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
 	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
 	if (result == PP_OK) {
-		//PPD_DEBUG("Successfully wrote %d bytes", cnt);
+		//plogD("Successfully wrote %d bytes", cnt);
 		return 0;
 	}
-	PPD_WARN("Failed writing %d bytes", cnt);
+	clogW << "Failed writing " << cnt << "bytes" << "\n";
 	return result;
 }
 
