@@ -17,7 +17,7 @@ ConsoleStderrLogger::~ConsoleStderrLogger() {
 
 void ConsoleStderrLogger::log(const char *format, ...) {
 
-	if (this->enabled) {
+	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
 		fprintf(stderr, format, args);
@@ -26,7 +26,7 @@ void ConsoleStderrLogger::log(const char *format, ...) {
 }
 
 int ConsoleStderrLogger::overflow(int c) {
-	if (c != EOF && this->enabled) {
+	if (c != EOF && this->enabled && !this->muted) {
 		if (putchar(c) == EOF) {
 			return EOF;
 		}
@@ -43,6 +43,7 @@ void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) /* nothrow */
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
@@ -60,7 +61,7 @@ ConsoleStdoutLogger::~ConsoleStdoutLogger() {
 
 void ConsoleStdoutLogger::log(const char *format, ...) {
 
-	if (this->enabled) {
+	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
 		printf(format, args);
@@ -69,7 +70,7 @@ void ConsoleStdoutLogger::log(const char *format, ...) {
 }
 
 int ConsoleStdoutLogger::overflow(int c) {
-	if (c != EOF && this->enabled) {
+	if (c != EOF && this->enabled && !this->muted) {
 		if (putchar(c) == EOF) {
 			return EOF;
 		}
@@ -86,6 +87,7 @@ void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) /* nothrow */
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 

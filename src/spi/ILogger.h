@@ -118,7 +118,8 @@ public:
 	 */
 	ILoggerStream(const LOG_LEVEL setLogLevel, const bool isEnabled = true) :
 		logLevel(setLogLevel),
-		enabled(isEnabled) {
+		enabled(isEnabled),
+		muted(false) {
 	}
 
 	/**
@@ -127,16 +128,23 @@ public:
 	virtual ~ILoggerStream() { }
 
 	/**
-	 * @brief Enable/disable this logger output
-	 *
-	 * @param enabled Should this logger be enabled?
+	 * @brief Mute this logger output (whatever max log level has been setup)
 	 */
-	virtual void setEnabled(const bool enable = true) {
-		this->enabled = enable;
+	virtual void mute() {
+		this->muted = true;
 	}
 
 	/**
-	 * @brief Set the minimum log level that is enabling loggers
+	 * @brief Unmute this logger output (logs may still not be output depending on the max log level has been setup)
+	 *
+	 * @param enabled Should this logger be enabled?
+	 */
+	virtual void unmute() {
+		this->muted = false;
+	}
+
+	/**
+	 * @brief Set the maximum log level that is enabling loggers
 	 *
 	 * @param maxLevel The minimum level that is enabled. If the logLevel value of this logger corresponds to this level or lower, then this logger will be enabled. Otherwise, it will be disabled.
 	 */
@@ -170,6 +178,7 @@ protected:
 protected:
 	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger, set at construction, then must not be modified anymore */
 	bool enabled;	/*!< Is this logger currently enabled. */
+	bool muted;	/*!< Is this logger muted */
 };
 
 /**
