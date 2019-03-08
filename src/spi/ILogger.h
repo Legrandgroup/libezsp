@@ -138,10 +138,10 @@ public:
 	/**
 	 * @brief Set the minimum log level that is enabling loggers
 	 *
-	 * @param minLevel The minimum level that is enabled. If the logLevel value of this logger corresponds to this level or higher, then this logger will be enabled otherwise, it will be disabled.
+	 * @param maxLevel The minimum level that is enabled. If the logLevel value of this logger corresponds to this level or lower, then this logger will be enabled. Otherwise, it will be disabled.
 	 */
-	virtual void setMinEnabledLogLevel(const LOG_LEVEL minLevel) {
-		this->enabled = (this->logLevel > minLevel);
+	virtual void setMaxEnabledLogLevel(const LOG_LEVEL maxLevel) {
+		this->enabled = (this->logLevel <= maxLevel);
 	}
 
 	/**
@@ -244,11 +244,11 @@ public:
 	 */
 	virtual void setLogLevel(const LOG_LEVEL logLevel) {
 		/* Dispatch the requested loglevel to all enclosed loggers */
-		this->errorLogger.setMinEnabledLogLevel(logLevel);
-		this->warningLogger.setMinEnabledLogLevel(logLevel);
-		this->infoLogger.setMinEnabledLogLevel(logLevel);
-		this->debugLogger.setMinEnabledLogLevel(logLevel);
-		this->traceLogger.setMinEnabledLogLevel(logLevel);
+		this->errorLogger.setMaxEnabledLogLevel(logLevel);
+		this->warningLogger.setMaxEnabledLogLevel(logLevel);
+		this->infoLogger.setMaxEnabledLogLevel(logLevel);
+		this->debugLogger.setMaxEnabledLogLevel(logLevel);
+		this->traceLogger.setMaxEnabledLogLevel(logLevel);
 	}
 
 	/**

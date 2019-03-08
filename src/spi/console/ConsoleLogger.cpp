@@ -17,14 +17,16 @@ ConsoleStderrLogger::~ConsoleStderrLogger() {
 
 void ConsoleStderrLogger::log(const char *format, ...) {
 
-	va_list args;
-	va_start(args, format);
-	fprintf(stderr, format, args);
-	va_end(args);
+	if (this->enabled) {
+		va_list args;
+		va_start(args, format);
+		fprintf(stderr, format, args);
+		va_end(args);
+	}
 }
 
 int ConsoleStderrLogger::overflow(int c) {
-	if (c != EOF) {
+	if (c != EOF && this->enabled) {
 		if (putchar(c) == EOF) {
 			return EOF;
 		}
@@ -58,14 +60,16 @@ ConsoleStdoutLogger::~ConsoleStdoutLogger() {
 
 void ConsoleStdoutLogger::log(const char *format, ...) {
 
-	va_list args;
-	va_start(args, format);
-	printf(format, args);
-	va_end(args);
+	if (this->enabled) {
+		va_list args;
+		va_start(args, format);
+		printf(format, args);
+		va_end(args);
+	}
 }
 
 int ConsoleStdoutLogger::overflow(int c) {
-	if (c != EOF) {
+	if (c != EOF && this->enabled) {
 		if (putchar(c) == EOF) {
 			return EOF;
 		}
