@@ -18,7 +18,7 @@ RaritanGenericLogger::~RaritanGenericLogger() {
 }
 
 int RaritanGenericLogger::overflow(int c) {
-	if (c != EOF) {
+	if (c != EOF && this->enabled && !this->muted) {
 		if (c == '\n') {
 			this->log(this->m_buffer.c_str());
 			this->m_buffer = "";
@@ -41,6 +41,7 @@ void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) /* nothrow */ {
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
@@ -50,10 +51,12 @@ RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
 }
 
 void RaritanErrorLogger::log(const char *format, ...) {
-	va_list args;
-	va_start(args, format);
-	PPD_ERR(format, args);
-	va_end(args);
+	if (this->enabled && !this->muted) {
+		va_list args;
+		va_start(args, format);
+		PPD_ERR(format, args);
+		va_end(args);
+	}
 }
 
 /**
@@ -65,6 +68,7 @@ void swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow 
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
@@ -74,10 +78,12 @@ RaritanWarningLogger& RaritanWarningLogger::operator=(RaritanWarningLogger other
 }
 
 void RaritanWarningLogger::log(const char *format, ...) {
-	va_list args;
-	va_start(args, format);
-	PPD_WARN(format, args);
-	va_end(args);
+	if (this->enabled && !this->muted) {
+		va_list args;
+		va_start(args, format);
+		PPD_WARN(format, args);
+		va_end(args);
+	}
 }
 
 /**
@@ -89,6 +95,7 @@ void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) /* nothrow */ {
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
@@ -98,10 +105,12 @@ RaritanInfoLogger& RaritanInfoLogger::operator=(RaritanInfoLogger other) {
 }
 
 void RaritanInfoLogger::log(const char *format, ...) {
-	va_list args;
-	va_start(args, format);
-	PPD_INFO(format, args);
-	va_end(args);
+	if (this->enabled && !this->muted) {
+		va_list args;
+		va_start(args, format);
+		PPD_INFO(format, args);
+		va_end(args);
+	}
 }
 
 /**
@@ -113,6 +122,7 @@ void swap(RaritanDebugLogger& first, RaritanDebugLogger& second) /* nothrow */ {
 
 	swap(first.logLevel, second.logLevel);
 	swap(first.enabled, second.enabled);
+	swap(first.muted, second.muted);
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
@@ -122,10 +132,12 @@ RaritanDebugLogger& RaritanDebugLogger::operator=(RaritanDebugLogger other) {
 }
 
 void RaritanDebugLogger::log(const char *format, ...) {
-	va_list args;
-	va_start(args, format);
-	PPD_DEBUG(format, args);
-	va_end(args);
+	if (this->enabled && !this->muted) {
+		va_list args;
+		va_start(args, format);
+		PPD_DEBUG(format, args);
+		va_end(args);
+	}
 }
 
 static RaritanErrorLogger raritanErrorLogger;	/* Create a unique instance of the RaritanErrorLogger that will be used to handle error logs */
@@ -142,7 +154,7 @@ RaritanLogger::~RaritanLogger() {
 }
 
 RaritanLogger& RaritanLogger::getInstance() {
-	/* FIXME: for now we use error logger impl for all logging types */
+	/* FIXME: for now we use debug logger also for trace level */
 	static RaritanLogger instance(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanDebugLogger, raritanDebugLogger); /* Unique instance of the singleton */
 
 	return instance;
