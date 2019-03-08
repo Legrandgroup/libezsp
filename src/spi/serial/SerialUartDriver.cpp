@@ -7,7 +7,7 @@
 #include "SerialUartDriver.h"
 
 #include <exception>
-#include <iostream>	// FIXME: for std::cerr during debug
+#include "../GenericLogger.h"
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),
@@ -46,7 +46,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	}
 	catch (const serial::IOException& e) {
 		int errnoResult = e.getErrorNumber();
-		std::cerr << "open() failed on port \"" << serialPortName << "\" with error " << errnoResult << ": " << e.what() << "\n";
+		clogE << "open() failed on port \"" << serialPortName << "\" with error " << errnoResult << ": " << e.what() << "\n";
 		return errnoResult;
 	}
 
@@ -63,13 +63,13 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 					this->m_data_input_observable->notifyObservers(readData, rdcnt);
 				}
 				catch (std::exception& e) {
-					std::cerr << "Exception in read: " << e.what() << std::endl;
+					clogE << "Exception in read thread: " << e.what() << "\n";
 				}
 			}
 		});
 	}
 	else {
-		std::cerr << "Serial Port not opened" << std::endl;
+		clogE << "Serial Port not opened\n";;
 		return -1;
 	}
 	return 0;
@@ -80,7 +80,7 @@ int SerialUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 		writtenCnt =  this->m_serial_port.write(static_cast<const uint8_t*>(buf), cnt);
 	}
 	catch (std::exception& e) {
-		std::cerr << "Exception in write: " << e.what() << std::endl;
+		clogE << "Exception in write: " << e.what() << "\n";
 		return -1;
 	}
 	return 0;
@@ -92,8 +92,3 @@ void SerialUartDriver::close() {
 		this->m_serial_port.close();
 	}
 }
-
-/*void SerialUartDriver::threadRead(void) {
-
-
-}*/
