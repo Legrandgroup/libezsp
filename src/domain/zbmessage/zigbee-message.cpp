@@ -22,6 +22,10 @@ CZigBeeMsg::CZigBeeMsg(const CZigBeeMsg& i_msg) :
 {
 }
 
+CZigBeeMsg::~CZigBeeMsg()
+{
+}
+
 /**
  * @brief SetSpecific   : build a basic cluster specific message
  * @param i_profile_id  : identifier of ZigBee profile to use

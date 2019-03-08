@@ -34,6 +34,8 @@ int main( void )
     RaritanEventLoop eventLoop;
     RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
+
+    RaritanLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 
     clogI << "Starting ezsp test program (error)\n";
