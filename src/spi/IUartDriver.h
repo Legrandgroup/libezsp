@@ -49,7 +49,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	virtual void open(const std::string& serialPortName, unsigned int baudRate) = 0;
+	virtual int open(const std::string& serialPortName, unsigned int baudRate) = 0;
 
 	/**
 	 * @brief Write a byte sequence to the serial port

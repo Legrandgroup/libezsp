@@ -32,6 +32,11 @@ public:
   CZigBeeMsg(const CZigBeeMsg& i_msg);
 
   /**
+   * @brief Destructor
+   */
+  ~CZigBeeMsg();
+
+  /**
    * @brief Assignment operator
    * @param other The object to assign to the lhs
    *

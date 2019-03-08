@@ -24,6 +24,7 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) :
 	app_state(APP_NOT_INIT),
 	db()
 {
+    setAppState(APP_NOT_INIT);
     // uart
     if( dongle.open(uartDriver) )
     {
