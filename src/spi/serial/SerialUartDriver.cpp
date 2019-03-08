@@ -29,7 +29,7 @@ void SerialUartDriver::setIncomingDataHandler(GenericAsyncDataInputObservable* u
 	this->m_data_input_observable = uartIncomingDataHandler;
 }
 
-void SerialUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
+int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
 	this->m_serial_port.setBaudrate(baudRate);
 	this->m_serial_port.setParity(serial::parity_none);
 	this->m_serial_port.setStopbits(serial::stopbits_one);
@@ -41,7 +41,14 @@ void SerialUartDriver::open(const std::string& serialPortName, unsigned int baud
 	this->m_serial_port.setTimeout(serial::Timeout::max(), -1, 0, -1, 0);
 	//this->m_serial_port.flush();
 
-	this->m_serial_port.open();
+	try {
+		this->m_serial_port.open();
+	}
+	catch (const serial::IOException& e) {
+		int errnoResult = e.getErrorNumber();
+		std::cerr << "open() failed on port \"" << serialPortName << "\" with error " << errnoResult << ": " << e.what() << "\n";
+		return errnoResult;
+	}
 
 	if (this->m_serial_port.isOpen()) {
 		this->m_read_thread_alive = true;
@@ -63,7 +70,9 @@ void SerialUartDriver::open(const std::string& serialPortName, unsigned int baud
 	}
 	else {
 		std::cerr << "Serial Port not opened" << std::endl;
+		return -1;
 	}
+	return 0;
 }
 
 int SerialUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
