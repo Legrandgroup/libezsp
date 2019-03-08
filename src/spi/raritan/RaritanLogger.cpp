@@ -18,7 +18,7 @@ RaritanGenericLogger::~RaritanGenericLogger() {
 }
 
 int RaritanGenericLogger::overflow(int c) {
-	if (c != EOF && this->enabled && !this->muted) {
+	if (c != EOF) {
 		if (c == '\n') {
 			this->log(this->m_buffer.c_str());
 			this->m_buffer = "";
