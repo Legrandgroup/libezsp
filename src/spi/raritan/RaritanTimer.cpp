@@ -5,6 +5,7 @@
  */
 
 #include "RaritanTimer.h"
+#include "../GenericLogger.h"
 
 RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_toutcbhandle() {
 }
@@ -14,27 +15,27 @@ RaritanTimer::~RaritanTimer() {
 }
 
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
-	PPD_DEBUG("Starting timer %p for %dms", this, timeout);
+	plogD("Starting timer %p for %dms", this, timeout);
 
 	if (started) {
-		PPD_DEBUG("First stopping the already existing timer %p before starting again", this);
+		plogD("First stopping the already existing timer %p before starting again", this);
 		this->stop();
 	}
 
 	if (!callBackFunction) {
-		PPD_WARN("Invalid callback function provided during start()");
+		clogW << "Invalid callback function provided during start()\n";
 		return false;
 	}
 
 	duration = timeout;
 	if (duration == 0) {
-		PPD_DEBUG("Timeout set to 0, directly running callback function");
+		clogD << "Timeout set to 0, directly running callback function\n";
 		callBackFunction(this);
 	}
 	else {
 		auto tcb = [this,timeout,callBackFunction](pp::Selector::TimedCbHandle&) {
-			PPD_DEBUG("Timeout reached after %u", timeout);
-			PPD_DEBUG("Now running %p timer's callback", this);
+			plogD("Timeout reached after %u", timeout);
+			plogD("Now running %p timer's callback", this);
 			callBackFunction(this);
 		};
 		m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
@@ -44,9 +45,8 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 }
 
 bool RaritanTimer::stop() {
-	PPD_DEBUG("Stopping timer %p", this);
+	plogD("Stopping timer %p", this);
 	if (!started) {
-		PPD_WARN("Got a request to stop a timer that was not running");
 		return false;
 	}
 	m_toutcbhandle.removeFromSelector();

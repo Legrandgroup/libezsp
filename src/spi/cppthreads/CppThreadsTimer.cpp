@@ -7,7 +7,6 @@
 #include "CppThreadsTimer.h"
 
 #include <chrono>
-#include <iostream>
 
 CppThreadsTimer::CppThreadsTimer() :  waitingThread(), cv(), cv_m() { }
 
@@ -60,4 +59,3 @@ bool CppThreadsTimer::stop() {
 bool CppThreadsTimer::isRunning() {
 	return this->started;
 }
-

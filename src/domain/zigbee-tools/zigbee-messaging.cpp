@@ -1,8 +1,12 @@
 /**
- * 
+ * @file zigbee-messaging.cpp
+ *
+ * @brief Manages zigbee message, timeout, retry
  */
 
 #include "zigbee-messaging.h"
+
+#include "../../spi/GenericLogger.h"
 
 
 CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, ITimerFactory &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)
@@ -16,7 +20,7 @@ void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t>
     {
         case EZSP_MESSAGE_SENT_HANDLER:
         {
-            std::cout << "EZSP_MESSAGE_SENT_HANDLER return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(16))) << std::endl;
+            clogD << "EZSP_MESSAGE_SENT_HANDLER return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(16))) << std::endl;
         }
         break;
 

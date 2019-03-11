@@ -59,7 +59,7 @@ public:
      * Managing Observer of this class
      */
 	bool registerObserver(CEzspDongleObserver* observer);
-	bool unregisterObserver(CEzspDongleObserver* observer); 
+	bool unregisterObserver(CEzspDongleObserver* observer);
 
 private:
     ITimerFactory &timer_factory;

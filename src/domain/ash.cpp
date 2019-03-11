@@ -8,6 +8,8 @@
 
 #include "ash.h"
 
+#include "../spi/GenericLogger.h"
+
 using namespace std;
 
 /**
@@ -164,7 +166,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
           inputError = false;
           break;
       case ASH_FLAG_BYTE:
-            //-- std::cout << "CAsh::decode ASH_FLAG_BYTE" << std::endl;
+            //-- clogD << "CAsh::decode ASH_FLAG_BYTE" << std::endl;
           // Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
@@ -191,13 +193,13 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
               // Check CRC
               if (computeCRC(lo_msg) != 0) {
                   lo_msg.clear();
-                  std::cout << "CAsh::decode Wrong CRC" << std::endl;
+                  clogD << "CAsh::decode Wrong CRC" << std::endl;
               }
               else
               {
                 if ((lo_msg.at(0) & 0x80) == 0) {
                   // DATA;
-                  //-- std::cout << "CAsh::decode DATA" << std::endl;
+                  //-- clogD << "CAsh::decode DATA" << std::endl;
 
                   // update ack number, use incoming frm number
                   ackNum = ((lo_msg.at(0)>>4&0x07) + 1) & 0x07;
@@ -215,7 +217,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                 }
                 else if ((lo_msg.at(0) & 0x60) == 0x00) {
                   // ACK;
-                  //-- std::cout << "CAsh::decode ACK" << std::endl;
+                  //-- clogD << "CAsh::decode ACK" << std::endl;
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
                   timer->stop();
@@ -226,24 +228,24 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                   // NAK;
                   frmNum = lo_msg.at(0) & 0x07;
 
-                  std::cout << "CAsh::decode NACK" << std::endl;
+                  clogD << "CAsh::decode NACK" << std::endl;
 
                   //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
                   lo_msg.clear();
                   timer->stop();
-                  
+
                   if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
                 }
                 else if (lo_msg.at(0) == 0xC0) {
                   // RST;
                   lo_msg.clear();
                   //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
-                  std::cout << "CAsh::decode RST" << std::endl;
+                  clogD << "CAsh::decode RST" << std::endl;
                 }
                 else if (lo_msg.at(0) == 0xC1) {
                   // RSTACK;
                   //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
-                  std::cout << "CAsh::decode RSTACK" << std::endl;
+                  clogD << "CAsh::decode RSTACK" << std::endl;
 
                   lo_msg.clear();
                   if( !stateConnected )
@@ -257,13 +259,13 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                 else if (lo_msg.at(0) == 0xC2) {
                   // ERROR;
                   //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
-                  std::cout << "CAsh::decode ERROR" << std::endl;
+                  clogD << "CAsh::decode ERROR" << std::endl;
                   lo_msg.clear();
                 }
                 else
                 {
                   //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
-                  std::cout << "CAsh::decode UNKNOWN" << std::endl;
+                  clogD << "CAsh::decode UNKNOWN" << std::endl;
                   lo_msg.clear();
                 }
               }

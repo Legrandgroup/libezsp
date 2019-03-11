@@ -53,8 +53,10 @@ public:
 	 *
 	 * @param serialPortName The name of the serial port to open (eg: "/dev/ttyUSB0")
 	 * @param baudRate The baudrate to enforce on the serial port
+	 *
+	 * @return 0 on success, errno on failure
 	 */
-	void open(const std::string& serialPortName, unsigned int baudRate = 57600);
+	int open(const std::string& serialPortName, unsigned int baudRate = 57600);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -64,8 +66,6 @@ public:
 	 * @param[in] cnt byte count of data to write
 	 *
 	 * @return 0 on success, errno on failure
-	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
 	int write(size_t& writtenCnt, const void* buf, size_t cnt);
 

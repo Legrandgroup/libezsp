@@ -24,10 +24,11 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) :
 	app_state(APP_NOT_INIT),
 	db()
 {
+    setAppState(APP_NOT_INIT);
     // uart
     if( dongle.open(uartDriver) )
     {
-        std::cout << "CAppDemo open success !" << std::endl;
+        clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         setAppState(APP_INIT_IN_PROGRESS);
     }
@@ -35,7 +36,7 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) :
 
 void CAppDemo::handleDongleState( EDongleState i_state )
 {
-    std::cout << "CAppDemo::dongleState : " << i_state << std::endl;
+    clogI << "CAppDemo::dongleState : " << i_state << std::endl;
 
     if( DONGLE_READY == i_state )
     {
@@ -51,13 +52,13 @@ void CAppDemo::handleDongleState( EDongleState i_state )
 }
 
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {
-    //-- std::cout << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
+    //-- clogI << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 
     switch( i_cmd )
     {
         case EZSP_STACK_STATUS_HANDLER:
         {
-            std::cout << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+            clogI << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
             setAppState(APP_READY);
 
             // we open network, so we can enter new devices
@@ -72,17 +73,17 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
             // start discover of existing product inside network
             zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-                std::cout << " Is it a new product ";
-                std::cout << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-                std::cout << "[eui64 :";
-                for(uint8_t loop=0; loop<i_eui64.size(); loop++){ std::cout << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-                std::cout << "]";
-                std::cout << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-                std::cout << " ?" << std::endl;
+                clogI << " Is it a new product ";
+                clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
+                clogI << "[eui64 :";
+                for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
+                clogI << "]";
+                clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
+                clogI << " ?" << std::endl;
 
                 if( db.addProduct( i_eui64, i_id ) )
                 {
-                    std::cout << "YES !! Retrieve information for binding" << std::endl;
+                    clogI << "YES !! Retrieve information for binding" << std::endl;
 
                     // retrieve information about device, starting by discover list of active endpoint
                     std::vector<uint8_t> payload;
@@ -97,7 +98,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
         case EZSP_GET_NETWORK_PARAMETERS:
         {
             CGetNetworkParamtersResponse l_rsp(i_msg_receive);
-            std::cout << l_rsp.String() << std::endl;
+            clogI << l_rsp.String() << std::endl;
         }
         break;
         case EZSP_GET_KEY:
@@ -105,7 +106,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
             i_msg_receive.erase(i_msg_receive.begin());
             CEmberKeyStruct l_rsp(i_msg_receive);
-            std::cout << "EZSP_GET_KEY status : " << CEzspEnum::EEmberStatusToString(l_status) << ", " << l_rsp.String() << std::endl;
+            clogI << "EZSP_GET_KEY status : " << CEzspEnum::EEmberStatusToString(l_status) << ", " << l_rsp.String() << std::endl;
         }
         break;
         case EZSP_GET_EUI64:
@@ -136,24 +137,24 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 uint16_t l_version = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(l_version);
 
-                std::cout << "Stack version : " << bufDump.str() << std::endl;                    
+                clogI << "Stack version : " << bufDump.str() << std::endl;
 
                 // configure stack for this application
                 stackInit();
             }
             else
             {
-                std::cout << "EZSP version Not supported !" << std::endl;
+                clogI << "EZSP version Not supported !" << std::endl;
             }
         }
         break;
         case EZSP_NETWORK_STATE:
         {
-            std::cout << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
+            clogI << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
             if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
             {
                 // we decide to create an HA1.2 network
-                std::cout << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
+                clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
                 if( APP_INIT_IN_PROGRESS == app_state )
                 {
                     zb_nwk.formHaNetwork();
@@ -179,7 +180,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             std::vector<uint8_t>l_msg_raw;
             for(uint8_t loop=0;loop<msg_length;loop++){l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrame::getSize()+loop));}
 
-            std::cout << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) << 
+            clogI << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) << 
                 ", last hop rssi : " << unsigned(last_hop_rssi) << 
                 ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << std::endl;
 
@@ -209,7 +210,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload().at(5U+loop));}
 
                                 // DEBUG
-                                std::cout << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
+                                clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
                                     std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
 
                                 // for each active endpoint request simple descriptor
@@ -268,7 +269,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                         "[ out : ";
                                     for(uint8_t loop=0; loop<out_list.size(); loop++){ buf << std::hex << std::setw(4) << std::setfill('0') << unsigned(out_list.at(loop)) << ", "; }
                                     buf << "]";
-                                    std::cout << buf.str() << std::endl;
+                                    clogI << buf.str() << std::endl;
 
                                     
                                     // search in server [in] list
@@ -278,7 +279,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                         if( 0x0402 == in_list.at(loop) )
                                         {
                                             // Temperature Measurement
-                                            std::cout << "<<< Bind Temperature" << std::endl;
+                                            clogI << "<<< Bind Temperature" << std::endl;
 
                                             std::vector<uint8_t> payload;
                                             // source (product)
@@ -305,7 +306,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                         else if( 0x0405 == in_list.at(loop) )
                                         {
                                             // Relative Humidity Measurement
-                                            std::cout << "<<< Bind Humidity" << std::endl;
+                                            clogI << "<<< Bind Humidity" << std::endl;
 
                                             std::vector<uint8_t> payload;
                                             // source (product)
@@ -333,7 +334,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 }
                                 else
                                 {
-                                    std::cout << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
+                                    clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
                                         std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
                                 }
                             }
@@ -342,7 +343,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                             default:
                             {
                                 // DEBUG
-                                std::cout << "ZDO Response : " << CZdpEnum::ToString(zdp_low) << std::endl;
+                                clogI << "ZDO Response : " << CZdpEnum::ToString(zdp_low) << std::endl;
                             }
                             break;
                         }
@@ -352,7 +353,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     {
                         if( ZDP_DEVICE_ANNOUNCE == zdp_low )
                         {
-                            std::cout << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
+                            clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
 
                             // we receive a device announce because a child join or rejoin network, start a discover endpoint process
 
@@ -373,7 +374,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                         else
                         {
                             // DEBUG
-                            std::cout << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
+                            clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
                         }
 
                     }
@@ -393,7 +394,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                          buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload().at(loop)) << ", ";
                     }
                     buf << "]";
-                    std::cout << buf.str() << std::endl;                    
+                    clogI << buf.str() << std::endl;
 
                     if( E_FRM_TYPE_GENERAL == zbMsg.GetZCLHeader().GetFrmCtrl().GetFrmType() )
                     {
@@ -408,7 +409,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 if( 0x00 == attr_id )
                                 {
                                     uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
-                                    std::cout << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
+                                    clogI << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
                                 }
                             }
                             else if( 0x0405 == zbMsg.GetAps().cluster_id )
@@ -416,7 +417,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 if( 0x00 == attr_id )
                                 {
                                     uint16_t value_raw = dble_u8_to_u16(zbMsg.GetPayload().at(4), zbMsg.GetPayload().at(3));
-                                    std::cout << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
+                                    clogI << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
                                 }
                             }
                         }
@@ -436,7 +437,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             for (size_t i =0; i<i_msg_receive.size(); i++) {
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
             }
-            std::cout << "CAppDemo::ezspHandler : " << bufDump.str() << std::endl;    
+            clogI << "CAppDemo::ezspHandler : " << bufDump.str() << std::endl;
             */
         }
         break;
@@ -467,7 +468,7 @@ void CAppDemo::setAppState( EAppState i_state )
 
     auto  it  = MyEnumStrings.find(app_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */
     std::string error_str = it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
-    std::cout << "APP State change : " << error_str << std::endl;
+    clogI << "APP State change : " << error_str << std::endl;
 }
 
 void CAppDemo::dongleInit()

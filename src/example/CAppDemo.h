@@ -9,6 +9,7 @@
 #include "../domain/zigbee-tools/zigbee-messaging.h"
 #include "../spi/IUartDriver.h"
 #include "../spi/ITimerFactory.h"
+#include "../spi/ILogger.h"
 #include "dummy_db.h"
 
 typedef enum
@@ -32,15 +33,15 @@ public:
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
+    void setAppState( EAppState i_state );
+    void dongleInit();
+    void stackInit();
+
+private:
     CEzspDongle dongle;
     CZigbeeMessaging zb_messaging;
     CZigbeeNetworking zb_nwk;
     EAppState app_state;
     Cdb db;
-
-    void setAppState( EAppState i_state );
-    void dongleInit();
-    void stackInit();
-    
 };
 

@@ -19,6 +19,7 @@
 #error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
+#include "GenericLogger.h"
 #include "CAppDemo.h"
 
 using namespace std;
@@ -33,9 +34,11 @@ int main( void )
     RaritanEventLoop eventLoop;
     RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
+
+    RaritanLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 
-    cout << "Starting ezsp test program !" << endl;
+    clogI << "Starting ezsp test program (info)\n";
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 

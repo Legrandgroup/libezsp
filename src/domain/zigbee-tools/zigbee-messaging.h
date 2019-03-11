@@ -1,5 +1,7 @@
 /**
- * Used to managed zigbee message, timeout, retry, ... TODO
+ * @file zigbee-messaging.h
+ *
+ * @brief Manages zigbee message, timeout, retry
  */
 #pragma once
 
