@@ -42,7 +42,8 @@ int main( void )
 
     uartDriver.open("/dev/ttyUSB0", 57600);
 
-    CAppDemo app(&uartDriver, timerFactory);
+    // set reset field to true permit to leave current network and create a new one
+    CAppDemo app(&uartDriver, timerFactory, true);
 
 #ifdef USE_SERIALCPP
     std::string line;
