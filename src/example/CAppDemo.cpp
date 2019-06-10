@@ -17,12 +17,15 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) : 
+CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory, bool reset) : 
 	dongle(i_timer_factory, this),
 	zb_messaging(dongle, i_timer_factory),
 	zb_nwk(dongle, zb_messaging),
+    gp_sink(dongle),
 	app_state(APP_NOT_INIT),
-	db()
+	db(),
+    ezsp_version(6),
+    reset_wanted(false)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -30,8 +33,11 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory) :
     {
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
+        gp_sink.registerObserver(this);
         setAppState(APP_INIT_IN_PROGRESS);
     }
+    // save parameter
+    reset_wanted = reset;
 }
 
 void CAppDemo::handleDongleState( EDongleState i_state )
@@ -51,6 +57,17 @@ void CAppDemo::handleDongleState( EDongleState i_state )
     }
 }
 
+void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
+{
+    // Start DEBUG
+    clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf <</*
+        ", last hop rssi : " << unsigned(last_hop_rssi) << 
+        ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << */
+        std::endl;
+
+    // Stop DEBUG
+}
+
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {
     //-- clogI << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 
@@ -58,41 +75,50 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
     {
         case EZSP_STACK_STATUS_HANDLER:
         {
-            clogI << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
-            setAppState(APP_READY);
+            EEmberStatus status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+            clogI << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << std::endl;
+            if( (EMBER_NETWORK_UP == status) && (false == reset_wanted) )
+            {
+                setAppState(APP_READY);
 
-            // we open network, so we can enter new devices
-            zb_nwk.OpenNetwork( 60 );
+                // we open network, so we can enter new devices
+                zb_nwk.OpenNetwork( 60 );
 
-            // we retrieve network information and key and eui64 of dongle (can be done before)
-            dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
-            dongle.sendCommand(EZSP_GET_EUI64);
-            std::vector<uint8_t> l_payload;
-            l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
-            dongle.sendCommand(EZSP_GET_KEY, l_payload);
+                // we retrieve network information and key and eui64 of dongle (can be done before)
+                dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
+                dongle.sendCommand(EZSP_GET_EUI64);
+                std::vector<uint8_t> l_payload;
+                l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
+                dongle.sendCommand(EZSP_GET_KEY, l_payload);
 
-            // start discover of existing product inside network
-            zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-                clogI << " Is it a new product ";
-                clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-                clogI << "[eui64 :";
-                for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-                clogI << "]";
-                clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-                clogI << " ?" << std::endl;
+                // start discover of existing product inside network
+                zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
+                    clogI << " Is it a new product ";
+                    clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
+                    clogI << "[eui64 :";
+                    for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
+                    clogI << "]";
+                    clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
+                    clogI << " ?" << std::endl;
 
-                if( db.addProduct( i_eui64, i_id ) )
-                {
-                    clogI << "YES !! Retrieve information for binding" << std::endl;
+                    if( db.addProduct( i_eui64, i_id ) )
+                    {
+                        clogI << "YES !! Retrieve information for binding" << std::endl;
 
-                    // retrieve information about device, starting by discover list of active endpoint
-                    std::vector<uint8_t> payload;
-                    payload.push_back(u16_get_lo_u8(i_id));
-                    payload.push_back(u16_get_hi_u8(i_id));
+                        // retrieve information about device, starting by discover list of active endpoint
+                        std::vector<uint8_t> payload;
+                        payload.push_back(u16_get_lo_u8(i_id));
+                        payload.push_back(u16_get_hi_u8(i_id));
 
-                    zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
-                }
-            });
+                        zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
+                    }
+                });
+            }
+            else
+            {
+                clogD << "Call EZSP_NETWORK_STATE" << std::endl;
+                dongle.sendCommand(EZSP_NETWORK_STATE);
+            }
         }
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
@@ -122,7 +148,12 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
         case EZSP_VERSION:
         {
             // check if the wanted protocol version, and display stack version
-            if( 6 == i_msg_receive.at(0) )
+            if( i_msg_receive.at(0) > ezsp_version )
+            {
+                ezsp_version = i_msg_receive.at(0);
+                dongleInit();
+            }
+            if( i_msg_receive.at(0) == ezsp_version )
             {
                 // all is good
                 std::stringstream bufDump;
@@ -144,7 +175,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             }
             else
             {
-                clogI << "EZSP version Not supported !" << std::endl;
+                clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " Not supported !" << std::endl;
             }
         }
         break;
@@ -153,16 +184,33 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             clogI << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
             if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
             {
-                // we decide to create an HA1.2 network
-                clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
+                // we decide to create an HA1.2 network on channel 11
                 if( APP_INIT_IN_PROGRESS == app_state )
                 {
-                    zb_nwk.formHaNetwork();
+                    clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
+                    zb_nwk.formHaNetwork(11);
                     //set new state
                     setAppState(APP_FORM_NWK_IN_PROGRESS);
+                    reset_wanted = false;
                 }
                 
             }
+            else
+            {
+                if(( APP_INIT_IN_PROGRESS == app_state ) && ( true == reset_wanted ))
+                {
+                    // leave current network
+                    zb_nwk.LeaveNetwork();
+                    setAppState(APP_LEAVE_IN_PROGRESS);
+                    reset_wanted = false;
+                }
+            }
+        }
+        break;
+        case EZSP_LEAVE_NETWORK:
+        {
+            // set new state as initialized state
+            setAppState(APP_INIT_IN_PROGRESS);
         }
         break;
         case EZSP_INCOMING_MESSAGE_HANDLER:
@@ -209,7 +257,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 std::vector<uint8_t> ep_list;
                                 for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload().at(5U+loop));}
 
-                                // DEBUG
+                                // DEBUGEEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
                                 clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
                                     std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
 
@@ -475,7 +523,7 @@ void CAppDemo::dongleInit()
 {
     // first request stack protocol version
     std::vector<uint8_t> payload;
-    payload.push_back(6U);
+    payload.push_back(ezsp_version);
     dongle.sendCommand(EZSP_VERSION,payload);
 }
 
