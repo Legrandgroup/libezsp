@@ -17,7 +17,8 @@ CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i
 	dongle(i_dongle),
 	zb_messaging(i_zb_messaging),
 	child_idx(0),
-    discoverCallbackFct(nullptr)
+    discoverCallbackFct(nullptr),
+    form_channel(DEFAULT_RADIO_CHANNEL)
 {
     dongle.registerObserver(this);
 }
@@ -94,7 +95,7 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         break;
         case EZSP_NETWORK_INIT:
         {
-            // configuration finished, initialize zigbee pro stack
+            // initialize zigbee pro stack finished, get the current network state
             clogD << "Call EZSP_NETWORK_STATE" << std::endl;
             dongle.sendCommand(EZSP_NETWORK_STATE);
         }
@@ -102,6 +103,11 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         case EZSP_FORM_NETWORK:
         {
             clogD << "EZSP_FORM_NETWORK status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+        }
+        break;
+        case EZSP_LEAVE_NETWORK:
+        {
+            clogD << "EZSP_LEAVE_NETWORK status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
         }
         break;
 
@@ -136,7 +142,7 @@ void CZigbeeNetworking::stackInit(SEzspConfig *l_config, uint8_t l_config_size, 
     dongle.sendCommand(EZSP_SET_POLICY, l_payload);
   }
 
-  // add endpoint
+  // add endpoint 1 : gateway device
   l_payload.clear();
   l_payload.push_back(1); // ep number
   l_payload.push_back(0x04U); // profile id
@@ -151,9 +157,25 @@ void CZigbeeNetworking::stackInit(SEzspConfig *l_config, uint8_t l_config_size, 
   l_payload.push_back(0); // out cluster
   l_payload.push_back(0);
   dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
+
+  // add endpoint 242 : green power
+  l_payload.clear();
+  l_payload.push_back(242); // ep number
+  l_payload.push_back(0x0EU); // profile id
+  l_payload.push_back(0xA1U);
+  l_payload.push_back(0x64U); // device id
+  l_payload.push_back(0x00U);
+  l_payload.push_back(0); // flags
+  l_payload.push_back(1); // in cluster count
+  l_payload.push_back(1); // out cluster count
+  l_payload.push_back(0x21); // in cluster
+  l_payload.push_back(0);
+  l_payload.push_back(0x21); // out cluster
+  l_payload.push_back(0);
+  dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
 }
 
-void CZigbeeNetworking::formHaNetwork()
+void CZigbeeNetworking::formHaNetwork(uint8_t channel)
 {
     // set HA policy
     std::vector<uint8_t> payload;
@@ -212,6 +234,9 @@ void CZigbeeNetworking::formHaNetwork()
 
     // call
     dongle.sendCommand(EZSP_SET_INITIAL_SECURITY_STATE, payload);
+
+    // set parameter for next step
+    form_channel = channel;
 }
 
 /**
@@ -259,6 +284,11 @@ void CZigbeeNetworking::CloseNetwork( void )
     l_msg.SetZdo( 0x0036, l_payload );
 
     zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
+}
+
+void CZigbeeNetworking::LeaveNetwork( void )
+{
+    dongle.sendCommand(EZSP_LEAVE_NETWORK);
 }
 
 
