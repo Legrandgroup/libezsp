@@ -55,8 +55,9 @@ std::string CGpFrame::String() const
     std::stringstream buf;
 
     buf << "CGpFrame : { ";
-    buf << "[link_value : "<< std::hex << std::setw(8) << std::setfill('0') << link_value << "]";
-    buf << "[sequence_number : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sequence_number) << "]";
+    buf << "[link_value : "<< link_value << "]";
+    buf << "[sequence_number : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(sequence_number) << "]";
+    buf << "[source_id : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(source_id) << "]";
     buf << "[security : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security) << "]";
     buf << "[key_type : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(key_type) << "]";
     buf << "[auto_commissioning : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(auto_commissioning) << "]";

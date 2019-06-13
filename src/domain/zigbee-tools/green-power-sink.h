@@ -7,6 +7,7 @@
 #include "../zbmessage/green-power-frame.h"
 #include "../green-power-observer.h"
 #include "../ezsp-dongle.h"
+#include "green-power-sink-table.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -24,6 +25,12 @@ public:
 
     CGpSink& operator=(CGpSink) = delete; /* No assignment allowed */
 
+    /** 
+        @brief : add a green power sink table entry
+        @return : index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
+    */
+    uint8_t registerGpd( uint32_t i_source_id );
+
     /**
      * Observer
      */
@@ -39,6 +46,7 @@ public:
 
 private:
     CEzspDongle &dongle;
+    CGpSinkTable sink_table;
 
     /**
      * Notify Observer of this class

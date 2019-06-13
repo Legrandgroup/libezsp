@@ -17,11 +17,20 @@
 
 
 CGpSink::CGpSink( CEzspDongle &i_dongle ) :
+    sink_table(),
 	dongle(i_dongle),
     observers()
 {
     dongle.registerObserver(this);
 }
+
+uint8_t CGpSink::registerGpd( uint32_t i_source_id )
+{
+    CGpSinkTableEntry l_entry = CGpSinkTableEntry(i_source_id);
+
+    return sink_table.addEntry(l_entry);
+}
+
 
 
 void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) 
@@ -45,12 +54,13 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << */
                 std::endl;
 
+/*
             std::stringstream bufDump;
-
             for (size_t i =0; i<i_msg_receive.size(); i++) {
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
             }
             clogI << "raw : " << bufDump.str() << std::endl;
+*/            
             // Stop DEBUG
 
             /**
@@ -62,9 +72,21 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
              * - si la validation réussi on notifie le gpf au observateur
              */
 
-            // to test notify
-            notifyObserversOfRxGpFrame( gpf );
-
+            if( GPD_NO_SECURITY == gpf.getSecurity() )
+            {
+                // to test notify
+                notifyObserversOfRxGpFrame( gpf );
+            }
+            else
+            {
+                // look up if product is register
+                uint8_t l_sink_entry_idx = sink_table.getEntryIndexForSourceId( gpf.getSourceId() );
+                if( GP_SINK_INVALID_ENTRY != l_sink_entry_idx )
+                {
+                    // to test notify
+                    notifyObserversOfRxGpFrame( gpf );
+                }
+            }
         }
         break;
 

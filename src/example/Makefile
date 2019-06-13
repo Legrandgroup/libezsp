@@ -11,6 +11,7 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/ezsp-dongle.o \
 			  ../domain/ash.o \
 			  ../domain/zbmessage/green-power-frame.o \
+			  ../domain/zbmessage/green-power-sink-table-entry.o \
 			  ../domain/zbmessage/zigbee-message.o \
 			  ../domain/zbmessage/zclheader.o \
 			  ../domain/zbmessage/zclframecontrol.o \
@@ -26,6 +27,7 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/zigbee-tools/zigbee-networking.o \
 			  ../domain/zigbee-tools/zigbee-messaging.o \
 			  ../domain/zigbee-tools/green-power-sink.o \
+			  ../domain/zigbee-tools/green-power-sink-table.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
 			  ../spi/console/ConsoleLogger.o \

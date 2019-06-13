@@ -66,6 +66,11 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
         std::endl;
 
     // Stop DEBUG
+
+    if( GPD_NO_SECURITY == i_gpf.getSecurity() )
+    {
+        gp_sink.registerGpd(i_gpf.getSourceId());
+    }
 }
 
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {

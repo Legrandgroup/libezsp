@@ -68,7 +68,22 @@ class CGpFrame
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);            
+        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);     
+
+        // getter
+        uint8_t getLinkValue(){return link_value;}
+        uint8_t getSequenceNumber(){return sequence_number;}
+        uint32_t getSourceId(){return source_id;}
+        EGpSecurityLevel getSecurity(){return security;}
+        EGpSecurityKeyType getKeyType(){return key_type;}
+        bool isAutoCommissioning(){return auto_commissioning;}
+        bool isRxAfterTx(){return rx_after_tx;}
+        uint32_t getSecurityFrameCounter(){return security_frame_counter;}
+        uint8_t getCommandId(){return command_id;}
+        uint32_t getMic(){return mic;}
+        uint8_t getProxyTableEntry(){return proxy_table_entry;}
+        std::vector<uint8_t> getPayload(){return payload;}
+
 
     private:
         uint8_t link_value;
