@@ -17,7 +17,7 @@
 
 
 CGpSink::CGpSink( CEzspDongle &i_dongle ) :
-	dongle(i_dongle),
+    dongle(i_dongle),
     sink_table(),
     observers()
 {
@@ -31,9 +31,11 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
     return sink_table.addEntry(l_entry);
 }
 
+void CGpSink::handleDongleState( EDongleState i_state )
+{
+}
 
-
-void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) 
+void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
 {
     switch( i_cmd )
     {
@@ -47,7 +49,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             // Start DEBUG
             clogI << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) << 
-                ", link : " << unsigned(i_msg_receive.at(1)) << 
+                ", link : " << unsigned(i_msg_receive.at(1)) <<
                 ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
                 ", gp address : " << gpf <</*
                 ", last hop rssi : " << unsigned(last_hop_rssi) << 
@@ -60,7 +62,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
             }
             clogI << "raw : " << bufDump.str() << std::endl;
-*/            
+*/
             // Stop DEBUG
 
             /**
@@ -105,11 +107,6 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
     }
 }
 
-
-
-/**
- * Managing Observer of this class
- */
 bool CGpSink::registerObserver(CGpObserver* observer)
 {
     return this->observers.emplace(observer).second;
@@ -121,7 +118,7 @@ bool CGpSink::unregisterObserver(CGpObserver* observer)
 }
 
 void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
-	for(auto observer : this->observers) {
-		observer->handleRxGpFrame( i_gpf );
-	}
+    for(auto observer : this->observers) {
+        observer->handleRxGpFrame( i_gpf );
+    }
 }

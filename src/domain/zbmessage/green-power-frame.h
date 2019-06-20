@@ -35,7 +35,6 @@ class CGpFrame
          */
         CGpFrame() = delete;
 
-
         /**
          * @brief Assignment operator
          *
@@ -43,15 +42,12 @@ class CGpFrame
          */
         CGpFrame& operator=(const CGpFrame& other) = delete;
 
-
         /**
-         * @brief Construction from an incomming ezsp raw message
+         * @brief Construction from an incoming ezsp raw message
          *
          * @param raw_message The buffer to construct from
-         * @return false if decoding frame failed
          */
         CGpFrame(const std::vector<uint8_t>& raw_message);
-
 
         /**
          * @brief Dump this instance as a string
@@ -68,7 +64,7 @@ class CGpFrame
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);     
+        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);
 
         // getter
         uint8_t getLinkValue(){return link_value;}

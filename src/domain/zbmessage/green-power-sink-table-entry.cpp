@@ -1,15 +1,15 @@
 /**
  * @file green-power-sink-table-entry.cpp
  *
+ * @brief Defines one entry in a green power sink table
  */
 
 #include "green-power-sink-table-entry.h"
 
 CGpSinkTableEntry::CGpSinkTableEntry(uint32_t i_source_id) :
     application_id(E_GPD_APPLICATION_SOURCE_ID),
-    source_id(GP_INVALID_SOURCE_ID)
+    source_id(i_source_id)
 {
-    source_id = i_source_id;
 }
 
 

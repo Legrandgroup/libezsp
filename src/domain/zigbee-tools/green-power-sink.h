@@ -25,23 +25,24 @@ public:
 
     CGpSink& operator=(CGpSink) = delete; /* No assignment allowed */
 
-    /** 
-        @brief : add a green power sink table entry
-        @return : index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
-    */
+    /**
+     * @brief add a green power sink table entry
+     *
+     * @return index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
+     */
     uint8_t registerGpd( uint32_t i_source_id );
 
     /**
      * Observer
      */
-    void handleDongleState( EDongleState i_state ){;}
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );    
+    void handleDongleState( EDongleState i_state );
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
     /**
      * Managing Observer of this class
      */
-	bool registerObserver(CGpObserver* observer);
-	bool unregisterObserver(CGpObserver* observer);
+    bool registerObserver(CGpObserver* observer);
+    bool unregisterObserver(CGpObserver* observer);
 
 
 private:
@@ -52,7 +53,7 @@ private:
      * Notify Observer of this class
      */
     std::set<CGpObserver*> observers;
-    void notifyObserversOfRxGpFrame( CGpFrame i_gpf );    
+    void notifyObserversOfRxGpFrame( CGpFrame i_gpf );
 };
 
 #ifdef USE_RARITAN

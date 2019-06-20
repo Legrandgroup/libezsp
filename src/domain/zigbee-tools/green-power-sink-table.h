@@ -1,6 +1,7 @@
 /**
  * @file green-power-sink-table.h
- * @brief access to green power capabilities
+ *
+ * @brief A green power sink table
  */
 #pragma once
 
@@ -23,15 +24,18 @@ public:
 
     CGpSinkTable();
 
-    /** 
-        @brief : add a green power sink table entry
-        @return : index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
-    */
+    /**
+     * @brief add a green power sink table entry
+     *
+     * @return index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
+     */
     uint8_t addEntry( CGpSinkTableEntry i_entry );
 
     /**
      * @brief obtain entry index according to a gpd source id
-     * @param i_source_id : source id of gpd
+     *
+     * @param i_source_id source id of gpd
+     *
      * @return index of sink table entry, GP_SINK_INVALID_ENTRY if not found
      */
     uint8_t getEntryIndexForSourceId(uint32_t i_source_id);

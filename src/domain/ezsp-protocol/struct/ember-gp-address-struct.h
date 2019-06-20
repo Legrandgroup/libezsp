@@ -49,7 +49,7 @@ class CEmberGpAddressStruct
         /**
          * @brief The GPD endpoint.
          */
-        uint8_t getEndpoint() const { return endpoint; }      
+        uint8_t getEndpoint() const { return endpoint; }
 
         /**
          * @brief Dump this instance as a string
@@ -66,7 +66,7 @@ class CEmberGpAddressStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data);          
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data);
 
     private:
 

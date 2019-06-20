@@ -4,6 +4,8 @@
 
 #include <ctime>
 
+#include "../byte-manip.h"
+
 #include "zigbee-networking.h"
 
 #include "../ezsp-protocol/get-network-parameters-response.h"
@@ -14,9 +16,9 @@
 
 
 CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
-	dongle(i_dongle),
-	zb_messaging(i_zb_messaging),
-	child_idx(0),
+    dongle(i_dongle),
+    zb_messaging(i_zb_messaging),
+    child_idx(0),
     discoverCallbackFct(nullptr),
     form_channel(DEFAULT_RADIO_CHANNEL)
 {
@@ -126,8 +128,8 @@ void CZigbeeNetworking::stackInit(SEzspConfig *l_config, uint8_t l_config_size, 
   {
     l_payload.clear();
     l_payload.push_back(l_config[loop].id);
-    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value&0xFF));
-    l_payload.push_back(static_cast<uint8_t>(l_config[loop].value>>8));
+    l_payload.push_back(u16_get_lo_u8(l_config[loop].value));
+    l_payload.push_back(u16_get_hi_u8(l_config[loop].value));
     //clogD << "EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
     dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
   }

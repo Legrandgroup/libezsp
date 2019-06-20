@@ -17,13 +17,13 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory, bool reset) : 
-	dongle(i_timer_factory, this),
-	zb_messaging(dongle, i_timer_factory),
-	zb_nwk(dongle, zb_messaging),
+CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory, bool reset) :
+    dongle(i_timer_factory, this),
+    zb_messaging(dongle, i_timer_factory),
+    zb_nwk(dongle, zb_messaging),
     gp_sink(dongle),
-	app_state(APP_NOT_INIT),
-	db(),
+    app_state(APP_NOT_INIT),
+    db(),
     ezsp_version(6),
     reset_wanted(false)
 {
@@ -53,7 +53,7 @@ void CAppDemo::handleDongleState( EDongleState i_state )
     }
     else if( DONGLE_REMOVE == i_state )
     {
-        // \todo manage this !
+        // TODO: manage this !
     }
 }
 
@@ -61,8 +61,8 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 {
     // Start DEBUG
     clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf <</*
-        ", last hop rssi : " << unsigned(last_hop_rssi) << 
-        ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << */
+        ", last hop rssi : " << unsigned(last_hop_rssi) <<
+        ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) <<*/
         std::endl;
 
     // Stop DEBUG
@@ -262,7 +262,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 std::vector<uint8_t> ep_list;
                                 for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload().at(5U+loop));}
 
-                                // DEBUGEEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+                                // DEBUG
                                 clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
                                     std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
 

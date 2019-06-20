@@ -1,5 +1,7 @@
 /**
  * @file green-power-sink-table.cpp
+ *
+ * @brief A green power sink table
  */
 
 #include <sstream>
@@ -26,7 +28,7 @@ uint8_t CGpSinkTable::addEntry( CGpSinkTableEntry i_entry )
     clogI << "CGpSinkTable::addEntry : " << buf.str() << std::endl;
 */
     // loop on table to search if gpd is already register
-    lo_index = getEntryIndexForSourceId( i_entry.getSourceId() ); 
+    lo_index = getEntryIndexForSourceId( i_entry.getSourceId() );
     if( GP_SINK_INVALID_ENTRY == lo_index )
     {
         // limit number of entry !
