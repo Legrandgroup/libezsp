@@ -17,8 +17,8 @@
 
 
 CGpSink::CGpSink( CEzspDongle &i_dongle ) :
-    sink_table(),
 	dongle(i_dongle),
+    sink_table(),
     observers()
 {
     dongle.registerObserver(this);

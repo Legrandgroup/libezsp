@@ -32,8 +32,15 @@ uint8_t CGpSinkTable::addEntry( CGpSinkTableEntry i_entry )
         // limit number of entry !
         if( gpds.size() < GP_SINK_INVALID_ENTRY )
         {
-            lo_index = gpds.size();
-            gpds.push_back(i_entry);
+            if (gpds.size()>255)
+            {
+                clogW << "gpd table size overflow\n";
+            }
+            else
+            {
+                lo_index = static_cast<uint8_t>(gpds.size());
+                gpds.push_back(i_entry);
+            }
         }
     }
 
@@ -52,12 +59,19 @@ uint8_t CGpSinkTable::getEntryIndexForSourceId(uint32_t i_source_id)
     clogI << "CGpSinkTable::getEntryIndexForSourceId : " << buf.str() << std::endl;
 */
 
-    for( int loop=0; loop<gpds.size(); loop++ )
+    for( unsigned int loop=0; loop<gpds.size(); loop++ )
     {
         if( i_source_id == gpds.at(loop).getSourceId() )
         {
-            lo_index = loop;
-            loop = gpds.size();
+            if (loop>255)
+            {
+                clogW << "gpd table index overflow\n";
+            }
+            else
+            {
+                lo_index = static_cast<uint8_t>(loop);
+                break;
+            }
         }
     }
 

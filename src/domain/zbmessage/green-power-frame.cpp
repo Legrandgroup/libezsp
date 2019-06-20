@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "../byte-manip.h"
 #include "green-power-frame.h"
 
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
@@ -23,7 +24,8 @@ CGpFrame::CGpFrame(const std::vector<uint8_t>& raw_message):
     security_frame_counter(0),
     command_id(0xFF),
     mic(0),
-    proxy_table_entry(0xFF)
+    proxy_table_entry(0xFF),
+    payload()
 {
     std::vector<uint8_t> l_gp_addr(raw_message.begin()+3,raw_message.end());
 
@@ -38,12 +40,11 @@ CGpFrame::CGpFrame(const std::vector<uint8_t>& raw_message):
         key_type = static_cast<EGpSecurityKeyType>(raw_message.at(14));
         auto_commissioning = raw_message.at(15);
         rx_after_tx = raw_message.at(16);
-        security_frame_counter = (raw_message.at(20)<<24) + (raw_message.at(19)<<16) + (raw_message.at(18)<<8) + (raw_message.at(17));
+        security_frame_counter = quad_u8_to_u32(raw_message.at(20), raw_message.at(19), raw_message.at(18), raw_message.at(17));
         command_id = raw_message.at(21);
-        mic = (raw_message.at(25)<<24) + (raw_message.at(24)<<16) + (raw_message.at(23)<<8) + (raw_message.at(22));
+        mic = quad_u8_to_u32(raw_message.at(25), raw_message.at(24), raw_message.at(23), raw_message.at(22));
         proxy_table_entry = raw_message.at(26);
-        payload.clear();
-        for( uint8_t loop=0; loop<raw_message.at(27); loop++ )
+        for( unsigned int loop=0; loop<raw_message.at(27); loop++ )
         {
             payload.push_back(raw_message.at(28+loop));
         }

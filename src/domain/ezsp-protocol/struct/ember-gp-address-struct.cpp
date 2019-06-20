@@ -5,6 +5,7 @@
  */
 #include <sstream>
 #include <iomanip>
+#include "../../byte-manip.h"
 
 #include "ember-gp-address-struct.h"
 
@@ -20,7 +21,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
     }
 
     // not mention in ezsp specification but ieee and sourceId is an union
-    sourceId = (gpdIeeeAddress.at(2)<<24) + (gpdIeeeAddress.at(3)<<16) + (gpdIeeeAddress.at(0)<<8) + (gpdIeeeAddress.at(1));
+    sourceId = quad_u8_to_u32(gpdIeeeAddress.at(2), gpdIeeeAddress.at(3), gpdIeeeAddress.at(0), gpdIeeeAddress.at(1));
 
     // if application id equal 0, so sourceId must be used, else ieee and endpoint
     applicationId = raw_message.at(EMBER_EUI64_BYTE_SIZE);
