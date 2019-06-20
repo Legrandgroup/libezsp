@@ -15,13 +15,18 @@ libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/apsoption.cpp \
 	domain/zbmessage/aps.cpp \
 	domain/zbmessage/zdp-enum.cpp \
+	domain/zbmessage/green-power-frame.cpp \
+	domain/zigbee-tools/green-power-sink.cpp \
+	domain/zbmessage/green-power-sink-table-entry.cpp \
 	domain/zigbee-tools/zigbee-messaging.cpp \
 	domain/zigbee-tools/zigbee-networking.cpp \
+	domain/zigbee-tools/green-power-sink-table.cpp \
 	domain/ezsp-protocol/ezsp-enum.cpp \
 	domain/ezsp-protocol/get-network-parameters-response.cpp \
 	domain/ezsp-protocol/struct/ember-key-struct.cpp \
 	domain/ezsp-protocol/struct/ember-network-parameters.cpp \
 	domain/ezsp-protocol/struct/ember-child-data-struct.cpp \
+	domain/ezsp-protocol/struct/ember-gp-address-struct.cpp \
 	domain/ezsp-dongle.cpp \
 	domain/ash.cpp \
 	spi/GenericAsyncDataInputObservable.cpp \
