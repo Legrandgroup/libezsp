@@ -11,11 +11,13 @@
 #include "ezsp-dongle-observer.h"
 #include "../spi/ITimerFactory.h"
 
-typedef struct sMsg
-{
-    EEzspCmd i_cmd;
-    std::vector<uint8_t> payload;
-}SMsg;
+extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
+    typedef struct sMsg
+    {
+        EEzspCmd i_cmd;
+        std::vector<uint8_t> payload;
+    }SMsg;
+}
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
