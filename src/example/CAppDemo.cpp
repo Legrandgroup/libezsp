@@ -534,64 +534,60 @@ void CAppDemo::dongleInit()
 
 void CAppDemo::stackInit()
 {
-  std::vector<uint8_t> l_payload;
+	std::vector<uint8_t> l_payload;
 
-  SEzspConfig l_config[] = {
-    {EZSP_CONFIG_NEIGHBOR_TABLE_SIZE,32},
-    {EZSP_CONFIG_APS_UNICAST_MESSAGE_COUNT,10},
-    {EZSP_CONFIG_BINDING_TABLE_SIZE,0},
-    {EZSP_CONFIG_ADDRESS_TABLE_SIZE,64},
-    {EZSP_CONFIG_MULTICAST_TABLE_SIZE,8},
-    {EZSP_CONFIG_ROUTE_TABLE_SIZE, 32},
-    {EZSP_CONFIG_DISCOVERY_TABLE_SIZE, 16},
-    {EZSP_CONFIG_STACK_PROFILE, 2},
-    {EZSP_CONFIG_SECURITY_LEVEL, 5},
-    {EZSP_CONFIG_MAX_HOPS, 15},
-    {EZSP_CONFIG_MAX_END_DEVICE_CHILDREN, 32}, // define number of sleepy end device directly attached to dongle
-    {EZSP_CONFIG_INDIRECT_TRANSMISSION_TIMEOUT, 3000},
-    {EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT, 5},
-    {EZSP_CONFIG_MOBILE_NODE_POLL_TIMEOUT, 20},
-    {EZSP_CONFIG_RESERVED_MOBILE_CHILD_ENTRIES, 0},
-    {EZSP_CONFIG_TX_POWER_MODE, 0},
-    {EZSP_CONFIG_DISABLE_RELAY, 0},
-    {EZSP_CONFIG_TRUST_CENTER_ADDRESS_CACHE_SIZE, 0},
-    {EZSP_CONFIG_SOURCE_ROUTE_TABLE_SIZE, 0},
-    {EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT, 6},
-    {EZSP_CONFIG_FRAGMENT_WINDOW_SIZE, 0},
-    {EZSP_CONFIG_FRAGMENT_DELAY_MS, 0},
-    {EZSP_CONFIG_KEY_TABLE_SIZE, 12},
-    {EZSP_CONFIG_APS_ACK_TIMEOUT, (50*30)+100},
-    {EZSP_CONFIG_BEACON_JITTER_DURATION, 3},
-    {EZSP_CONFIG_END_DEVICE_BIND_TIMEOUT, 60},
-    {EZSP_CONFIG_PAN_ID_CONFLICT_REPORT_THRESHOLD, 1},
-    {EZSP_CONFIG_REQUEST_KEY_TIMEOUT, 0},
-    //*{EZSP_CONFIG_CERTIFICATE_TABLE_SIZE, 1},*/
-    {EZSP_CONFIG_APPLICATION_ZDO_FLAGS, 0},
-    {EZSP_CONFIG_BROADCAST_TABLE_SIZE, 15},
-    {EZSP_CONFIG_MAC_FILTER_TABLE_SIZE, 0},
-    {EZSP_CONFIG_SUPPORTED_NETWORKS, 1},
-    {EZSP_CONFIG_SEND_MULTICASTS_TO_SLEEPY_ADDRESS, 0},
-    {EZSP_CONFIG_ZLL_GROUP_ADDRESSES, 0},
-    /*{EZSP_CONFIG_ZLL_RSSI_THRESHOLD, -128},*/
-    {EZSP_CONFIG_MTORR_FLOW_CONTROL, 1},
-    {EZSP_CONFIG_RETRY_QUEUE_SIZE, 8},
-    {EZSP_CONFIG_NEW_BROADCAST_ENTRY_THRESHOLD, 10},
-    {EZSP_CONFIG_TRANSIENT_KEY_TIMEOUT_S, 300},
-    {EZSP_CONFIG_BROADCAST_MIN_ACKS_NEEDED, 1},
-    {EZSP_CONFIG_TC_REJOINS_USING_WELL_KNOWN_KEY_TIMEOUT_S, 600},
-    {EZSP_CONFIG_PACKET_BUFFER_COUNT,0xFF}, // use all remain memory for in/out radio packets
-  };
-  #define l_config_size (sizeof(l_config)/sizeof(SEzspConfig))
+	std::vector<SEzspConfig> l_config;
 
+	l_config.push_back({.id = EZSP_CONFIG_NEIGHBOR_TABLE_SIZE, .value = 32});
+	l_config.push_back({.id = EZSP_CONFIG_APS_UNICAST_MESSAGE_COUNT, .value = 10});
+	l_config.push_back({.id = EZSP_CONFIG_BINDING_TABLE_SIZE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_ADDRESS_TABLE_SIZE, .value = 64});
+	l_config.push_back({.id = EZSP_CONFIG_MULTICAST_TABLE_SIZE, .value = 8});
+	l_config.push_back({.id = EZSP_CONFIG_ROUTE_TABLE_SIZE, .value = 32});
+	l_config.push_back({.id = EZSP_CONFIG_DISCOVERY_TABLE_SIZE, .value = 16});
+	l_config.push_back({.id = EZSP_CONFIG_STACK_PROFILE, .value = 2});
+	l_config.push_back({.id = EZSP_CONFIG_SECURITY_LEVEL, .value = 5});
+	l_config.push_back({.id = EZSP_CONFIG_MAX_HOPS, .value = 15});
+	l_config.push_back({.id = EZSP_CONFIG_MAX_END_DEVICE_CHILDREN, .value = 32}); // define number of sleepy end device directly attached to dongle
+	l_config.push_back({.id = EZSP_CONFIG_INDIRECT_TRANSMISSION_TIMEOUT, .value = 3000});
+	l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT, .value = 5});
+	l_config.push_back({.id = EZSP_CONFIG_MOBILE_NODE_POLL_TIMEOUT, .value = 20});
+	l_config.push_back({.id = EZSP_CONFIG_RESERVED_MOBILE_CHILD_ENTRIES, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_TX_POWER_MODE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_DISABLE_RELAY, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_TRUST_CENTER_ADDRESS_CACHE_SIZE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_SOURCE_ROUTE_TABLE_SIZE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT, .value = 6});
+	l_config.push_back({.id = EZSP_CONFIG_FRAGMENT_WINDOW_SIZE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_FRAGMENT_DELAY_MS, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_KEY_TABLE_SIZE, .value = 12});
+	l_config.push_back({.id = EZSP_CONFIG_APS_ACK_TIMEOUT, .value = (50*30)+100});
+	l_config.push_back({.id = EZSP_CONFIG_BEACON_JITTER_DURATION, .value = 3});
+	l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_BIND_TIMEOUT, .value = 60});
+	l_config.push_back({.id = EZSP_CONFIG_PAN_ID_CONFLICT_REPORT_THRESHOLD, .value = 1});
+	l_config.push_back({.id = EZSP_CONFIG_REQUEST_KEY_TIMEOUT, .value = 0});
+	/*l_config.push_back({.id = EZSP_CONFIG_CERTIFICATE_TABLE_SIZE, .value = 1});*/
+	l_config.push_back({.id = EZSP_CONFIG_APPLICATION_ZDO_FLAGS,  .value =0});
+	l_config.push_back({.id = EZSP_CONFIG_BROADCAST_TABLE_SIZE, .value = 15});
+	l_config.push_back({.id = EZSP_CONFIG_MAC_FILTER_TABLE_SIZE, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_SUPPORTED_NETWORKS, .value = 1});
+	l_config.push_back({.id = EZSP_CONFIG_SEND_MULTICASTS_TO_SLEEPY_ADDRESS, .value = 0});
+	l_config.push_back({.id = EZSP_CONFIG_ZLL_GROUP_ADDRESSES, .value = 0});
+	/*l_config.push_back({.id = EZSP_CONFIG_ZLL_RSSI_THRESHOLD, .value = -128});*/
+	l_config.push_back({.id = EZSP_CONFIG_MTORR_FLOW_CONTROL, .value = 1});
+	l_config.push_back({.id = EZSP_CONFIG_RETRY_QUEUE_SIZE, .value = 8});
+	l_config.push_back({.id = EZSP_CONFIG_NEW_BROADCAST_ENTRY_THRESHOLD, .value = 10});
+	l_config.push_back({.id = EZSP_CONFIG_TRANSIENT_KEY_TIMEOUT_S, .value = 300});
+	l_config.push_back({.id = EZSP_CONFIG_BROADCAST_MIN_ACKS_NEEDED, .value = 1});
+	l_config.push_back({.id = EZSP_CONFIG_TC_REJOINS_USING_WELL_KNOWN_KEY_TIMEOUT_S, .value = 600});
+	l_config.push_back({.id = EZSP_CONFIG_PACKET_BUFFER_COUNT, .value = 0xFF}); // use all remain memory for in/out radio packets
 
-  SEzspPolicy l_policy[] = {
-    {EZSP_TRUST_CENTER_POLICY,EZSP_ALLOW_PRECONFIGURED_KEY_JOINS},
-    {EZSP_MESSAGE_CONTENTS_IN_CALLBACK_POLICY,EZSP_MESSAGE_TAG_ONLY_IN_CALLBACK},
-    {EZSP_BINDING_MODIFICATION_POLICY,EZSP_CHECK_BINDING_MODIFICATIONS_ARE_VALID_ENDPOINT_CLUSTERS},
-    {EZSP_POLL_HANDLER_POLICY,EZSP_POLL_HANDLER_IGNORE},
-  };
-  #define l_policy_size (sizeof(l_policy)/sizeof(SEzspPolicy))
+	std::vector<SEzspPolicy> l_policy;
+	l_policy.push_back({.id = EZSP_TRUST_CENTER_POLICY, .decision = EZSP_ALLOW_PRECONFIGURED_KEY_JOINS});
+	l_policy.push_back({.id = EZSP_MESSAGE_CONTENTS_IN_CALLBACK_POLICY, .decision = EZSP_MESSAGE_TAG_ONLY_IN_CALLBACK});
+	l_policy.push_back({.id = EZSP_BINDING_MODIFICATION_POLICY, .decision = EZSP_CHECK_BINDING_MODIFICATIONS_ARE_VALID_ENDPOINT_CLUSTERS});
+	l_policy.push_back({.id = EZSP_POLL_HANDLER_POLICY, .decision = EZSP_POLL_HANDLER_IGNORE});
 
-  zb_nwk.stackInit(l_config, static_cast<uint8_t>(l_config_size), l_policy, static_cast<uint8_t>(l_policy_size));
+	zb_nwk.stackInit(l_config, l_policy);
 }
 

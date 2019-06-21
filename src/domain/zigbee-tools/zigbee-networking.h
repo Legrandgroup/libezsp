@@ -26,7 +26,7 @@ public:
 
     CZigbeeNetworking& operator=(CZigbeeNetworking) = delete; /* No assignment allowed */
 
-    void stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size);
+    void stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy);
 
     void formHaNetwork(uint8_t channel=DEFAULT_RADIO_CHANNEL);
     void OpenNetwork( uint8_t i_timeout );

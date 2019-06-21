@@ -119,27 +119,27 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
 
 }
 
-void CZigbeeNetworking::stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size)
+void CZigbeeNetworking::stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy)
 {
   std::vector<uint8_t> l_payload;
 
   // set config
-  for(uint8_t loop=0; loop<l_config_size; loop++ )
+  for(auto it : l_config)
   {
     l_payload.clear();
-    l_payload.push_back(l_config[loop].id);
-    l_payload.push_back(u16_get_lo_u8(l_config[loop].value));
-    l_payload.push_back(u16_get_hi_u8(l_config[loop].value));
+    l_payload.push_back(it.id);
+    l_payload.push_back(u16_get_lo_u8(it.value));
+    l_payload.push_back(u16_get_hi_u8(it.value));
     //clogD << "EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
     dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
   }
 
   // set policy
-  for(uint8_t loop=0; loop<l_policy_size; loop++ )
+  for(auto it : l_policy)
   {
     l_payload.clear();
-    l_payload.push_back(l_policy[loop].id);
-    l_payload.push_back(l_policy[loop].decision);
+    l_payload.push_back(it.id);
+    l_payload.push_back(it.decision);
     //clogD << "EZSP_SET_POLICY : " << unsigned(l_policy[loop].id) << std::endl;
     dongle.sendCommand(EZSP_SET_POLICY, l_payload);
   }
