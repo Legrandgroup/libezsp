@@ -13,7 +13,7 @@ inline uint16_t dble_u8_to_u16(const uint8_t highByte, const uint8_t lowByte) {
 inline uint32_t quad_u8_to_u32(const uint8_t highestByte3, const uint8_t byte2, const uint8_t byte1, const uint8_t lowestByte0) {
 	return static_cast<uint32_t>( static_cast<uint32_t>(highestByte3<<24) |
 	                              static_cast<uint32_t>(byte2<<16) |
-	                              static_cast<uint32_t>(byte1<<16) |
+	                              static_cast<uint32_t>(byte1<<8) |
 	                              static_cast<uint32_t>(lowestByte0) );
 }
 
