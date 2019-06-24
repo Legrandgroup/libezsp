@@ -56,19 +56,19 @@ std::string CGpFrame::String() const
     std::stringstream buf;
 
     buf << "CGpFrame : { ";
-    buf << "[link_value : "<< link_value << "]";
-    buf << "[sequence_number : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(sequence_number) << "]";
-    buf << "[source_id : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(source_id) << "]";
-    buf << "[security : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security) << "]";
-    buf << "[key_type : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(key_type) << "]";
-    buf << "[auto_commissioning : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(auto_commissioning) << "]";
-    buf << "[rx_after_tx : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(rx_after_tx) << "]";
-    buf << "[security_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(security_frame_counter) << "]";
-    buf << "[command_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(command_id) << "]";
-    buf << "[mic : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(mic) << "]";
-    buf << "[proxy_table_entry : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(proxy_table_entry) << "]";
+    buf << "[link_value : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(link_value) << "]";
+    buf << "[sequence_number : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sequence_number) << "]";
+    buf << "[source_id : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(source_id) << "]";
+    buf << "[security : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(security) << "]";
+    buf << "[key_type : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(key_type) << "]";
+    buf << "[auto_commissioning : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(auto_commissioning) << "]";
+    buf << "[rx_after_tx : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(rx_after_tx) << "]";
+    buf << "[security_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(security_frame_counter) << "]";
+    buf << "[command_id : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(command_id) << "]";
+    buf << "[mic : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(mic) << "]";
+    buf << "[proxy_table_entry : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(proxy_table_entry) << "]";
     buf << "[payload :";
-    for(uint8_t loop=0; loop<payload.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(payload[loop]); }
+    for(uint8_t loop=0; loop<payload.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(payload[loop]); }
     buf << "]";
     buf << " }";
 
