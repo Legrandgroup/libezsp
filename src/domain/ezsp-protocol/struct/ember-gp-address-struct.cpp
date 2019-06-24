@@ -17,14 +17,14 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 {
     for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
     {
-        gpdIeeeAddress.push_back(raw_message.at(loop));
+        gpdIeeeAddress.push_back(raw_message.at(loop+1));
     }
 
     // not mention in ezsp specification but ieee and sourceId is an union
-    sourceId = quad_u8_to_u32(gpdIeeeAddress.at(2), gpdIeeeAddress.at(3), gpdIeeeAddress.at(0), gpdIeeeAddress.at(1));
+    sourceId = quad_u8_to_u32(gpdIeeeAddress.at(3), gpdIeeeAddress.at(2), gpdIeeeAddress.at(1), gpdIeeeAddress.at(0));
 
     // if application id equal 0, so sourceId must be used, else ieee and endpoint
-    applicationId = raw_message.at(EMBER_EUI64_BYTE_SIZE);
+    applicationId = raw_message.at(0);
 
     // endpoint only if application Id is not 0
     endpoint = raw_message.at(EMBER_EUI64_BYTE_SIZE+1);
