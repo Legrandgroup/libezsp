@@ -48,7 +48,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
 
             // Start DEBUG
-            clogI << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) << 
+            clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
                 ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
                 ", gp address : " << gpf <</*
