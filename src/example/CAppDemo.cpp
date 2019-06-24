@@ -193,7 +193,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 if( APP_INIT_IN_PROGRESS == app_state )
                 {
                     clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
-                    zb_nwk.formHaNetwork(11);
+                    zb_nwk.formHaNetwork(12);
                     //set new state
                     setAppState(APP_FORM_NWK_IN_PROGRESS);
                     reset_wanted = false;
