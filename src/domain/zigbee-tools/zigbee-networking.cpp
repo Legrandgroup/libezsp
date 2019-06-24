@@ -74,7 +74,7 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
 
                 payload.setPanId(static_cast<uint16_t>(std::rand()&0xFFFF));
                 payload.setRadioTxPower(3);
-                payload.setRadioChannel(11);
+                payload.setRadioChannel(form_channel);
                 payload.setJoinMethod(EMBER_USE_MAC_ASSOCIATION);
 
                 dongle.sendCommand(EZSP_FORM_NETWORK, payload.getRaw());
