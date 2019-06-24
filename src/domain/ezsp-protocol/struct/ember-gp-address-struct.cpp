@@ -17,7 +17,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 {
     for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
     {
-        gpdIeeeAddress.push_back(raw_message.at(loop+1));
+        gpdIeeeAddress.push_back(raw_message.at(loop+1U));
     }
 
     // not mention in ezsp specification but ieee and sourceId is an union
