@@ -34,6 +34,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
+        gp_sink.registerGpd(0xffffffaa);
         setAppState(APP_INIT_IN_PROGRESS);
     }
     // save parameter
@@ -67,10 +68,104 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 
     // Stop DEBUG
 
-    if( GPD_NO_SECURITY == i_gpf.getSecurity() )
+    auto payloadSize = i_gpf.getPayload().size();
+
+    clogD << "Received an attribute reporting frame (" << payloadSize << " bytes)";
+    if (payloadSize!=0)
     {
-        gp_sink.registerGpd(i_gpf.getSourceId());
+        clogD << ": ";
+        for (auto i : i_gpf.getPayload())
+        {
+            clogD << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
+        }
     }
+    clogD << "\n";
+
+    switch(i_gpf.getCommandId())
+    {
+        case 0xa0:	/* Attribute reporting */
+        {
+            if (payloadSize < 5)
+            {
+                clogE << "Attribute reporting frame is too short: " << payloadSize << " bytes\n";
+            }
+            else
+            {
+                uint16_t clusterId = dble_u8_to_u16(i_gpf.getPayload().at(1), i_gpf.getPayload().at(0));
+                uint16_t attributeId = dble_u8_to_u16(i_gpf.getPayload().at(3), i_gpf.getPayload().at(2));
+                uint8_t type = i_gpf.getPayload().at(4);
+
+                switch (clusterId)
+                {
+                    case 0x000F: /* Binary input */
+                        if ((attributeId == 0x0055) && (type == ZCL_BOOLEAN_ATTRIBUTE_TYPE))
+                        {
+                            if (payloadSize < 6)
+                            {
+                                clogE << "Binary input frame is too short: " << payloadSize << " bytes\n";
+                            }
+                            else
+                            {
+                                uint8_t value = i_gpf.getPayload().at(5);
+                                std::cout << "Door is " << (value?"closed":"open") << "\n";
+                            }
+                        }
+                        else
+                        {
+                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                        }
+                        break;
+                    case 0x0402: /* Temperature */
+                        if ((attributeId == 0x0000) && (type == ZCL_INT16S_ATTRIBUTE_TYPE))
+                        {
+                            if (payloadSize < 7)
+                            {
+                                clogE << "Temperature frame is too short: " << payloadSize << " bytes\n";
+                            }
+                            else
+                            {
+                                int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
+                                std::cout << "Temperature: " << value/100 << "." << value%100 << "°C\n";
+                            }
+                        }
+                        else
+                        {
+                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                        }
+                        break;
+                    case 0x0405: /* Humidity */
+                        if ((attributeId == 0x0000) && (type == ZCL_INT16U_ATTRIBUTE_TYPE))
+                        {
+                            if (payloadSize < 7)
+                            {
+                                clogE << "Humidity frame is too short: " << payloadSize << " bytes\n";
+                            }
+                            else
+                            {
+                                int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
+                                std::cout << "Humidity: " << value/100 << "." << value%100 << "%\n";
+                            }
+                        }
+                        else
+                        {
+                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                        }
+                        break;
+                    default:
+                        clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
+                        break;
+                }
+            }
+        }
+        break;
+        default:
+            clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
+            break;
+    }
+//    if( GPD_NO_SECURITY == i_gpf.getSecurity() )
+//    {
+//        gp_sink.registerGpd(i_gpf.getSourceId());
+//    }
 }
 
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {
