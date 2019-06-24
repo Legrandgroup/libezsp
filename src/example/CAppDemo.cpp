@@ -17,7 +17,7 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory, bool reset) :
+CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -29,7 +29,7 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver, ITimerFactory &i_timer_factory, bool
 {
     setAppState(APP_NOT_INIT);
     // uart
-    if( dongle.open(uartDriver) )
+    if( dongle.open(&uartDriver) )
     {
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
