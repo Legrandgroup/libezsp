@@ -35,8 +35,9 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                       : this help\n");
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
+    fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (eg: '/dev/ttyUSB0')\n");
     fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
-    fprintf(f,"-s (--source-id) <source-id>      : enables receiving from a device with this source-id (repeated -s options are allowed)\n");
+    fprintf(f,"-s (--source-id) <source-id>      : enables receiving from a device with this source-id, formatted as a 8-digit hexadecimal string (eg: 'ffae1245') (repeated -s options are allowed)\n");
 }
 
 int main(int argc, char **argv) {
