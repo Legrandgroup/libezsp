@@ -17,7 +17,7 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset) :
+CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset, unsigned int networkChannel) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -25,10 +25,15 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
     app_state(APP_NOT_INIT),
     db(),
     ezsp_version(6),
-    reset_wanted(false)
+    reset_wanted(reset),
+    channel(networkChannel)
 {
     setAppState(APP_NOT_INIT);
     // uart
+    if (channel<11 || channel>27) {
+        clogE << "Invalid channel: " << channel << ". Using 11 instead\n";
+        channel = 11;
+    }
     if( dongle.open(&uartDriver) )
     {
         clogI << "CAppDemo open success !" << std::endl;
@@ -284,11 +289,11 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             clogI << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
             if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
             {
-                // we decide to create an HA1.2 network on channel 11
+                // We create an HA1.2 network on the required channel
                 if( APP_INIT_IN_PROGRESS == app_state )
                 {
                     clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
-                    zb_nwk.formHaNetwork(12);
+                    zb_nwk.formHaNetwork(static_cast<uint8_t>(channel));
                     //set new state
                     setAppState(APP_FORM_NWK_IN_PROGRESS);
                     reset_wanted = false;

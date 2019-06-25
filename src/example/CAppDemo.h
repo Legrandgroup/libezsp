@@ -26,7 +26,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false);
+    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, unsigned int networkChannel=11);
 
     /**
      * Callback
@@ -48,6 +48,7 @@ private:
     EAppState app_state;
     Cdb db;
     uint8_t ezsp_version;
-    bool reset_wanted;
+    bool reset_wanted;	/*!< Do we reset the network and re-create a new one? */
+    unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
 };
 
