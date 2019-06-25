@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
-    std::vector<std::string> sourceIdList;
+    std::vector<uint32_t> sourceIdList;
     unsigned int resetToChannel = 0;
     std::string serialPort("/dev/ttyUSB0");
 
@@ -67,28 +67,40 @@ int main(int argc, char **argv) {
         {0, 0, 0, 0}
     };
     while ( (c = getopt_long(argc, argv, "dhs:u:r:", longOptions, &optionIndex)) != -1) {
-		switch (c) {
-			case 's':
-				sourceIdList.push_back(std::string(optarg));
-				break;
-			case 'u':
-				serialPort = optarg;
-				break;
-			case 'r':
-				stringstream(optarg) >> resetToChannel;
-				break;
-			case 'd':
-				debugEnabled = true;
-				break;
-			case 'h':
-				writeUsage(argv[0], stdout);
-				exit(0);
-			case '?':
-			default:
-				std::cerr << "Unknown command-line option\n";
-				writeUsage(argv[0], stdout);
-				exit(1);
-		}
+        switch (c) {
+            case 's':
+            {
+                stringstream sourceId;
+                sourceId << std::hex << optarg;
+                unsigned int sourceIdValue;
+                sourceId >> sourceIdValue;
+            if (sourceIdValue<static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+                    sourceIdList.push_back(sourceIdValue);
+                }
+                else {
+                    clogE << "Invalid source ID: " << optarg << "\n";
+                }
+
+            }
+            break;
+            case 'u':
+                serialPort = optarg;
+                break;
+            case 'r':
+                stringstream(optarg) >> resetToChannel;
+                break;
+            case 'd':
+                debugEnabled = true;
+                break;
+            case 'h':
+                writeUsage(argv[0], stdout);
+                exit(0);
+            case '?':
+            default:
+                std::cerr << "Unsupported command-line option. Exitting\n";
+                writeUsage(argv[0], stdout);
+                exit(1);
+        }
     }
 
 #ifdef USE_RARITAN
@@ -99,7 +111,7 @@ int main(int argc, char **argv) {
 
     uartDriver.open(serialPort, 57600);
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;

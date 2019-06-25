@@ -26,7 +26,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, unsigned int networkChannel=11);
+    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, unsigned int networkChannel=11, const std::vector<uint32_t>& sourceIdList={});
 
     /**
      * Callback

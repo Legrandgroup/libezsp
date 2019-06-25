@@ -17,7 +17,7 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset, unsigned int networkChannel) :
+CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset, unsigned int networkChannel, const std::vector<uint32_t>& sourceIdList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -34,12 +34,14 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
         clogE << "Invalid channel: " << channel << ". Using 11 instead\n";
         channel = 11;
     }
-    if( dongle.open(&uartDriver) )
-    {
+    if( dongle.open(&uartDriver) ) {
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
-        gp_sink.registerGpd(0xffffffaa);
+        for (auto i : sourceIdList) {
+            clogD << "Watching source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i << "\n";
+            gp_sink.registerGpd(i);
+        }
         setAppState(APP_INIT_IN_PROGRESS);
     }
     // save parameter
