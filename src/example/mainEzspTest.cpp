@@ -98,8 +98,7 @@ int main(int argc, char **argv) {
 
     uartDriver.open(serialPort, 57600);
 
-    // set reset argument to true forces leaving current network and creating a new one
-    CAppDemo app(uartDriver, timerFactory, true);
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;
