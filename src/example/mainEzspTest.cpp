@@ -21,11 +21,25 @@
 #endif	// USE_SERIALCPP
 #include "GenericLogger.h"
 #include "CAppDemo.h"
+#include <getopt.h>
+#include <string>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
-int main( void )
-{
+static void writeUsage(const char* progname, FILE *f) {
+    fprintf(f,"\n");
+    fprintf(f,"%s - sample test program for libezsp\n\n", progname);
+    fprintf(f,"Usage: %s [-d] [-r channel] [-s source_id [-s source_id2...]]\n", progname);
+    fprintf(f,"Available switches:\n");
+    fprintf(f,"-h (--help)                       : this help\n");
+    fprintf(f,"-d (--debug)                      : enable debug logs\n");
+    fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
+    fprintf(f,"-s (--source-id) <source-id>      : enables receiving from a device with this source-id (repeated -s options are allowed)\n");
+}
+
+int main(int argc, char **argv) {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
@@ -34,13 +48,55 @@ int main( void )
     RaritanEventLoop eventLoop;
     RaritanUartDriver uartDriver(eventLoop);
     RaritanTimerFactory timerFactory(eventLoop);
+#endif
 
-    RaritanLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
+    int optionIndex=0;
+    int c;
+    bool debugEnabled = false;
+    std::vector<std::string> sourceIdList;
+    unsigned int resetToChannel = 0;
+    std::string serialPort("/dev/ttyUSB0");
+
+    static struct option longOptions[] = {
+        {"reset-to-channel", 1, 0, 'r'},
+        {"source-id", 1, 0, 's'},
+        {"serial-port", 1, 0, 'u'},
+        {"debug", 0, 0, 'd'},
+        {"help", 0, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+    while ( (c = getopt_long(argc, argv, "dhs:u:r:", longOptions, &optionIndex)) != -1) {
+		switch (c) {
+			case 's':
+				sourceIdList.push_back(std::string(optarg));
+				break;
+			case 'u':
+				serialPort = optarg;
+				break;
+			case 'r':
+				stringstream(optarg) >> resetToChannel;
+				break;
+			case 'd':
+				debugEnabled = true;
+				break;
+			case 'h':
+				writeUsage(argv[0], stdout);
+				exit(0);
+			case '?':
+			default:
+				std::cerr << "Unknown command-line option\n";
+				writeUsage(argv[0], stdout);
+				exit(1);
+		}
+    }
+
+#ifdef USE_RARITAN
+    RaritanLogger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
 #endif
 
     clogI << "Starting ezsp test program (info)\n";
 
-    uartDriver.open("/dev/ttyUSB0", 57600);
+    uartDriver.open(serialPort, 57600);
 
     // set reset argument to true forces leaving current network and creating a new one
     CAppDemo app(uartDriver, timerFactory, true);
