@@ -17,6 +17,7 @@
 #include "../domain/byte-manip.h"
 
 
+
 CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset, unsigned int networkChannel, const std::vector<uint32_t>& sourceIdList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
@@ -46,6 +47,11 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
     }
     // save parameter
     reset_wanted = reset;
+
+}
+
+CAppDemo::~CAppDemo()
+{
 }
 
 void CAppDemo::handleDongleState( EDongleState i_state )
@@ -77,7 +83,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 
     auto payloadSize = i_gpf.getPayload().size();
 
-    clogD << "Received an attribute reporting frame (" << payloadSize << " bytes)";
+    clogD << "Received a green power frame (" << payloadSize << " bytes)";
     if (payloadSize!=0)
     {
         clogD << ": ";
@@ -90,6 +96,18 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 
     switch(i_gpf.getCommandId())
     {
+        case 0xe3: /* Channel Request */
+        {
+            clogI << "Channel Request received !\n";
+
+            /* WARNING shall be completly parse, for demo only, send a Channel configuration on same channel without verify parameter */
+            std::vector<uint8_t> l_msg;
+            l_msg.push_back( static_cast<uint8_t>((i_gpf.getPayload().at(0)&0x0f) | 0x10) ); 
+
+            gp_sink.sendGPF(i_gpf.getSourceId(), static_cast<uint8_t>(0xF3), l_msg);
+        }
+        break;
+
         case 0xa0:	/* Attribute reporting */
         {
             if (payloadSize < 5)
@@ -98,6 +116,10 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
             }
             else
             {
+                #ifdef TEST_MQTT
+                    char mqtt_msg[255] = "";
+                #endif
+
                 uint16_t clusterId = dble_u8_to_u16(i_gpf.getPayload().at(1), i_gpf.getPayload().at(0));
                 uint16_t attributeId = dble_u8_to_u16(i_gpf.getPayload().at(3), i_gpf.getPayload().at(2));
                 uint8_t type = i_gpf.getPayload().at(4);
@@ -115,6 +137,10 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                             {
                                 uint8_t value = i_gpf.getPayload().at(5);
                                 std::cout << "Door is " << (value?"closed":"open") << "\n";
+    
+                                #ifdef TEST_MQTT
+                                    sprintf(mqtt_msg,"%08X %04X %04X %02X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
+                                #endif
                             }
                         }
                         else
@@ -133,6 +159,10 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                             {
                                 int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
                                 std::cout << "Temperature: " << value/100 << "." << value%100 << "°C\n";
+
+                                #ifdef TEST_MQTT
+                                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
+                                #endif
                             }
                         }
                         else
@@ -151,6 +181,10 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                             {
                                 int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
                                 std::cout << "Humidity: " << value/100 << "." << value%100 << "%\n";
+
+                                #ifdef TEST_MQTT
+                                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
+                                #endif
                             }
                         }
                         else
@@ -162,6 +196,15 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                         clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
                         break;
                 }
+
+                /* TEST MQTT using lib*/
+                #ifdef TEST_MQTT
+                if( strlen(mqtt_msg) > 8)
+                {
+                    mqtt_pub.send_message(mqtt_msg);
+                }
+                #endif
+
             }
         }
         break;

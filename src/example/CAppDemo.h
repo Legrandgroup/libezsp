@@ -13,6 +13,12 @@
 #include "../spi/ILogger.h"
 #include "dummy_db.h"
 
+#define TEST_MQTT
+
+#ifdef TEST_MQTT
+    #include "mqtt.h"
+#endif
+
 typedef enum
 {
     APP_NOT_INIT, // starting state
@@ -27,6 +33,7 @@ class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
     CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, unsigned int networkChannel=11, const std::vector<uint32_t>& sourceIdList={});
+    ~CAppDemo();
 
     /**
      * Callback
@@ -50,5 +57,8 @@ private:
     uint8_t ezsp_version;
     bool reset_wanted;	/*!< Do we reset the network and re-create a new one? */
     unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
+#ifdef TEST_MQTT
+    myMqtt mqtt_pub;
+#endif
 };
 
