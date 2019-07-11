@@ -2,12 +2,13 @@ LOCAL_LDFLAGS ?= -L/home/seb/_DEV/serial/compiled/li
 LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
-LDFLAGS = $(LOCAL_LDFLAGS) -lserialcpp -lpthread
+LDFLAGS = $(LOCAL_LDFLAGS) -lserialcpp -lpthread -lmosquittopp
 
 EXEC = mainEzspTest
 OBJECTFILES = mainEzspTest.o \
 			  CAppDemo.o \
 			  dummy_db.o \
+			  mqtt.o \
 			  ../domain/ezsp-dongle.o \
 			  ../domain/ash.o \
 			  ../domain/zbmessage/green-power-frame.o \
