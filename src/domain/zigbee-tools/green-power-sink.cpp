@@ -31,6 +31,99 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
     return sink_table.addEntry(l_entry);
 }
 
+
+void CGpSink::sendGPF(uint32_t i_src_id, uint8_t i_cmd, std::vector<uint8_t> i_msg)
+{
+    std::vector<uint8_t> l_gpf;
+
+    /* The action to perform on the GP TX queue (true to add, false to remove). */
+    l_gpf.push_back(0x01);
+
+    /* Whether to use ClearChannelAssessment when transmitting the GPDF. */
+    l_gpf.push_back(0x01);
+
+    /* The Address of the destination GPD. */
+    // GPD Source Id (4 bytes) + 4 for fill ieeee
+    l_gpf.push_back(static_cast<uint8_t>(i_src_id && 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>(i_src_id && 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24)&& 0xFF));
+    // application Id
+    l_gpf.push_back(0x00);
+    // endpoint
+    l_gpf.push_back(0);
+
+    /* The GPD command ID to send. */
+    l_gpf.push_back(i_cmd);
+
+    /* The length of the GP command payload. */
+    l_gpf.push_back(i_msg.size());
+
+    /* The GP command payload. */
+    for( const auto &l_byte : i_msg )
+    {
+        l_gpf.push_back(l_byte);
+    }
+
+    /* The handle to refer to the GPDF. */
+    l_gpf.push_back(0);
+
+    /* How long to keep the GPDF in the TX Queue. */
+    l_gpf.push_back(200);
+
+/* DEBUG
+    // 802.15.4 Header
+    /// frame control
+    l_gpf.push_back(0x01);
+    l_gpf.push_back(0x08);
+    /// sequence number : use last byte of frame control, shall be increment
+    l_gpf.push_back(0x00);
+    /// destination PAN
+    l_gpf.push_back(0xff);
+    l_gpf.push_back(0xff);
+    /// destination
+    l_gpf.push_back(0xff);
+    l_gpf.push_back(0xff);
+
+    // GPF NWK Header
+    l_gpf.push_back(0x8C); // frame type data, protocol version 3, no auto commissioning, have nwk frame extension
+
+    // GPF NWK Extend
+    l_gpf.push_back(0xf0); // use srcId, Rx capable, security MIC Only, direction to gpd
+
+    // GPD Source Id (4 bytes)
+    l_gpf.push_back(static_cast<uint8_t>(i_src_id && 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24)&& 0xFF));
+
+    // GPF Security frame counter (4 bytes) : TODO A FAIRE !!
+    l_gpf.push_back(0);
+    l_gpf.push_back(0);
+    l_gpf.push_back(0);
+    l_gpf.push_back(0);
+
+    // GPF Application payload : command + payload
+    l_gpf.push_back(i_cmd);
+    for( const auto &l_byte : i_msg )
+    {
+        l_gpf.push_back(l_byte);
+    }
+    
+    // GPF MIC (4 bytes) TODO Shall be implement !!
+    l_gpf.push_back(0xff);
+    l_gpf.push_back(0xff);
+    l_gpf.push_back(0xff);
+    l_gpf.push_back(0xff);
+*/    
+
+    dongle.sendCommand(EZSP_D_GP_SEND, l_gpf);
+}
+
 void CGpSink::handleDongleState( EDongleState i_state )
 {
 }
@@ -39,6 +132,20 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 {
     switch( i_cmd )
     {
+        case EZSP_D_GP_SEND:
+        {
+            EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+            clogI << "EZSP_D_GP_SEND status : " << CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+        }
+        break;
+
+        case EZSP_D_GP_SENT_HANDLER:
+        {
+            EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+            clogI << "EZSP_D_GP_SENT_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+        }
+        break;
+
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
         {
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
@@ -48,7 +155,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
 
             // Start DEBUG
-            clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
+            clogI << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
                 ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
                 ", gp address : " << gpf <</*
@@ -100,7 +207,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
             for (size_t i =0; i<i_msg_receive.size(); i++) {
                 bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
             }
-            clogI << "CGpSink::ezspHandler : " << bufDump.str() << std::endl;
+            clogI << "CGpSink::ezspHandler cmd: " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_cmd) << ", msg: " << bufDump.str() << std::endl;
             */
         }
         break;

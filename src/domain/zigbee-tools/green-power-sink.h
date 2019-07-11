@@ -33,6 +33,16 @@ public:
     uint8_t registerGpd( uint32_t i_source_id );
 
     /**
+     * @brief send a green power frame
+     * 
+     * @param[IN] i_src_id : The Address of the destination GPD.
+     * @param[IN] i_cmd : The GPD command ID to send.
+     * @param[IN] i_msg : The GP command payload.
+     * 
+     */
+    void sendGPF(uint32_t i_src_id, uint8_t i_cmd, std::vector<uint8_t> i_msg);
+
+    /**
      * Observer
      */
     void handleDongleState( EDongleState i_state );
