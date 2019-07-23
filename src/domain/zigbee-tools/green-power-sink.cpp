@@ -44,14 +44,14 @@ void CGpSink::sendGPF(uint32_t i_src_id, uint8_t i_cmd, std::vector<uint8_t> i_m
 
     /* The Address of the destination GPD. */
     // GPD Source Id (4 bytes) + 4 for fill ieeee
-    l_gpf.push_back(static_cast<uint8_t>(i_src_id && 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8)&& 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16)&& 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24)&& 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>(i_src_id && 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8)&& 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16)&& 0xFF));
-    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24)&& 0xFF));
+    l_gpf.push_back(static_cast<uint8_t>(i_src_id & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8) & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16) & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24) & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>(i_src_id & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 8) & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 16) & 0x000000FF));
+    l_gpf.push_back(static_cast<uint8_t>((i_src_id >> 24) & 0x000000FF));
     // application Id
     l_gpf.push_back(0x00);
     // endpoint
@@ -60,8 +60,13 @@ void CGpSink::sendGPF(uint32_t i_src_id, uint8_t i_cmd, std::vector<uint8_t> i_m
     /* The GPD command ID to send. */
     l_gpf.push_back(i_cmd);
 
+    if (i_msg.size()>0xff)
+    {
+        clogE << "Message size overflow\n";
+    }
+
     /* The length of the GP command payload. */
-    l_gpf.push_back(i_msg.size());
+    l_gpf.push_back(static_cast<uint8_t>(i_msg.size()));
 
     /* The GP command payload. */
     for( const auto &l_byte : i_msg )
