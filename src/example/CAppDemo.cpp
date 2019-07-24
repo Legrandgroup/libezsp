@@ -132,7 +132,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                             else
                             {
                                 int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
-                                std::cout << "Temperature: " << value/100 << "." << value%100 << "°C\n";
+                                std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
                             }
                         }
                         else
@@ -150,7 +150,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                             else
                             {
                                 int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
-                                std::cout << "Humidity: " << value/100 << "." << value%100 << "%\n";
+                                std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
                             }
                         }
                         else
