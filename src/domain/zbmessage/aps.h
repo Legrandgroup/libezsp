@@ -1,6 +1,6 @@
 /**
  * @file aps.h
- * 
+ *
  * @brief Handles encoding/decoding of the APS header
  */
 
