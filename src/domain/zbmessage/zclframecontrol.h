@@ -9,6 +9,11 @@
 #include <cstdint>
 #include <vector>
 
+#ifdef USE_RARITAN
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+#endif // USE_RARITAN
+
 typedef enum
 {
   E_DIR_CLIENT_TO_SERVER = 0,
@@ -106,3 +111,7 @@ private:
   /** software version indication, MSP : 0 for short frame (no deviceid and battery fields), 1 for long frame (generation 2.1) */
   EZCLFrameCtrlSoftwareCode software_code;
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN

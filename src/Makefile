@@ -51,6 +51,11 @@ domain/ezsp-dongle.h \
 domain/ezsp-dongle-observer.h \
 domain/zigbee-tools/zigbee-networking.h \
 domain/zigbee-tools/zigbee-messaging.h \
+domain/zbmessage/green-power-frame.h \
+domain/zigbee-tools/green-power-sink.h \
+domain/zigbee-tools/green-power-sink-table.h \
+domain/zbmessage/green-power-sink-table-entry.h \
+domain/green-power-observer.h \
 domain/zbmessage/zigbee-message.h \
 domain/zbmessage/aps.h \
 domain/zbmessage/apsoption.h \
