@@ -147,6 +147,28 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
                 return false;
             }
             break;
+        case 0x0001: /* Battery level */
+            if ((attributeId == 0x0020) && (type == ZCL_INT8U_ATTRIBUTE_TYPE))
+            {
+                if (payloadSize < 6)
+                {
+                    clogE << "Battery level frame is too short: " << payloadSize << " bytes\n";
+                    return false;
+                }
+                else
+                {
+                    uint8_t value = static_cast<uint8_t>(payload.at(5));
+                    std::cout << "Battery level: " << value/10 << "." << std::setw(1) << std::setfill('0') << value%10 << "V\n";
+                    usedBytes = 6;
+                    return true;
+                }
+            }
+            else
+            {
+                clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                return false;
+            }
+            break;
         default:
             clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
             return false;
