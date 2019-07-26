@@ -32,17 +32,17 @@ public:
     void OpenNetwork( uint8_t i_timeout );
     void CloseNetwork( void );
     void LeaveNetwork( void );
-    
+
     void startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct = nullptr);
 
     // Green Power
-    
+
 
     /**
      * Observer
      */
-    void handleDongleState( EDongleState i_state ){;}
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );    
+    void handleDongleState( EDongleState /* i_state */ ){;}
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
     CEzspDongle &dongle;

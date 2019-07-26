@@ -1,6 +1,6 @@
 /**
  * @file aps.h
- * 
+ *
  * @brief Handles encoding/decoding of the APS header
  */
 
@@ -11,6 +11,11 @@
 #include <vector>
 
 #include "apsoption.h"
+
+#ifdef USE_RARITAN
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+#endif // USE_RARITAN
 
 class CAPSFrame; /* Forward declaration */
 void swap(CAPSFrame& first, CAPSFrame& second); /* Declaration before qualifying ::swap() as friend for class CAPSFrame */
@@ -83,3 +88,6 @@ public:
   uint8_t src_ep;
 };
 
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN

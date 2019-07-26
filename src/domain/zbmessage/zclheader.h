@@ -11,6 +11,11 @@
 
 #include "zclframecontrol.h"
 
+#ifdef USE_RARITAN
+/**** Start of the official API; no includes below this point! ***************/
+#include <pp/official_api_start.h>
+#endif // USE_RARITAN
+
 #define LG_MAN_CODE 0x1021
 
 class CZCLHeader; /* Forward declaration */
@@ -122,3 +127,7 @@ private:
   /** */
   uint8_t cmd_id;
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN

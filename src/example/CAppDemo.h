@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "../domain/ezsp-dongle.h"
 #include "../domain/zigbee-tools/zigbee-networking.h"
 #include "../domain/zigbee-tools/zigbee-messaging.h"
@@ -46,6 +48,10 @@ private:
     void setAppState( EAppState i_state );
     void dongleInit();
     void stackInit();
+
+    static bool extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes );
+    static bool extractMultiClusterReport( std::vector<uint8_t > payload );
+
 
 private:
     CEzspDongle dongle;
