@@ -71,7 +71,7 @@ void CAppDemo::handleDongleState( EDongleState i_state )
     }
 }
 
-bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes )
+bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes, uint32_t sourceId /*FIXME: should not be handled here*/, uint8_t linkValue /*FIXME: should not be handled here*/, myMqtt& mqttPub )
 {
     size_t payloadSize = payload.size();
 
@@ -103,8 +103,8 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
                     uint8_t value = payload.at(5);
                     std::cout << "Door is " << (value?"closed":"open") << "\n";
 #ifdef TEST_MQTT
-                    sprintf(mqtt_msg,"%08X %04X %04X %02X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
-                    mqtt_pub.send_message(mqtt_msg);
+                    sprintf(mqtt_msg,"%08X %04X %04X %02X %02X", sourceId, clusterId, attributeId, value, linkValue);
+                    mqttPub.send_message(mqtt_msg);
 #endif
                     usedBytes = 6;
                     return true;
@@ -129,8 +129,8 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
                     int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
                     std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
 #ifdef TEST_MQTT
-                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
-                    mqtt_pub.send_message(mqtt_msg);
+                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", sourceId, clusterId, attributeId, value, linkValue);
+                    mqttPub.send_message(mqtt_msg);
 #endif
                     usedBytes = 7;
                     return true;
@@ -155,8 +155,8 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
                     int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
                     std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
 #ifdef TEST_MQTT
-                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", i_gpf.getSourceId(), clusterId, attributeId, value, i_gpf.getLinkValue());
-                    mqtt_pub.send_message(mqtt_msg);
+                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", sourceId, clusterId, attributeId, value, linkValue);
+                    mqttPub.send_message(mqtt_msg);
 #endif
                     usedBytes = 7;
                     return true;
@@ -174,14 +174,14 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
     }
 }
 
-bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
+bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload, uint32_t sourceId /*FIXME: should not be handled here*/, uint8_t linkValue /*FIXME: should not be handled here*/, myMqtt& mqttPub  )
 {
     size_t usedBytes = 0;
     bool validBuffer = true;
 
     while (payload.size()>0 && validBuffer)
     {
-        validBuffer = extractClusterReport(payload, usedBytes);
+        validBuffer = extractClusterReport(payload, usedBytes, sourceId, linkValue, mqttPub);
         if (validBuffer)
         {
             payload.erase(payload.begin(), payload.begin()+usedBytes);
@@ -230,7 +230,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
         case 0xa0:	/* Attribute reporting */
         {
             size_t usedBytes;
-            if (!CAppDemo::extractClusterReport(i_gpf.getPayload(), usedBytes))
+            if (!CAppDemo::extractClusterReport(i_gpf.getPayload(), usedBytes, i_gpf.getSourceId(), i_gpf.getLinkValue(), mqtt_pub))
             {
                 clogE << "Failed decoding attribute reporting payload: ";
                 for (auto i : i_gpf.getPayload())
@@ -241,7 +241,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
         }
         case 0xa2:	/* Multi-Cluster Reporting */
         {
-            if (!CAppDemo::extractMultiClusterReport(i_gpf.getPayload()))
+            if (!CAppDemo::extractMultiClusterReport(i_gpf.getPayload(), i_gpf.getSourceId(), i_gpf.getLinkValue(), mqtt_pub))
             {
                 clogE << "Failed to fully decode multi-cluster reporting payload: ";
                 for (auto i : i_gpf.getPayload())
