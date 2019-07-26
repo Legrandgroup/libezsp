@@ -65,6 +65,110 @@ void CAppDemo::handleDongleState( EDongleState i_state )
     }
 }
 
+bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes )
+{
+    size_t payloadSize = payload.size();
+
+    if (payloadSize < 5)
+    {
+        clogE << "Attribute reporting frame is too short: " << payloadSize << " bytes\n";
+        return false;
+    }
+
+    uint16_t clusterId = dble_u8_to_u16(payload.at(1), payload.at(0));
+    uint16_t attributeId = dble_u8_to_u16(payload.at(3), payload.at(2));
+    uint8_t type = payload.at(4);
+
+    switch (clusterId)
+    {
+        case 0x000F: /* Binary input */
+            if ((attributeId == 0x0055) && (type == ZCL_BOOLEAN_ATTRIBUTE_TYPE))
+            {
+                if (payloadSize < 6)
+                {
+                    clogE << "Binary input frame is too short: " << payloadSize << " bytes\n";
+                    return false;
+                }
+                else
+                {
+                    uint8_t value = payload.at(5);
+                    std::cout << "Door is " << (value?"closed":"open") << "\n";
+                    usedBytes = 6;
+                    return true;
+                }
+            }
+            else
+            {
+                clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                return false;
+            }
+            break;
+        case 0x0402: /* Temperature */
+            if ((attributeId == 0x0000) && (type == ZCL_INT16S_ATTRIBUTE_TYPE))
+            {
+                if (payloadSize < 7)
+                {
+                    clogE << "Temperature frame is too short: " << payloadSize << " bytes\n";
+                    return false;
+                }
+                else
+                {
+                    int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
+                    std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
+                    usedBytes = 7;
+                    return true;
+                }
+            }
+            else
+            {
+                clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                return false;
+            }
+            break;
+        case 0x0405: /* Humidity */
+            if ((attributeId == 0x0000) && (type == ZCL_INT16U_ATTRIBUTE_TYPE))
+            {
+                if (payloadSize < 7)
+                {
+                    clogE << "Humidity frame is too short: " << payloadSize << " bytes\n";
+                    return false;
+                }
+                else
+                {
+                    int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
+                    std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
+                    usedBytes = 7;
+                    return true;
+                }
+            }
+            else
+            {
+                clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                return false;
+            }
+            break;
+        default:
+            clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
+            return false;
+    }
+}
+
+bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
+{
+    size_t usedBytes = 0;
+    bool validBuffer = true;
+
+    while (payload.size()>0 && validBuffer)
+    {
+        validBuffer = extractClusterReport(payload, usedBytes);
+        if (validBuffer)
+        {
+            payload.erase(payload.begin(), payload.begin()+usedBytes);
+        }
+    }
+    return validBuffer;
+}
+
 void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 {
     // Start DEBUG
@@ -92,75 +196,24 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
     {
         case 0xa0:	/* Attribute reporting */
         {
-            if (payloadSize < 5)
+            size_t usedBytes;
+            if (!CAppDemo::extractClusterReport(i_gpf.getPayload(), usedBytes))
             {
-                clogE << "Attribute reporting frame is too short: " << payloadSize << " bytes\n";
-            }
-            else
-            {
-                uint16_t clusterId = dble_u8_to_u16(i_gpf.getPayload().at(1), i_gpf.getPayload().at(0));
-                uint16_t attributeId = dble_u8_to_u16(i_gpf.getPayload().at(3), i_gpf.getPayload().at(2));
-                uint8_t type = i_gpf.getPayload().at(4);
-
-                switch (clusterId)
+                clogE << "Failed decoding attribute reporting payload: ";
+                for (auto i : i_gpf.getPayload())
                 {
-                    case 0x000F: /* Binary input */
-                        if ((attributeId == 0x0055) && (type == ZCL_BOOLEAN_ATTRIBUTE_TYPE))
-                        {
-                            if (payloadSize < 6)
-                            {
-                                clogE << "Binary input frame is too short: " << payloadSize << " bytes\n";
-                            }
-                            else
-                            {
-                                uint8_t value = i_gpf.getPayload().at(5);
-                                std::cout << "Door is " << (value?"closed":"open") << "\n";
-                            }
-                        }
-                        else
-                        {
-                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                        }
-                        break;
-                    case 0x0402: /* Temperature */
-                        if ((attributeId == 0x0000) && (type == ZCL_INT16S_ATTRIBUTE_TYPE))
-                        {
-                            if (payloadSize < 7)
-                            {
-                                clogE << "Temperature frame is too short: " << payloadSize << " bytes\n";
-                            }
-                            else
-                            {
-                                int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
-                                std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
-                            }
-                        }
-                        else
-                        {
-                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                        }
-                        break;
-                    case 0x0405: /* Humidity */
-                        if ((attributeId == 0x0000) && (type == ZCL_INT16U_ATTRIBUTE_TYPE))
-                        {
-                            if (payloadSize < 7)
-                            {
-                                clogE << "Humidity frame is too short: " << payloadSize << " bytes\n";
-                            }
-                            else
-                            {
-                                int16_t value = static_cast<int16_t>(dble_u8_to_u16(i_gpf.getPayload().at(6), i_gpf.getPayload().at(5)));
-                                std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
-                            }
-                        }
-                        else
-                        {
-                            clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                        }
-                        break;
-                    default:
-                        clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
-                        break;
+                    clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
+                }
+            }
+        }
+        case 0xa2:	/* Multi-Cluster Reporting */
+        {
+            if (!CAppDemo::extractMultiClusterReport(i_gpf.getPayload()))
+            {
+                clogE << "Failed to fully decode multi-cluster reporting payload: ";
+                for (auto i : i_gpf.getPayload())
+                {
+                    clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
                 }
             }
         }
