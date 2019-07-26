@@ -203,7 +203,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 
     auto payloadSize = i_gpf.getPayload().size();
 
-    clogD << "Received an attribute reporting frame (" << payloadSize << " bytes)";
+    clogD << "Received an attribute reporting frame (" << std::dec << payloadSize << " bytes)";
     if (payloadSize!=0)
     {
         clogD << ": ";
