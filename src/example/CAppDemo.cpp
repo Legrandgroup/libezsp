@@ -228,7 +228,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 
     auto payloadSize = i_gpf.getPayload().size();
 
-    clogD << "Received a green power frame (" << payloadSize << " bytes)";
+    clogD << "Received a green power frame (" << std::dec << payloadSize << " bytes)";
     if (payloadSize!=0)
     {
         clogD << ": ";
