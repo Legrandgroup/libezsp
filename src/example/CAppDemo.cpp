@@ -180,6 +180,10 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
                 {
                     uint8_t value = static_cast<uint8_t>(payload.at(5));
                     std::cout << "Battery level: " << value/10 << "." << std::setw(1) << std::setfill('0') << value%10 << "V\n";
+#ifdef TEST_MQTT
+                    sprintf(mqtt_msg,"%08X %04X %04X %04X %02X", sourceId, clusterId, attributeId, value, linkValue);
+                    mqttPub.send_message(mqtt_msg);
+#endif
                     usedBytes = 6;
                     return true;
                 }
