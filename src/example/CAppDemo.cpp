@@ -206,6 +206,8 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
                 }
             }
         }
+        break;
+
         case 0xa2:	/* Multi-Cluster Reporting */
         {
             if (!CAppDemo::extractMultiClusterReport(i_gpf.getPayload()))
@@ -218,6 +220,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
             }
         }
         break;
+
         default:
             clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
             break;
