@@ -2,7 +2,7 @@ LOCAL_LDFLAGS ?= -L/home/seb/_DEV/serial/compiled/li
 LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
-LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
+LDFLAGS = $(LOCAL_LDFLAGS) -lserialcpp -lpthread
 
 EXEC = mainEzspTest
 OBJECTFILES = mainEzspTest.o \
@@ -10,6 +10,8 @@ OBJECTFILES = mainEzspTest.o \
 			  dummy_db.o \
 			  ../domain/ezsp-dongle.o \
 			  ../domain/ash.o \
+			  ../domain/zbmessage/green-power-frame.o \
+			  ../domain/zbmessage/green-power-sink-table-entry.o \
 			  ../domain/zbmessage/zigbee-message.o \
 			  ../domain/zbmessage/zclheader.o \
 			  ../domain/zbmessage/zclframecontrol.o \
@@ -21,8 +23,11 @@ OBJECTFILES = mainEzspTest.o \
 			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \
 			  ../domain/ezsp-protocol/struct/ember-key-struct.o \
 			  ../domain/ezsp-protocol/struct/ember-child-data-struct.o \
+			  ../domain/ezsp-protocol/struct/ember-gp-address-struct.o \
 			  ../domain/zigbee-tools/zigbee-networking.o \
 			  ../domain/zigbee-tools/zigbee-messaging.o \
+			  ../domain/zigbee-tools/green-power-sink.o \
+			  ../domain/zigbee-tools/green-power-sink-table.o \
 			  ../spi/GenericAsyncDataInputObservable.o \
 			  ../spi/serial/SerialUartDriver.o \
 			  ../spi/mock-uart/MockUartDriver.o \

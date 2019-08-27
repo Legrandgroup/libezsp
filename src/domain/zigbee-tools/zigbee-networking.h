@@ -14,6 +14,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+#define DEFAULT_RADIO_CHANNEL 11
+
 class CZigbeeNetworking : public CEzspDongleObserver
 {
 public:
@@ -24,25 +26,30 @@ public:
 
     CZigbeeNetworking& operator=(CZigbeeNetworking) = delete; /* No assignment allowed */
 
-    void stackInit(SEzspConfig *l_config, uint8_t l_config_size, SEzspPolicy *l_policy, uint8_t l_policy_size);
+    void stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy);
 
-    void formHaNetwork();
+    void formHaNetwork(uint8_t channel=DEFAULT_RADIO_CHANNEL);
     void OpenNetwork( uint8_t i_timeout );
     void CloseNetwork( void );
-    
+    void LeaveNetwork( void );
+
     void startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct = nullptr);
+
+    // Green Power
+
 
     /**
      * Observer
      */
-    void handleDongleState( EDongleState i_state ){;}
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );    
+    void handleDongleState( EDongleState /* i_state */ ){;}
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     uint8_t child_idx;
     std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
+    uint8_t form_channel; // radio channel to form network
 };
 
 #ifdef USE_RARITAN

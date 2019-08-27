@@ -41,7 +41,8 @@ This will tell the compiler that libserialcpp.so can be found in `$HOME/serial` 
 
 In order to run the sample code under Linux, issue the following command in a terminal:
 ```
-LD_LIBRARY_PATH=$HOME/serial mainEzspTest
+cd ~/libezsp/src/example
+LD_LIBRARY_PATH=$HOME/serial ./mainEzspTest
 ```
 
 ### Execution
