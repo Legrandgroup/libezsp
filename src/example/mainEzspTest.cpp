@@ -26,8 +26,6 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
     fprintf(f,"%s - sample test program for libezsp\n\n", progname);
@@ -44,6 +42,8 @@ int main(int argc, char **argv) {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
+
+    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         switch (c) {
             case 's':
             {
-                stringstream sourceId;
+                std::stringstream sourceId;
                 sourceId << std::hex << optarg;
                 unsigned int sourceIdValue;
                 sourceId >> sourceIdValue;
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
                 serialPort = optarg;
                 break;
             case 'r':
-                stringstream(optarg) >> resetToChannel;
+                std::stringstream(optarg) >> resetToChannel;
                 break;
             case 'd':
                 debugEnabled = true;
@@ -109,7 +109,10 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    uartDriver.open(serialPort, 57600);
+    if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+        clogE << "Failed opening serial port. Aborting\n";
+        return 1;
+    }
 
     CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
