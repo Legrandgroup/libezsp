@@ -1,32 +1,74 @@
+define HELP
+
+ libsgtree project makefile help
+ ------------------------------------
+
+ In order to perform unit tests with cpputest, run the following command:
+ CFLAGS="-DUSE_CPPUTEST `pkg-config --cflags cpputest`" LIBS="`pkg-config --libs cpputest`" CPPUTEST_STATIC_LIB=/path/to/libCppUTest.a make CC=g++ <target>
+ 
+ In ordert to compile on native 128-bit platforms, prepend make with the following environment variables (eg for little endian):
+ CFLAGS="-DHAS_INT128 -DIS_LITTLE_ENDIAN"
+ 
+ Usage: `make <target>' where <target> is one of:
+
+
+  --- build commands
+  all              build lib and its tests
+  test             build tests 
+  clean            remove binaries (lib and tests)
+  clean-all        remove binaries and object files
+  rebuild          clean all and build
+
+endef
+export HELP
+
+#Set this to @ to keep the makefile quiet
+ifndef SILENCE
+	SILENCE = @
+endif
+
+# get rid of built-in rules
+.SUFFIXES:
+
+# SRC_PATH should point to the src/ folder containing source code for this library (can be overridden from environment)
+SRC_PATH ?= ..
+SRC_DOMAIN_PATH ?= $(SRC_PATH)/domain
+SRC_SPI_PATH ?= $(SRC_PATH)/spi
+
 LOCAL_LDFLAGS ?= -L/home/seb/_DEV/serial/compiled/li
 LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
-LDFLAGS = $(LOCAL_LDFLAGS) -lserial -lpthread
+LDFLAGS = $(LOCAL_LDFLAGS) -lpthread
 
-EXEC = mainEzspTest
+EXEC = test_runner
 OBJECTFILES = \
-			  ../example/dummy_db.o \
-			  ../domain/ezsp-dongle.o \
-			  ../domain/ash.o \
-			  ../domain/zbmessage/zigbee-message.o \
-			  ../domain/zbmessage/zclheader.o \
-			  ../domain/zbmessage/zclframecontrol.o \
-			  ../domain/zbmessage/apsoption.o \
-			  ../domain/zbmessage/aps.o \
-			  ../domain/zbmessage/zdp-enum.o \
-			  ../domain/ezsp-protocol/ezsp-enum.o \
-			  ../domain/ezsp-protocol/get-network-parameters-response.o \
-			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \
-			  ../domain/ezsp-protocol/struct/ember-key-struct.o \
-			  ../domain/ezsp-protocol/struct/ember-child-data-struct.o \
-			  ../domain/zigbee-tools/zigbee-networking.o \
-			  ../domain/zigbee-tools/zigbee-messaging.o \
-			  ../spi/GenericAsyncDataInputObservable.o \
-			  ../spi/serial/SerialUartDriver.o \
-			  ../spi/mock-uart/MockUartDriver.o \
-			  ../spi/cppthreads/CppThreadsTimerFactory.o \
-			  ../spi/cppthreads/CppThreadsTimer.o \
+			  $(SRC_PATH)/example/dummy_db.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-dongle.o \
+			  $(SRC_DOMAIN_PATH)/ash.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/zigbee-message.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/zclheader.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/zclframecontrol.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/apsoption.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/aps.o \
+			  $(SRC_DOMAIN_PATH)/zbmessage/zdp-enum.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/ezsp-enum.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/get-network-parameters-response.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-network-parameters.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-key-struct.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-child-data-struct.o \
+			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-address-struct.o \
+			  $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.o \
+			  $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.o \
+			  $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.o \
+			  $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink-table.o \
+			  $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.o \
+			  $(SRC_SPI_PATH)/mock-uart/MockUartDriver.o \
+			  $(SRC_SPI_PATH)/console/ConsoleLogger.o \
+			  $(SRC_SPI_PATH)/cppthreads/CppThreadsTimerFactory.o \
+			  $(SRC_SPI_PATH)/cppthreads/CppThreadsTimer.o \
 
 TEST_OBJECTFILES = \
 			  node_tests.o \
