@@ -1,30 +1,30 @@
 LIBEZSP_COMMON_SRC = \
-			  $(SRC_DOMAIN_PATH)/ezsp-dongle.cpp \
-			  $(SRC_DOMAIN_PATH)/ash.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/zigbee-message.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/zclheader.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/zclframecontrol.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/apsoption.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/aps.cpp \
-			  $(SRC_DOMAIN_PATH)/zbmessage/zdp-enum.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/ezsp-enum.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/get-network-parameters-response.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-network-parameters.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-key-struct.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-child-data-struct.cpp \
-			  $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-address-struct.cpp \
-			  $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.cpp \
-			  $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.cpp \
-			  $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.cpp \
-			  $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink-table.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-dongle.cpp \
+                     $(SRC_DOMAIN_PATH)/ash.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/zigbee-message.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/zclheader.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/zclframecontrol.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/apsoption.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/aps.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/zdp-enum.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/ezsp-enum.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/get-network-parameters-response.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-network-parameters.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-key-struct.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-child-data-struct.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-address-struct.cpp \
+                     $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.cpp \
+                     $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.cpp \
+                     $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.cpp \
+                     $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink-table.cpp \
 
 LIBEZSP_LINUX_SPI_SRC = \
-			  $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
-			  $(SRC_SPI_PATH)/console/ConsoleLogger.cpp \
-			  $(SRC_SPI_PATH)/cppthreads/CppThreadsTimerFactory.cpp \
-			  $(SRC_SPI_PATH)/cppthreads/CppThreadsTimer.cpp \
+                        $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
+                        $(SRC_SPI_PATH)/console/ConsoleLogger.cpp \
+                        $(SRC_SPI_PATH)/cppthreads/CppThreadsTimerFactory.cpp \
+                        $(SRC_SPI_PATH)/cppthreads/CppThreadsTimer.cpp \
 
 LIBEZSP_LINUX_SERIALCPP_SRC = $(LIBEZSP_COMMON_SRC) \
                               $(LIBEZSP_LINUX_SPI_SRC) \
