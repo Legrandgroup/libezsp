@@ -29,7 +29,8 @@ void MockUartDriver::setIncomingDataHandler(GenericAsyncDataInputObservable* uar
 	this->dataInputObservable = uartIncomingDataHandler;
 }
 
-void MockUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
+int MockUartDriver::open(const std::string& serialPortName, unsigned int baudRate) {
+	return 0;
 }
 
 int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
