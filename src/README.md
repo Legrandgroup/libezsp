@@ -52,8 +52,16 @@ This allows dependency inversion paradigm, where the connector depends on the li
 
 In order to generate the source code documentation out of the doxygen tags contained inside the code, run the following command:
 ```
-cd ~/libezsp
+cd /path/to/libezsp
 doxygen Doxyfile.dev
 ```
 
 The resulting doc will be available via a browser by opening `~/libezsp/doc/html/index.html
+
+## Running automated unit tests
+
+In order to compile and run unit tests, run the following command:
+```
+cd src/tests
+make check
+```
