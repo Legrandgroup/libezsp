@@ -20,6 +20,10 @@ OBJECTFILES = $(patsubst %.cpp, %.o, $(SRCS))
 
 EXEC = mainEzspTest
 
+#Set this to @ to keep the makefile quiet
+ifndef SILENCE
+	SILENCE = @
+endif
 
 CLEANFILES = $(OBJECTFILES) $(EXEC)
 INC = $(LOCAL_INC) $(LIBEZSP_COMMON_INC)
@@ -27,10 +31,16 @@ INC = $(LOCAL_INC) $(LIBEZSP_COMMON_INC)
 all: $(EXEC)
 
 $(EXEC): $(OBJECTFILES)
-	$(CXX) $(OBJECTFILES) $(LDFLAGS) $(LIBCGICC_LDFLAGS) -o $(EXEC)
+	@echo Linking $@
+	$(SILENCE)$(CXX) $(OBJECTFILES) $(LDFLAGS) $(LIBCGICC_LDFLAGS) -o $(EXEC)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(LIBCGICC_CXXFLAGS) $(INC) -c $< -o $@
+	@echo Compiling $<
+	$(SILENCE)$(CXX) $(CXXFLAGS) $(LIBCGICC_CXXFLAGS) $(INC) -c $< -o $@
+
+rebuild: clean-all all
 
 clean:
 	rm -f $(CLEANFILES)
+
+clean-all: clean
