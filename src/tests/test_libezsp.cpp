@@ -1,7 +1,7 @@
 /*
- * \file test_librtsgtree.c
+ * @file test_libezsp.cpp
  *
- * TODO: Use cpputest for unit testing
+ * Automated unit tests runner
  */
 
 #include <stdio.h>
@@ -11,17 +11,14 @@
 #include "TestHarness.h"
 
 #ifndef USE_CPPUTEST
-//void unit_tests_uint128();	// Declaration of uint128 unit test procedure (see uint128_arithm_tests.c)
-void unit_tests_node();	// Declaration of node unit test procedure (see node_tests.c)
+void unit_tests_gp();	// Declaration of gp unit test procedure (see gp_tests.cpp)
 #endif
 
 int main(int argc, char* argv[]) {
 
 #ifndef USE_CPPUTEST
-	//printf("*** Testing uint128 ***\n");
-	//unit_tests_uint128();
-	printf("*** Testing node ***\n");
-	unit_tests_node();
+	printf("*** Testing GP frames processing ***\n");
+	unit_tests_gp();
 	printf("\n*** All unit tests passed successfully ***\n");
 #else
 	return CommandLineTestRunner::RunAllTests(argc, argv);

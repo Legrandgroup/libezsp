@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-TEST_GROUP(node_tests) {
+TEST_GROUP(gp_tests) {
 };
 
-TEST(node_tests, dummy_test) {
+TEST(gp_tests, dummy_test) {
 	
 	if (1==2)
 		FAILF("Test failed\n");
@@ -26,10 +26,7 @@ TEST(node_tests, dummy_optional_test) {
 
 
 #ifndef USE_CPPUTEST
-void unit_tests_node() {
-#ifdef IPV6_SUPPORT
-	dummy_optional_test();
-#endif
+void unit_tests_gp() {
 	dummy_test();
 }
 #endif	// USE_CPPUTEST
