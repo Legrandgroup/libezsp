@@ -59,14 +59,14 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 
 void MockUartDriver::scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes) {
 	
-	bool singleSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
+	bool frontSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
 	{
 		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
-		singleSchedule = this->scheduledReadQueue.empty();	/* Are the scheduledBytes the only ones in the queue? */
+		frontSchedule = this->scheduledReadQueue.empty();	/* Are the scheduledBytes the only ones in the queue? */
 		this->scheduledReadQueue.push(scheduledBytes);
 		this->scheduledReadBytesCount += scheduledBytes.byteBuffer.size();
 	}	/* scheduledReadQueueMutex released here */
-	if (singleSchedule) {
+	if (frontSchedule) {
 		if (this->readBytesThread.joinable())
 			this->readBytesThread.join();	/* Join any previously existing thread before creating a new one */
 		this->readBytesThread = std::thread([this,scheduledBytes]() {
