@@ -26,8 +26,7 @@ TEST(mock_serial_tests, mock_serial_open) {
     if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
         FAILF("Failed opening mock serial port");
     }
-    FAILF("Failure");
-	NOTIFYPASS();
+    NOTIFYPASS();
 }
 
 
