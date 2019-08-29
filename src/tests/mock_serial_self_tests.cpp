@@ -45,7 +45,7 @@ public:
 	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
 	 */
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
-		std::cout << "Got notified a read of " << dataLen << " bytes: ";
+		std::cout << "Got notification of " << dataLen << " bytes read: ";
 		for(unsigned int loop=0; loop<dataLen; loop++) {
 			if (loop!=0)
 				std::cout << " ";
@@ -133,14 +133,17 @@ TEST(mock_serial_tests, mock_serial_read) {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
 	uartDriver.scheduleIncomingChunk(rBuf1);
+	std::cerr << "Current scheduled read queue: " << uartDriver.scheduledIncomingChunksToString() << "\n";
 	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
 		FAILF("Expected 1 scheduled incoming chunk");
 	}
 	if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
 		FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
 	}
+	std::cerr << "Waiting for scheduled read bytes...\n";
 	std::this_thread::sleep_for(std::chrono::milliseconds(1100));	/* 1s + 10% just to make sure the secondary thread delivers the bytes in the background */
 	/* Sleep a bit more than 1s to all for scheduled incoming bytes to triggered a read */
+	std::cerr << "Current scheduled read queue: " << uartDriver.scheduledIncomingChunksToString() << "\n";
 	if (uartDriver.getScheduledIncomingChunksCount() != 0) {
 		FAILF("Expected 0 scheduled incoming chunks");
 	}
