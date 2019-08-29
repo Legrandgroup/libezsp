@@ -110,6 +110,13 @@ public:
 	size_t getDeliveredIncomingCount();
 
 	/**
+	 * @brief Get the number of bytes announced to have been written by the onWriteCallback function
+	 *
+	 * @return The number of bytes written to the emulated serial port (computed as the total sum of the onWriteCallback function's successive writtenCnt returned values)
+	 */
+	size_t getWrittenBytesCount();
+
+	/**
 	 * @brief Close the serial port
 	 */
 	void close();
@@ -127,4 +134,5 @@ private:
 	size_t scheduledReadBytesCount;	/*!< The current size of the scheduled read bytes queue */
 	std::mutex deliveredReadBytesCountMutex;	/*!< A mutex to handle access to deliveredReadBytesCount */
 	size_t deliveredReadBytesCount;	/*!< The number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer */
+	size_t writtenBytesCount;	/*!< The number of bytes written, as a total sum of the onWriteCallback function's successive writtenCnt returned values */
 };

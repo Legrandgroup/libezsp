@@ -20,7 +20,8 @@ MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void
 	lastWrittenBytesTimestamp(std::chrono::time_point<std::chrono::high_resolution_clock>::min()),
 	scheduledReadBytesCount(0),
 	deliveredReadBytesCountMutex(),
-	deliveredReadBytesCount(0) { }
+	deliveredReadBytesCount(0),
+	writtenBytesCount(0) { }
 
 MockUartDriver::~MockUartDriver() {
 }
@@ -48,6 +49,10 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 		}
 		result = this->onWriteCallback(writtenCnt, buf, cnt, delta);	/* Invoke callback */
 	}
+	else {
+		writtenCnt = 0;
+	}
+	this->writtenBytesCount += writtenCnt;
 	this->lastWrittenBytesTimestamp = now;
 	return result;
 }
@@ -69,6 +74,10 @@ void MockUartDriver::scheduleIncoming(struct MockUartScheduledByteDelivery&& sch
 			}
 		});
 	}
+}
+
+size_t MockUartDriver::getWrittenBytesCount() {
+	return this->writtenBytesCount;
 }
 
 void MockUartDriver::close() {
