@@ -19,7 +19,6 @@ MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void
 	onWriteCallback(onWriteCallback),
 	lastWrittenBytesTimestamp(std::chrono::time_point<std::chrono::high_resolution_clock>::min()),
 	scheduledReadBytesCount(0),
-	deliveredReadBytesCountMutex(),
 	deliveredReadBytesCount(0),
 	writtenBytesCount(0) { }
 
@@ -57,23 +56,64 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	return result;
 }
 
-void MockUartDriver::scheduleIncoming(struct MockUartScheduledByteDelivery&& scheduledBytes) {
+void MockUartDriver::scheduleIncoming(const struct MockUartScheduledByteDelivery& scheduledBytes) {
 	
-	std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
-	bool singleSchedule = this->scheduledReadQueue.empty();	/* Are the scheduledBytes the only ones in the queue? */
-	this->scheduledReadQueue.push(scheduledBytes);
+	bool singleSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
+	{
+		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
+		singleSchedule = this->scheduledReadQueue.empty();	/* Are the scheduledBytes the only ones in the queue? */
+		this->scheduledReadQueue.push(scheduledBytes);
+		this->scheduledReadBytesCount += scheduledBytes.byteBuffer.size();
+	}	/* scheduledReadQueueMutex released here */
 	if (singleSchedule) {
 		this->readBytesThread = std::thread([this,scheduledBytes]() {
 			std::this_thread::sleep_for(scheduledBytes.delay);
-			std::unique_lock<std::mutex> lock(this->scheduledReadQueueMutex);
+			size_t rdcnt = 0;
+			struct MockUartScheduledByteDelivery nextBytes;
+			{
+				std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
+				//std::unique_lock<std::mutex> lock(this->scheduledReadQueueMutex);
+				nextBytes = this->scheduledReadQueue.front();
+				this->scheduledReadQueue.pop();	/* Discard these bytes as they are going to be used */
+				rdcnt = nextBytes.byteBuffer.size();
+				this->scheduledReadBytesCount -= rdcnt;
+				this->deliveredReadBytesCount += rdcnt;
+			} /* scheduledReadQueueMutex released here, but we copied the front of the queue inside variable nextBytes */
 			if (dataInputObservable != nullptr) {
-				size_t rdcnt = scheduledBytes.byteBuffer.size();
 				std::unique_ptr<unsigned char[]> readData(new unsigned char[rdcnt]());	/* readData buffer will be deallocated when going our of scope */
-				memcpy(readData.get(), &(scheduledBytes.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
+				memcpy(readData.get(), &(nextBytes.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
 				this->dataInputObservable->notifyObservers(readData.get(), rdcnt);	/* Notify observers */
 			}
 		});
 	}
+}
+
+void MockUartDriver::destroyAllScheduledIncoming() {
+	bool queueIsEmpty;
+	{
+		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
+		queueIsEmpty = this->scheduledReadQueue.empty();
+		if (!queueIsEmpty) {
+			this->scheduledReadQueue = std::queue<struct MockUartScheduledByteDelivery>();	/* Replace the queue with a brand new (empty) one */
+			this->scheduledReadBytesCount = 0;	/* No more byte queued */
+		}
+	}	/* scheduledReadQueueMutex released here */
+	if (!queueIsEmpty || true) {
+		this->readBytesThread.join();
+		this->readBytesThread = std::thread();	/* Destroy the secondary thread */
+	}
+}
+
+size_t MockUartDriver::getScheduledIncomingChunksCount() {
+	return this->scheduledReadQueue.size();/* FIXME: add mutex here */
+}
+
+size_t MockUartDriver::getScheduledIncomingBytesCount() {
+	return this->scheduledReadBytesCount;/* FIXME: add mutex here */
+}
+
+size_t MockUartDriver::getDeliveredIncomingBytesCount() {
+	return this->deliveredReadBytesCount;/* FIXME: add mutex here */
 }
 
 size_t MockUartDriver::getWrittenBytesCount() {
