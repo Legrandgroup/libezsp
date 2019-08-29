@@ -7,9 +7,9 @@
 /**
  * @brief Write callback class to test the mock serial interface
  */
-class GenericWriteTestProcessor {
+class GenericWriteTestProcessor : public IAsyncDataInputObserver {
 public:
-	GenericWriteTestProcessor() : nbWriteCalls(0) { }
+	GenericWriteTestProcessor() : nbWriteCalls(0), nbReadCallbacks(0) { }
 
 	/**
 	 * @brief Write callback function to register to the mock serial interface
@@ -38,8 +38,35 @@ public:
 		this->nbWriteCalls++;
 		return 0;
 	}
+
+	/**
+	 * @brief Write callback function to register to the mock serial interface
+	 *
+	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
+	 */
+	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
+		std::cout << "Got notified a read of " << dataLen << " bytes: ";
+		for(unsigned int loop=0; loop<dataLen; loop++) {
+			if (loop!=0)
+				std::cout << " ";
+			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(dataIn))[loop]);
+		}
+		if (dataLen != 3)
+			FAILF("Expected reading 3 bytes\n");
+
+		std::cout << "\n";
+		this->nbReadCallbacks++;
+	}
+
+	/**
+	 * @brief Callback invoked on UART received bytes
+	 */
+	void handleInputData(const unsigned char* dataIn, const size_t dataLen) {
+		this->onReadCallback(dataIn, dataLen);
+	}
 private:
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
+	unsigned int nbReadCallbacks;	/*!< How many time the onWriteCallback() was executed */
 };
 
 TEST_GROUP(mock_serial_tests) {
