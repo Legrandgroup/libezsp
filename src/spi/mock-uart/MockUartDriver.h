@@ -125,8 +125,8 @@ public:
 
 private:
 	std::thread readBytesThread;	/*!< The thread that will generate emulated read bytes prepared in scheduledReadQueue */
-	std::mutex scheduledReadQueueMutex;	/*!< A mutex to handle access to scheduledReadQueue */
-	std::queue<struct MockUartScheduledByteDelivery> scheduledReadQueue;	/*!< The scheduled read bytes queue */
+	std::mutex scheduledReadQueueMutex;	/*!< A mutex to handle access to scheduledReadQueue, scheduledReadBytesCount or deliveredReadBytesCount */
+	std::queue<struct MockUartScheduledByteDelivery> scheduledReadQueue;	/*!< The scheduled read bytes queue. Grab scheduledReadQueueMutex before accessing this */
 public:
 	std::recursive_mutex writeMutex;	/* Mutex to protect writes... recursive to allow the caller to grab the mutex for us */
 private:
