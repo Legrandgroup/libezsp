@@ -107,12 +107,59 @@ TEST(mock_serial_tests, mock_serial_write) {
 	if (uartDriver.getWrittenBytesCount() != sizeof(wBuf)*2) {
 		FAILF("Expected %lu bytes counted by write counter", sizeof(wBuf)*2);
 	}
-    NOTIFYPASS();
+	NOTIFYPASS();
+}
+
+TEST(mock_serial_tests, mock_serial_read) {
+	GenericAsyncDataInputObservable uartIncomingDataHandler;
+	GenericWriteTestProcessor serialProcessor;
+	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
+	};
+	MockUartDriver uartDriver(wcb);
+	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+		FAILF("Failed opening mock serial port");
+	}
+
+	MockUartScheduledByteDelivery rBuf1;
+	rBuf1.delay = std::chrono::seconds(1);	/* Make bytes available in 1s */
+	rBuf1.byteBuffer.push_back(0x00);
+	rBuf1.byteBuffer.push_back(0xa0);
+	rBuf1.byteBuffer.push_back(0x50);
+	auto rcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
+	};
+	uartIncomingDataHandler.registerObserver(&serialProcessor);
+	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
+
+	uartDriver.scheduleIncoming(rBuf1);
+	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
+		FAILF("Expected 1 scheduled incoming chunk");
+	}
+	if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
+	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(1100));	/* 1s + 10% just to make sure the secondary thread delivers the bytes in the background */
+	/* Sleep a bit more than 1s to all for scheduled incoming bytes to triggered a read */
+	if (uartDriver.getScheduledIncomingChunksCount() != 0) {
+		FAILF("Expected 0 scheduled incoming chunks");
+	}
+	if (uartDriver.getScheduledIncomingBytesCount() != 0) {
+		FAILF("Expected 0 scheduled incoming bytes");
+	}
+	if (uartDriver.getDeliveredIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		FAILF("Expected %lu delivered incoming bytes", rBuf1.byteBuffer.size());
+	}
+
+	uartDriver.destroyAllScheduledIncoming();
+
+	NOTIFYPASS();
 }
 
 #ifndef USE_CPPUTEST
 void unit_tests_mock_serial() {
 	mock_serial_open();
 	mock_serial_write();
+	mock_serial_read();
 }
 #endif	// USE_CPPUTEST
