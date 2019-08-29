@@ -7,9 +7,9 @@
 /**
  * @brief Write callback class to test the mock serial interface
  */
-class GenericWriteTestProcessor : public IAsyncDataInputObserver {
+class GenericUartIOTestProcessor : public IAsyncDataInputObserver {
 public:
-	GenericWriteTestProcessor() : nbWriteCalls(0), nbReadCallbacks(0) { }
+	GenericUartIOTestProcessor() : nbWriteCalls(0), nbReadCallbacks(0) { }
 
 	/**
 	 * @brief Write callback function to register to the mock serial interface
@@ -73,7 +73,7 @@ TEST_GROUP(mock_serial_tests) {
 };
 
 TEST(mock_serial_tests, mock_serial_open) {
-	GenericWriteTestProcessor serialProcessor;
+	GenericUartIOTestProcessor serialProcessor;
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
@@ -85,7 +85,7 @@ TEST(mock_serial_tests, mock_serial_open) {
 }
 
 TEST(mock_serial_tests, mock_serial_write) {
-	GenericWriteTestProcessor serialProcessor;
+	GenericUartIOTestProcessor serialProcessor;
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
@@ -112,7 +112,7 @@ TEST(mock_serial_tests, mock_serial_write) {
 
 TEST(mock_serial_tests, mock_serial_read) {
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	GenericWriteTestProcessor serialProcessor;
+	GenericUartIOTestProcessor serialProcessor;
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
