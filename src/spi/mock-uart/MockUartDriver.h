@@ -102,6 +102,13 @@ public:
 	void scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes);
 
 	/**
+	 * @brief Get a string representation of the scheduled incoming chunks (for debug)
+	 *
+	 * @return The current scheduled queue, for example "[00 01 af, 85 63]" for a queue that would contain a first chunk of 3 bytes, followed by a chunk of 2 bytes
+	 */
+	std::string scheduledIncomingChunksToString();
+
+	/**
 	 * @brief Remove all potential byte sequences that were scheduled to be ready for read on emulated serial port (but were not yet sent out)
 	 *
 	 * @note The bytes that were still in the queue (if any) will disappear

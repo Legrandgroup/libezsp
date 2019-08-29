@@ -8,6 +8,8 @@
 
 #include <exception>
 #include <cstring>	// For memcpy()
+#include <sstream>	// For std::stringstream
+#include <iomanip>	// For std::setw etc.
 #include <iostream>	// FIXME: for std::cerr during debug
 
 MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback) :
@@ -100,6 +102,31 @@ void MockUartDriver::scheduleIncomingChunk(const struct MockUartScheduledByteDel
 			} while(!terminateReadSchedulingThread);
 		});
 	}
+}
+
+std::string MockUartDriver::scheduledIncomingChunksToString() {
+	std::stringstream result;
+	std::queue<struct MockUartScheduledByteDelivery> scheduledReadQueueCopy;
+	{
+		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
+		scheduledReadQueueCopy = this->scheduledReadQueue;	/* Copy this->scheduledReadQueue to be able to iterate over its elements */
+	} /* scheduledReadQueueMutex released here */
+
+	struct MockUartScheduledByteDelivery nextChunk;
+
+	while (!scheduledReadQueueCopy.empty()) {
+		if (result.str().length() != 0 )	/* result string is not empty (discarding the leading '[') */
+			result << ", ";	/* Add a separator */
+		nextChunk = scheduledReadQueueCopy.front();
+		std::vector<unsigned char> bytes(nextChunk.byteBuffer);
+		for(auto it = bytes.begin(); it!=bytes.end(); ++it) {
+			if (it != bytes.begin())
+				result << " ";
+			result << std::hex << std::setw(2) << std::setfill('0') << unsigned(*it);
+		}
+	    scheduledReadQueueCopy.pop();
+	}
+	return "[" + result.str() + "]";
 }
 
 void MockUartDriver::destroyAllScheduledIncomingChunks() {
