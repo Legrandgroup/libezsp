@@ -32,7 +32,8 @@ SRC_SPI_PATH ?= $(SRC_PATH)/spi
 
 include ../libezsp.mk.inc
 
-SRCS = $(SRC_PATH)/tests/gp_tests.cpp \
+SRCS = $(SRC_PATH)/tests/mock_serial_self_tests.cpp \
+       $(SRC_PATH)/tests/gp_tests.cpp \
        $(SRC_PATH)/tests/test_libezsp.cpp \
        $(SRC_PATH)/example/dummy_db.cpp \
        $(LIBEZSP_LINUX_MOCKSERIAL_SRC) \
