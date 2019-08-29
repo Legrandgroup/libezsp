@@ -73,33 +73,30 @@ void MockUartDriver::scheduleIncomingChunk(const struct MockUartScheduledByteDel
 			this->readBytesThread.join();	/* Join any previously existing thread before creating a new one */
 		this->readBytesThread = std::thread([this,scheduledBytes]() {
 			bool terminateReadSchedulingThread = false;
-			std::chrono::milliseconds delay = scheduledBytes.delay;
-			do {
-				std::this_thread::sleep_for(delay);
-				size_t rdcnt = 0;
-				struct MockUartScheduledByteDelivery nextBytes;
+			struct MockUartScheduledByteDelivery nextChunk;
+			while(!terminateReadSchedulingThread) {
 				{
 					std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
-					//std::unique_lock<std::mutex> lock(this->scheduledReadQueueMutex);
-					nextBytes = this->scheduledReadQueue.front();
+					if (this->scheduledReadQueue.empty()) {	/* There are still chunks to process in the queue, reschedule this thread */
+						terminateReadSchedulingThread = true;	/* No more chunk to process->we will terminate the current thread */
+						break;
+					}
+					nextChunk = this->scheduledReadQueue.front();
 					this->scheduledReadQueue.pop();	/* Discard these bytes as they are going to be used */
-					rdcnt = nextBytes.byteBuffer.size();
+				} /* scheduledReadQueueMutex released here, but we copied the front of the queue inside variable nextChunk */
+				std::this_thread::sleep_for(nextChunk.delay);
+				size_t rdcnt = nextChunk.byteBuffer.size();
+				{
+					std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
 					this->scheduledReadBytesCount -= rdcnt;
 					this->deliveredReadBytesCount += rdcnt;
-				} /* scheduledReadQueueMutex released here, but we copied the front of the queue inside variable nextBytes */
+				} /* scheduledReadQueueMutex released here */
 				if (dataInputObservable != nullptr) {
 					std::unique_ptr<unsigned char[]> readData(new unsigned char[rdcnt]());	/* readData buffer will be deallocated when going our of scope */
-					memcpy(readData.get(), &(nextBytes.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
+					memcpy(readData.get(), &(nextChunk.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
 					this->dataInputObservable->notifyObservers(readData.get(), rdcnt);	/* Notify observers */
 				}
-				{	/* Grab again the lock on the queue */
-					std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
-					if (!this->scheduledReadQueue.empty())	/* There are still chunks to process in the queue, reschedule this thread */
-						delay = this->scheduledReadQueue.front().delay;
-					else
-						terminateReadSchedulingThread = true;	/* No more chunk to process->we will terminate the current thread */
-				}
-			} while(!terminateReadSchedulingThread);
+			}
 		});
 	}
 }
