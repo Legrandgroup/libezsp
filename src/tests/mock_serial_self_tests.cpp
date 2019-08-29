@@ -132,7 +132,7 @@ TEST(mock_serial_tests, mock_serial_read) {
 	uartIncomingDataHandler.registerObserver(&serialProcessor);
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
-	uartDriver.scheduleIncoming(rBuf1);
+	uartDriver.scheduleIncomingChunk(rBuf1);
 	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
 		FAILF("Expected 1 scheduled incoming chunk");
 	}
@@ -150,8 +150,6 @@ TEST(mock_serial_tests, mock_serial_read) {
 	if (uartDriver.getDeliveredIncomingBytesCount() != rBuf1.byteBuffer.size()) {
 		FAILF("Expected %lu delivered incoming bytes", rBuf1.byteBuffer.size());
 	}
-
-	uartDriver.destroyAllScheduledIncoming();
 
 	NOTIFYPASS();
 }

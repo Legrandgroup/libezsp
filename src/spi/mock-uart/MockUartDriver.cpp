@@ -23,6 +23,7 @@ MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void
 	writtenBytesCount(0) { }
 
 MockUartDriver::~MockUartDriver() {
+	this->destroyAllScheduledIncomingChunks();
 }
 
 void MockUartDriver::setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler) {
@@ -56,7 +57,7 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	return result;
 }
 
-void MockUartDriver::scheduleIncoming(const struct MockUartScheduledByteDelivery& scheduledBytes) {
+void MockUartDriver::scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes) {
 	
 	bool singleSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
 	{
@@ -66,8 +67,11 @@ void MockUartDriver::scheduleIncoming(const struct MockUartScheduledByteDelivery
 		this->scheduledReadBytesCount += scheduledBytes.byteBuffer.size();
 	}	/* scheduledReadQueueMutex released here */
 	if (singleSchedule) {
+		if (this->readBytesThread.joinable())
+			this->readBytesThread.join();	/* Join any previously existing thread before creating a new one */
 		this->readBytesThread = std::thread([this,scheduledBytes]() {
-			std::this_thread::sleep_for(scheduledBytes.delay);
+			std::chrono::milliseconds delay = scheduledBytes.delay;
+			std::this_thread::sleep_for(delay);
 			size_t rdcnt = 0;
 			struct MockUartScheduledByteDelivery nextBytes;
 			{
@@ -88,7 +92,7 @@ void MockUartDriver::scheduleIncoming(const struct MockUartScheduledByteDelivery
 	}
 }
 
-void MockUartDriver::destroyAllScheduledIncoming() {
+void MockUartDriver::destroyAllScheduledIncomingChunks() {
 	bool queueIsEmpty;
 	{
 		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
@@ -98,7 +102,10 @@ void MockUartDriver::destroyAllScheduledIncoming() {
 			this->scheduledReadBytesCount = 0;	/* No more byte queued */
 		}
 	}	/* scheduledReadQueueMutex released here */
-	if (!queueIsEmpty || true) {
+	if (!queueIsEmpty) {	/* Kill the secondary thread */
+
+	}
+	if (this->readBytesThread.joinable()) {
 		this->readBytesThread.join();
 		this->readBytesThread = std::thread();	/* Destroy the secondary thread */
 	}

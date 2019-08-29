@@ -93,16 +93,20 @@ public:
 	/**
 	 * @brief Schedule a byte sequence to be ready for read on emulated serial port
 	 *
+	 * @note Attribute scheduledBytes.delay specifies the delay between this read and the previous read.
+	 *       Thus if this new chunk is the only one in the queue, the delay is relative to now.
+	 *       If this new chunk is queue behind one or more existing chunks, the delay is relative to the execution (read) of the previous chunk
+	 *
 	 * @param scheduledBytes The buffer to queue for future emulate reads
 	 */
-	void scheduleIncoming(const struct MockUartScheduledByteDelivery& scheduledBytes);
+	void scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes);
 
 	/**
 	 * @brief Remove all potential byte sequences that were scheduled to be ready for read on emulated serial port (but were not yet sent out)
 	 *
 	 * @note The bytes that were still in the queue (if any) will disappear
 	 */
-	void destroyAllScheduledIncoming();
+	void destroyAllScheduledIncomingChunks();
 
 	/**
 	 * @brief Get the number of chunks currently in the emulated serial port schedule
