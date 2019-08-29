@@ -47,10 +47,10 @@ TEST_GROUP(mock_serial_tests) {
 
 TEST(mock_serial_tests, mock_serial_open) {
 	GenericWriteTestProcessor serialProcessor;
-	auto cb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
-	MockUartDriver uartDriver(cb);
+	MockUartDriver uartDriver(wcb);
     if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
         FAILF("Failed opening mock serial port");
     }
@@ -59,10 +59,10 @@ TEST(mock_serial_tests, mock_serial_open) {
 
 TEST(mock_serial_tests, mock_serial_write) {
 	GenericWriteTestProcessor serialProcessor;
-	auto cb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
-	MockUartDriver uartDriver(cb);
+	MockUartDriver uartDriver(wcb);
     if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
         FAILF("Failed opening mock serial port");
     }
