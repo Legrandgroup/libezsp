@@ -57,7 +57,11 @@ inline std::string vformat(const char* fmt, ...) {
 #include <stdlib.h>	// For exit()
 #define TEST_GROUP(x) struct testgroup_ ## x
 #define TEST(group, func) void func()
-#define FAILF(message, ...) do { fprintf(stderr, "%s():%d: ", __func__, __LINE__); fprintf(stderr, message, ## __VA_ARGS__); fputc('\n', stderr); exit(1); } while(0);
+#define FAILF(...) \
+        do { fprintf(stderr, "%s:%d:%s(): ",__FILE__, __LINE__, __func__);\
+             fprintf(stderr, __VA_ARGS__);\
+             fputc('\n', stderr); exit(1);\
+        } while (0)
 #define NOTIFYPASS() do { fprintf(stderr, "%s: tests passed\n", __func__); } while(0);
 #endif
 
