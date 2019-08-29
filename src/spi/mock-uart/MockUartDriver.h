@@ -95,21 +95,35 @@ public:
 	 *
 	 * @param scheduledBytes The buffer to queue for future emulate reads
 	 */
-	void scheduleIncoming(struct MockUartScheduledByteDelivery&& scheduledBytes);
+	void scheduleIncoming(const struct MockUartScheduledByteDelivery& scheduledBytes);
+
+	/**
+	 * @brief Remove all potential byte sequences that were scheduled to be ready for read on emulated serial port (but were not yet sent out)
+	 *
+	 * @note The bytes that were still in the queue (if any) will disappear
+	 */
+	void destroyAllScheduledIncoming();
+
+	/**
+	 * @brief Get the number of chunks currently in the emulated serial port schedule
+	 *
+	 * @return The number of chunks in the emulated serial port schedule queue
+	 */
+	size_t getScheduledIncomingChunksCount();
 
 	/**
 	 * @brief Get the number of bytes currently in the emulated serial port schedule
 	 *
 	 * @return The number of bytes in the emulated serial port schedule queue
 	 */
-	size_t getScheduledIncomingCount();
+	size_t getScheduledIncomingBytesCount();
 
 	/**
-	 * @brief Get the number of bytes read from the emulated serial port so far
+	 * @brief Get the number of bytes read from the emulated serial port so far (cumulative)
 	 *
-	 * @param The number of bytes delivered so far by the emulated serial port
+	 * @param The total number of bytes delivered so far by the emulated serial port
 	 */
-	size_t getDeliveredIncomingCount();
+	size_t getDeliveredIncomingBytesCount();
 
 	/**
 	 * @brief Get the number of bytes announced to have been written by the onWriteCallback function
