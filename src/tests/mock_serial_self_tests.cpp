@@ -78,10 +78,10 @@ TEST(mock_serial_tests, mock_serial_open) {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
 	MockUartDriver uartDriver(wcb);
-    if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
-        FAILF("Failed opening mock serial port");
-    }
-    NOTIFYPASS();
+	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+		FAILF("Failed opening mock serial port");
+	}
+	NOTIFYPASS();
 }
 
 TEST(mock_serial_tests, mock_serial_write) {
@@ -90,11 +90,11 @@ TEST(mock_serial_tests, mock_serial_write) {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
 	MockUartDriver uartDriver(wcb);
-    if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
-        FAILF("Failed opening mock serial port");
-    }
-    size_t writtenResult;
-    uint8_t wBuf[] = {0x00, 0x01, 0xff, 0xfe};
+	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+		FAILF("Failed opening mock serial port");
+	}
+	size_t writtenResult;
+	uint8_t wBuf[] = {0x00, 0x01, 0xff, 0xfe};
 	if (uartDriver.write(writtenResult, wBuf, sizeof(wBuf)) != 0) {
 		FAILF("Received a non-0 return code when calling write() on mock serial interface");
 	}
