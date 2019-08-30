@@ -68,6 +68,13 @@ public:
 	void setIncomingDataHandler(GenericAsyncDataInputObservable* uartIncomingDataHandler);
 
 	/**
+	 * @brief Get the currently active incoming data handler (a derived class of GenericAsyncDataInputObservable) that notifies observers
+	 *
+	 * @return A pointer to the current GenericAsyncDataInputObservable handler (might also be nullptr)
+	 */
+	GenericAsyncDataInputObservable* getIncomingDataHandler() const;
+
+	/**
 	 * @brief Opens the serial port
 	 *
 	 * @param serialPortName The name of the serial port to open (eg: "/dev/ttyUSB0")
