@@ -19,7 +19,7 @@
 #error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
-#include "GenericLogger.h"
+#include "../spi/GenericLogger.h"
 #include "CAppDemo.h"
 #include <getopt.h>
 #include <string>
