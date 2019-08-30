@@ -42,7 +42,7 @@ public:
 	/**
 	 * @brief Write callback function to register to the mock serial interface
 	 *
-	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
+	 * It will be invoked each time a read() is done on the mock serial interface to which it has been registered
 	 */
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
 		std::cout << "Got notification of " << dataLen << " bytes read: ";
@@ -110,7 +110,52 @@ TEST(mock_serial_tests, mock_serial_write) {
 	NOTIFYPASS();
 }
 
-TEST(mock_serial_tests, mock_serial_read) {
+TEST(mock_serial_tests, mock_serial_immediate_read_once) {
+	GenericAsyncDataInputObservable uartIncomingDataHandler;
+	GenericUartIOTestProcessor serialProcessor;
+	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
+	};
+	MockUartDriver uartDriver(wcb);
+	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+		FAILF("Failed opening mock serial port");
+	}
+
+	MockUartScheduledByteDelivery rBuf1;
+	rBuf1.delay = std::chrono::seconds(0);	/* Make bytes available now */
+	rBuf1.byteBuffer.push_back(0x00);
+	rBuf1.byteBuffer.push_back(0xa0);
+	rBuf1.byteBuffer.push_back(0x50);
+	auto rcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
+		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
+	};
+	uartIncomingDataHandler.registerObserver(&serialProcessor);
+	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
+
+	uartDriver.scheduleIncomingChunk(rBuf1);
+	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
+		FAILF("Expected 1 scheduled incoming chunk");
+	}
+	if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
+	}
+	std::cerr << "Waiting for scheduled read bytes...\n";
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* 0.1s to make sure the secondary thread delivers the bytes in the background */
+	if (uartDriver.getScheduledIncomingChunksCount() != 0) {
+		FAILF("Expected 0 scheduled incoming chunks");
+	}
+	if (uartDriver.getScheduledIncomingBytesCount() != 0) {
+		FAILF("Expected 0 scheduled incoming bytes");
+	}
+	if (uartDriver.getDeliveredIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		FAILF("Expected %lu delivered incoming bytes", rBuf1.byteBuffer.size());
+	}
+
+	NOTIFYPASS();
+}
+
+
+TEST(mock_serial_tests, mock_serial_delayed_multiple_read) {
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	GenericUartIOTestProcessor serialProcessor;
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
@@ -161,6 +206,7 @@ TEST(mock_serial_tests, mock_serial_read) {
 void unit_tests_mock_serial() {
 	mock_serial_open();
 	mock_serial_write();
-	mock_serial_read();
+	mock_serial_immediate_read_once();
+	mock_serial_delayed_multiple_read();
 }
 #endif	// USE_CPPUTEST
