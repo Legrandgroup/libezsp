@@ -65,4 +65,17 @@ inline std::string vformat(const char* fmt, ...) {
 #define NOTIFYPASS() do { fprintf(stderr, "%s: tests passed\n", __func__); } while(0);
 #endif
 
+#include <vector>
+#include <stdint.h>
+
+inline bool compareBufWithVector(const void *bufA, const size_t bufASize, const std::vector<uint8_t>& bufB) {
+	if (bufB.size() != bufASize)
+		return false;
+	for (unsigned int loop=0; loop<bufASize; loop++) {
+		if ((static_cast<const uint8_t *>(bufA))[loop] != bufB[loop])
+			return false;
+	}
+	return true;
+}
+
 #endif // __TESTHARNESS_H__
