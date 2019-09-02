@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "../spi/mock-uart/MockUartDriver.h"
+#include "../spi/IAsyncDataInputObserver.h"
 
 /**
  * @brief Write callback class to test the mock serial interface
@@ -66,7 +67,7 @@ public:
 	}
 private:
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
-	unsigned int nbReadCallbacks;	/*!< How many time the onWriteCallback() was executed */
+	unsigned int nbReadCallbacks;	/*!< How many time the onReadCallback() was executed */
 };
 
 TEST_GROUP(mock_serial_tests) {
