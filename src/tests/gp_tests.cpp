@@ -109,13 +109,13 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
     rBuf1.delay = std::chrono::seconds(0);  /* Make bytes available now */
     rBuf1.byteBuffer = std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e});
 
-	std::cout << "Scheduling bytes for reception on serial\n";
     uartDriver.scheduleIncomingChunk(rBuf1);
-	std::cout << "Scheduling done\n";
 
     std::chrono::milliseconds(2000); // FIXME: for debug
 
-	NOTIFYPASS();
+    uartDriver.destroyAllScheduledIncomingChunks();
+
+    NOTIFYPASS();
 }
 
 
