@@ -18,7 +18,7 @@ void unit_tests_mock_serial();	// Declaration of mock serial self tests (see moc
 int main(int argc, char* argv[]) {
 
 #ifndef USE_CPPUTEST
-	printf("*** Self testi on mock serial ***\n");
+	printf("*** Self test on mock serial ***\n");
 	unit_tests_mock_serial();
 	printf("*** Testing GP frames processing ***\n");
 	unit_tests_gp();
