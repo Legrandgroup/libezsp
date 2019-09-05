@@ -39,6 +39,10 @@ public:
 			std::cout << "Got a ASH reset command\n";
 			this->stage++;
 		}
+		else if (this->stage == 1 && compareBufWithVector(buf, cnt, std::vector<uint8_t>({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e}))) {
+			std::cout << "Got a ASH get stack version command\n";
+			this->stage++;
+		}
 		this->nbWriteCalls++;
 		return 0;
 	}
@@ -78,6 +82,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
     CppThreadsTimerFactory timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	GPRecvSensorMeasurementTest serialProcessor;
+	ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
@@ -99,21 +104,36 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
     /* Note: we have to register our debug (dump serial read) observer after CAppDemo's internal one because observers list is currently implemented as a set and new observer are emplace()d */
 	uartDriver.getIncomingDataHandler()->registerObserver(&serialProcessor);	/* Add our own observer to dump (for debug) the (emulated) bytes read from the serial port (that will be simultaneously sent to the read DUT) */
 
-    std::chrono::milliseconds(50);	/* Give 50ms for lib internal to write to serial */
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));	/* Give 50ms for libezsp's internal process to write to serial */
     if (serialProcessor.stage != 1)
         FAILF("Failed to receive ASH reset from lib");
     else
         std::cout << "ASH reset confirmed\n";
 
-    MockUartScheduledByteDelivery rBuf1;
-    rBuf1.delay = std::chrono::seconds(0);  /* Make bytes available now */
-    rBuf1.byteBuffer = std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e});
+	{
+		MockUartScheduledByteDelivery rBuf;
+		rBuf.delay = std::chrono::seconds(0);  /* Make bytes available now */
+		rBuf.byteBuffer = std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e});
+		uartDriver.scheduleIncomingChunk(rBuf);
+	}
 
-    uartDriver.scheduleIncomingChunk(rBuf1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
-    std::chrono::milliseconds(2000); // FIXME: for debug
+	if (serialProcessor.stage != 2)
+		FAILF("Failed to receive ASH get stack version from lib");
+	else
+		std::cout << "ASH get stack version confirmed\n";
 
-    uartDriver.destroyAllScheduledIncomingChunks();
+	{
+		MockUartScheduledByteDelivery rBuf;
+		rBuf.delay = std::chrono::seconds(0);  /* Make bytes available now */
+		rBuf.byteBuffer = std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e});
+		uartDriver.scheduleIncomingChunk(rBuf);
+	}
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(3000));	/* Give 3000ms for final timeout (allows all written bytes to be generated) */
+
+    uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
 
     NOTIFYPASS();
 }
