@@ -79,7 +79,7 @@ TEST_GROUP(gp_tests) {
 };
 
 TEST(gp_tests, gp_recv_sensor_measurement) {
-    CppThreadsTimerFactory timerFactory;
+	CppThreadsTimerFactory timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	GPRecvSensorMeasurementTest serialProcessor;
 	ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
@@ -97,18 +97,18 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 //	rBuf1.byteBuffer.push_back(0xa0);
 //	rBuf1.byteBuffer.push_back(0x50);
 
-    std::vector<uint32_t> sourceIdList;
-    sourceIdList.push_back(0x0500001U);
-    CAppDemo app(uartDriver, timerFactory, true, 11, sourceIdList);	/* Force reset the network channel to 11  */
+	std::vector<uint32_t> sourceIdList;
+	sourceIdList.push_back(0x0500001U);
+	CAppDemo app(uartDriver, timerFactory, true, 11, sourceIdList);	/* Force reset the network channel to 11  */
 
-    /* Note: we have to register our debug (dump serial read) observer after CAppDemo's internal one because observers list is currently implemented as a set and new observer are emplace()d */
+	/* Note: we have to register our debug (dump serial read) observer after CAppDemo's internal one because observers list is currently implemented as a set and new observer are emplace()d */
 	uartDriver.getIncomingDataHandler()->registerObserver(&serialProcessor);	/* Add our own observer to dump (for debug) the (emulated) bytes read from the serial port (that will be simultaneously sent to the read DUT) */
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));	/* Give 50ms for libezsp's internal process to write to serial */
-    if (serialProcessor.stage != 1)
-        FAILF("Failed to receive ASH reset from lib");
-    else
-        std::cout << "ASH reset confirmed\n";
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));	/* Give 50ms for libezsp's internal process to write to serial */
+	if (serialProcessor.stage != 1)
+		FAILF("Failed to receive ASH reset from lib");
+	else
+		std::cout << "ASH reset confirmed\n";
 
 	{
 		MockUartScheduledByteDelivery rBuf;
@@ -117,7 +117,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		uartDriver.scheduleIncomingChunk(rBuf);
 	}
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
 	if (serialProcessor.stage != 2)
 		FAILF("Failed to receive ASH get stack version from lib");
@@ -133,9 +133,9 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(3000));	/* Give 3000ms for final timeout (allows all written bytes to be generated) */
 
-    uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
+	uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
 
-    NOTIFYPASS();
+	NOTIFYPASS();
 }
 
 
