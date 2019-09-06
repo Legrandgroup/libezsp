@@ -126,12 +126,10 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	else
 		std::cout << "ASH reset confirmed\n";
 
-	{
-		MockUartScheduledByteDelivery rBuf;
-		rBuf.delay = std::chrono::seconds(0);  /* Make bytes available now */
-		rBuf.byteBuffer = std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e});
-		uartDriver.scheduleIncomingChunk(rBuf);
-	}
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
+			std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e}),
+			std::chrono::seconds(0)
+		));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
@@ -140,15 +138,13 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	else
 		std::cout << "ASH get stack version confirmed\n";
 
-	std::cerr << "Remaining inncoming queue:" << uartDriver.scheduledIncomingChunksToString() << "\n";
-	{
-		MockUartScheduledByteDelivery rBuf;
-		rBuf.delay = std::chrono::seconds(0);  /* Make bytes available now */
-		rBuf.byteBuffer = std::vector<uint8_t>({0x01, 0x42, 0xa1, 0xa8, 0x53, 0x28, 0x45, 0xd7, 0xcf, 0x00, 0x7e});
-		uartDriver.scheduleIncomingChunk(rBuf);
-	}
+	std::cerr << "Remaining incoming queue:" << uartDriver.scheduledIncomingChunksToString() << "\n";
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
+			std::vector<uint8_t>({0x01, 0x42, 0xa1, 0xa8, 0x53, 0x28, 0x45, 0xd7, 0xcf, 0x00, 0x7e}),
+			std::chrono::seconds(0)
+		));
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(3000));	/* Give 3000ms for final timeout (allows all written bytes to be generated) */
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));	/* Give 1s for final timeout (allows all written bytes to be sent by libezsp) */
 
 	uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
 
