@@ -111,7 +111,7 @@ public:
 	 *
 	 * @param scheduledBytes The buffer to queue for future emulate reads
 	 */
-	void scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes);
+	void scheduleIncomingChunk(const MockUartScheduledByteDelivery& scheduledBytes);
 
 	/**
 	 * @brief Get a string representation of the scheduled incoming chunks (for debug)

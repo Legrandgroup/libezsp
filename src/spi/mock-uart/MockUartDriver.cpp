@@ -67,7 +67,7 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	return result;
 }
 
-void MockUartDriver::scheduleIncomingChunk(const struct MockUartScheduledByteDelivery& scheduledBytes) {
+void MockUartDriver::scheduleIncomingChunk(const MockUartScheduledByteDelivery& scheduledBytes) {
 	
 	bool frontSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
 	{
