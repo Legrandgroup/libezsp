@@ -53,7 +53,7 @@ public:
 	 * It will be invoked each time a read() is done on the mock serial interface to which it has been registered
 	 */
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
-		std::cout << "Got notification of " << dataLen << " bytes read: ";
+		std::cout << "Got notification of " << std::dec << dataLen << " bytes read: ";
 		for(unsigned int loop=0; loop<dataLen; loop++) {
 			if (loop!=0)
 				std::cout << " ";
