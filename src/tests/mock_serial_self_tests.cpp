@@ -152,6 +152,8 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 		FAILF("Expected %lu delivered incoming bytes", rBuf1.byteBuffer.size());
 	}
 
+	uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
+
 	NOTIFYPASS();
 }
 
@@ -199,6 +201,8 @@ TEST(mock_serial_tests, mock_serial_delayed_multiple_read) {
 	if (uartDriver.getDeliveredIncomingBytesCount() != rBuf1.byteBuffer.size()) {
 		FAILF("Expected %lu delivered incoming bytes", rBuf1.byteBuffer.size());
 	}
+
+	uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
 
 	NOTIFYPASS();
 }
