@@ -14,15 +14,20 @@
 #include <thread>
 #include <chrono>
 
-extern "C" {    /* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
+/**
+ * @brief Structure to interact with a UART using libserialcpp
+ */
+class MockUartScheduledByteDelivery {
+public:
 	/**
-	 * @brief Structure to interact with a UART using libserialcpp
+	 * @brief Default constructor
 	 */
-	struct MockUartScheduledByteDelivery {
-		std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
-		std::vector<unsigned char> byteBuffer;	/*!< The content of the emulated bytes */
-	};
-}
+	MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer=std::vector<unsigned char>(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
+
+	/* Member variables */
+	std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
+	std::vector<unsigned char> byteBuffer;	/*!< The content of the emulated bytes */
+};
 
 /**
  * @brief Class to implement an emulated (robotised) UART for unit testing

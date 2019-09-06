@@ -12,6 +12,10 @@
 #include <iomanip>	// For std::setw etc.
 #include <iostream>	// FIXME: for std::cerr during debug
 
+MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
+delay(scheduleDelay),
+byteBuffer(scheduledBuffer) { }
+
 MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback) :
 	readBytesThread(),
 	scheduledReadQueueMutex(),
