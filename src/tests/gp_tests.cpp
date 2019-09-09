@@ -22,6 +22,20 @@ public:
 	GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
 
 	/**
+	 * @brief Copy constructor
+	 *
+	 * @warning Copy construction is not allowed on instances of this class
+	 */
+	GPRecvSensorMeasurementTest(const GPRecvSensorMeasurementTest& other) = delete;
+
+	/**
+	 * @brief Assignment operator
+	 *
+	 * @warning Assignment is not allowed on instances of this class
+	 */
+	GPRecvSensorMeasurementTest operator= (const GPRecvSensorMeasurementTest& other) = delete;
+
+	/**
 	 * @brief Write callback function to register to the mock serial interface
 	 *
 	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
