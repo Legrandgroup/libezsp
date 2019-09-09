@@ -28,7 +28,7 @@ public:
 			FAILF("Expected 4 bytes to write\n");
 
 		if (delta != std::chrono::duration<double, std::milli>::max()) {
-			std::cout << ". Delta since last write: " << std::dec (std::chrono::duration_cast<std::chrono::milliseconds>(delta)).count() << "ms";
+			std::cout << ". Delta since last write: " << std::dec << (std::chrono::duration_cast<std::chrono::milliseconds>(delta)).count() << "ms";
 			if (this->nbWriteCalls == 0) {
 				std::cout << "\n";
 				FAILF("First call to write() on mock serial interface should not lead to a valid delta\n");
