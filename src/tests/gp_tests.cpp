@@ -120,9 +120,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		std::cout << "ASH reset confirmed\n";
 
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e}));
-	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
-			std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e})
-		));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e})));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
@@ -134,9 +132,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x81, 0x60, 0x59, 0x7e}));
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x7d, 0x31, 0x43, 0x21, 0xa8, 0x53, 0x05, 0xf0, 0x7e}));
 	//std::cerr << "Remaining incoming queue:" << uartDriver.scheduledIncomingChunksToString() << "\n";
-	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
-			std::vector<uint8_t>({0x01, 0x42, 0xa1, 0xa8, 0x53, 0x28, 0x45, 0xd7, 0xcf, 0x00, 0x7e})
-		));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(std::vector<uint8_t>({0x01, 0x42, 0xa1, 0xa8, 0x53, 0x28, 0x45, 0xd7, 0xcf, 0x00, 0x7e})));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
@@ -147,9 +143,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x82, 0x50, 0x3a, 0x7e}));
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x22, 0x40, 0x21, 0x57, 0x54, 0x79, 0x17, 0x92, 0x59, 0xbf, 0xeb, 0x7e}));
-	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
-			std::vector<uint8_t>({0x12, 0x43, 0xa1, 0x57, 0x54, 0x2a, 0x45, 0xd7, 0xe7, 0x42, 0x7e})
-		));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(std::vector<uint8_t>({0x12, 0x43, 0xa1, 0x57, 0x54, 0x2a, 0x45, 0xd7, 0xe7, 0x42, 0x7e})));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
@@ -160,9 +154,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x83, 0x40, 0x1b, 0x7e}));
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x33, 0x41, 0x21, 0x57, 0x54, 0x79, 0x16, 0xb8 , 0x59, 0x9e, 0xf8, 0x7e}));
-	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
-			std::vector<uint8_t>({0x23, 0x40, 0xa1, 0x57, 0x54, 0x79, 0x23, 0xad , 0x47, 0x7e})
-		));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(std::vector<uint8_t>({0x23, 0x40, 0xa1, 0x57, 0x54, 0x79, 0x23, 0xad , 0x47, 0x7e})));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
 
