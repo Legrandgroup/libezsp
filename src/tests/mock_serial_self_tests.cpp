@@ -18,7 +18,7 @@ public:
 	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
 	 */
 	int onWriteCallback(size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) {
-		std::cout << "Request to write " << cnt << " bytes: ";
+		std::cout << "Request to write " << std::dec << cnt << " bytes: ";
 		for(unsigned int loop=0; loop<cnt; loop++) {
 			if (loop!=0)
 				std::cout << " ";
@@ -28,7 +28,7 @@ public:
 			FAILF("Expected 4 bytes to write\n");
 
 		if (delta != std::chrono::duration<double, std::milli>::max()) {
-			std::cout << ". Delta since last write: " << (std::chrono::duration_cast<std::chrono::milliseconds>(delta)).count() << "ms";
+			std::cout << ". Delta since last write: " << std::dec (std::chrono::duration_cast<std::chrono::milliseconds>(delta)).count() << "ms";
 			if (this->nbWriteCalls == 0) {
 				std::cout << "\n";
 				FAILF("First call to write() on mock serial interface should not lead to a valid delta\n");
