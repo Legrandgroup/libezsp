@@ -161,6 +161,20 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	else
 		std::cout << "ASH transitionned to stage 6\n";
 
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x83, 0x40, 0x1b, 0x7e}));
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x33, 0x41, 0x21, 0x57, 0x54, 0x79, 0x16, 0xb8 , 0x59, 0x9e, 0xf8, 0x7e}));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
+			std::vector<uint8_t>({0x23, 0x40, 0xa1, 0x57, 0x54, 0x79, 0x23, 0xad , 0x47, 0x7e}),
+			std::chrono::seconds(0)
+		));
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
+
+	if (serialProcessor.stage != 8)
+		FAILF("Failed to transition to stage 8");
+	else
+		std::cout << "ASH transitionned to stage 8\n";
+
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));	/* Give 1s for final timeout (allows all written bytes to be sent by libezsp) */
 
 	uartDriver.destroyAllScheduledIncomingChunks(); /* Destroy all uartDriver currently running thread just in case */
