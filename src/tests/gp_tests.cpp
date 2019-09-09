@@ -12,7 +12,14 @@
 
 class GPRecvSensorMeasurementTest : public IAsyncDataInputObserver  {
 public:
-	GPRecvSensorMeasurementTest() : stage(0), nbWriteCalls(0), nbReadCallbacks(0) { }
+	/**
+	 * @brief Constructor
+	 *
+	 * @param[in] stageTransitionExpectedList A pointer to an external list of expected buffer written to the serial line, that will automatically trigger a stage transition (stage++)
+	 *            Because this is a pointer, you can update this vector on the fly during the test, we will use an always up-to-date vector each time bytes are written to the serial port.
+	 *            However, this also means you have to keep the vector of vector of uint8_t memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
+	 */
+	GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
 
 	/**
 	 * @brief Write callback function to register to the mock serial interface
@@ -35,23 +42,15 @@ public:
 		}
 		std::cout << " (current stage " << std::dec << this->stage << ")\n";
 		writtenCnt = cnt;
-		if (this->stage == 0 && compareBufWithVector(buf, cnt, std::vector<uint8_t>({0x1a, 0xc0, 0x38, 0xbc, 0x7e}))) {
-			std::cout << "Got a ASH reset command\n";
-			this->stage++;
+		bool transitionMatch = false;
+		if (this->stageExpectedTransitions && this->stageExpectedTransitions->size() > this->stage) {	/* Do we have an expected read buffer to automatically transition to the next stage? */
+			if (compareBufWithVector(buf, cnt, (*this->stageExpectedTransitions)[this->stage])) {
+				this->stage++;
+				transitionMatch = true;
+				std::cout << "Automatic trigger matched, transitionning to stage " << this->stage << "\n";
+			}
 		}
-		else if (this->stage == 1 && compareBufWithVector(buf, cnt, std::vector<uint8_t>({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e}))) {
-			std::cout << "Got a ASH get stack version command\n";
-			this->stage++;
-		}
-		else if (this->stage == 2 && compareBufWithVector(buf, cnt, std::vector<uint8_t>({0x81, 0x60, 0x59, 0x7e}))) {
-			std::cout << "Got a ASH command at stage 3\n";
-			this->stage++;
-		}
-		else if (this->stage == 3 && compareBufWithVector(buf, cnt, std::vector<uint8_t>({0x7d, 0x31, 0x43, 0x21, 0xa8, 0x53, 0x05, 0xf0, 0x7e}))) {
-			std::cout << "Got a ASH command at stage 4\n";
-			this->stage++;
-		}
-		else {
+		if (!transitionMatch) {
 			std::cerr << "Warning: Got an unexpected command written to serial port while at stage " << std::dec << this->stage << ":";
 			for (uint8_t loop=0; loop<cnt; loop++) {
 				std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const unsigned char*>(buf))[loop]);
@@ -89,6 +88,7 @@ public:
 	unsigned int stage;	/*!< Counter for the internal state machine */
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
 	unsigned int nbReadCallbacks;	/*!< How many time the onReadCallback() was executed */
+	const std::vector< std::vector<uint8_t> >* stageExpectedTransitions;	/*!< A pointer to an external list of expected buffer written to the serial line, that will automatically trigger a stage transition (stage++) */
 };
 
 TEST_GROUP(gp_tests) {
@@ -97,8 +97,9 @@ TEST_GROUP(gp_tests) {
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	CppThreadsTimerFactory timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	GPRecvSensorMeasurementTest serialProcessor;
 	ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
+	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
+	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
@@ -107,18 +108,10 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		FAILF("Failed opening mock serial port");
 	}
 
-//	MockUartScheduledByteDelivery rBuf1;
-//	rBuf1.delay = std::chrono::seconds(0);	/* Make bytes available now */
-//	rBuf1.byteBuffer.push_back(0x00);
-//	rBuf1.byteBuffer.push_back(0xa0);
-//	rBuf1.byteBuffer.push_back(0x50);
-
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x1a, 0xc0, 0x38, 0xbc, 0x7e}));
 	std::vector<uint32_t> sourceIdList;
 	sourceIdList.push_back(0x0500001U);
 	CAppDemo app(uartDriver, timerFactory, true, 11, sourceIdList);	/* Force reset the network channel to 11  */
-
-	/* Note: we have to register our debug (dump serial read) observer after CAppDemo's internal one because observers list is currently implemented as a set and new observer are emplace()d */
-	uartDriver.getIncomingDataHandler()->registerObserver(&serialProcessor);	/* Add our own observer to dump (for debug) the (emulated) bytes read from the serial port (that will be simultaneously sent to the read DUT) */
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));	/* Give 50ms for libezsp's internal process to write to serial */
 	if (serialProcessor.stage != 1)
@@ -126,6 +119,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	else
 		std::cout << "ASH reset confirmed\n";
 
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e}));
 	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
 			std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e}),
 			std::chrono::seconds(0)
@@ -138,11 +132,34 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	else
 		std::cout << "ASH get stack version confirmed\n";
 
-	std::cerr << "Remaining incoming queue:" << uartDriver.scheduledIncomingChunksToString() << "\n";
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x81, 0x60, 0x59, 0x7e}));
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x7d, 0x31, 0x43, 0x21, 0xa8, 0x53, 0x05, 0xf0, 0x7e}));
+	//std::cerr << "Remaining incoming queue:" << uartDriver.scheduledIncomingChunksToString() << "\n";
 	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
 			std::vector<uint8_t>({0x01, 0x42, 0xa1, 0xa8, 0x53, 0x28, 0x45, 0xd7, 0xcf, 0x00, 0x7e}),
 			std::chrono::seconds(0)
 		));
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
+
+	if (serialProcessor.stage != 4)
+		FAILF("Failed to transition to stage 4");
+	else
+		std::cout << "ASH transitionned to stage 4\n";
+
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x82, 0x50, 0x3a, 0x7e}));
+	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x22, 0x40, 0x21, 0x57, 0x54, 0x79, 0x17, 0x92, 0x59, 0xbf, 0xeb, 0x7e}));
+	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(
+			std::vector<uint8_t>({0x12, 0x43, 0xa1, 0x57, 0x54, 0x2a, 0x45, 0xd7, 0xe7, 0x42, 0x7e}),
+			std::chrono::seconds(0)
+		));
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* Give 100ms for libezsp's internal process to write to serial */
+
+	if (serialProcessor.stage != 6)
+		FAILF("Failed to transition to stage 6");
+	else
+		std::cout << "ASH transitionned to stage 6\n";
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));	/* Give 1s for final timeout (allows all written bytes to be sent by libezsp) */
 
