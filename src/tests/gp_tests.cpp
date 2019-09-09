@@ -94,6 +94,15 @@ public:
 TEST_GROUP(gp_tests) {
 };
 
+#define UT_WAIT_MS(tms) std::this_thread::sleep_for(std::chrono::milliseconds(tms))
+#define UT_FAILF_UNLESS_STAGE(tstage) do {\
+	if (serialProcessor.stage != tstage) \
+		FAILF("Failed to transition to stage %d", tstage); \
+	else \
+		std::cout << "ASH transitionned to stage " << tstage << "\n"; \
+	} while(0)
+
+
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	CppThreadsTimerFactory timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
@@ -113,11 +122,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	sourceIdList.push_back(0x0500001U);
 	CAppDemo app(uartDriver, timerFactory, true, 11, sourceIdList);	/* Force reset the network channel to 11  */
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));	/* Give 50ms for libezsp's internal process to write to serial */
-	if (serialProcessor.stage != 1)
-		FAILF("Failed to receive ASH reset from lib");
-	else
-		std::cout << "ASH reset confirmed\n";
+	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
+	UT_FAILF_UNLESS_STAGE(1);
 
 	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e}));
 	uartDriver.scheduleIncomingChunk(MockUartScheduledByteDelivery(std::vector<uint8_t>({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e})));
