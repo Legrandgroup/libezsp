@@ -11,17 +11,42 @@
 #include "green-power-sink.h"
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
 
+#include "../../domain/zbmessage/zigbee-message.h"
+
 #include "../../spi/GenericLogger.h"
 #include "../../spi/ILogger.h"
 
+// some defines to help understanding
+#define GP_ENDPOINT 242
+
+// cluster
+#define GP_CLUSTER_ID   0x0021
+// receive client command
+#define GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID    0x02
 
 
-CGpSink::CGpSink( CEzspDongle &i_dongle ) :
+
+
+CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     dongle(i_dongle),
+    zb_messaging(i_zb_messaging),
     sink_table(),
     observers()
 {
     dongle.registerObserver(this);
+}
+
+void CGpSink::init(void)
+{
+    // initialize green power sink
+    clogD << "Call EZSP_GP_SINK_TABLE_INIT" << std::endl;
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_INIT);
+}
+
+void CGpSink::openCommissioningSession(void)
+{
+    // set local proxy in commissioning mode
+    sendLocalGPProxyCommissioningMode();
 }
 
 uint8_t CGpSink::registerGpd( uint32_t i_source_id )
@@ -39,6 +64,11 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 {
     switch( i_cmd )
     {
+        case EZSP_GP_SINK_TABLE_INIT:
+        {
+            clogI << "EZSP_GP_SINK_TABLE_INIT RSP" << std::endl;
+        }
+        break;        
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
         {
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
@@ -121,4 +151,45 @@ void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     for(auto observer : this->observers) {
         observer->handleRxGpFrame( i_gpf );
     }
+}
+
+void CGpSink::sendLocalGPProxyCommissioningMode(void)
+{
+    // forge GP Proxy Commissioning Mode command
+    // assume we are coordinator of network and our nodeId is 0
+
+    CZigBeeMsg l_gp_comm_msg;
+    std::vector<uint8_t> l_gp_comm_payload;
+
+    // options:
+    // bit0 (Action) : 0b1 / request to enter commissioning mode
+    // bit1-3 (exit mode) : 0b010 / On first Pairing success
+    // bit4 (channel present) : 0b0 / shall always be set to 0 according current spec.
+    // bit5 (unicast communication) : 0b0 / send GP Commissioning Notification commands in broadcast
+    // bit6-7 (reserved)
+    l_gp_comm_payload.push_back(0x05); 
+
+    // comm windows 2 bytes
+    // present only if exit mode flag On commissioning Window expiration (bit0) is set
+    /*
+    l_gp_comm_payload.push_back(u16_get_lo_u8(180));
+    l_gp_comm_payload.push_back(u16_get_hi_u8(180));
+    */
+    // channel
+    // never present with current specification
+    /*
+    l_gp_comm_payload.push_back(0);
+    */
+
+    // create message sending from ep242 to ep242 using green power profile
+    l_gp_comm_msg.SetSpecific(GP_PROFILE_ID, PUBLIC_CODE, GP_ENDPOINT, 
+                                GP_CLUSTER_ID, GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID,
+                                E_DIR_SERVER_TO_CLIENT, l_gp_comm_payload, 0, 0, 0);
+
+    // WARNING use ep 242 as sources
+    l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
+    
+    //
+    clogI << "SEND UNICAST : OPEN GP COMMISSIONING\n";
+    zb_messaging.SendUnicast(0,l_gp_comm_msg);
 }

@@ -7,6 +7,7 @@
 #include "../zbmessage/green-power-frame.h"
 #include "../green-power-observer.h"
 #include "../ezsp-dongle.h"
+#include "zigbee-messaging.h"
 #include "green-power-sink-table.h"
 
 #ifdef USE_RARITAN
@@ -18,12 +19,22 @@
 class CGpSink : public CEzspDongleObserver
 {
 public:
-    CGpSink( CEzspDongle &i_dongle );
+    CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 
     CGpSink() = delete; /* Construction without arguments is not allowed */
     CGpSink(const CGpSink&) = delete; /* No copy construction allowed */
 
     CGpSink& operator=(CGpSink) = delete; /* No assignment allowed */
+
+    /**
+     * @brief Initialize sink, shall be done after a network init.
+     */
+    void init(void);
+
+    /**
+     * @brief Open a commissioning session for limited time, close as soon as a binding is done.
+     */
+    void openCommissioningSession(void);
 
     /**
      * @brief add a green power sink table entry
@@ -47,6 +58,7 @@ public:
 
 private:
     CEzspDongle &dongle;
+    CZigbeeMessaging &zb_messaging;
     CGpSinkTable sink_table;
 
     /**
@@ -54,6 +66,14 @@ private:
      */
     std::set<CGpObserver*> observers;
     void notifyObserversOfRxGpFrame( CGpFrame i_gpf );
+
+
+    /**
+     * @brief send zigbee unicast message GP Proxy Commissioning Mode.
+     *          done from sink to local dongle.
+     *      WARNING all parameters are hardcoded for testing
+     */
+    void sendLocalGPProxyCommissioningMode(void);
 };
 
 #ifdef USE_RARITAN

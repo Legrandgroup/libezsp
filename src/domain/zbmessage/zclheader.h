@@ -16,7 +16,13 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+// manufacturer code
+#define PUBLIC_CODE 0xFFFF
 #define LG_MAN_CODE 0x1021
+
+// profile
+#define GP_PROFILE_ID 0xA1E0
+
 
 class CZCLHeader; /* Forward declaration */
 void swap(CZCLHeader& first, CZCLHeader& second); /* Declaration before qualifying ::swap() as friend for class CZCLHeader */

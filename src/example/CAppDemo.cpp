@@ -21,7 +21,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
-    gp_sink(dongle),
+    gp_sink(dongle, zb_messaging),
     app_state(APP_NOT_INIT),
     db(),
     ezsp_version(6),
@@ -266,6 +266,13 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             {
                 setAppState(APP_READY);
 
+                // init gp sink
+                gp_sink.init();
+
+                // for demo immediately open commissioning session
+                gp_sink.openCommissioningSession();
+
+                /*-- test gREEN poWER only
                 // we open network, so we can enter new devices
                 zb_nwk.OpenNetwork( 60 );
 
@@ -298,6 +305,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                         zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
                     }
                 });
+                */
             }
             else
             {

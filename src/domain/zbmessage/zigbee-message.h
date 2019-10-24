@@ -179,9 +179,10 @@ public:
    */
   std::vector<uint8_t> Get( void ) const;
 
-private:
+/*-- TEST GREEN POWER */
   /** APS */
   CAPSFrame aps;
+private:
 
   /** ZCL Header */
   CZCLHeader zcl_header;
