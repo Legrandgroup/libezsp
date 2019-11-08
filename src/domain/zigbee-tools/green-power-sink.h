@@ -15,6 +15,14 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+typedef enum
+{
+    SINK_NOT_INIT, // starting state
+    SINK_READY,  // default state if no action in progress
+    SINK_ERROR,  // something wrong
+    SINK_COM_OPEN,  // GP Proxy Commissioning mode open
+    SINK_COM_IN_PROGRESS,  // GP sink receive gpf comm frame
+}ESinkState;
 
 class CGpSink : public CEzspDongleObserver
 {
@@ -60,6 +68,8 @@ private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     CGpSinkTable sink_table;
+    ESinkState sink_state;
+    CGpFrame gpf_comm_frame;
 
     /**
      * Notify Observer of this class
@@ -67,6 +77,7 @@ private:
     std::set<CGpObserver*> observers;
     void notifyObserversOfRxGpFrame( CGpFrame i_gpf );
 
+    void setSinkState( ESinkState i_state );
 
     /**
      * @brief send zigbee unicast message GP Proxy Commissioning Mode.
@@ -74,6 +85,28 @@ private:
      *      WARNING all parameters are hardcoded for testing
      */
     void sendLocalGPProxyCommissioningMode(void);
+
+    /**
+     * Retrieves the sink table entry stored at the passed index.
+     */
+    void gpSinkGetEntry( uint8_t i_index );
+
+    /**
+     * @brief Finds or allocates a sink entry
+     * 
+     * @param i_src_id : gpd address to be found
+     */
+    void gpSinkTableFindOrAllocateEntry( uint32_t i_src_id );
+
+    /**
+     * Retrieves the sink table entry stored at the passed index.
+     */
+    void gpSinkSetEntry( uint8_t i_index, std::vector<uint8_t> i_struct );   
+
+    /**
+     * Update the GP Proxy table based on a GP pairing.
+     */
+    void gpProxyTableProcessGpPairing( std::vector<uint8_t> i_param );     
 };
 
 #ifdef USE_RARITAN
