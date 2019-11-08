@@ -33,14 +33,14 @@ class CGpFrame
          *
          * Construction without arguments is not allowed
          */
-        CGpFrame() = delete;
+        CGpFrame(); // = delete;
 
         /**
          * @brief Assignment operator
          *
          * Copy construction is forbidden on this class
          */
-        CGpFrame& operator=(const CGpFrame& other) = delete;
+        //CGpFrame& operator=(const CGpFrame& other) = delete;
 
         /**
          * @brief Construction from an incoming ezsp raw message
