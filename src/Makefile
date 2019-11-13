@@ -27,6 +27,7 @@ libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/ezsp-protocol/struct/ember-network-parameters.cpp \
 	domain/ezsp-protocol/struct/ember-child-data-struct.cpp \
 	domain/ezsp-protocol/struct/ember-gp-address-struct.cpp \
+	domain/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.cpp \
 	domain/ezsp-dongle.cpp \
 	domain/ash.cpp \
 	spi/GenericAsyncDataInputObservable.cpp \
@@ -43,7 +44,6 @@ libezspincludedir = $(includedir)/include/local/ezsp
 
 libezspinclude_HEADERS = domain/zbmessage/zdp-enum.h \
 domain/ezsp-protocol/ezsp-enum.h \
-domain/ezsp-protocol/struct/ember-key-struct.h \
 domain/ezsp-protocol/get-network-parameters-response.h \
 domain/byte-manip.h \
 domain/ash.h \
@@ -61,7 +61,11 @@ domain/zbmessage/aps.h \
 domain/zbmessage/apsoption.h \
 domain/zbmessage/zclheader.h \
 domain/zbmessage/zclframecontrol.h \
+domain/ezsp-protocol/struct/ember-key-struct.h \
 domain/ezsp-protocol/struct/ember-network-parameters.h \
+domain/ezsp-protocol/struct/ember-child-data-struct.h \
+domain/ezsp-protocol/struct/ember-gp-address-struct.h \
+domain/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h \
 spi/raritan/RaritanTimerFactory.h \
 spi/raritan/RaritanEventLoop.h \
 spi/raritan/RaritanUartDriver.h \
