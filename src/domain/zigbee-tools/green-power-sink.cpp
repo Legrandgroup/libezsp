@@ -11,6 +11,8 @@
 #include "green-power-sink.h"
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
 
+#include "../byte-manip.h"
+
 #include "../../domain/zbmessage/zigbee-message.h"
 
 #include "../../spi/GenericLogger.h"
@@ -77,13 +79,31 @@ void CGpSink::init(void)
     setSinkState(SINK_READY);    
 }
 
+/**
+ * Clear all GP tables
+ */
+void CGpSink::gpClearAllTables( void )
+{
+    // sink table
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+}
+
 void CGpSink::openCommissioningSession(void)
 {
     // set local proxy in commissioning mode
-    sendLocalGPProxyCommissioningMode();
+    sendLocalGPProxyCommissioningMode(0x05);
 
     // set state
     setSinkState(SINK_COM_OPEN);
+}
+
+void CGpSink::closeCommissioningSession(void)
+{
+    // set local proxy in commissioning mode
+    sendLocalGPProxyCommissioningMode(0x00);
+
+    // set state
+    setSinkState(SINK_READY);
 }
 
 uint8_t CGpSink::registerGpd( uint32_t i_source_id )
@@ -91,6 +111,11 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
     CGpSinkTableEntry l_entry = CGpSinkTableEntry(i_source_id);
 
     return sink_table.addEntry(l_entry);
+}
+
+void CGpSink::registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key )
+{
+    
 }
 
 void CGpSink::handleDongleState( EDongleState i_state )
@@ -186,85 +211,18 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
             {
-                // set the entry with new parameters            
-                std::vector<uint8_t> l_struct;
-                uint32_t l_src_id = gpf_comm_frame.getSourceId();
-                // Internal status of the sink table entry.
-                l_struct.push_back(0x01); // active, 0xff : disable
-                // The tunneling options (this contains both options and extendedOptions from the spec). WARNING 16 bits !!!
-                l_struct.push_back(0xA8);
-                l_struct.push_back(0x02);
-                // The addressing info of the GPD.
-                l_struct.push_back(0x00); // short address
-                l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
-                l_struct.push_back(0x00); // endpoint -> not used
-                // The device id for the GPD.
-                l_struct.push_back(gpf_comm_frame.getPayload().at(0)); // 0x02
-                // The list of sinks (hardcoded to 2 which is the spec minimum).
-                l_struct.push_back(0xFF); // unused
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0xFF); // unused
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                // The assigned alias for the GPD.
-                l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
+                // construct sink table entry
+                EmberKeyData l_harcoded_key{0x59, 0x13, 0x29, 0x50, 0x28, 0x9D, 0x14, 0xFD, 
+                                                    0x73, 0xF9, 0xC3, 0x25, 0xD4, 0x57, 0xAB, 0xB5};
+                CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
 
-                // The groupcast radius.
-                l_struct.push_back(0x00);
+                CEmberGpSinkTableEntryStruct l_entry(0x01, l_gpd_addr, gpf_comm_frame.getPayload().at(0),
+                                                    static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF), 0x12,
+                                                    quad_u8_to_u32(gpf_comm_frame.getPayload().at(23),gpf_comm_frame.getPayload().at(24),gpf_comm_frame.getPayload().at(25),gpf_comm_frame.getPayload().at(26)),
+                                                    l_harcoded_key ); 
 
-                // The security options field.
-                l_struct.push_back(0x12);
-
-                // The security frame counter of the GPD.
-                l_struct.push_back(gpf_comm_frame.getPayload().at(23));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(24));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(25));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(26));
-
-                // The key to use for GPD. 59 13 29 50 28 9D 14 FD 73 F9 C3 25 D4 57 AB B5
-                l_struct.push_back(0x59);
-                l_struct.push_back(0x13);
-                l_struct.push_back(0x29);
-                l_struct.push_back(0x50);
-                l_struct.push_back(0x28);
-                l_struct.push_back(0x9D);
-                l_struct.push_back(0x14);
-                l_struct.push_back(0xFD);
-                l_struct.push_back(0x73);
-                l_struct.push_back(0xF9);
-                l_struct.push_back(0xC3);
-                l_struct.push_back(0x25);
-                l_struct.push_back(0xD4);
-                l_struct.push_back(0x57);
-                l_struct.push_back(0xAB);
-                l_struct.push_back(0xB5);
                 // call
-                gpSinkSetEntry(0,l_struct);
+                gpSinkSetEntry(0,l_entry);
 
             }
         }
@@ -349,8 +307,8 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
             {
                 clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
-                // set new state
-                setSinkState(SINK_READY);                
+                // close commissioning session
+                closeCommissioningSession();
             }
         }
         break;
@@ -386,7 +344,7 @@ void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     }
 }
 
-void CGpSink::sendLocalGPProxyCommissioningMode(void)
+void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option)
 {
     // forge GP Proxy Commissioning Mode command
     // assume we are coordinator of network and our nodeId is 0
@@ -400,7 +358,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(void)
     // bit4 (channel present) : 0b0 / shall always be set to 0 according current spec.
     // bit5 (unicast communication) : 0b0 / send GP Commissioning Notification commands in broadcast
     // bit6-7 (reserved)
-    l_gp_comm_payload.push_back(0x05); 
+    l_gp_comm_payload.push_back(i_option); // 0x05 => open
 
     // comm windows 2 bytes
     // present only if exit mode flag On commissioning Window expiration (bit0) is set
@@ -418,52 +376,9 @@ void CGpSink::sendLocalGPProxyCommissioningMode(void)
     l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
     
     //
-    clogI << "SEND UNICAST : OPEN GP COMMISSIONING\n";
+    clogI << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option : " <<  std::hex << std::setw(2) << std::setfill('0') << i_option << std::endl;
     zb_messaging.SendUnicast(0,l_gp_comm_msg);
 }
-
-/*
-void CGpSink::gpCloseCommissioning()
-{
-    std::vector<uint8_t> l_payload;
-
-    // The action to perform on the GP TX queue (true to add, false to remove).
-    l_payload.push_back(0x00);
-
-    // Whether to use ClearChannelAssessment when transmitting the GPDF.
-    l_payload.push_back(0x00);
-
-    // The Address of the destination GPD.
-    l_payload.push_back(0x00);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0xFF);
-    l_payload.push_back(0x7F);
-
-    // The GPD command ID to send.
-    l_payload.push_back(0x00);
-
-    // The length of the GP command payload.
-    l_payload.push_back(0x01);
-
-    // The GP command payload.
-    l_payload.push_back(0x00);
-
-    // The handle to refer to the GPDF.
-    l_payload.push_back(0x00);
-
-    // How long to keep the GPDF in the TX Queue.
-    l_payload.push_back(0x00);
-
-    clogI << "EZSP_D_GP_SEND : CLOSE GP COMMISSIONING\n";
-    dongle.sendCommand(EZSP_D_GP_SEND,l_payload);
-}
-*/
 
 /*
 void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_seq_number )
@@ -598,21 +513,11 @@ void CAppDemo::gpSinkTableLookup( uint32_t i_src_id )
  */
 void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
 {
-    std::vector<uint8_t> l_payload;
-
     // An EmberGpAddress struct containing a copy of the gpd address to be found.
-    l_payload.push_back(0x00);
-    l_payload.push_back((uint8_t)(i_src_id&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>8)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>16)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>24)&0xFF));
-    l_payload.push_back((uint8_t)(i_src_id&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>8)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>16)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>24)&0xFF));
-    l_payload.push_back(0x00);
+    CEmberGpAddressStruct l_gp_address(i_src_id);
 
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_payload);    
+    clogI << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());    
 }
 
 /**
@@ -631,9 +536,12 @@ void CGpSink::gpSinkGetEntry( uint8_t i_index )
 
 
 /**
- * Retrieves the sink table entry stored at the passed index.
+ * @brief Retrieves the sink table entry stored at the passed index.
+ * 
+ * @param i_index The index of the requested sink table entry.
+ * @param i_entry An EmberGpSinkTableEntry struct containing a copy of the sink entry to be updated.
  */
-void CGpSink::gpSinkSetEntry( uint8_t i_index, std::vector<uint8_t> i_struct )
+void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_entry )
 {
     std::vector<uint8_t> l_payload;
 
@@ -641,6 +549,7 @@ void CGpSink::gpSinkSetEntry( uint8_t i_index, std::vector<uint8_t> i_struct )
     l_payload.push_back(i_index);
 
     // struct
+    std::vector<uint8_t> i_struct = i_entry.getRaw();
     l_payload.insert(l_payload.end(), i_struct.begin(), i_struct.end());
 
     clogI << "EZSP_GP_SINK_TABLE_SET_ENTRY\n";
@@ -663,16 +572,7 @@ void CGpSink::gpProxyTableProcessGpPairing( std::vector<uint8_t> i_param )
 }
 
 
-/**
- * Clear all GP tables
- */
-/*
-void CAppDemo::gpClearAllTables( void )
-{
-    // sink table
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
-}
-*/
+
 
 
 

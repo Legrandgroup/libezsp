@@ -9,6 +9,7 @@
 #include "../ezsp-dongle.h"
 #include "zigbee-messaging.h"
 #include "green-power-sink-table.h"
+#include "../ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -40,9 +41,19 @@ public:
     void init(void);
 
     /**
+     * Clear all GP tables
+     */
+    void gpClearAllTables( void );
+
+    /**
      * @brief Open a commissioning session for limited time, close as soon as a binding is done.
      */
     void openCommissioningSession(void);
+
+    /**
+     * @brief Force to close commissioning session
+     */
+    void closeCommissioningSession(void);
 
     /**
      * @brief add a green power sink table entry
@@ -50,6 +61,11 @@ public:
      * @return index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
      */
     uint8_t registerGpd( uint32_t i_source_id );
+
+    /**
+     * @brief add a green power device
+     */
+    void registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key );
 
     /**
      * Observer
@@ -84,7 +100,7 @@ private:
      *          done from sink to local dongle.
      *      WARNING all parameters are hardcoded for testing
      */
-    void sendLocalGPProxyCommissioningMode(void);
+    void sendLocalGPProxyCommissioningMode(uint8_t i_option);
 
     /**
      * Retrieves the sink table entry stored at the passed index.
@@ -99,9 +115,12 @@ private:
     void gpSinkTableFindOrAllocateEntry( uint32_t i_src_id );
 
     /**
-     * Retrieves the sink table entry stored at the passed index.
+     * @brief Retrieves the sink table entry stored at the passed index.
+     * 
+     * @param i_index The index of the requested sink table entry.
+     * @param i_entry An EmberGpSinkTableEntry struct containing a copy of the sink entry to be updated.
      */
-    void gpSinkSetEntry( uint8_t i_index, std::vector<uint8_t> i_struct );   
+    void gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_entry );
 
     /**
      * Update the GP Proxy table based on a GP pairing.
