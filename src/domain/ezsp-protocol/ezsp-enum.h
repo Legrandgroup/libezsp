@@ -1045,6 +1045,26 @@ class CEzspEnum{
     static std::string EmberIncomingMessageTypeToString( EmberIncomingMessageType in );
 };
 
+// The security level of the GPD.
+typedef uint8_t EmberGpSecurityLevel;
+
+// The type of security key to use for the GPD.
+typedef uint8_t EmberGpKeyType;
+
+// The proxy table entry status
+typedef uint8_t EmberGpProxyTableEntryStatus;
+
+// The security frame counter
+typedef uint32_t EmberGpSecurityFrameCounter;
+
+// The sink table entry status
+typedef uint8_t EmberGpSinkTableEntryStatus;
+
+#define GP_SINK_LIST_ENTRIES    2 // hardcoded to 2 which is the spec minimum (cf. A.3.4.2.2.6 Sink group list parameter from doc-14-0563-16-batt-green-power-spec_ProxyBasic.pdf)
+#define EMBER_GP_SINK_LIST_ENTRY_SIZE  11 // why ? first byte to 0xFF is for not used !
+typedef std::vector<uint8_t> EmberGpSinkListEntry;
+
+
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
