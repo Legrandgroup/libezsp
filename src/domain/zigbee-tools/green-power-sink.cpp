@@ -14,6 +14,8 @@
 #include "../byte-manip.h"
 
 #include "../../domain/zbmessage/zigbee-message.h"
+#include "../../domain/zbmessage/gpd-commissioning-command-payload.h"
+
 
 #include "../../spi/GenericLogger.h"
 #include "../../spi/ILogger.h"
@@ -211,15 +213,23 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
             {
+                // decode payload
+                CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
+
+                // debug
+                clogD << "GPD Commissioning payload : " << l_payload << std::endl;
+
                 // construct sink table entry
+                /*
                 EmberKeyData l_harcoded_key{0x59, 0x13, 0x29, 0x50, 0x28, 0x9D, 0x14, 0xFD, 
-                                                    0x73, 0xF9, 0xC3, 0x25, 0xD4, 0x57, 0xAB, 0xB5};
+                                                    0x73, 0xF9, 0xC3, 0x25, 0xD4, 0x57, 0xAB, 0xB5};*/
                 CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
 
-                CEmberGpSinkTableEntryStruct l_entry(0x01, l_gpd_addr, gpf_comm_frame.getPayload().at(0),
-                                                    static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF), 0x12,
-                                                    quad_u8_to_u32(gpf_comm_frame.getPayload().at(23),gpf_comm_frame.getPayload().at(24),gpf_comm_frame.getPayload().at(25),gpf_comm_frame.getPayload().at(26)),
-                                                    l_harcoded_key ); 
+                CEmberGpSinkTableEntryStruct l_entry(0x01, l_gpd_addr, l_payload.getDeviceId(),
+                                                    static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF), 
+                                                    l_payload.getExtendedOption()&0x1F,
+                                                    l_payload.getOutFrameCounter(),
+                                                    l_payload.getKey() ); 
 
                 // call
                 gpSinkSetEntry(0,l_entry);
