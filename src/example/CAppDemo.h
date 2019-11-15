@@ -42,7 +42,7 @@ private:
     void dongleInit();
     void stackInit();
 
-    static bool extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes );
+    static bool extractClusterReport( const std::vector<uint8_t >& payload, uint8_t& usedBytes );
     static bool extractMultiClusterReport( std::vector<uint8_t > payload );
 
 

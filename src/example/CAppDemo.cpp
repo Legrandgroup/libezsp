@@ -65,7 +65,7 @@ void CAppDemo::handleDongleState( EDongleState i_state )
     }
 }
 
-bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes )
+bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, uint8_t& usedBytes )
 {
     size_t payloadSize = payload.size();
 
@@ -177,7 +177,7 @@ bool CAppDemo::extractClusterReport( const std::vector<uint8_t >& payload, size_
 
 bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
 {
-    size_t usedBytes = 0;
+    uint8_t usedBytes = 0;
     bool validBuffer = true;
 
     while (payload.size()>0 && validBuffer)
@@ -218,7 +218,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
     {
         case 0xa0:	/* Attribute reporting */
         {
-            size_t usedBytes;
+            uint8_t usedBytes;
             if (!CAppDemo::extractClusterReport(i_gpf.getPayload(), usedBytes))
             {
                 clogE << "Failed decoding attribute reporting payload: ";
