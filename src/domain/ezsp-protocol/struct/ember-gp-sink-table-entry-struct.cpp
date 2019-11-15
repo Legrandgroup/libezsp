@@ -80,8 +80,8 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw(void)
     // Internal status of the sink table entry.
     l_struct.push_back(status); // 0x01 : active, 0xff : disable
     // The tunneling options (this contains both options and extendedOptions from the spec). WARNING 16 bits !!!
-    l_struct.push_back(u16_get_lo_u8(options));
-    l_struct.push_back(u16_get_hi_u8(options));
+    l_struct.push_back(u16_get_lo_u8(options.get()));
+    l_struct.push_back(u16_get_hi_u8(options.get()));
     // The addressing info of the GPD.
     std::vector<uint8_t> l_addr = gpd.getRaw();
     l_struct.insert(l_struct.end(), l_addr.begin(), l_addr.end());

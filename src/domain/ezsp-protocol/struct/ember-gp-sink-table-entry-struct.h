@@ -8,6 +8,7 @@
 
 #include "../ezsp-enum.h"
 #include "ember-gp-address-struct.h"
+#include "ember-gp-sink-table-options-field.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -83,7 +84,7 @@ class CEmberGpSinkTableEntryStruct
         // Internal status of the sink table entry.
         EmberGpSinkTableEntryStatus status;
         // The tunneling options (this contains both options and extendedOptions from the spec). WRONG Specification only 16 bits like option without extended ...
-        uint16_t options;
+        CEmberGpSinkTableOption options;
         // The addressing info of the GPD.
         CEmberGpAddressStruct gpd;
         // The device id for the GPD.
