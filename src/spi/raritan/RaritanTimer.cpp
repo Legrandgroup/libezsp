@@ -15,7 +15,7 @@ RaritanTimer::~RaritanTimer() {
 }
 
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
-	plogD("Starting timer %p for %dms", this, timeout);
+	plogD("Starting timer %p for %ums", this, timeout);
 
 	if (started) {
 		plogD("First stopping the already existing timer %p before starting again", this);
