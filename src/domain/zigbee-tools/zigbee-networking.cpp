@@ -303,5 +303,5 @@ void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i
     l_param.push_back(child_idx);
     dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
 
-    discoverCallbackFct = i_discoverCallbackFct;  
+    discoverCallbackFct = i_discoverCallbackFct;
 }

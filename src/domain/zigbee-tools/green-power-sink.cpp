@@ -52,7 +52,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
                 ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
                 ", gp address : " << gpf <</*
-                ", last hop rssi : " << unsigned(last_hop_rssi) << 
+                ", last hop rssi : " << unsigned(last_hop_rssi) <<
                 ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << */
                 std::endl;
 
