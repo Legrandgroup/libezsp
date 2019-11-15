@@ -31,6 +31,12 @@ public:
      * @return index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
      */
     uint8_t registerGpd( uint32_t i_source_id );
+    /**
+     * @brief remove a green power sink table entry
+     *
+     * @return 0 or GP_SINK_INVALID_ENTRY if table entry was not found
+     */
+    uint8_t unregisterGpd( uint32_t i_source_id );
 
     /**
      * Observer

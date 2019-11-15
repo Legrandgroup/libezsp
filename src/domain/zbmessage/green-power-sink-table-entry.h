@@ -25,13 +25,6 @@ class CGpSinkTableEntry
         CGpSinkTableEntry() = delete;
 
         /**
-         * @brief Assignment operator
-         *
-         * Copy construction is forbidden on this class
-         */
-        CGpSinkTableEntry& operator=(const CGpSinkTableEntry& other) = delete;
-
-        /**
          * @brief Constructor with minimal parameter
          * @param[IN] i_source_id : source id of gpd, assume application id is E_GPD_APPLICATION_SOURCE_ID
          */

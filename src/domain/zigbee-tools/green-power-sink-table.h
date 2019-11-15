@@ -32,6 +32,15 @@ public:
     uint8_t addEntry( CGpSinkTableEntry i_entry );
 
     /**
+     * @brief remove a green power sink table entry
+     *
+     * @param i_source_id source id of gpd
+     *
+     * @return 0 or GP_SINK_INVALID_ENTRY if table entry not found
+     */
+    uint8_t removeEntry(const uint32_t i_source_id );
+
+    /**
      * @brief obtain entry index according to a gpd source id
      *
      * @param i_source_id source id of gpd

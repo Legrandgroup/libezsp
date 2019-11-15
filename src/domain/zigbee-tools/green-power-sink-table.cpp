@@ -51,6 +51,28 @@ uint8_t CGpSinkTable::addEntry( CGpSinkTableEntry i_entry )
     return lo_index;
 }
 
+uint8_t CGpSinkTable::removeEntry(const uint32_t i_source_id )
+{
+    uint8_t lo_index = GP_SINK_INVALID_ENTRY;
+
+/*
+    std::stringstream buf;
+    buf << "[source_id : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(i_source_id) << "]";
+    clogI << "CGpSinkTable::removeEntry : " << buf.str() << std::endl;
+*/
+    // loop on table to search if gpd is already register
+    lo_index = getEntryIndexForSourceId( i_source_id );
+//    clogI << "CGpSinkTable::removeEntry at index : " << unsigned(lo_index) << std::endl;
+    if( GP_SINK_INVALID_ENTRY != lo_index )
+    {
+        const auto it = gpds.begin() + lo_index;
+        gpds.erase(it);
+        return 0;
+    }
+
+    return lo_index;
+}
+
 uint8_t CGpSinkTable::getEntryIndexForSourceId(uint32_t i_source_id)
 {
     uint8_t lo_index = GP_SINK_INVALID_ENTRY;

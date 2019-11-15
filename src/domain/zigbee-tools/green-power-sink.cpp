@@ -31,6 +31,11 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
     return sink_table.addEntry(l_entry);
 }
 
+uint8_t CGpSink::unregisterGpd( uint32_t i_source_id )
+{
+    return sink_table.removeEntry(i_source_id);
+}
+
 void CGpSink::handleDongleState( EDongleState i_state )
 {
 }
