@@ -19,6 +19,7 @@ LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-address-struct.cpp \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.cpp \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-sink-table-options-field.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-process-gp-pairing-parameter.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.cpp \
