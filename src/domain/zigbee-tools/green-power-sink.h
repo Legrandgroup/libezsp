@@ -85,7 +85,9 @@ private:
     CZigbeeMessaging &zb_messaging;
     CGpSinkTable sink_table;
     ESinkState sink_state;
+    // parameters to save for pairing
     CGpFrame gpf_comm_frame;
+    uint8_t sink_table_index;
 
     /**
      * Notify Observer of this class

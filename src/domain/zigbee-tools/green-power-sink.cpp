@@ -66,6 +66,7 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     sink_table(),
     sink_state(SINK_NOT_INIT),
     gpf_comm_frame(),
+    sink_table_index(0xFF),
     observers()
 {
     dongle.registerObserver(this);
@@ -203,8 +204,23 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
             {
-                // retrieve entry
-                gpSinkGetEntry( i_msg_receive.at(0) );
+                // save allocate index
+                sink_table_index = i_msg_receive.at(0);
+
+                // debug
+                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index : " << std::hex << std::setw(2) << std::setfill('0') << sink_table_index << std::endl;
+
+                // retrieve entry at selected index
+                if( 0xFF != sink_table_index )
+                {
+                    gpSinkGetEntry( sink_table_index );
+                }
+                else
+                {
+                    // no place to done pairing : FAILED
+                    clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
+                    setSinkState(SINK_READY);
+                }
             }
         }
         break;
@@ -213,27 +229,36 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
             {
+                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+                CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
+
+                // debug
+                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+
                 // decode payload
                 CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
 
                 // debug
                 clogD << "GPD Commissioning payload : " << l_payload << std::endl;
 
-                // construct sink table entry
-                /*
-                EmberKeyData l_harcoded_key{0x59, 0x13, 0x29, 0x50, 0x28, 0x9D, 0x14, 0xFD, 
-                                                    0x73, 0xF9, 0xC3, 0x25, 0xD4, 0x57, 0xAB, 0xB5};*/
+                // update sink table entry
                 CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
+                CEmberGpSinkTableOption l_options(l_gpd_addr.getApplicationId(),l_payload);
 
-                CEmberGpSinkTableEntryStruct l_entry(0x01, l_gpd_addr, l_payload.getDeviceId(),
-                                                    static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF), 
-                                                    l_payload.getExtendedOption()&0x1F,
-                                                    l_payload.getOutFrameCounter(),
-                                                    l_payload.getKey() ); 
+                l_entry.setEntryActive(true);
+                l_entry.setOptions(l_options);
+                l_entry.setGpdAddress(l_gpd_addr);
+                l_entry.setDeviceId(l_payload.getDeviceId());
+                l_entry.setAlias(static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF));
+                l_entry.setSecurityOption(l_payload.getExtendedOption()&0x1F);
+                l_entry.setFrameCounter(l_payload.getOutFrameCounter());
+                l_entry.setKey(l_payload.getKey());
+
+                // debug
+                clogD << "Update table entry : " << l_entry << std::endl;
 
                 // call
-                gpSinkSetEntry(0,l_entry);
-
+                gpSinkSetEntry(sink_table_index,l_entry);
             }
         }
         break;
