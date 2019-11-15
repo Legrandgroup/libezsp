@@ -27,6 +27,30 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 {
 }
 
+/**
+ * This method is a friend of CAPSFrame class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothrow */
+{
+  using std::swap;	// Enable ADL
+
+  swap(first.gpdIeeeAddress, second.gpdIeeeAddress);
+  swap(first.applicationId, second.applicationId);
+  swap(first.endpoint, second.endpoint);
+  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+}
+
+/**
+ * @brief Assignment operator
+ */
+CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
+{
+  swap(*this, other);
+  return *this;
+}
+
+
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
 	gpdIeeeAddress(),	/* FIXME */
 	applicationId(0),

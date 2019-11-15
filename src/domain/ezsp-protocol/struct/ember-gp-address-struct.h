@@ -40,11 +40,20 @@ class CEmberGpAddressStruct
         CEmberGpAddressStruct(const uint32_t i_srcId);
 
         /**
-         * @brief Assignment operator
+         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
          *
-         * Copy construction is forbidden on this class
+         * This function will swap all attributes of \p first and \p second
+         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+         *
+         * @param first The first object
+         * @param second The second object
          */
-        CEmberGpAddressStruct& operator=(const CEmberGpAddressStruct& other) = delete;
+        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second); 
+        
+        /**
+         * @brief Assignment operator
+         */
+        CEmberGpAddressStruct& operator=(CEmberGpAddressStruct other);
 
         /**
          * @brief The GPD's EUI64.

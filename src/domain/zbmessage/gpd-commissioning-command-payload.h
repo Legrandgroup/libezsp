@@ -41,7 +41,7 @@ class CGpdCommissioningPayload
          *
          * Construction without arguments is not allowed
          */
-        CGpdCommissioningPayload(); // = delete;
+        CGpdCommissioningPayload() = delete;
 
         /**
          * @brief Assignment operator
@@ -71,6 +71,26 @@ class CGpdCommissioningPayload
          * @return deviceId
          */
         uint8_t getDeviceId(){ return device_id; }
+
+        // bits field:
+        // b0 : MACsequenceNumberCapability (0b1:incremental MAC sequence number, 0b0:random MAC sequence number)
+        // b1 : RxOnCapability (0b1:GPD has receiving capabilities in operational mode.)
+        // b2 : Application information present
+        // b3 : reserved
+        // b4 : PANId request
+        // b5 : GP Security Key request
+        // b6 : FixedLocation
+        // b7 : Extended Options Field
+        /**
+         * @brief options getters bit field
+         */
+        bool isMACsequenceNumberCapability(){ return (options & (1<<COM_OPTION_MAC_SEQ_CAPABILITY_BIT)); }
+        bool isRxOnCapability(){ return (options & (1<<COM_OPTION_RX_ON_CAPABILITY_BIT)); }
+        bool isApplicationInformationPresent(){ return (options & (1<<COM_OPTION_APPLICATION_INFORMATION_BIT)); }
+        bool isPANIdRequest(){ return (options & (1<<COM_OPTION_PAN_ID_REQUEST_BIT)); }
+        bool isGPSecurityKeyRequest(){ return (options & (1<<COM_OPTION_GP_SECURITY_KEY_REQUEST_BIT)); }
+        bool isFixedLocation(){ return (options & (1<<COM_OPTION_FIXED_LOCATION_BIT)); }
+        bool isExtendedOptionsFieldPresent(){ return (options & (1<<COM_OPTION_EXTENDED_OPTION_FIELD_BIT)); }
 
         /**
          * @brief Getter

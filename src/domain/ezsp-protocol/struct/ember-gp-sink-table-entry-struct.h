@@ -47,6 +47,7 @@ class CEmberGpSinkTableEntryStruct
          *          groupcast_radius : The default value of 0x00 indicates undefined
          * 
          * @param i_status Internal status of the sink table entry. 0x01 active, 0xff : disable
+         * @param i_option see upper
          * @param i_gpd_address The addressing info of the GPD.
          * @param i_device_id The device id for the GPD.
          * @param i_alias The assigned alias for the GPD.
@@ -54,7 +55,7 @@ class CEmberGpSinkTableEntryStruct
          * @param i_frm_counter the last observed valid frame counter value
          * @param i_gpd_key The key to use for GPD.
          */
-        CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, 
+        CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, CEmberGpSinkTableOption i_options,
                         CEmberGpAddressStruct i_gpd_address, uint8_t i_device_id, uint16_t i_alias,
                         uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);        
 
@@ -79,6 +80,62 @@ class CEmberGpSinkTableEntryStruct
          */
         std::vector<uint8_t> getRaw(void);
 
+        /**
+         * @brief status setter
+         */
+        void setEntryActive(bool i_active){ i_active?status=0x01:status=0xFF; }
+
+        /**
+         * @brief options setter
+         */
+        void setOptions(CEmberGpSinkTableOption i_options){ options=i_options; }
+
+        /**
+         * @brief gpd setter
+         */
+        void setGpdAddress(CEmberGpAddressStruct i_gpd_address){ gpd=i_gpd_address; }
+
+        /**
+         * @brief device_id setter
+         */
+        void setDeviceId(uint8_t i_device_id){ device_id=i_device_id; }
+
+        /**
+         * @brief assigned_alias setter
+         */
+        void setAlias(uint16_t i_alias){ assigned_alias=i_alias; }
+        
+        /**
+         * @brief security_options setter
+         */
+        void setSecurityOption(uint8_t i_security_option){ security_options=i_security_option; }
+
+        /**
+         * @brief gpdSecurity_frame_counter setter
+         */
+        void setFrameCounter(EmberGpSecurityFrameCounter i_frm_counter){ gpdSecurity_frame_counter=i_frm_counter; }
+
+        /**
+         * @brief gpd_key setter
+         */
+        void setKey(EmberKeyData i_gpd_key){ gpd_key=i_gpd_key; }
+
+        /**
+         * @brief Dump this instance as a string
+         *
+         * @return The resulting string
+         */
+        std::string String() const;
+
+        /**
+         * @brief Serialize to an iostream
+         *
+         * @param out The original output stream
+         * @param data The object to serialize
+         *
+         * @return The new output stream with serialized data appended
+         */
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data);
 
     private:
         // Internal status of the sink table entry.

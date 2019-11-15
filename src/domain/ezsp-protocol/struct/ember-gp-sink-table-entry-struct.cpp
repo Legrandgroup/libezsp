@@ -42,6 +42,7 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uin
  *          groupcast_radius : The default value of 0x00 indicates undefined
  * 
  * @param i_status Internal status of the sink table entry. 0x01 active, 0xff : disable
+ * @param i_option see upper
  * @param i_gpd_address The addressing info of the GPD.
  * @param i_device_id The device id for the GPD.
  * @param i_alias The assigned alias for the GPD.
@@ -49,11 +50,11 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uin
  * @param i_frm_counter the last observed valid frame counter value
  * @param i_gpd_key The key to use for GPD.
  */
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, 
+CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, CEmberGpSinkTableOption i_options,
                 CEmberGpAddressStruct i_gpd_address, uint8_t i_device_id, uint16_t i_alias,
                 uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key):
         status(i_status),
-        options(0x02A8),
+        options(i_options),
         gpd(i_gpd_address),
         device_id(i_device_id),
         sink_list(),
@@ -109,4 +110,37 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw(void)
     l_struct.insert(l_struct.end(), gpd_key.begin(), gpd_key.end());
 
     return l_struct;
+}
+
+
+std::string CEmberGpSinkTableEntryStruct::String() const
+{
+    std::stringstream buf;
+
+    buf << "CEmberGpSinkTableEntryStruct : { ";
+    buf << "[status : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]";
+    buf << "[options : "<< options << "]";
+    buf << "[gpd : "<< gpd << "]";
+    buf << "[device_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(device_id) << "]";
+    buf << "[sink_list[0] :";
+    for(uint8_t loop=0; loop<sink_list[0].size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(sink_list[0][loop]); }
+    buf << "]";
+    buf << "[sink_list[1] :";
+    for(uint8_t loop=0; loop<sink_list[1].size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(sink_list[1][loop]); }
+    buf << "]";
+    buf << "[assigned_alias : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(assigned_alias) << "]";
+    buf << "[groupcast_radius : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(groupcast_radius) << "]";
+    buf << "[security_options : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security_options) << "]";
+    buf << "[gpdSecurity_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(gpdSecurity_frame_counter) << "]";
+    buf << "[gpd_key :";
+    for(uint8_t loop=0; loop<gpd_key.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(gpd_key[loop]); }
+    buf << "]";
+    buf << " }";
+
+    return buf.str();
+}
+
+std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
+    out << data.String();
+    return out;
 }

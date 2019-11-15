@@ -15,6 +15,7 @@
 
 #include <cstdint>
 #include "../ezsp-enum.h"
+#include "../../zbmessage/gpd-commissioning-command-payload.h" // BAD DEPENDANCY NEED TO BE INPROVE
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -33,30 +34,90 @@ class CEmberGpSinkTableOption
 
         /**
          * @brief Copy constructor
-         *
-         * Copy construction is forbidden on this class
          */
-        CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other) = delete;
+        CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other);
 
         /**
          * @brief Assignment operator
-         *
-         * Assignment is forbidden on this class
          */
-        CEmberGpSinkTableOption& operator=(const CEmberGpSinkTableOption& other) = delete;   
-
+        CEmberGpSinkTableOption& operator=( CEmberGpSinkTableOption other);
 
         /**
-         * raw constructor
+         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
+         *
+         * This function will swap all attributes of \p first and \p second
+         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+         *
+         * @param first The first object
+         * @param second The second object
+         */
+        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second);        
+
+        /**
+         * @brief raw constructor
          */
         CEmberGpSinkTableOption(const uint16_t i_options);
 
         /**
-         * raw getter
+         * @brief constructor from commissioning payload option and more
+         * 
+         * @param i_application_id : application id meeans way to address gpd : by sourceid or ieee
+         * @param i_gpdf_commissioning_option : permit to know capability of gpd
+         */
+        CEmberGpSinkTableOption(const uint8_t i_application_id, CGpdCommissioningPayload i_gpdf_commissioning_payload);
+
+        /**
+         * @brief raw getter
          */
         uint16_t get(void);
-        
 
+        /**
+         * @brief application_id getter
+         */
+        uint8_t getApplicationId(void){ return application_id; }
+        /**
+         * @brief communication_mode getter
+         */
+        uint8_t getCommunicationMode(void){ return communication_mode; }
+        /**
+         * @brief sequence_number_capabilities getter
+         */
+        bool isSequenceNumberCapabilities(void){ return sequence_number_capabilities; }
+        /**
+         * @brief rx_on_capability getter
+         */
+        bool isRxOnCapability(void){ return rx_on_capability; }
+        /**
+         * @brief fixed_location getter
+         */
+        bool isFixedLocation(void){ return fixed_location; }
+        /**
+         * @brief assigned_alias getter
+         */
+        bool isAssignedAlias(void){ return assigned_alias; }
+        /**
+         * @brief security_use getter
+         */
+        bool isSecurityUse(void){ return security_use; }
+
+
+        /**
+         * @brief Dump this instance as a string
+         *
+         * @return The resulting string
+         */
+        std::string String() const;
+
+        /**
+         * @brief Serialize to an iostream
+         *
+         * @param out The original output stream
+         * @param data The object to serialize
+         *
+         * @return The new output stream with serialized data appended
+         */
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data);        
+        
     private:
         uint8_t application_id;
         uint8_t communication_mode;
