@@ -88,6 +88,7 @@ private:
     // parameters to save for pairing
     CGpFrame gpf_comm_frame;
     uint8_t sink_table_index;
+    CEmberGpSinkTableEntryStruct sink_table_entry;
 
     /**
      * Notify Observer of this class

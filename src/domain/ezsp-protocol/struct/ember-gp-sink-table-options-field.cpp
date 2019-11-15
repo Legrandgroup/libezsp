@@ -8,6 +8,22 @@
 #include "ember-gp-sink-table-options-field.h"
 
 /**
+ * @brief Default constructor
+ */
+CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
+        application_id(),
+        communication_mode(),
+        sequence_number_capabilities(),
+        rx_on_capability(),
+        fixed_location(),
+        assigned_alias(),
+        security_use()
+{
+
+}
+
+
+/**
  * @brief Copy constructor
  */
 CEmberGpSinkTableOption::CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other) :

@@ -9,6 +9,16 @@
 #include "ember-gp-address-struct.h"
 
 /**
+ * @brief Default constructor
+ */
+CEmberGpAddressStruct::CEmberGpAddressStruct():
+	gpdIeeeAddress(),
+	applicationId(),
+	endpoint()
+{
+}
+
+/**
  * @brief Construction from itself
  *
  * @param i_gpd_address gpd address from construct

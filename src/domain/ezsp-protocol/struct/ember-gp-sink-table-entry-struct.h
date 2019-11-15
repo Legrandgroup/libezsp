@@ -20,10 +20,8 @@ class CEmberGpSinkTableEntryStruct
     public:
         /**
          * @brief Default constructor
-         *
-         * Construction without arguments is not allowed
          */
-        CEmberGpSinkTableEntryStruct() = delete;
+        CEmberGpSinkTableEntryStruct();
 
         /**
          * @brief Construction from a buffer
@@ -61,17 +59,24 @@ class CEmberGpSinkTableEntryStruct
 
         /**
          * @brief Copy constructor
-         *
-         * Copy construction is forbidden on this class
          */
-        CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other) = delete;
+        CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other);
+
+        /**
+         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
+         *
+         * This function will swap all attributes of \p first and \p second
+         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+         *
+         * @param first The first object
+         * @param second The second object
+         */
+        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second); 
 
         /**
          * @brief Assignment operator
-         *
-         * Assignment is forbidden on this class
          */
-        CEmberGpSinkTableEntryStruct& operator=(const CEmberGpSinkTableEntryStruct& other) = delete;
+        CEmberGpSinkTableEntryStruct& operator=(CEmberGpSinkTableEntryStruct other);
 
         /**
          * @brief return structure as a raw

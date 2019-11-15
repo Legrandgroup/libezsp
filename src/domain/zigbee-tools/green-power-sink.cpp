@@ -67,6 +67,7 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     sink_state(SINK_NOT_INIT),
     gpf_comm_frame(),
     sink_table_index(0xFF),
+    sink_table_entry(),
     observers()
 {
     dongle.registerObserver(this);
@@ -259,6 +260,9 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
                 // call
                 gpSinkSetEntry(sink_table_index,l_entry);
+
+                // save
+                sink_table_entry = l_entry;
             }
         }
         break;
@@ -267,71 +271,85 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
             {
-                // do proxy pairing
-                std::vector<uint8_t> l_struct;
-                uint32_t l_src_id = gpf_comm_frame.getSourceId();
-                // The options field of the GP Pairing command
-                l_struct.push_back(0xA8); 
-                l_struct.push_back(0xE5); 
-                l_struct.push_back(0x02); 
-                l_struct.push_back(0x00); 
-                // The addressing info of the target GPD.
-                l_struct.push_back(0x00); // short address
-                l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
-                l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
-                l_struct.push_back(0x00); // endpoint -> not used
-                // The communication mode of the GP Sink.
-                l_struct.push_back(0x01);
-                // The network address of the GP Sink.
-                l_struct.push_back(0xFF);
-                l_struct.push_back(0xFF);
-                // The group ID of the GP Sink.
-                l_struct.push_back(l_src_id&0xFF);
-                l_struct.push_back((l_src_id>>8)&0xFF);
-                // The alias assigned to the GPD.
-                l_struct.push_back(0xFF);
-                l_struct.push_back(0xFF);
-                // The IEEE address of the GP Sink.
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                l_struct.push_back(0x00);
-                // The key to use for GPD. 59 13 29 50 28 9D 14 FD 73 F9 C3 25 D4 57 AB B5
-                l_struct.push_back(0x59);
-                l_struct.push_back(0x13);
-                l_struct.push_back(0x29);
-                l_struct.push_back(0x50);
-                l_struct.push_back(0x28);
-                l_struct.push_back(0x9D);
-                l_struct.push_back(0x14);
-                l_struct.push_back(0xFD);
-                l_struct.push_back(0x73);
-                l_struct.push_back(0xF9);
-                l_struct.push_back(0xC3);
-                l_struct.push_back(0x25);
-                l_struct.push_back(0xD4);
-                l_struct.push_back(0x57);
-                l_struct.push_back(0xAB);
-                l_struct.push_back(0xB5);
-                // The security frame counter of the GPD.
-                l_struct.push_back(gpf_comm_frame.getPayload().at(23));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(24));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(25));
-                l_struct.push_back(gpf_comm_frame.getPayload().at(26));
-                // The forwarding radius.
-                l_struct.push_back(0x00);
-                // call
-                gpProxyTableProcessGpPairing(l_struct);                
+                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+
+                // debug
+                clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+
+                if( EMBER_SUCCESS != l_status )
+                {
+                    // error
+                    clogD << "ERROR, Stop commissioning process !!" << std::endl;
+                    setSinkState(SINK_READY);
+                }
+                else
+                {
+                    // do proxy pairing
+                    std::vector<uint8_t> l_struct;
+                    uint32_t l_src_id = gpf_comm_frame.getSourceId();
+                    // The options field of the GP Pairing command
+                    l_struct.push_back(0xA8); 
+                    l_struct.push_back(0xE5); 
+                    l_struct.push_back(0x02); 
+                    l_struct.push_back(0x00); 
+                    // The addressing info of the target GPD.
+                    l_struct.push_back(0x00); // short address
+                    l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>(l_src_id&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>8)&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>16)&0xFF));
+                    l_struct.push_back(static_cast<uint8_t>((l_src_id>>24)&0xFF));
+                    l_struct.push_back(0x00); // endpoint -> not used
+                    // The communication mode of the GP Sink.
+                    l_struct.push_back(0x01);
+                    // The network address of the GP Sink.
+                    l_struct.push_back(0xFF);
+                    l_struct.push_back(0xFF);
+                    // The group ID of the GP Sink.
+                    l_struct.push_back(l_src_id&0xFF);
+                    l_struct.push_back((l_src_id>>8)&0xFF);
+                    // The alias assigned to the GPD.
+                    l_struct.push_back(0xFF);
+                    l_struct.push_back(0xFF);
+                    // The IEEE address of the GP Sink.
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    l_struct.push_back(0x00);
+                    // The key to use for GPD. 59 13 29 50 28 9D 14 FD 73 F9 C3 25 D4 57 AB B5
+                    l_struct.push_back(0x59);
+                    l_struct.push_back(0x13);
+                    l_struct.push_back(0x29);
+                    l_struct.push_back(0x50);
+                    l_struct.push_back(0x28);
+                    l_struct.push_back(0x9D);
+                    l_struct.push_back(0x14);
+                    l_struct.push_back(0xFD);
+                    l_struct.push_back(0x73);
+                    l_struct.push_back(0xF9);
+                    l_struct.push_back(0xC3);
+                    l_struct.push_back(0x25);
+                    l_struct.push_back(0xD4);
+                    l_struct.push_back(0x57);
+                    l_struct.push_back(0xAB);
+                    l_struct.push_back(0xB5);
+                    // The security frame counter of the GPD.
+                    l_struct.push_back(gpf_comm_frame.getPayload().at(23));
+                    l_struct.push_back(gpf_comm_frame.getPayload().at(24));
+                    l_struct.push_back(gpf_comm_frame.getPayload().at(25));
+                    l_struct.push_back(gpf_comm_frame.getPayload().at(26));
+                    // The forwarding radius.
+                    l_struct.push_back(0x00);
+                    // call
+                    gpProxyTableProcessGpPairing(l_struct);  
+                }              
             }
         }
         break;

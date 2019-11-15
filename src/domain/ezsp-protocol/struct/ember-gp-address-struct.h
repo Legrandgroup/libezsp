@@ -13,10 +13,8 @@ class CEmberGpAddressStruct
     public:
         /**
          * @brief Default constructor
-         *
-         * Construction without arguments is not allowed
          */
-        CEmberGpAddressStruct() = delete;
+        CEmberGpAddressStruct();
 
         /**
          * @brief Construction from itself

@@ -27,10 +27,8 @@ class CEmberGpSinkTableOption
     public:
         /**
          * @brief Default constructor
-         *
-         * Construction without arguments is not allowed
          */
-        CEmberGpSinkTableOption() = delete;
+        CEmberGpSinkTableOption();
 
         /**
          * @brief Copy constructor
