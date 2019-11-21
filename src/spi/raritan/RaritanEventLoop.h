@@ -20,9 +20,18 @@ class RaritanEventLoop {
 public:
 	/**
 	 * @brief Default constructor
+	 *
+	 * Will use the singleton selector
 	 */
 	RaritanEventLoop();
+
+	/**
+	 * @brief Constructor using a pre-existing selector
+	 *
+	 * @param selector The selector to use for the mainloop
+	 */
 	RaritanEventLoop(pp::Selector &selector);
+
 	/**
 	 * @brief Run the main loop
 	 */
