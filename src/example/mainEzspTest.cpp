@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+    if (uartDriver.open(serialPort, 57600) != 0) {
         clogE << "Failed opening serial port. Aborting\n";
         return 1;
     }
