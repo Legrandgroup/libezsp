@@ -86,6 +86,19 @@ class CEmberGpSinkTableEntryStruct
         std::vector<uint8_t> getRaw(void);
 
         /**
+         * @brief getters
+         */
+        CEmberGpSinkTableOption getOption(void){ return options; }
+        CEmberGpAddressStruct getGpdAddr(void){ return gpd; }
+        EmberNodeId getAssignedAlias(void){ return assigned_alias; }
+        EmberGpSecurityFrameCounter getSecurityFrameCounter(void){ return gpdSecurity_frame_counter; }
+        EmberKeyData getGpdKey(void){ return gpd_key; }
+        uint8_t getGroupcastRadius(void){ return groupcast_radius; }
+        uint8_t getSecurityLevel(void){ return security_options&0x03; }
+        uint8_t getSecurityKeyType(void){ return (security_options>>2)&0x07; }
+        bool isActive(void){ return status==0x01; }
+
+        /**
          * @brief status setter
          */
         void setEntryActive(bool i_active){ i_active?status=0x01:status=0xFF; }
