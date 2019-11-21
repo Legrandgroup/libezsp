@@ -401,7 +401,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 if(( APP_INIT_IN_PROGRESS == app_state ) && ( true == reset_wanted ))
                 {
                     // leave current network
-                    zb_nwk.LeaveNetwork();
+                    zb_nwk.leaveNetwork();
                     setAppState(APP_LEAVE_IN_PROGRESS);
                     reset_wanted = false;
                 }
