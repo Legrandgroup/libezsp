@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../zbmessage/green-power-frame.h"
+#include "../zbmessage/green-power-device.h"
 #include "../green-power-observer.h"
 #include "../ezsp-dongle.h"
 #include "zigbee-messaging.h"
@@ -67,9 +68,11 @@ public:
     uint8_t registerGpd( uint32_t i_source_id );
 
     /**
-     * @brief add a green power device
+     * @brief Add a green power device to this sink
+     *
+     * @param gpd The description oof the device to add
      */
-    void registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key );
+    void registerGpd( const CGpDevice &gpd );
 
     /**
      * Observer

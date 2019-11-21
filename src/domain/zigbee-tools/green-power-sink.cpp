@@ -116,15 +116,15 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
     return sink_table.addEntry(l_entry);
 }
 
-void CGpSink::registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key )
+void CGpSink::registerGpd( const CGpDevice &gpd )
 {
     // save offline information
-    CEmberGpAddressStruct l_gp_addr(i_source_id);
+    CEmberGpAddressStruct l_gp_addr(gpd.getSourceId());
     sink_table_entry.setGpdAddress(l_gp_addr);
-    sink_table_entry.setKey(i_key);
+    sink_table_entry.setKey(gpd.getKey());
 
     // request sink table entry
-    gpSinkTableFindOrAllocateEntry( i_source_id );
+    gpSinkTableFindOrAllocateEntry( gpd.getSourceId() );
     
     // set state
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
