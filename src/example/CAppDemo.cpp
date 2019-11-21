@@ -23,7 +23,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         bool openGpCommissionning,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
-        const std::vector<uint32_t>& sourceIdList) :
+        const std::vector<CGpDevice>& gpDevList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -46,9 +46,9 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
-        for (auto i : sourceIdList) {
-            clogD << "Watching source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i << "\n";
-            gp_sink.registerGpd(i);
+        for (auto i : gpDevList) {
+            clogD << "Watching source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i.getSourceId() << "\n";
+            gp_sink.registerGpd(i.getSourceId());
         }
         setAppState(APP_INIT_IN_PROGRESS);
     }

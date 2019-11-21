@@ -2,6 +2,7 @@ LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/ezsp-dongle.cpp \
                      $(SRC_DOMAIN_PATH)/ash.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/green-power-device.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/zigbee-message.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/zclheader.cpp \
