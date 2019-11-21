@@ -8,9 +8,6 @@
 
 #include "ember-gp-address-struct.h"
 
-/**
- * @brief Default constructor
- */
 CEmberGpAddressStruct::CEmberGpAddressStruct():
 	gpdIeeeAddress(),
 	applicationId(),
@@ -18,15 +15,10 @@ CEmberGpAddressStruct::CEmberGpAddressStruct():
 {
 }
 
-/**
- * @brief Construction from itself
- *
- * @param i_gpd_address gpd address from construct
- */
-CEmberGpAddressStruct::CEmberGpAddressStruct(const CEmberGpAddressStruct& i_gpd_address):
-	gpdIeeeAddress(i_gpd_address.getGpdIeeeAddress()),
-	applicationId(i_gpd_address.getApplicationId()),
-	endpoint(i_gpd_address.getEndpoint())
+CEmberGpAddressStruct::CEmberGpAddressStruct(const CEmberGpAddressStruct& other):
+	gpdIeeeAddress(other.getGpdIeeeAddress()),
+	applicationId(other.getApplicationId()),
+	endpoint(other.getEndpoint())
 {
 }
 
@@ -38,7 +30,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 }
 
 /**
- * This method is a friend of CAPSFrame class
+ * This method is a friend of CEmberGpAddressStruct class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
 void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothrow */
@@ -51,9 +43,6 @@ void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothro
   /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
-/**
- * @brief Assignment operator
- */
 CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
 {
   swap(*this, other);
@@ -77,7 +66,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
     gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>24)&0xFF));
 }
 
-std::vector<uint8_t> CEmberGpAddressStruct::getRaw(void)
+std::vector<uint8_t> CEmberGpAddressStruct::getRaw() const
 {
     std::vector<uint8_t> lo_raw;
 

@@ -119,7 +119,7 @@ public:
   // high level
 
   /**
-   * @brief SetSpecific   : build a basic cluster specific message
+   * @brief Build a basic cluster specific message
    * @param i_msp_nwk     : indicate if it's an msp or public message
    * @param i_endpoint    : destination endpoint
    * @param i_cluster_id  : concerned cluster
@@ -134,7 +134,7 @@ public:
                     const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0);
 
   /**
-   * @brief SetGeneral   : build a basic cluster general message
+   * @brief Build a basic cluster general message
    * @param i_msp_nwk     : indicate if it's an msp or public message
    * @param i_endpoint    : destination endpoint
    * @param i_cluster_id  : concerned cluster
@@ -149,25 +149,36 @@ public:
                    const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0 );
 
   /**
-   * @brief CZigBeeMsg::SetZdo : fill a ZDO message
+   * @brief Fill a ZDO message
    * @param i_cmd_id : ZDO command
    * @param i_payload : payload for command
    * @param i_transaction_number : transaction sequence number
    */
   void SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number = 0);
 
-  // aps
-  CAPSFrame GetAps(void) const { return aps; }
-
-  // ZCL Header
-  CZCLHeader GetZCLHeader(void) const { return zcl_header; }
-
-  // payload
-  std::vector<uint8_t> GetPayload(void) const { return payload; }
-
-  // concatenate
   /**
-   * @brief Set : parse an incomming raw EZSP message
+   * @brief Getter for the enclosed APS frame
+   *
+   * @return The enclosed APS frame
+   */
+  CAPSFrame GetAps() const { return aps; }
+
+  /**
+   * @brief Getter for the enclosed ZCL header
+   *
+   * @return The enclosed ZCL header
+   */
+  CZCLHeader GetZCLHeader() const { return zcl_header; }
+
+  /**
+   * @brief Getter for the enclosed payload
+   *
+   * @return The enclosed payload
+   */
+  std::vector<uint8_t> GetPayload() const { return payload; }
+
+  /**
+   * @brief Parse an incomming raw EZSP message
    * @param i_aps : aps data
    * @param i_msg : message data included header (ZCL and/or MSP)
    */
@@ -175,23 +186,16 @@ public:
 
   /**
    * @brief Get : format zigbee message frame with header
-   * @return return zigbee message with header
+   * @return Zigbee message with header
    */
-  std::vector<uint8_t> Get( void ) const;
+  std::vector<uint8_t> Get() const;
 
-/*-- TEST GREEN POWER */
-  /** APS */
-  CAPSFrame aps;
+  /* FIXME: make the atribute below private as create getter/setter methods */
+  CAPSFrame aps;        /*!< Enclosed APS frame */
 private:
-
-  /** ZCL Header */
-  CZCLHeader zcl_header;
-
-  /** Do we have a valid content in attribute zcl_header? */
-  bool use_zcl_header;
-
-  /** Payload */
-  std::vector<uint8_t> payload;
+  CZCLHeader zcl_header;        /*!< Enclosed ZCL header */
+  bool use_zcl_header;  /*!< Do we have a valid content in attribute zcl_header? */
+  std::vector<uint8_t> payload; /*!< Enclosed payload */
 };
 
 #ifdef USE_RARITAN

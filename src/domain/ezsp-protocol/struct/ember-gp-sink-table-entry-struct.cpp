@@ -1,7 +1,7 @@
 /**
  * @file ember-g-sink-table-entry-struct.cpp
  *
- * @brief The internal representation of a sink table entry.
+ * @brief Represents one sink table entry from Ember
  */
 
 #include <sstream>
@@ -43,29 +43,6 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uin
     sink_list[1].push_back(0xFF);
 }
 
-/**
- * @brief constructor with specific value, others are set to default value.
- *          option : 0x02A8 (cf. A3.3.2.2.1 Options parameter of the Sink Table from doc doc-14-0563-16-batt-green-power-spec_ProxyBasic.pdf)
- *              - bits 0..2 : Application Id (0b000 : use source Id)
- *              - bits 3..4 : Communication mode (0b01 : groupcast forwarding of the GP Notification command to DGroupID)
- *              - bit 5 : Sequence number capabilities (0b1 : use incremental sequence number)
- *              - bit 6 : RxOnCapability (0b0 : not capable)
- *              - bit 7 : FixedLocation (0b1 : not a mobile device)
- *              - bit 8 : AssignedAlias (0b0 : the derived alias is used)
- *              - bit 9 : Security use (0b1 : indicates that security-related parameters of the Sink Table entry are present)
- *              - bit 10..15 : Reserved
- *          sink_list : by reverse set first byte of each to 0xFF to disable usage.
- *          groupcast_radius : The default value of 0x00 indicates undefined
- * 
- * @param i_status Internal status of the sink table entry. 0x01 active, 0xff : disable
- * @param i_option see upper
- * @param i_gpd_address The addressing info of the GPD.
- * @param i_device_id The device id for the GPD.
- * @param i_alias The assigned alias for the GPD.
- * @param i_security_option The security options field. currently 0x12 : SecurtityLevel (0b10), SecurityKeyType(0b100)
- * @param i_frm_counter the last observed valid frame counter value
- * @param i_gpd_key The key to use for GPD.
- */
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, CEmberGpSinkTableOption i_options,
                 CEmberGpAddressStruct i_gpd_address, uint8_t i_device_id, uint16_t i_alias,
                 uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key):
@@ -84,9 +61,6 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntry
     sink_list[1].push_back(0xFF);
 }
 
-/**
- * @brief Copy constructor
- */
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other):
         status(other.status),
         options(other.options),
@@ -104,7 +78,7 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTab
 
 
 /**
- * This method is a friend of CAPSFrame class
+ * This method is a friend of CEmberGpSinkTableEntryStruct class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
 void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) /* nothrow */
@@ -124,21 +98,13 @@ void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& sec
   /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
-/**
- * @brief Assignment operator
- */
 CEmberGpSinkTableEntryStruct& CEmberGpSinkTableEntryStruct::operator=(CEmberGpSinkTableEntryStruct other)
 {
   swap(*this, other);
   return *this;
 }
 
-/**
- * @brief return structure as a raw
- * 
- * @return raw of structure
- */
-std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw(void)
+std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
 {
     std::vector<uint8_t> l_struct;
 
