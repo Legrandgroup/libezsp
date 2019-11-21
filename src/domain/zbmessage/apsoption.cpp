@@ -1,5 +1,5 @@
 /**
- * @file apsoptions.h
+ * @file apsoption.cpp
  * 
  * @brief Handles encoding/decoding of the 16-bit APS option word
  */
