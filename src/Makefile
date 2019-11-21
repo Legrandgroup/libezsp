@@ -15,6 +15,7 @@ libezsp_SRCS = domain/zbmessage/zigbee-message.cpp \
 	domain/zbmessage/apsoption.cpp \
 	domain/zbmessage/aps.cpp \
 	domain/zbmessage/zdp-enum.cpp \
+	domain/zbmessage/green-power-device.cpp \
 	domain/zbmessage/green-power-frame.cpp \
 	domain/zigbee-tools/green-power-sink.cpp \
 	domain/zbmessage/green-power-sink-table-entry.cpp \

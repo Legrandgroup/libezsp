@@ -10,6 +10,7 @@
 #include "../domain/zigbee-tools/zigbee-networking.h"
 #include "../domain/zigbee-tools/zigbee-messaging.h"
 #include "../domain/zigbee-tools/green-power-sink.h"
+#include "../domain/zbmessage/green-power-device.h"
 #include "../spi/IUartDriver.h"
 #include "../spi/ITimerFactory.h"
 #include "../spi/ILogger.h"
@@ -28,7 +29,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<uint32_t>& sourceIdList={});
+    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<CGpDevice>& gpDevList={});
 
     /**
      * Callback

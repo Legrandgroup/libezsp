@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
-    std::vector<uint32_t> sourceIdList;
+    std::vector<CGpDevice> gpDevDataList;
     unsigned int resetToChannel = 0;
     std::string serialPort("/dev/ttyUSB0");
     bool openGpCommissionningAtStartup = false;
@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
                 sourceId << std::hex << optarg;
                 unsigned int sourceIdValue;
                 sourceId >> sourceIdValue;
-            if (sourceIdValue<static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                    sourceIdList.push_back(sourceIdValue);
+                if (sourceIdValue<static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+                    gpDevDataList.push_back(CGpDevice(sourceIdValue, CGpDevice::UNKNOWN_KEY));
                 }
                 else {
                     clogE << "Invalid source ID: " << optarg << "\n";
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, openZigbeeNetworkAtStartup, resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, openZigbeeNetworkAtStartup, resetToChannel, gpDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;

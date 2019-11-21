@@ -3,6 +3,7 @@ LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/ash.cpp \
                      $(SRC_DOMAIN_PATH)/custom-aes.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/green-power-device.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/gpd-commissioning-command-payload.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/gp-pairing-command-option-struct.cpp \
