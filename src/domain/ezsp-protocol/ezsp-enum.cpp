@@ -43,7 +43,7 @@ std::string CEzspEnum::EEmberStatusToString( EEmberStatus in )
         { EMBER_NO_NETWORK_KEY_RECEIVED, "EMBER_NO_NETWORK_KEY_RECEIVED" }
     };
     auto   it  = MyEnumStrings.find(in);
-    return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;      
+    return it == MyEnumStrings.end() ? "OUT_OF_RANGE : " + std::to_string(in) : it->second;      
 }
 
 std::string CEzspEnum::EmberJoinMethodToString( EmberJoinMethod in )
