@@ -17,7 +17,13 @@
 #include "../domain/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset, unsigned int networkChannel, const std::vector<uint32_t>& sourceIdList) :
+CAppDemo::CAppDemo(IUartDriver& uartDriver,
+        ITimerFactory &i_timer_factory,
+        bool reset,
+        bool openGpCommissionning,
+        bool openZigbeeCommissionning,
+        unsigned int networkChannel,
+        const std::vector<uint32_t>& sourceIdList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -26,6 +32,8 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool
     db(),
     ezsp_version(6),
     reset_wanted(reset),
+    openGpCommissionningAtStartup(openGpCommissionning),
+    openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel)
 {
     setAppState(APP_NOT_INIT);
@@ -272,40 +280,40 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 // for demo immediately open commissioning session
                 gp_sink.openCommissioningSession();
 
-                /*-- test gREEN poWER only
-                // we open network, so we can enter new devices
-                zb_nwk.OpenNetwork( 60 );
+                if (this->openZigbeeCommissionningAtStartup) {
+                    // If requested to do so, open the zigbee network for a specific duration, so new devices can join
+                    zb_nwk.openNetwork(60);
 
-                // we retrieve network information and key and eui64 of dongle (can be done before)
-                dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
-                dongle.sendCommand(EZSP_GET_EUI64);
-                std::vector<uint8_t> l_payload;
-                l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
-                dongle.sendCommand(EZSP_GET_KEY, l_payload);
+                    // we retrieve network information and key and eui64 of dongle (can be done before)
+                    dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
+                    dongle.sendCommand(EZSP_GET_EUI64);
+                    std::vector<uint8_t> l_payload;
+                    l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
+                    dongle.sendCommand(EZSP_GET_KEY, l_payload);
 
-                // start discover of existing product inside network
-                zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-                    clogI << " Is it a new product ";
-                    clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-                    clogI << "[eui64 :";
-                    for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-                    clogI << "]";
-                    clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-                    clogI << " ?" << std::endl;
+                    // start discover of existing product inside network
+                    zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
+                        clogI << " Is it a new product ";
+                        clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
+                        clogI << "[eui64 :";
+                        for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
+                        clogI << "]";
+                        clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
+                        clogI << " ?" << std::endl;
 
-                    if( db.addProduct( i_eui64, i_id ) )
-                    {
-                        clogI << "YES !! Retrieve information for binding" << std::endl;
+                        if( db.addProduct( i_eui64, i_id ) )
+                        {
+                            clogI << "YES !! Retrieve information for binding" << std::endl;
 
-                        // retrieve information about device, starting by discover list of active endpoint
-                        std::vector<uint8_t> payload;
-                        payload.push_back(u16_get_lo_u8(i_id));
-                        payload.push_back(u16_get_hi_u8(i_id));
+                            // retrieve information about device, starting by discover list of active endpoint
+                            std::vector<uint8_t> payload;
+                            payload.push_back(u16_get_lo_u8(i_id));
+                            payload.push_back(u16_get_hi_u8(i_id));
 
-                        zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
-                    }
-                });
-                */
+                            zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
+                        }
+                    });
+                }
             }
             else
             {
