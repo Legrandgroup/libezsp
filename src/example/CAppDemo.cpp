@@ -274,11 +274,12 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             {
                 setAppState(APP_READY);
 
-                // init gp sink
                 gp_sink.init();
 
-                // for demo immediately open commissioning session
-                gp_sink.openCommissioningSession();
+                if (this->openGpCommissionningAtStartup) {
+                    // If requested to do so, immediately open a GP commissioning session
+                    gp_sink.openCommissioningSession();
+                }
 
                 if (this->openZigbeeCommissionningAtStartup) {
                     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
