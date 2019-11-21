@@ -25,10 +25,7 @@ CGpPairingCommandOption::CGpPairingCommandOption(CEmberGpSinkTableOption i_sink_
 
 }
 
-/**
- * @brief option getter
- */
-uint32_t CGpPairingCommandOption::get(void)
+uint32_t CGpPairingCommandOption::get() const
 {
         uint32_t lo_option = 0;
 

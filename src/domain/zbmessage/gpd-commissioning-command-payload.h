@@ -1,7 +1,7 @@
 /**
  * @file gpd-commissionning-command-payload.h
  *
- * @brief decoding payload of gpd commissioning command according to A.4.2.1.1 GPD Commissioning command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
+ * @brief Decoding payload of gpd commissioning command according to A.4.2.1.1 GPD Commissioning command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 #pragma once
 
@@ -46,7 +46,7 @@ class CGpdCommissioningPayload
         /**
          * @brief Assignment operator
          *
-         * Copy construction is forbidden on this class
+         * Assignment is forbidden on this class
          */
         CGpdCommissioningPayload& operator=(const CGpdCommissioningPayload& other) = delete;
 
@@ -54,23 +54,23 @@ class CGpdCommissioningPayload
          * @brief Construction from an incoming ezsp raw message
          *
          * @param raw_message The buffer to construct from
-         * @param i_src_id source id of gpd frame, use to decrypt key
+         * @param i_src_id source id of gpd frame, used to decrypt key
          */
         CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id);
 
         /**
-         * @brief Getter key
+         * @brief Getter for the enclosed encryption/authentication key
          * 
-         * @return key
+         * @return The enclosed key
          */
-        EmberKeyData getKey(){ return key; }
+        EmberKeyData getKey() const { return key; }
 
         /**
-         * @brief Getter
+         * @brief Getter for the enclosed device ID
          * 
-         * @return deviceId
+         * @return The enclosed deviceId
          */
-        uint8_t getDeviceId(){ return device_id; }
+        uint8_t getDeviceId() const { return device_id; }
 
         // bits field:
         // b0 : MACsequenceNumberCapability (0b1:incremental MAC sequence number, 0b0:random MAC sequence number)
@@ -84,27 +84,27 @@ class CGpdCommissioningPayload
         /**
          * @brief options getters bit field
          */
-        bool isMACsequenceNumberCapability(){ return (options & (1<<COM_OPTION_MAC_SEQ_CAPABILITY_BIT)); }
-        bool isRxOnCapability(){ return (options & (1<<COM_OPTION_RX_ON_CAPABILITY_BIT)); }
-        bool isApplicationInformationPresent(){ return (options & (1<<COM_OPTION_APPLICATION_INFORMATION_BIT)); }
-        bool isPANIdRequest(){ return (options & (1<<COM_OPTION_PAN_ID_REQUEST_BIT)); }
-        bool isGPSecurityKeyRequest(){ return (options & (1<<COM_OPTION_GP_SECURITY_KEY_REQUEST_BIT)); }
-        bool isFixedLocation(){ return (options & (1<<COM_OPTION_FIXED_LOCATION_BIT)); }
-        bool isExtendedOptionsFieldPresent(){ return (options & (1<<COM_OPTION_EXTENDED_OPTION_FIELD_BIT)); }
+        bool isMACsequenceNumberCapability() const { return (options & (1<<COM_OPTION_MAC_SEQ_CAPABILITY_BIT)); }
+        bool isRxOnCapability() const { return (options & (1<<COM_OPTION_RX_ON_CAPABILITY_BIT)); }
+        bool isApplicationInformationPresent() const { return (options & (1<<COM_OPTION_APPLICATION_INFORMATION_BIT)); }
+        bool isPANIdRequest() const { return (options & (1<<COM_OPTION_PAN_ID_REQUEST_BIT)); }
+        bool isGPSecurityKeyRequest() const { return (options & (1<<COM_OPTION_GP_SECURITY_KEY_REQUEST_BIT)); }
+        bool isFixedLocation() const { return (options & (1<<COM_OPTION_FIXED_LOCATION_BIT)); }
+        bool isExtendedOptionsFieldPresent() const { return (options & (1<<COM_OPTION_EXTENDED_OPTION_FIELD_BIT)); }
 
         /**
-         * @brief Getter
+         * @brief Getter for the enclosed extended options
          * 
-         * @return extended_options
+         * @return The enclosed extended options
          */
-        uint8_t getExtendedOption(){ return extended_options; }
+        uint8_t getExtendedOption() const { return extended_options; }
 
         /**
-         * @brief Getter
+         * @brief Getter for the enclosed frame counter
          * 
-         * @return out_frame_counter
+         * @return The enclosed frame counter
          */
-        uint32_t getOutFrameCounter(){ return out_frame_counter; }
+        uint32_t getOutFrameCounter() const { return out_frame_counter; }
 
 
         /**
@@ -126,7 +126,7 @@ class CGpdCommissioningPayload
 
     private:
         // define in ZigBee document 13-0166, Master List of Green Power Device Definitions, revision 00 or later
-        uint8_t device_id;
+        uint8_t device_id; /*!< The device ID contained in this GPD commissioning command */
         // bits field:
         // b0 : MACsequenceNumberCapability (0b1:incremental MAC sequence number, 0b0:random MAC sequence number)
         // b1 : RxOnCapability (0b1:GPD has receiving capabilities in operational mode.)
@@ -136,7 +136,7 @@ class CGpdCommissioningPayload
         // b5 : GP Security Key request
         // b6 : FixedLocation
         // b7 : Extended Options Field
-        uint8_t options;
+        uint8_t options; /*!< The options field contained in this GPD commissioning command */
         // bits field:
         // b0-1 : SecurityLevelCapabilities (0b00:No security, 0b01:Reserved, 0b10:4B frame counter and 4B MIC Only, 0b11:Encryption & 4B frame counter and 4B MIC)
         // b2-4 : KeyType : (see A.3.7.1.2 gpSecurityKeyType)
@@ -150,20 +150,20 @@ class CGpdCommissioningPayload
         // b5 : GPD Key present
         // b6 : GPD Key encryption
         // b7 : GPD outgoing counter present
-        uint8_t extended_options;
+        uint8_t extended_options; /*!< The extended options contained in this GPD commissioning command */
 
-        EmberKeyData key;
-        uint32_t key_mic;
-        uint32_t out_frame_counter;
+        EmberKeyData key; /*!< The key contained in this GPD commissioning command */
+        uint32_t key_mic; /*!< The MIC contained in this GPD commissioning command */
+        uint32_t out_frame_counter; /*!< The frame counter value contained in this GPD commissioning command */
         // bits field:
         // b0 : ManufacturerID present
         // b1 : ModelID present
         // b2 : GPD commands present
         // b3 : Cluster list present
         // b4-7 : reserved
-        uint8_t app_information;
-        uint16_t manufacturer_id;
-        uint16_t model_id;
-        std::vector<uint8_t> gpd_command_list;
-        std::vector<uint8_t> gpd_cluster_list;
+        uint8_t app_information; /*!< The app information contained in this GPD commissioning command */
+        uint16_t manufacturer_id; /*!< The manufacturer ID contained in this GPD commissioning command */
+        uint16_t model_id; /*!< The model ID contained in this GPD commissioning command */
+        std::vector<uint8_t> gpd_command_list; /*!< The GPD command list contained in this GPD commissioning command */
+        std::vector<uint8_t> gpd_cluster_list; /*!< The GPD cluster list contained in this GPD commissioning command */
 };

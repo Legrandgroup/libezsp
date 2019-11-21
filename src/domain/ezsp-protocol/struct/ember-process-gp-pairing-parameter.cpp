@@ -1,6 +1,9 @@
 /**
- * paramters for gpProxyTableProcessGpPairing (0xC9) command.
- * reference is for docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
+ * @file ember-process-gp-pairing-parameter.cpp
+ *
+ * @brief Parameters for gpProxyTableProcessGpPairing (0xC9) command.
+ *
+ * Reference: docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 
 #include "ember-process-gp-pairing-parameter.h"
@@ -24,10 +27,7 @@ CProcessGpPairingParam::CProcessGpPairingParam(CEmberGpSinkTableEntryStruct i_si
 }
 
 
-/**
- * @brief raw getter
- */
-std::vector<uint8_t> CProcessGpPairingParam::get(void)
+std::vector<uint8_t> CProcessGpPairingParam::get() const
 {
     std::vector<uint8_t> lo_out;
 

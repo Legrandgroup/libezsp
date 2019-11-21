@@ -1,5 +1,7 @@
 /**
  * @file green-power-sink.cpp
+ *
+ * @brief Access to green power capabilities
  */
 
 #include <iostream>
@@ -73,7 +75,7 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     dongle.registerObserver(this);
 }
 
-void CGpSink::init(void)
+void CGpSink::init()
 {
     // initialize green power sink
     clogD << "Call EZSP_GP_SINK_TABLE_INIT" << std::endl;
@@ -83,16 +85,13 @@ void CGpSink::init(void)
     setSinkState(SINK_READY);    
 }
 
-/**
- * Clear all GP tables
- */
-void CGpSink::gpClearAllTables( void )
+void CGpSink::gpClearAllTables()
 {
     // sink table
     dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
 }
 
-void CGpSink::openCommissioningSession(void)
+void CGpSink::openCommissioningSession()
 {
     // set local proxy in commissioning mode
     sendLocalGPProxyCommissioningMode(0x05);
@@ -101,7 +100,7 @@ void CGpSink::openCommissioningSession(void)
     setSinkState(SINK_COM_OPEN);
 }
 
-void CGpSink::closeCommissioningSession(void)
+void CGpSink::closeCommissioningSession()
 {
     // set local proxy in commissioning mode
     sendLocalGPProxyCommissioningMode(0x00);
@@ -501,9 +500,6 @@ void CAppDemo::gpSinkTableLookup( uint32_t i_src_id )
 }
 */
 
-/**
- *  Finds or allocates a sink entry
- */
 void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
 {
     // An EmberGpAddress struct containing a copy of the gpd address to be found.
@@ -513,9 +509,6 @@ void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
     dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());    
 }
 
-/**
- * Retrieves the sink table entry stored at the passed index.
- */
 void CGpSink::gpSinkGetEntry( uint8_t i_index )
 {
     std::vector<uint8_t> l_payload;
@@ -528,12 +521,6 @@ void CGpSink::gpSinkGetEntry( uint8_t i_index )
 }
 
 
-/**
- * @brief Retrieves the sink table entry stored at the passed index.
- * 
- * @param i_index The index of the requested sink table entry.
- * @param i_entry An EmberGpSinkTableEntry struct containing a copy of the sink entry to be updated.
- */
 void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_entry )
 {
     std::vector<uint8_t> l_payload;
@@ -550,9 +537,6 @@ void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_e
 }
 
 
-/**
- * Update the GP Proxy table based on a GP pairing.
- */
 void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 {
     clogI << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING\n";
@@ -560,13 +544,6 @@ void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 }
 
 
-
-
-
-
-/**
- * utility function can managed error state
- */
 void CGpSink::setSinkState( ESinkState i_state )
 {
     sink_state = i_state;

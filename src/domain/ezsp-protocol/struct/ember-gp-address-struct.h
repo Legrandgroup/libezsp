@@ -17,11 +17,11 @@ class CEmberGpAddressStruct
         CEmberGpAddressStruct();
 
         /**
-         * @brief Construction from itself
+         * @brief Copy constructor
          *
-         * @param i_gpd_address gpd address from construct
+         * @param other The object instance to construct from
          */
-        CEmberGpAddressStruct(const CEmberGpAddressStruct& i_gpd_address);
+        CEmberGpAddressStruct(const CEmberGpAddressStruct& other);
 
         /**
          * @brief Construction from a buffer
@@ -38,7 +38,7 @@ class CEmberGpAddressStruct
         CEmberGpAddressStruct(const uint32_t i_srcId);
 
         /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
+         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpAddressStruct
          *
          * This function will swap all attributes of \p first and \p second
          * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
@@ -50,6 +50,9 @@ class CEmberGpAddressStruct
         
         /**
          * @brief Assignment operator
+         * @param other The object to assign to the lhs
+         *
+         * @return The object that has been assigned the value of @p other
          */
         CEmberGpAddressStruct& operator=(CEmberGpAddressStruct other);
 
@@ -78,7 +81,7 @@ class CEmberGpAddressStruct
          * 
          * @return raw buffer
          */
-        std::vector<uint8_t> getRaw(void);
+        std::vector<uint8_t> getRaw() const;
 
         /**
          * @brief Dump this instance as a string
@@ -98,9 +101,8 @@ class CEmberGpAddressStruct
         friend std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data);
 
     private:
-
-        EmberEUI64 gpdIeeeAddress; // The GPD's EUI64.
-        uint8_t applicationId; // The GPD Application ID.
-        uint8_t endpoint; // The GPD endpoint.
+        EmberEUI64 gpdIeeeAddress; /*!< The GPD's EUI64 */
+        uint8_t applicationId; /*!< The GPD Application ID */
+        uint8_t endpoint; /*!< The GPD endpoint */
 
 };

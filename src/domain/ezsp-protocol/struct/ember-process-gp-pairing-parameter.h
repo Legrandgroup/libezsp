@@ -1,6 +1,9 @@
 /**
- * paramters for gpProxyTableProcessGpPairing (0xC9) command.
- * reference is for docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
+ * @file ember-process-gp-pairing-parameter.h
+ *
+ * @brief Parameters for gpProxyTableProcessGpPairing (0xC9) command.
+ *
+ * Reference: docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 #pragma once
 
@@ -47,51 +50,22 @@ class CProcessGpPairingParam
 
 
         /**
-         * @brief raw getter
+         * @brief Raw getter
+         *
+         * @return This object represented as a raw byte-buffer
          */
-        std::vector<uint8_t> get(void);
+        std::vector<uint8_t> get() const;
 
 
     private:
-        /**
-         * The options field of the GP Pairing command.
-         * see A.3.3.5.2 GP Pairing command for more details
-         */
-        CGpPairingCommandOption options;
-        /**
-         * The target GPD.
-         */
-        CEmberGpAddressStruct addr;
-        /**
-         * The communication mode of the GP Sink.
-         */
-        uint8_t commMode;
-        /**
-         * The network address of the GP Sink.
-         */
-        uint16_t sinkNetworkAddress;
-        /**
-         * The group ID of the GP Sink.
-         */
-        uint16_t sinkGroupId;
-        /**
-         * The alias assigned to the GPD.
-         */
-        uint16_t assignedAlias;
-        /**
-         * The IEEE address of the GP Sink.
-         */
-        EmberEUI64 sinkIeeeAddress;
-        /**
-         * The key to use for the target GPD.
-         */
-        EmberKeyData gpdKey;
-        /**
-         * The gpd security frame counter.
-         */
-        uint32_t gpdSecurityFrameCounter;
-        /**
-         * The forwarding radius.
-         */
-        uint8_t forwardingRadius;
+        CGpPairingCommandOption options;        /*!< The options field of the GP Pairing command (see A.3.3.5.2 GP Pairing command for more details) */
+        CEmberGpAddressStruct addr;     /*!< The target GPD */
+        uint8_t commMode;       /*!< The communication mode of the GP Sink */
+        uint16_t sinkNetworkAddress;    /*!< The network address of the GP Sink */
+        uint16_t sinkGroupId;   /*!< The group ID of the GP Sink */
+        uint16_t assignedAlias; /*!< The alias assigned to the GPD */
+        EmberEUI64 sinkIeeeAddress;     /*!< The IEEE address of the GP Sink */
+        EmberKeyData gpdKey;    /*!< The key to use for the target GPD */
+        uint32_t gpdSecurityFrameCounter;       /*!< The gpd security frame counter */
+        uint8_t forwardingRadius;       /*!< The forwarding radius */
 };

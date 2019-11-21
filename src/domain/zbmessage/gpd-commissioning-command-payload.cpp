@@ -1,7 +1,7 @@
 /**
- * @file gpd-commissioning-payload.cpp
+ * @file gpd-commissioning-command-payload.cpp
  *
- * @brief 
+ * @brief Decoding payload of gpd commissioning command according to A.4.2.1.1 GPD Commissioning command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 
 #include <sstream>
@@ -12,11 +12,6 @@
 #include "../custom-aes.h"
 #include "gpd-commissioning-command-payload.h"
 
-/**
- * @brief Construction from an incoming ezsp raw message
- *
- * @param raw_message The buffer to construct from
- */
 CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id):
         device_id(raw_message.at(0)),
         options(raw_message.at(1)),

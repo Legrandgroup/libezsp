@@ -33,7 +33,7 @@ class CGpFrame
          *
          * Construction without arguments is not allowed
          */
-        CGpFrame(); // = delete;
+        CGpFrame();
 
         /**
          * @brief Assignment operator
@@ -67,19 +67,18 @@ class CGpFrame
         friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);
 
         // getter
-        uint8_t getLinkValue(){return link_value;}
-        uint8_t getSequenceNumber(){return sequence_number;}
-        uint32_t getSourceId(){return source_id;}
-        EGpSecurityLevel getSecurity(){return security;}
-        EGpSecurityKeyType getKeyType(){return key_type;}
-        bool isAutoCommissioning(){return auto_commissioning;}
-        bool isRxAfterTx(){return rx_after_tx;}
-        uint32_t getSecurityFrameCounter(){return security_frame_counter;}
-        uint8_t getCommandId(){return command_id;}
-        uint32_t getMic(){return mic;}
-        uint8_t getProxyTableEntry(){return proxy_table_entry;}
-        std::vector<uint8_t> getPayload(){return payload;}
-
+        uint8_t getLinkValue() const {return link_value;}
+        uint8_t getSequenceNumber() const {return sequence_number;}
+        uint32_t getSourceId() const {return source_id;}
+        EGpSecurityLevel getSecurity() const {return security;}
+        EGpSecurityKeyType getKeyType() const {return key_type;}
+        bool isAutoCommissioning() const {return auto_commissioning;}
+        bool isRxAfterTx() const {return rx_after_tx;}
+        uint32_t getSecurityFrameCounter() const {return security_frame_counter;}
+        uint8_t getCommandId() const {return command_id;}
+        uint32_t getMic() const {return mic;}
+        uint8_t getProxyTableEntry() const {return proxy_table_entry;}
+        std::vector<uint8_t> getPayload() const {return payload;}
 
     private:
         uint8_t link_value;

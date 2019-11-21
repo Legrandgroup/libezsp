@@ -1,7 +1,7 @@
 /**
  * @file ember-gp-sink-table-entry-struct.h
  *
- * @brief The internal representation of a sink table entry.
+ * @brief Represents one sink table entry from Ember
  */
 
 #pragma once
@@ -59,11 +59,13 @@ class CEmberGpSinkTableEntryStruct
 
         /**
          * @brief Copy constructor
+         *
+         * @param other The object instance to construct from
          */
         CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other);
 
         /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
+         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableEntryStruct
          *
          * This function will swap all attributes of \p first and \p second
          * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
@@ -75,6 +77,9 @@ class CEmberGpSinkTableEntryStruct
 
         /**
          * @brief Assignment operator
+         * @param other The object to assign to the lhs
+         *
+         * @return The object that has been assigned the value of @p other
          */
         CEmberGpSinkTableEntryStruct& operator=(CEmberGpSinkTableEntryStruct other);
 
@@ -83,25 +88,25 @@ class CEmberGpSinkTableEntryStruct
          * 
          * @return raw of structure
          */
-        std::vector<uint8_t> getRaw(void);
+        std::vector<uint8_t> getRaw() const;
 
         /**
          * @brief getters
          */
-        CEmberGpSinkTableOption getOption(void){ return options; }
-        CEmberGpAddressStruct getGpdAddr(void){ return gpd; }
-        EmberNodeId getAssignedAlias(void){ return assigned_alias; }
-        EmberGpSecurityFrameCounter getSecurityFrameCounter(void){ return gpdSecurity_frame_counter; }
-        EmberKeyData getGpdKey(void){ return gpd_key; }
-        uint8_t getGroupcastRadius(void){ return groupcast_radius; }
-        uint8_t getSecurityLevel(void){ return security_options&0x03; }
-        uint8_t getSecurityKeyType(void){ return (security_options>>2)&0x07; }
-        bool isActive(void){ return status==0x01; }
+        CEmberGpSinkTableOption getOption() const { return options; }
+        CEmberGpAddressStruct getGpdAddr() const { return gpd; }
+        EmberNodeId getAssignedAlias() const { return assigned_alias; }
+        EmberGpSecurityFrameCounter getSecurityFrameCounter() const { return gpdSecurity_frame_counter; }
+        EmberKeyData getGpdKey() const { return gpd_key; }
+        uint8_t getGroupcastRadius() const { return groupcast_radius; }
+        uint8_t getSecurityLevel() const { return security_options&0x03; }
+        uint8_t getSecurityKeyType() const { return (security_options>>2)&0x07; }
+        bool isActive() const { return status==0x01; }
 
         /**
          * @brief status setter
          */
-        void setEntryActive(bool i_active){ i_active?status=0x01:status=0xFF; }
+        void setEntryActive(bool i_active) { this->status=(i_active?0x01:0xFF); }
 
         /**
          * @brief options setter
@@ -156,26 +161,16 @@ class CEmberGpSinkTableEntryStruct
         friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data);
 
     private:
-        // Internal status of the sink table entry.
-        EmberGpSinkTableEntryStatus status;
-        // The tunneling options (this contains both options and extendedOptions from the spec). WRONG Specification only 16 bits like option without extended ...
-        CEmberGpSinkTableOption options;
-        // The addressing info of the GPD.
-        CEmberGpAddressStruct gpd;
-        // The device id for the GPD.
-        uint8_t device_id;
-        // The list of sinks (hardcoded to 2 which is the spec minimum).
-        EmberGpSinkListEntry sink_list[GP_SINK_LIST_ENTRIES];
-        // The assigned alias for the GPD.
-        EmberNodeId assigned_alias;
-        // The groupcast radius.
-        uint8_t groupcast_radius;
-        // The security options field.
-        uint8_t security_options;
-        // The security frame counter of the GPD.
-        EmberGpSecurityFrameCounter gpdSecurity_frame_counter;
-        // The key to use for GPD.
-        EmberKeyData gpd_key;
+        EmberGpSinkTableEntryStatus status; /*!< Internal status of the sink table entry */
+        CEmberGpSinkTableOption options; /*!< The tunneling options (this contains both options and extendedOptions from the spec). WRONG Specification only 16 bits like option without extended... */
+        CEmberGpAddressStruct gpd; /*!< The addressing info of the GPD */
+        uint8_t device_id; /*!< The device id for the GPD */
+        EmberGpSinkListEntry sink_list[GP_SINK_LIST_ENTRIES]; /*!< The list of sinks (hardcoded to 2 which is the spec minimum) */
+        EmberNodeId assigned_alias; /*!< The assigned alias for the GPD */
+        uint8_t groupcast_radius; /*!< The groupcast radius */
+        uint8_t security_options; /*!< The security options field */
+        EmberGpSecurityFrameCounter gpdSecurity_frame_counter; /*!< The security frame counter of the GPD */
+        EmberKeyData gpd_key; /*!< The key to use for GPD */
 };
 
 #ifdef USE_RARITAN

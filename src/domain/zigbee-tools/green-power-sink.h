@@ -1,7 +1,9 @@
 /**
  * @file green-power-sink.h
- * @brief access to green power capabilities
+ *
+ * @brief Access to green power capabilities
  */
+ 
 #pragma once
 
 #include "../zbmessage/green-power-frame.h"
@@ -39,22 +41,22 @@ public:
     /**
      * @brief Initialize sink, shall be done after a network init.
      */
-    void init(void);
+    void init();
 
     /**
      * Clear all GP tables
      */
-    void gpClearAllTables( void );
+    void gpClearAllTables();
 
     /**
      * @brief Open a commissioning session for limited time, close as soon as a binding is done.
      */
-    void openCommissioningSession(void);
+    void openCommissioningSession();
 
     /**
      * @brief Force to close commissioning session
      */
-    void closeCommissioningSession(void);
+    void closeCommissioningSession();
 
     /**
      * @brief add a green power sink table entry
@@ -91,35 +93,43 @@ private:
     uint8_t sink_table_index;
     CEmberGpSinkTableEntryStruct sink_table_entry;
 
+    std::set<CGpObserver*> observers;   /*!< List of observers of this class */
+
     /**
-     * Notify Observer of this class
+     * @brief Notify observers of this class
+     *
+     * @param i_gpf The received GP frame
      */
-    std::set<CGpObserver*> observers;
     void notifyObserversOfRxGpFrame( CGpFrame i_gpf );
 
+    /**
+     * @brief Private utility function to manage error state
+     */
     void setSinkState( ESinkState i_state );
 
     /**
      * @brief send zigbee unicast message GP Proxy Commissioning Mode.
-     *          done from sink to local dongle.
-     *      WARNING all parameters are hardcoded for testing
+     *        done from sink to local dongle.
+     * @warning All parameters are hardcoded for testing
      */
     void sendLocalGPProxyCommissioningMode(uint8_t i_option);
 
     /**
-     * Retrieves the sink table entry stored at the passed index.
+     * @brief Retrieves the sink table entry stored at the specified index
+     *
+     * @param i_index The index to lookup
      */
     void gpSinkGetEntry( uint8_t i_index );
 
     /**
      * @brief Finds or allocates a sink entry
      * 
-     * @param i_src_id : gpd address to be found
+     * @param i_src_id GPD source ID address to search
      */
     void gpSinkTableFindOrAllocateEntry( uint32_t i_src_id );
 
     /**
-     * @brief Retrieves the sink table entry stored at the passed index.
+     * @brief Updates the sink table entry at the specified index.
      * 
      * @param i_index The index of the requested sink table entry.
      * @param i_entry An EmberGpSinkTableEntry struct containing a copy of the sink entry to be updated.
@@ -127,7 +137,7 @@ private:
     void gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_entry );
 
     /**
-     * Update the GP Proxy table based on a GP pairing.
+     * @brief Update the GP Proxy table based on a GP pairing.
      */
     void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );     
 };
