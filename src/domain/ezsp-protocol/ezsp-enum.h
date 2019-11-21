@@ -1064,6 +1064,9 @@ typedef uint8_t EmberGpSinkTableEntryStatus;
 #define EMBER_GP_SINK_LIST_ENTRY_SIZE  11 // why ? first byte to 0xFF is for not used !
 typedef std::vector<uint8_t> EmberGpSinkListEntry;
 
+// assume this value is never reach for a frame counter
+#define INVALID_FRAME_COUNTER 0xFFFFFFFF
+
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
