@@ -10,6 +10,9 @@
 #include "../spi/GenericLogger.h"
 #include "../example/CAppDemo.h"
 
+/**
+ * @brief Class implementing an observer that validates state transition during a sample ezsp in/out test sequence
+**/
 class GPRecvSensorMeasurementTest : public IAsyncDataInputObserver  {
 public:
 	/**
