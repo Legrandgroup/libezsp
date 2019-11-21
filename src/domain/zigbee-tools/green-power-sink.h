@@ -10,6 +10,7 @@
 #include "zigbee-messaging.h"
 #include "green-power-sink-table.h"
 #include "../ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
+#include "../ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -128,7 +129,7 @@ private:
     /**
      * Update the GP Proxy table based on a GP pairing.
      */
-    void gpProxyTableProcessGpPairing( std::vector<uint8_t> i_param );     
+    void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );     
 };
 
 #ifdef USE_RARITAN
