@@ -24,6 +24,7 @@ typedef enum
     SINK_ERROR,  // something wrong
     SINK_COM_OPEN,  // GP Proxy Commissioning mode open
     SINK_COM_IN_PROGRESS,  // GP sink receive gpf comm frame
+    SINK_COM_OFFLINE_IN_PROGRESS, // Doing offline commissioning for GPD list
 }ESinkState;
 
 class CGpSink : public CEzspDongleObserver

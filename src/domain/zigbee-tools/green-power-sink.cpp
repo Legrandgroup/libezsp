@@ -119,7 +119,12 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
 
 void CGpSink::registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key )
 {
+    // save offline information
+
+    // request sink table entry
     
+    // set state
+    setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
 }
 
 void CGpSink::handleDongleState( EDongleState i_state )
