@@ -33,6 +33,8 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                       : this help\n");
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
+    fprintf(f,"-Z (--open-zigbee)                : open the zigbee network at startup (for 60s)\n");
+    fprintf(f,"-G (--open-gp-commissionning)     : open the Green Power commissionning session at startup\n");
     fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (default: '/dev/ttyUSB0')\n");
     fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
     fprintf(f,"-s (--source-id) <source-id>      : enables receiving from a device with this source-id, formatted as a 8-digit hexadecimal string (eg: 'ffae1245') (repeated -s options are allowed)\n");
@@ -57,16 +59,20 @@ int main(int argc, char **argv) {
     std::vector<uint32_t> sourceIdList;
     unsigned int resetToChannel = 0;
     std::string serialPort("/dev/ttyUSB0");
+    bool openGpCommissionningAtStartup = false;
+    bool openZigbeeNetworkAtStartup = false;
 
     static struct option longOptions[] = {
         {"reset-to-channel", 1, 0, 'r'},
         {"source-id", 1, 0, 's'},
         {"serial-port", 1, 0, 'u'},
+        {"open-zigbee", 0, 0, 'Z'},
+        {"open-gp-commissionning", 0, 0, 'G'},
         {"debug", 0, 0, 'd'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhs:u:r:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhZGs:u:r:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -88,6 +94,12 @@ int main(int argc, char **argv) {
                 break;
             case 'r':
                 std::stringstream(optarg) >> resetToChannel;
+                break;
+            case 'G':
+                openGpCommissionningAtStartup = true;
+                break;
+            case 'Z':
+                openZigbeeNetworkAtStartup = true;
                 break;
             case 'd':
                 debugEnabled = true;
@@ -114,7 +126,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), false, true, resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, openZigbeeNetworkAtStartup, resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;
