@@ -119,8 +119,12 @@ uint8_t CGpSink::registerGpd( uint32_t i_source_id )
 void CGpSink::registerGpd( uint32_t i_source_id, std::vector<uint8_t> i_key )
 {
     // save offline information
+    CEmberGpAddressStruct l_gp_addr(i_source_id);
+    sink_table_entry.setGpdAddress(l_gp_addr);
+    sink_table_entry.setKey(i_key);
 
     // request sink table entry
+    gpSinkTableFindOrAllocateEntry( i_source_id );
     
     // set state
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
@@ -194,6 +198,12 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
             }
             else
             {
+                // if success notify
+                if(  EEmberStatus::EMBER_SUCCESS == l_status )
+                {
+                    notifyObserversOfRxGpFrame( gpf );
+                }
+                /*
                 // look up if product is register
                 uint8_t l_sink_entry_idx = sink_table.getEntryIndexForSourceId( gpf.getSourceId() );
                 if( GP_SINK_INVALID_ENTRY != l_sink_entry_idx )
@@ -201,6 +211,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                     // to test notify
                     notifyObserversOfRxGpFrame( gpf );
                 }
+                */
             }
         }
         break;
@@ -208,6 +219,26 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         case EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY:
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
+            {
+                // save allocate index
+                sink_table_index = i_msg_receive.at(0);
+
+                // debug
+                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index : " << std::hex << std::setw(2) << std::setfill('0') << sink_table_index << std::endl;
+
+                // retrieve entry at selected index
+                if( 0xFF != sink_table_index )
+                {
+                    gpSinkGetEntry( sink_table_index );
+                }
+                else
+                {
+                    // no place to done pairing : FAILED
+                    clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
+                    setSinkState(SINK_READY);
+                }
+            }
+            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
             {
                 // save allocate index
                 sink_table_index = i_msg_receive.at(0);
@@ -268,12 +299,38 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 // save
                 sink_table_entry = l_entry;
             }
+            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
+            {
+                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+                CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
+
+                // debug
+                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+
+                // update sink table entry
+                l_entry.setEntryActive(true);
+                l_entry.setOptions(0x02A8); // \todo WARNING HARDCODED VALUE
+                l_entry.setGpdAddress(sink_table_entry.getGpdAddr());
+                l_entry.setAlias(static_cast<uint16_t>(sink_table_entry.getGpdAddr().getSourceId()&0xFFFF));
+                l_entry.setSecurityOption(0x12); // \todo WARNING HARDCODED VALUE
+                l_entry.setFrameCounter(0);
+                l_entry.setKey(sink_table_entry.getGpdKey());
+
+                // debug
+                clogD << "Update table entry : " << l_entry << std::endl;
+
+                // call
+                gpSinkSetEntry(sink_table_index,l_entry);
+
+                // save
+                sink_table_entry = l_entry;
+            }
         }
         break;
 
         case EZSP_GP_SINK_TABLE_SET_ENTRY:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state )
+            if( (SINK_COM_IN_PROGRESS == sink_state) || (SINK_COM_OFFLINE_IN_PROGRESS == sink_state) )
             {
                 EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
@@ -306,6 +363,13 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
                 // close commissioning session
                 closeCommissioningSession();
+            }
+            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
+            {
+                clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+
+                // set state
+                setSinkState(SINK_READY);
             }
         }
         break;
