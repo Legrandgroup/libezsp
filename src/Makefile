@@ -25,7 +25,6 @@ libezspincludedir = $(includedir)/include/local/ezsp
 
 libezspinclude_HEADERS = \
 domain/zigbee-tools/zigbee-networking.h \
-domain/zigbee-tools/green-power-sink-table.h \
 domain/zigbee-tools/green-power-sink.h \
 domain/zigbee-tools/zigbee-messaging.h \
 domain/green-power-observer.h \
