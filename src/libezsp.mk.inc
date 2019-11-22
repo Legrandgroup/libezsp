@@ -25,7 +25,6 @@ LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.cpp \
-                     $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink-table.cpp \
 
 LIBEZSP_LINUX_SPI_SRC = \
                         $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
