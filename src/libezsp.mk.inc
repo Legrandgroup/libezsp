@@ -1,9 +1,12 @@
 LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/ezsp-dongle.cpp \
                      $(SRC_DOMAIN_PATH)/ash.cpp \
+                     $(SRC_DOMAIN_PATH)/custom-aes.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-frame.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-device.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/green-power-sink-table-entry.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/gpd-commissioning-command-payload.cpp \
+                     $(SRC_DOMAIN_PATH)/zbmessage/gp-pairing-command-option-struct.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/zigbee-message.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/zclheader.cpp \
                      $(SRC_DOMAIN_PATH)/zbmessage/zclframecontrol.cpp \
@@ -16,16 +19,26 @@ LIBEZSP_COMMON_SRC = \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-key-struct.cpp \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-child-data-struct.cpp \
                      $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-address-struct.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-gp-sink-table-options-field.cpp \
+                     $(SRC_DOMAIN_PATH)/ezsp-protocol/struct/ember-process-gp-pairing-parameter.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-networking.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/zigbee-messaging.cpp \
                      $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink.cpp \
-                     $(SRC_DOMAIN_PATH)/zigbee-tools/green-power-sink-table.cpp \
 
 LIBEZSP_LINUX_SPI_SRC = \
                         $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
                         $(SRC_SPI_PATH)/console/ConsoleLogger.cpp \
                         $(SRC_SPI_PATH)/cppthreads/CppThreadsTimerFactory.cpp \
                         $(SRC_SPI_PATH)/cppthreads/CppThreadsTimer.cpp \
+
+LIBEZSP_RARITAN_SPI_SRC = \
+                          $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanUartDriver.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanTimerFactory.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanTimer.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanEventLoop.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanLogger.cpp \
 
 LIBEZSP_LINUX_SERIALCPP_SRC = $(LIBEZSP_COMMON_SRC) \
                               $(LIBEZSP_LINUX_SPI_SRC) \
@@ -35,9 +48,13 @@ LIBEZSP_LINUX_MOCKSERIAL_SRC = $(LIBEZSP_COMMON_SRC) \
                                $(LIBEZSP_LINUX_SPI_SRC) \
                                $(SRC_SPI_PATH)/mock-uart/MockUartDriver.cpp \
 
+LIBEZSP_RARITAN_SRC = $(LIBEZSP_COMMON_SRC) \
+                      $(LIBEZSP_RARITAN_SPI_SRC) \
+
 LIBEZSP_COMMON_INC = -I$(SRC_SPI_PATH) -I$(SRC_DOMAIN_PATH) -I$(SRC_DOMAIN_PATH)/zbmessage
 
 export LIBEZSP_COMMON_SRC
 export LIBEZSP_LINUX_SERIALCPP_SRC
 export LIBEZSP_LINUX_MOCKSERIAL_SRC
+export LIBEZSP_RARITAN_SPI_SRC
 export LIBEZSP_COMMON_INC

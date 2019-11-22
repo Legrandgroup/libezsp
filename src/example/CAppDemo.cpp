@@ -23,18 +23,19 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         bool openGpCommissionning,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
-        const std::vector<CGpDevice>& gpDevList) :
+        const std::vector<CGpDevice>& gpDevicesList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
-    gp_sink(dongle),
+    gp_sink(dongle, zb_messaging),
     app_state(APP_NOT_INIT),
     db(),
     ezsp_version(6),
     reset_wanted(reset),
     openGpCommissionningAtStartup(openGpCommissionning),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
-    channel(networkChannel)
+    channel(networkChannel),
+    gpdList(gpDevicesList)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -46,10 +47,6 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
-        for (auto i : gpDevList) {
-            clogD << "Watching source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i.getSourceId() << "\n";
-            gp_sink.registerGpd(i.getSourceId());
-        }
         setAppState(APP_INIT_IN_PROGRESS);
     }
     // save parameter
@@ -193,7 +190,7 @@ bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
         validBuffer = extractClusterReport(payload, usedBytes);
         if (validBuffer)
         {
-            payload.erase(payload.begin(), payload.begin()+usedBytes);
+            payload.erase(payload.begin(), payload.begin()+static_cast<int>(usedBytes));
         }
     }
     return validBuffer;
@@ -273,6 +270,18 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             if( (EMBER_NETWORK_UP == status) && (false == reset_wanted) )
             {
                 setAppState(APP_READY);
+
+                gp_sink.init();
+
+                if (this->openGpCommissionningAtStartup) {
+                    // If requested to do so, immediately open a GP commissioning session
+                    gp_sink.openCommissioningSession();
+                }
+                else if( gpdList.size() )
+                {
+                    gp_sink.registerGpds(gpdList);
+                }
+                
 
                 if (this->openZigbeeCommissionningAtStartup) {
                     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
