@@ -59,6 +59,7 @@
 
 #define GPF_COMMISSIONING_CMD	0xE0
 #define GPF_DECOMMISSIONING_CMD	0xE1
+#define GPF_CHANNEL_REQUEST_CMD	0xE3
 
 
 
@@ -158,17 +159,24 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             if( GPD_NO_SECURITY == gpf.getSecurity() )
             {
-                // if we are in Commissioning and this is a commissioning frame : use it !
-                if( (SINK_COM_OPEN == sink_state) && (GPF_COMMISSIONING_CMD == gpf.getCommandId()) )
+                // do action only if we are in commissioning mode
+                if( SINK_COM_OPEN == sink_state )
                 {
-                    // find entry in sink table
-                    gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
+                    if(  GPF_COMMISSIONING_CMD == gpf.getCommandId() )
+                    {
+                        // find entry in sink table
+                        gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
 
-                    // save incomming message
-                    gpf_comm_frame = gpf;
+                        // save incomming message
+                        gpf_comm_frame = gpf;
 
-                    // set new state
-                    setSinkState(SINK_COM_IN_PROGRESS);
+                        // set new state
+                        setSinkState(SINK_COM_IN_PROGRESS);
+                    }
+                    else if( GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId() )
+                    {
+                        // 
+                    }
                 }
             }
             else
