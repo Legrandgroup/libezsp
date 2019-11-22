@@ -41,6 +41,23 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"-s (--source-id) <id/key>         : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
 }
 
+/**
+ * @brief Convert an ASCII character representing one hexadecimal digit ([0-9a-fA-F]) to its value (0-15)
+ *
+ * @param hDigit The input printable ASCII character
+ * @return The value of the hexadecimal digit as a uint8_t nibble (0-15)
+**/
+uint8_t hexDigitToNibble(const char hDigit) {
+    if (hDigit>='a' && hDigit<='f')
+        return static_cast<uint8_t>(hDigit + 10 - 'a');
+    else if (hDigit>='A' && hDigit<='F')
+        return static_cast<uint8_t>(hDigit + 10 - 'A');
+    else if (hDigit>='0' && hDigit<='9')
+        return static_cast<uint8_t>(hDigit - '0');
+    else
+        throw std::out_of_range("Invalid character '" + std::string(1, hDigit) + "'");
+}
+
 int main(int argc, char **argv) {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
@@ -90,15 +107,30 @@ int main(int argc, char **argv) {
                         gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
                         //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
                         if (gpDevKeyStr.length() != 32) {
-                            clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long). Ignoring this entry\n";
+                            clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+                            exit(1);
                         }
                         else {
                             EmberKeyData keyValue(CGpDevice::UNKNOWN_KEY);
                             if (gpDevKeyStr != "") {
-                                std::vector<unsigned char> argAsBytes;
-                                for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2){
-                                    std::string byteString = gpDevKeyStr.substr(i, 2);
-                                    argAsBytes.push_back(static_cast<unsigned char>(strtol(byteString.c_str(), NULL, 16)));
+                                std::vector<uint8_t> argAsBytes;
+                                for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
+                                    uint8_t byte;
+                                    try {
+                                        byte = hexDigitToNibble(gpDevKeyStr[i]) << 4;
+                                    }
+                                    catch (const std::out_of_range& e) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i] << "' at position " << i+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                        exit(1);
+                                    }
+                                    try {
+                                        byte |= hexDigitToNibble(gpDevKeyStr[i+1]);
+                                    }
+                                    catch (const std::out_of_range& e) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                        exit(1);
+                                    }
+                                    argAsBytes.push_back(byte);
                                 }
                                 //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
                                 //std::cerr << "\n";
