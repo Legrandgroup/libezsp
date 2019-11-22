@@ -34,7 +34,8 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     reset_wanted(reset),
     openGpCommissionningAtStartup(openGpCommissionning),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
-    channel(networkChannel)
+    channel(networkChannel),
+    gpDevList(gpDevList)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -46,10 +47,6 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
-        for (auto i : gpDevList) {
-            clogD << "Watching source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i.getSourceId() << "\n";
-            gp_sink.registerGpd(i.getSourceId());
-        }
         setAppState(APP_INIT_IN_PROGRESS);
     }
     // save parameter
@@ -282,8 +279,12 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 }
                 else
                 {
+                    for (auto i : this->gpDevList) {
+                        clogD << "Adding source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i.getSourceId() << " to monitored devices\n";
+                        gp_sink.registerGpd(i);
+                    }
                     // debug : add hardcoded gpd
-                    gp_sink.registerGpd(CGpDevice(0x00510050,{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F}));
+                    //gp_sink.registerGpd(CGpDevice(0x00510050,{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F}));
                 }
                 
 
