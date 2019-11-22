@@ -1,5 +1,5 @@
 /**
- * @file ember-gp-sink-table-option-field.cpp
+ * @file ember-gp-sink-table-options-field.cpp
  *
  * @brief Represents Ember's sink table entry options bit field
  *

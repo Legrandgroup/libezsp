@@ -1,5 +1,5 @@
 /**
- * @file ember-g-sink-table-entry-struct.cpp
+ * @file ember-gp-sink-table-entry-struct.cpp
  *
  * @brief Represents one sink table entry from Ember
  */

@@ -1,5 +1,5 @@
 /**
- * @file gpd-commissionning-command-payload.h
+ * @file gpd-commissioning-command-payload.h
  *
  * @brief Decoding payload of gpd commissioning command according to A.4.2.1.1 GPD Commissioning command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
