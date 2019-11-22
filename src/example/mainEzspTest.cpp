@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
                                         clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
                                         exit(1);
                                     }
-                                    argAsBytes.push_back(hiNibble << 4 | loNibble);
+                                    argAsBytes.push_back(static_cast<uint8_t>(hiNibble << 4) | loNibble);
                                 }
                                 //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
                                 //std::cerr << "\n";
