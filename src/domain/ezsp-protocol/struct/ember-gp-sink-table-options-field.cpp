@@ -114,14 +114,14 @@ CEmberGpSinkTableOption& CEmberGpSinkTableOption::operator=( CEmberGpSinkTableOp
  */
 uint16_t CEmberGpSinkTableOption::get() const
 {
-    uint16_t o_options = 0 + \
-                        application_id + \
-                        (communication_mode<<3) + \
-                        (sequence_number_capabilities<<5) + \
-                        (rx_on_capability<<6) + \
-                        (fixed_location<<7) + \
-                        (assigned_alias<<8) + \
-                        (security_use<<9);
+    uint16_t o_options;
+    o_options = static_cast<uint16_t>(application_id<<0);
+    o_options |= static_cast<uint16_t>(communication_mode<<3);
+    o_options |= static_cast<uint16_t>(sequence_number_capabilities<<5);
+    o_options |= static_cast<uint16_t>(rx_on_capability<<6);
+    o_options |= static_cast<uint16_t>(fixed_location<<7);
+    o_options |= static_cast<uint16_t>(assigned_alias<<8);
+    o_options |= static_cast<uint16_t>(security_use<<9);
 
     return o_options;
 }

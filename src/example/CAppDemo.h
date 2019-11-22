@@ -29,7 +29,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<CGpDevice>& gpDevList={});
+    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<CGpDevice>& gpDevicesList={});
 
     /**
      * Callback
@@ -59,6 +59,5 @@ private:
     bool openGpCommissionningAtStartup;	/* Do we open GP commissionning at dongle initialization? */
     bool openZigbeeCommissionningAtStartup;	/* Do we open the Zigbee network at dongle initialization? */
     unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
-    std::vector<CGpDevice> gpDevList;	/*!< The list of GP devices we are monitoring */
+    std::vector<CGpDevice> gpdList;	/*!< The list of GP devices we are monitoring */
 };
-

@@ -117,7 +117,7 @@ class CGpPairingCommandOption
          *          carries the Alias value to be used for this GPD instead of the derived alias.
          */
         bool assigned_alias_present; /*!< Represents whether the AssignedAlias field is present and carries the Alias value to be used for this GPD instead of the derived alias */
-        /** 
+        /**
          * Bit 17: The Forwarding Radius present sub-field, if set to 0b1, indicates that the Forwarding Radius field is
          *          present and carries the Forwarding Radius value to be used as value of the radius in the groupcast forwarding 
          *          of the GPDF packet. If the Forwarding Radius field is not present, and a new Proxy Table entry is to be created, 
@@ -129,3 +129,7 @@ class CGpPairingCommandOption
          * Bit 18..23: Reserved
          */
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN

@@ -60,18 +60,18 @@ CAes::CAes() :
 // algorithm
 void CAes::xor_block( void *d, const void *s )
 {
-    ((uint32_t*)d)[ 0] ^= ((uint32_t*)s)[ 0];
-    ((uint32_t*)d)[ 1] ^= ((uint32_t*)s)[ 1];
-    ((uint32_t*)d)[ 2] ^= ((uint32_t*)s)[ 2];
-    ((uint32_t*)d)[ 3] ^= ((uint32_t*)s)[ 3];
+    (static_cast<uint32_t *>(d))[ 0] ^= (static_cast<const uint32_t *>(s))[ 0];
+    (static_cast<uint32_t *>(d))[ 1] ^= (static_cast<const uint32_t *>(s))[ 1];
+    (static_cast<uint32_t *>(d))[ 2] ^= (static_cast<const uint32_t *>(s))[ 2];
+    (static_cast<uint32_t *>(d))[ 3] ^= (static_cast<const uint32_t *>(s))[ 3];
 }
 
 void CAes::copy_and_key( void *d, const void *s, const void *k )
 {
-    ((uint32_t*)d)[ 0] = ((uint32_t*)s)[ 0] ^ ((uint32_t*)k)[ 0];
-    ((uint32_t*)d)[ 1] = ((uint32_t*)s)[ 1] ^ ((uint32_t*)k)[ 1];
-    ((uint32_t*)d)[ 2] = ((uint32_t*)s)[ 2] ^ ((uint32_t*)k)[ 2];
-    ((uint32_t*)d)[ 3] = ((uint32_t*)s)[ 3] ^ ((uint32_t*)k)[ 3];
+    (static_cast<uint32_t *>(d))[ 0] = (static_cast<const uint32_t *>(s))[ 0] ^ (static_cast<const uint32_t *>(k))[ 0];
+    (static_cast<uint32_t *>(d))[ 1] = (static_cast<const uint32_t *>(s))[ 1] ^ (static_cast<const uint32_t *>(k))[ 1];
+    (static_cast<uint32_t *>(d))[ 2] = (static_cast<const uint32_t *>(s))[ 2] ^ (static_cast<const uint32_t *>(k))[ 2];
+    (static_cast<uint32_t *>(d))[ 3] = (static_cast<const uint32_t *>(s))[ 3] ^ (static_cast<const uint32_t *>(k))[ 3];
 }
 
 void CAes::add_round_key( uint8_t d[N_BLOCK], const uint8_t k[N_BLOCK] )
@@ -174,9 +174,9 @@ void CAes::aes_set_key( const uint8_t key[AES_KEY_SIZE] )
     uint8_t keylen = AES_KEY_SIZE;
 
     block_copy_nn(ctx->ksch, key, keylen);
-    hi = (keylen + 28) << 2;
-    ctx->rnd = (hi >> 4) - 1;
-    for( cc = keylen, rc = 1; cc < hi; cc += 4 )
+    hi = static_cast<uint8_t>(static_cast<uint8_t>(keylen + 28) << 2);
+    ctx->rnd = static_cast<uint8_t>((hi >> 4) - 1);
+    for( cc = keylen, rc = 1; cc < hi; cc = static_cast<uint8_t>(cc + 4) )
     {   uint8_t tt, t0, t1, t2, t3;
 
         t0 = ctx->ksch[cc - 4];
@@ -190,7 +190,7 @@ void CAes::aes_set_key( const uint8_t key[AES_KEY_SIZE] )
             t1 = s_box(t2);
             t2 = s_box(t3);
             t3 = s_box(tt);
-            rc = f2(rc);
+            rc = static_cast<uint8_t>(f2(rc));
         }
         else if( keylen > 24 && cc % keylen == 16 )
         {
@@ -199,7 +199,7 @@ void CAes::aes_set_key( const uint8_t key[AES_KEY_SIZE] )
             t2 = s_box(t2);
             t3 = s_box(t3);
         }
-        tt = cc - keylen;
+        tt = static_cast<uint8_t>(cc - keylen);
         ctx->ksch[cc + 0] = ctx->ksch[tt + 0] ^ t0;
         ctx->ksch[cc + 1] = ctx->ksch[tt + 1] ^ t1;
         ctx->ksch[cc + 2] = ctx->ksch[tt + 2] ^ t2;

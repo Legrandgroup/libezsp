@@ -153,3 +153,7 @@ class CEmberGpSinkTableOption
         bool assigned_alias; /*!< The assigned alias toggle contained in this sink table entry options bit field */
         bool security_use; /*!< The security use toggle contained in this sink table entry options bit field */
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN

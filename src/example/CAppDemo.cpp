@@ -23,7 +23,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         bool openGpCommissionning,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
-        const std::vector<CGpDevice>& gpDevList) :
+        const std::vector<CGpDevice>& gpDevicesList) :
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -35,7 +35,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     openGpCommissionningAtStartup(openGpCommissionning),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
-    gpDevList(gpDevList)
+    gpdList(gpDevicesList)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -190,7 +190,7 @@ bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
         validBuffer = extractClusterReport(payload, usedBytes);
         if (validBuffer)
         {
-            payload.erase(payload.begin(), payload.begin()+usedBytes);
+            payload.erase(payload.begin(), payload.begin()+static_cast<int>(usedBytes));
         }
     }
     return validBuffer;
@@ -277,9 +277,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     // If requested to do so, immediately open a GP commissioning session
                     gp_sink.openCommissioningSession();
                 }
-                else if( gpDevList.size() )
+                else if( gpdList.size() )
                 {
-                    gp_sink.registerGpds(gpDevList);
+                    gp_sink.registerGpds(gpdList);
                 }
                 
 
