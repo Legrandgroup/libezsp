@@ -33,6 +33,14 @@ LIBEZSP_LINUX_SPI_SRC = \
                         $(SRC_SPI_PATH)/cppthreads/CppThreadsTimerFactory.cpp \
                         $(SRC_SPI_PATH)/cppthreads/CppThreadsTimer.cpp \
 
+LIBEZSP_RARITAN_SPI_SRC = \
+                          $(SRC_SPI_PATH)/GenericAsyncDataInputObservable.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanUartDriver.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanTimerFactory.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanTimer.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanEventLoop.cpp \
+                          $(SRC_SPI_PATH)/raritan/RaritanLogger.cpp \
+
 LIBEZSP_LINUX_SERIALCPP_SRC = $(LIBEZSP_COMMON_SRC) \
                               $(LIBEZSP_LINUX_SPI_SRC) \
                               $(SRC_SPI_PATH)/serial/SerialUartDriver.cpp \
@@ -41,9 +49,13 @@ LIBEZSP_LINUX_MOCKSERIAL_SRC = $(LIBEZSP_COMMON_SRC) \
                                $(LIBEZSP_LINUX_SPI_SRC) \
                                $(SRC_SPI_PATH)/mock-uart/MockUartDriver.cpp \
 
+LIBEZSP_RARITAN_SRC = $(LIBEZSP_COMMON_SRC) \
+                      $(LIBEZSP_RARITAN_SPI_SRC) \
+
 LIBEZSP_COMMON_INC = -I$(SRC_SPI_PATH) -I$(SRC_DOMAIN_PATH) -I$(SRC_DOMAIN_PATH)/zbmessage
 
 export LIBEZSP_COMMON_SRC
 export LIBEZSP_LINUX_SERIALCPP_SRC
 export LIBEZSP_LINUX_MOCKSERIAL_SRC
+export LIBEZSP_RARITAN_SPI_SRC
 export LIBEZSP_COMMON_INC

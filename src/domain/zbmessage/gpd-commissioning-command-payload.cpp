@@ -26,7 +26,7 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
         gpd_cluster_list()
 {
     // only device_id and option are mandatory, other field depend of option value
-    uint8_t l_idx = 2;
+    unsigned int l_idx = 2;
 
     // extended option
     if( options & (1<<COM_OPTION_EXTENDED_OPTION_FIELD_BIT) )
@@ -38,7 +38,7 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
     // gpd key
     if( extended_options & (1<<COM_EXT_OPTION_GPD_KEY_PRESENT_BIT) )
     {
-        key.insert(key.begin(),raw_message.begin()+l_idx,raw_message.begin()+l_idx+EMBER_KEY_DATA_BYTE_SIZE);
+        key.insert(key.begin(),raw_message.begin()+static_cast<int>(l_idx),raw_message.begin()+static_cast<int>(l_idx)+EMBER_KEY_DATA_BYTE_SIZE);
         l_idx += EMBER_KEY_DATA_BYTE_SIZE;
         // gpd key MIC and encryption
         if( extended_options & (1<<COM_EXT_OPTION_GPD_KEY_ENCRYPTION_BIT) )
@@ -59,9 +59,9 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
             //construct nonce
             memset(nonce,0,16);
             nonce[0] = 0x01;
-            memcpy(&nonce[1], (uint8_t *)&i_src_id, 4);
-            memcpy(&nonce[5], (uint8_t *)&i_src_id, 4);
-            memcpy(&nonce[9], (uint8_t *)&i_src_id, 4);
+            memcpy(&nonce[1], static_cast<const void *>(&i_src_id), 4);
+            memcpy(&nonce[5], static_cast<const void *>(&i_src_id), 4);
+            memcpy(&nonce[9], static_cast<const void *>(&i_src_id), 4);
             nonce[13] = 0x05;
             nonce[14]=0x00;
             nonce[15]=0x01;
@@ -124,7 +124,7 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
     // gpd cluster list
     if( app_information & (1<<COM_APP_INFO_CLUSTER_LIST_PRESENT_BIT) )
     {
-        gpd_cluster_list.insert(gpd_cluster_list.begin(),raw_message.begin()+l_idx,raw_message.end());
+        gpd_cluster_list.insert(gpd_cluster_list.begin(),raw_message.begin()+static_cast<int>(l_idx),raw_message.end());
     }
 }
 

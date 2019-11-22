@@ -69,3 +69,7 @@ class CProcessGpPairingParam
         uint32_t gpdSecurityFrameCounter;       /*!< The gpd security frame counter */
         uint8_t forwardingRadius;       /*!< The forwarding radius */
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN
