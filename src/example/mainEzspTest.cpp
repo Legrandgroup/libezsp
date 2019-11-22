@@ -44,18 +44,20 @@ static void writeUsage(const char* progname, FILE *f) {
 /**
  * @brief Convert an ASCII character representing one hexadecimal digit ([0-9a-fA-F]) to its value (0-15)
  *
- * @param hDigit The input printable ASCII character
- * @return The value of the hexadecimal digit as a uint8_t nibble (0-15)
+ * @param[in] hDigit The input printable ASCII character
+ * @param[out] byte The value of the hexadecimal digit as a uint8_t nibble (0-15)
+ * @return true if the conversion succeeded
 **/
-uint8_t hexDigitToNibble(const char hDigit) {
+static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
     if (hDigit>='a' && hDigit<='f')
-        return static_cast<uint8_t>(hDigit + 10 - 'a');
+        byte = static_cast<uint8_t>(hDigit + 10 - 'a');
     else if (hDigit>='A' && hDigit<='F')
-        return static_cast<uint8_t>(hDigit + 10 - 'A');
+        byte = static_cast<uint8_t>(hDigit + 10 - 'A');
     else if (hDigit>='0' && hDigit<='9')
-        return static_cast<uint8_t>(hDigit - '0');
+        byte = static_cast<uint8_t>(hDigit - '0');
     else
-        throw std::out_of_range("Invalid character '" + std::string(1, hDigit) + "'");
+        return false;
+    return true;
 }
 
 int main(int argc, char **argv) {
@@ -115,22 +117,17 @@ int main(int argc, char **argv) {
                             if (gpDevKeyStr != "") {
                                 std::vector<uint8_t> argAsBytes;
                                 for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
-                                    uint8_t byte;
-                                    try {
-                                        byte = hexDigitToNibble(gpDevKeyStr[i]) << 4;
-                                    }
-                                    catch (const std::out_of_range& e) {
+                                    uint8_t hiNibble;
+                                    if (!hexDigitToNibble(gpDevKeyStr[i], hiNibble)) {
                                         clogE << "Invalid character '" << gpDevKeyStr[i] << "' at position " << i+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
                                         exit(1);
                                     }
-                                    try {
-                                        byte |= hexDigitToNibble(gpDevKeyStr[i+1]);
-                                    }
-                                    catch (const std::out_of_range& e) {
+                                    uint8_t loNibble;
+                                    if (!hexDigitToNibble(gpDevKeyStr[i+1], loNibble)) {
                                         clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
                                         exit(1);
                                     }
-                                    argAsBytes.push_back(byte);
+                                    argAsBytes.push_back(hiNibble << 4 | loNibble);
                                 }
                                 //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
                                 //std::cerr << "\n";
