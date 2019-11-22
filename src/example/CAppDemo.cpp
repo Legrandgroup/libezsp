@@ -277,14 +277,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     // If requested to do so, immediately open a GP commissioning session
                     gp_sink.openCommissioningSession();
                 }
-                else
+                else if( gpdList.size() )
                 {
-                    for (auto i : this->gpdList) {
-                        clogD << "Adding source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << i.getSourceId() << " to monitored devices\n";
-                        gp_sink.registerGpd(i);
-                    }
-                    // debug : add hardcoded gpd
-                    //gp_sink.registerGpd(CGpDevice(0x00510050,{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F}));
+                    gp_sink.registerGpds(gpdList);
                 }
                 
 

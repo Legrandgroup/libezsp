@@ -65,10 +65,10 @@
 CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     dongle(i_dongle),
     zb_messaging(i_zb_messaging),
-    sink_table(),
     sink_state(SINK_NOT_INIT),
     gpf_comm_frame(),
     sink_table_index(0xFF),
+    gpds_to_register(),
     sink_table_entry(),
     observers()
 {
@@ -109,22 +109,13 @@ void CGpSink::closeCommissioningSession()
     setSinkState(SINK_READY);
 }
 
-uint8_t CGpSink::registerGpd( uint32_t i_source_id )
-{
-    CGpSinkTableEntry l_entry = CGpSinkTableEntry(i_source_id);
-
-    return sink_table.addEntry(l_entry);
-}
-
-void CGpSink::registerGpd( const CGpDevice &gpd )
+void CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 {
     // save offline information
-    CEmberGpAddressStruct l_gp_addr(gpd.getSourceId());
-    sink_table_entry.setGpdAddress(l_gp_addr);
-    sink_table_entry.setKey(gpd.getKey());
+    gpds_to_register = gpd;
 
     // request sink table entry
-    gpSinkTableFindOrAllocateEntry( gpd.getSourceId() );
+    gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
     
     // set state
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
@@ -150,24 +141,11 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
             // build gpf frame from ezsp rx message
             CGpFrame gpf = CGpFrame(i_msg_receive);
 
-
-            // Start DEBUG
             clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
                 ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
-                ", gp address : " << gpf <</*
-                ", last hop rssi : " << unsigned(last_hop_rssi) << 
-                ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << */
+                ", gp address : " << gpf <<
                 std::endl;
-
-/*
-            std::stringstream bufDump;
-            for (size_t i =0; i<i_msg_receive.size(); i++) {
-                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
-            }
-            clogI << "raw : " << bufDump.str() << std::endl;
-*/
-            // Stop DEBUG
 
             /**
              * trame gpf:
@@ -180,9 +158,6 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             if( GPD_NO_SECURITY == gpf.getSecurity() )
             {
-                // to test notify
-                notifyObserversOfRxGpFrame( gpf );
-
                 // if we are in Commissioning and this is a commissioning frame : use it !
                 if( (SINK_COM_OPEN == sink_state) && (GPF_COMMISSIONING_CMD == gpf.getCommandId()) )
                 {
@@ -203,15 +178,6 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 {
                     notifyObserversOfRxGpFrame( gpf );
                 }
-                /*
-                // look up if product is register
-                uint8_t l_sink_entry_idx = sink_table.getEntryIndexForSourceId( gpf.getSourceId() );
-                if( GP_SINK_INVALID_ENTRY != l_sink_entry_idx )
-                {
-                    // to test notify
-                    notifyObserversOfRxGpFrame( gpf );
-                }
-                */
             }
         }
         break;
@@ -308,13 +274,15 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
 
                 // update sink table entry
+                CEmberGpAddressStruct l_gp_addr(gpds_to_register.back().getSourceId());
+
                 l_entry.setEntryActive(true);
-                l_entry.setOptions(0x02A8); // \todo WARNING HARDCODED VALUE
-                l_entry.setGpdAddress(sink_table_entry.getGpdAddr());
-                l_entry.setAlias(static_cast<uint16_t>(sink_table_entry.getGpdAddr().getSourceId()&0xFFFF));
-                l_entry.setSecurityOption(0x12); // \todo WARNING HARDCODED VALUE
+                l_entry.setOptions(gpds_to_register.back().getSinkOption());
+                l_entry.setGpdAddress(l_gp_addr);
+                l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
+                l_entry.setSecurityOption(gpds_to_register.back().getSinkSecurityOption());
                 l_entry.setFrameCounter(0);
-                l_entry.setKey(sink_table_entry.getGpdKey());
+                l_entry.setKey(gpds_to_register.back().getKey());
 
                 // debug
                 clogD << "Update table entry : " << l_entry << std::endl;
@@ -368,8 +336,18 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
             {
                 clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
-                // set state
-                setSinkState(SINK_READY);
+                gpds_to_register.pop_back();
+
+                if( gpds_to_register.size() )
+                {
+                    // request sink table entry
+                    gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
+                }
+                else
+                {
+                    // set state
+                    setSinkState(SINK_READY);
+                }
             }
         }
         break;
@@ -623,6 +601,7 @@ void CGpSink::setSinkState( ESinkState i_state )
         { SINK_ERROR, "SINK_ERROR" },
         { SINK_COM_OPEN, "SINK_COM_OPEN" },
         { SINK_COM_IN_PROGRESS, "SINK_COM_IN_PROGRESS" },
+        { SINK_COM_OFFLINE_IN_PROGRESS, "SINK_COM_OFFLINE_IN_PROGRESS" },
     };
 
     auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */

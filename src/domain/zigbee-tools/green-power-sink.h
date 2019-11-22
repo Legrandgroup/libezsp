@@ -11,7 +11,6 @@
 #include "../green-power-observer.h"
 #include "../ezsp-dongle.h"
 #include "zigbee-messaging.h"
-#include "green-power-sink-table.h"
 #include "../ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "../ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
 
@@ -61,18 +60,11 @@ public:
     void closeCommissioningSession();
 
     /**
-     * @brief add a green power sink table entry
-     *
-     * @return index of entry in sink table, or GP_SINK_INVALID_ENTRY if table is full
-     */
-    uint8_t registerGpd( uint32_t i_source_id );
-
-    /**
      * @brief Add a green power device to this sink
      *
-     * @param gpd The description oof the device to add
+     * @param gpd list of gpds to add
      */
-    void registerGpd( const CGpDevice &gpd );
+    void registerGpds( const std::vector<CGpDevice> &gpd );
 
     /**
      * Observer
@@ -90,11 +82,11 @@ public:
 private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
-    CGpSinkTable sink_table;
     ESinkState sink_state;
     // parameters to save for pairing
     CGpFrame gpf_comm_frame;
     uint8_t sink_table_index;
+    std::vector<CGpDevice> gpds_to_register;
     CEmberGpSinkTableEntryStruct sink_table_entry;
 
     std::set<CGpObserver*> observers;   /*!< List of observers of this class */
