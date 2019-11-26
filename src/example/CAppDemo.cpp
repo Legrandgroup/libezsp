@@ -21,9 +21,11 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         ITimerFactory &i_timer_factory,
         bool reset,
         bool openGpCommissionning,
+        uint8_t authorizeChRqstAnswerTimeout,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
         const std::vector<CGpDevice>& gpDevicesList) :
+    timer(i_timer_factory.create()),
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
@@ -33,6 +35,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     ezsp_version(6),
     reset_wanted(reset),
     openGpCommissionningAtStartup(openGpCommissionning),
+    authorizeChRqstAnswerTimeout(authorizeChRqstAnswerTimeout),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
     gpdList(gpDevicesList)
@@ -252,10 +255,6 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
             clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
             break;
     }
-//    if( GPD_NO_SECURITY == i_gpf.getSecurity() )
-//    {
-//        gp_sink.registerGpd(i_gpf.getSourceId());
-//    }
 }
 
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {
@@ -273,6 +272,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
                 gp_sink.init();
 
+                // manage green power flags
                 if (this->openGpCommissionningAtStartup) {
                     // If requested to do so, immediately open a GP commissioning session
                     gp_sink.openCommissioningSession();
@@ -282,7 +282,13 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     gp_sink.registerGpds(gpdList);
                 }
                 
+                if(this->authorizeChRqstAnswerTimeout) {
+                    gp_sink.authorizeAnswerToGpfChannelRqst(true);
+                    // start timer
+                    timer->start( (this->authorizeChRqstAnswerTimeout*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
+                }
 
+                // manage other flags
                 if (this->openZigbeeCommissionningAtStartup) {
                     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
                     zb_nwk.openNetwork(60);
@@ -835,3 +841,8 @@ void CAppDemo::stackInit()
 	zb_nwk.stackInit(l_config, l_policy);
 }
 
+void CAppDemo::chRqstTimeout(void)
+{
+    this->authorizeChRqstAnswerTimeout = 0;
+    setAppState(APP_READY);
+}

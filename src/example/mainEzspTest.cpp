@@ -36,6 +36,7 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
     fprintf(f,"-Z (--open-zigbee)                : open the zigbee network at startup (for 60s)\n");
     fprintf(f,"-G (--open-gp-commissionning)     : open the Green Power commissionning session at startup\n");
+    fprintf(f,"-C (--authorize-ch-request-answer): Authorize answer to channel request command for x seconds\n");
     fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (default: '/dev/ttyUSB0')\n");
     fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
     fprintf(f,"-s (--source-id) <id/key>         : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
 
-    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
+    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::TRACE);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
@@ -81,6 +82,7 @@ int main(int argc, char **argv) {
     std::string serialPort("/dev/ttyUSB0");
     bool openGpCommissionningAtStartup = false;
     bool openZigbeeNetworkAtStartup = false;
+    uint8_t authorizeChRqstAnswerTimeout = 0U;
 
     static struct option longOptions[] = {
         {"reset-to-channel", 1, 0, 'r'},
@@ -88,11 +90,12 @@ int main(int argc, char **argv) {
         {"serial-port", 1, 0, 'u'},
         {"open-zigbee", 0, 0, 'Z'},
         {"open-gp-commissionning", 0, 0, 'G'},
+        {"authorize-ch-request-answer", 1, 0, 'C'},
         {"debug", 0, 0, 'd'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhZGs:u:r:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhZGs:u:r:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -151,6 +154,9 @@ int main(int argc, char **argv) {
             case 'G':
                 openGpCommissionningAtStartup = true;
                 break;
+            case 'C':
+                std::stringstream(optarg) >> authorizeChRqstAnswerTimeout;
+                break;
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
                 break;
@@ -179,7 +185,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, openZigbeeNetworkAtStartup, resetToChannel, gpDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, gpDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;
