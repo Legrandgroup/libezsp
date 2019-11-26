@@ -1,21 +1,20 @@
 #include "mqtt.h"
 
-#define MQTT_ID "libezsp_id"
+static char MQTT_ID[]="libezsp_id";
 
-#define PUBLISH_TOPIC "zb_repport"
+static char PUBLISH_TOPIC []="zb_repport";
 #define DEFAULT_KEEP_ALIVE 60
-#define BROKER_ADDRESS "localhost"
+static char BROKER_ADDRESS[]="localhost";
 #define MQTT_PORT 1883
 
 #include <iostream>
 
 myMqtt::myMqtt() : 
     host(BROKER_ADDRESS),
-    id(MQTT_ID),
     topic(PUBLISH_TOPIC),
     port(MQTT_PORT),
     keepalive(DEFAULT_KEEP_ALIVE),
-    mosquittopp(id)
+    mosquittopp(MQTT_ID)
 {
     mosqpp::lib_init();        // Mandatory initialization for mosquitto library
     connect_async(host,     // non blocking connection to broker request

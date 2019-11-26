@@ -17,7 +17,6 @@ public:
 
 private:
     const char     *     host;
-    const char    *     id;
     const char    *     topic;
     int                port;
     int                keepalive;
