@@ -29,9 +29,25 @@ public:
     void stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy);
 
     void formHaNetwork(uint8_t channel=DEFAULT_RADIO_CHANNEL);
-    void OpenNetwork( uint8_t i_timeout );
-    void CloseNetwork( void );
-    void LeaveNetwork( void );
+
+    /**
+     * @brief Open the zigbee network for devices to join
+     *
+     * @param i_timeout A timeout for the network to open (in seconds)
+     */
+    void openNetwork(uint8_t i_timeout);
+
+    /**
+     * @brief Close the zigbee network
+     *
+     * @param i_timeout A timeout for the network to open (in seconds)
+     */
+    void closeNetwork();
+
+    /**
+     * @brief Make the adapter leave the current zigbee network it has joined (if any)
+     */
+    void leaveNetwork();
 
     void startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct = nullptr);
 

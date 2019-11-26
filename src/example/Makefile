@@ -4,47 +4,44 @@ LOCAL_INC ?= -I/home/seb/_DEV/serial/compiled/include
 CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -g -Weffc++
 LDFLAGS = $(LOCAL_LDFLAGS) -lserialcpp -lpthread -lmosquittopp
 
+# SRC_PATH should point to the src/ folder containing source code for this library (can be overridden from environment)
+SRC_PATH ?= ..
+SRC_DOMAIN_PATH ?= $(SRC_PATH)/domain
+SRC_SPI_PATH ?= $(SRC_PATH)/spi
+
+include ../libezsp.mk.inc
+
+SRCS = $(SRC_PATH)/example/mainEzspTest.cpp \
+       $(SRC_PATH)/example/CAppDemo.cpp \
+       $(SRC_PATH)/example/dummy_db.cpp \
+       $(SRC_PATH)/example/mqtt.cpp \
+       $(LIBEZSP_LINUX_SERIALCPP_SRC) \
+
+OBJECTFILES = $(patsubst %.cpp, %.o, $(SRCS))
+
 EXEC = mainEzspTest
-OBJECTFILES = mainEzspTest.o \
-			  CAppDemo.o \
-			  dummy_db.o \
-			  mqtt.o \
-			  ../domain/ezsp-dongle.o \
-			  ../domain/ash.o \
-			  ../domain/zbmessage/green-power-frame.o \
-			  ../domain/zbmessage/green-power-sink-table-entry.o \
-			  ../domain/zbmessage/zigbee-message.o \
-			  ../domain/zbmessage/zclheader.o \
-			  ../domain/zbmessage/zclframecontrol.o \
-			  ../domain/zbmessage/apsoption.o \
-			  ../domain/zbmessage/aps.o \
-			  ../domain/zbmessage/zdp-enum.o \
-			  ../domain/ezsp-protocol/ezsp-enum.o \
-			  ../domain/ezsp-protocol/get-network-parameters-response.o \
-			  ../domain/ezsp-protocol/struct/ember-network-parameters.o \
-			  ../domain/ezsp-protocol/struct/ember-key-struct.o \
-			  ../domain/ezsp-protocol/struct/ember-child-data-struct.o \
-			  ../domain/ezsp-protocol/struct/ember-gp-address-struct.o \
-			  ../domain/zigbee-tools/zigbee-networking.o \
-			  ../domain/zigbee-tools/zigbee-messaging.o \
-			  ../domain/zigbee-tools/green-power-sink.o \
-			  ../domain/zigbee-tools/green-power-sink-table.o \
-			  ../spi/GenericAsyncDataInputObservable.o \
-			  ../spi/serial/SerialUartDriver.o \
-			  ../spi/console/ConsoleLogger.o \
-			  ../spi/cppthreads/CppThreadsTimerFactory.o \
-			  ../spi/cppthreads/CppThreadsTimer.o
+
+#Set this to @ to keep the makefile quiet
+ifndef SILENCE
+	SILENCE = @
+endif
 
 CLEANFILES = $(OBJECTFILES) $(EXEC)
-INC = $(LOCAL_INC) -I../spi -I../domain -I../domain/zbmessage
+INC = $(LOCAL_INC) $(LIBEZSP_COMMON_INC)
 
 all: $(EXEC)
 
 $(EXEC): $(OBJECTFILES)
-	$(CXX) $(OBJECTFILES) $(LDFLAGS) $(LIBCGICC_LDFLAGS) -o $(EXEC)
+	@echo Linking $@
+	$(SILENCE)$(CXX) $(OBJECTFILES) $(LDFLAGS) $(LIBCGICC_LDFLAGS) -o $(EXEC)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(LIBCGICC_CXXFLAGS) $(INC) -c $< -o $@
+	@echo Compiling $<
+	$(SILENCE)$(CXX) $(CXXFLAGS) $(LIBCGICC_CXXFLAGS) $(INC) -c $< -o $@
+
+rebuild: clean-all all
 
 clean:
 	rm -f $(CLEANFILES)
+
+clean-all: clean

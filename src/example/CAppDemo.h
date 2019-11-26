@@ -10,6 +10,7 @@
 #include "../domain/zigbee-tools/zigbee-networking.h"
 #include "../domain/zigbee-tools/zigbee-messaging.h"
 #include "../domain/zigbee-tools/green-power-sink.h"
+#include "../domain/zbmessage/green-power-device.h"
 #include "../spi/IUartDriver.h"
 #include "../spi/ITimerFactory.h"
 #include "../spi/ILogger.h"
@@ -34,8 +35,7 @@ typedef enum
 class CAppDemo : public CEzspDongleObserver, CGpObserver
 {
 public:
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, unsigned int networkChannel=11, const std::vector<uint32_t>& sourceIdList={});
-    ~CAppDemo();
+    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<CGpDevice>& gpDevicesList={});
 
     /**
      * Callback
@@ -49,7 +49,7 @@ private:
     void dongleInit();
     void stackInit();
 
-    static bool extractClusterReport( const std::vector<uint8_t >& payload, size_t& usedBytes, uint32_t sourceId, uint8_t linkValue, myMqtt& mqttPub );
+    static bool extractClusterReport( const std::vector<uint8_t >& payload, uint32_t sourceId, uint8_t linkValue, myMqtt& mqttPub, uint8_t& usedBytes );
     static bool extractMultiClusterReport( std::vector<uint8_t > payload, uint32_t sourceId, uint8_t linkValue, myMqtt& mqttPub );
 
 
@@ -62,7 +62,10 @@ private:
     Cdb db;
     uint8_t ezsp_version;
     bool reset_wanted;	/*!< Do we reset the network and re-create a new one? */
+    bool openGpCommissionningAtStartup;	/* Do we open GP commissionning at dongle initialization? */
+    bool openZigbeeCommissionningAtStartup;	/* Do we open the Zigbee network at dongle initialization? */
     unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
+    std::vector<CGpDevice> gpdList;	/*!< The list of GP devices we are monitoring */
 #ifdef TEST_MQTT
     myMqtt mqtt_pub;
 #endif

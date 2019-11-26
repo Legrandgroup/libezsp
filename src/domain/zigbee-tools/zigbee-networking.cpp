@@ -241,12 +241,7 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     form_channel = channel;
 }
 
-/**
- * @brief OpenNetwork : open current network
- * @param i_timeout : timeout for open network in second
- * @return true if action is possible
- */
-void CZigbeeNetworking::OpenNetwork( uint8_t i_timeout )
+void CZigbeeNetworking::openNetwork(uint8_t i_timeout)
 {
     std::vector<uint8_t> i_payload;
 
@@ -265,11 +260,7 @@ void CZigbeeNetworking::OpenNetwork( uint8_t i_timeout )
     zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
 }
 
-/**
- * @brief CloseNetwork : open current network
- * @return true if action is possible
- */
-void CZigbeeNetworking::CloseNetwork( void )
+void CZigbeeNetworking::closeNetwork()
 {
     std::vector<uint8_t> i_payload;
 
@@ -288,11 +279,10 @@ void CZigbeeNetworking::CloseNetwork( void )
     zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
 }
 
-void CZigbeeNetworking::LeaveNetwork( void )
+void CZigbeeNetworking::leaveNetwork()
 {
     dongle.sendCommand(EZSP_LEAVE_NETWORK);
 }
-
 
 void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct)
 {
@@ -303,5 +293,5 @@ void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i
     l_param.push_back(child_idx);
     dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
 
-    discoverCallbackFct = i_discoverCallbackFct;  
+    discoverCallbackFct = i_discoverCallbackFct;
 }

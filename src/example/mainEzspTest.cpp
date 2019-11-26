@@ -19,14 +19,13 @@
 #error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
-#include "GenericLogger.h"
+#include "../spi/GenericLogger.h"
 #include "CAppDemo.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>
 #include <sstream>
-
-using namespace std;
+//#include <iomanip>	// For debug
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -35,15 +34,38 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                       : this help\n");
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
-    fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (eg: '/dev/ttyUSB0')\n");
+    fprintf(f,"-Z (--open-zigbee)                : open the zigbee network at startup (for 60s)\n");
+    fprintf(f,"-G (--open-gp-commissionning)     : open the Green Power commissionning session at startup\n");
+    fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (default: '/dev/ttyUSB0')\n");
     fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
-    fprintf(f,"-s (--source-id) <source-id>      : enables receiving from a device with this source-id, formatted as a 8-digit hexadecimal string (eg: 'ffae1245') (repeated -s options are allowed)\n");
+    fprintf(f,"-s (--source-id) <id/key>         : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
+}
+
+/**
+ * @brief Convert an ASCII character representing one hexadecimal digit ([0-9a-fA-F]) to its value (0-15)
+ *
+ * @param[in] hDigit The input printable ASCII character
+ * @param[out] byte The value of the hexadecimal digit as a uint8_t nibble (0-15)
+ * @return true if the conversion succeeded
+**/
+static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
+    if (hDigit>='a' && hDigit<='f')
+        byte = static_cast<uint8_t>(hDigit + 10 - 'a');
+    else if (hDigit>='A' && hDigit<='F')
+        byte = static_cast<uint8_t>(hDigit + 10 - 'A');
+    else if (hDigit>='0' && hDigit<='9')
+        byte = static_cast<uint8_t>(hDigit - '0');
+    else
+        return false;
+    return true;
 }
 
 int main(int argc, char **argv) {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
+
+    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
@@ -54,40 +76,83 @@ int main(int argc, char **argv) {
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
-    std::vector<uint32_t> sourceIdList;
+    std::vector<CGpDevice> gpDevDataList;
     unsigned int resetToChannel = 0;
     std::string serialPort("/dev/ttyUSB0");
+    bool openGpCommissionningAtStartup = false;
+    bool openZigbeeNetworkAtStartup = false;
 
     static struct option longOptions[] = {
         {"reset-to-channel", 1, 0, 'r'},
         {"source-id", 1, 0, 's'},
         {"serial-port", 1, 0, 'u'},
+        {"open-zigbee", 0, 0, 'Z'},
+        {"open-gp-commissionning", 0, 0, 'G'},
         {"debug", 0, 0, 'd'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhs:u:r:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhZGs:u:r:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
-                stringstream sourceId;
-                sourceId << std::hex << optarg;
-                unsigned int sourceIdValue;
-                sourceId >> sourceIdValue;
-            if (sourceIdValue<static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                    sourceIdList.push_back(sourceIdValue);
+                std::istringstream gpDevDataStream(optarg);
+                std::string gpDevSourceIdstr;
+                if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
+                    std::stringstream gpDevSourceIdStream;
+                    gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+                    unsigned int sourceIdValue;
+                    gpDevSourceIdStream >> sourceIdValue;
+                    if (sourceIdValue<static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+                        //std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+                        std::string gpDevKeyStr;
+                        gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
+                        //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
+                        if (gpDevKeyStr.length() != 32) {
+                            clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+                            exit(1);
+                        }
+                        else {
+                            EmberKeyData keyValue(CGpDevice::UNKNOWN_KEY);
+                            if (gpDevKeyStr != "") {
+                                std::vector<uint8_t> argAsBytes;
+                                for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
+                                    uint8_t hiNibble;
+                                    if (!hexDigitToNibble(gpDevKeyStr[i], hiNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i] << "' at position " << i+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                        exit(1);
+                                    }
+                                    uint8_t loNibble;
+                                    if (!hexDigitToNibble(gpDevKeyStr[i+1], loNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                        exit(1);
+                                    }
+                                    argAsBytes.push_back(static_cast<uint8_t>(hiNibble << 4) | loNibble);
+                                }
+                                //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
+                                //std::cerr << "\n";
+                                keyValue = EmberKeyData(argAsBytes);
+                            }
+                            gpDevDataList.push_back(CGpDevice(sourceIdValue, keyValue));
+                        }
+                    }
+                    else {
+                        clogE << "Invalid source ID: " << optarg << "\n";
+                    }
                 }
-                else {
-                    clogE << "Invalid source ID: " << optarg << "\n";
-                }
-
             }
             break;
             case 'u':
                 serialPort = optarg;
                 break;
             case 'r':
-                stringstream(optarg) >> resetToChannel;
+                std::stringstream(optarg) >> resetToChannel;
+                break;
+            case 'G':
+                openGpCommissionningAtStartup = true;
+                break;
+            case 'Z':
+                openZigbeeNetworkAtStartup = true;
                 break;
             case 'd':
                 debugEnabled = true;
@@ -109,9 +174,12 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    uartDriver.open(serialPort, 57600);
+    if (uartDriver.open(serialPort, 57600) != 0) {
+        clogE << "Failed opening serial port. Aborting\n";
+        return 1;
+    }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), resetToChannel, sourceIdList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, openZigbeeNetworkAtStartup, resetToChannel, gpDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;
