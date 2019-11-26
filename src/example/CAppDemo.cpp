@@ -21,7 +21,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         ITimerFactory &i_timer_factory,
         bool reset,
         bool openGpCommissionning,
-        uint8_t authorizeChRqstAnswerTimeout,
+        uint8_t authorizeChannelRequestAnswerTimeout,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
         const std::vector<CGpDevice>& gpDevicesList) :
@@ -35,7 +35,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     ezsp_version(6),
     reset_wanted(reset),
     openGpCommissionningAtStartup(openGpCommissionning),
-    authorizeChRqstAnswerTimeout(authorizeChRqstAnswerTimeout),
+    authorizeChRqstAnswerTimeout(authorizeChannelRequestAnswerTimeout),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
     gpdList(gpDevicesList)
@@ -281,11 +281,11 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 {
                     gp_sink.registerGpds(gpdList);
                 }
-                
+
                 if(this->authorizeChRqstAnswerTimeout) {
                     gp_sink.authorizeAnswerToGpfChannelRqst(true);
                     // start timer
-                    timer->start( (this->authorizeChRqstAnswerTimeout*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
+                    timer->start( static_cast<uint16_t>(this->authorizeChRqstAnswerTimeout*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
                 }
 
                 // manage other flags

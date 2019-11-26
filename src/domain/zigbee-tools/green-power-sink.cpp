@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <ctime>
 #include <map>
+#include <string>
 
 #include "green-power-sink.h"
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
@@ -210,7 +211,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                         CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
                         std::vector<uint8_t> l_payload;
                         l_payload.push_back(0x10|l_next_channel_attempt);
-                        gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 2000 );                        
+                        gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 2000 );
 
                         // \todo is it necessary to let SINK open for commissioning ?
                     }
@@ -231,15 +232,14 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                             uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
                             uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
                             uint8_t l_type_id = gpf.getPayload().at(6);
-                            uint8_t l_device_id = gpf.getPayload().at(7);
+                            //uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
 
                             if( (0==l_cluster_id) && (0x5000==l_attribute_id) && (0x20==l_type_id) )
                             {
                                 // verify that no message is waiting to send
                                 bool l_found = false;
-                                for (auto it : gpd_send_list) 
+                                for (auto it : gpd_send_list)
                                     if( it.second == gpf.getSourceId() ){ l_found = true; }
-                                    
 
                                 if( !l_found )
                                 {
@@ -252,7 +252,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                                     CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
                                     std::vector<uint8_t> l_payload;
                                     l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
-                                    gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );                       
+                                    gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
                                     gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
                                 }
                             }
@@ -728,7 +728,12 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
     // The GPD command ID to send.
     l_payload.push_back(i_gpd_command_id);
     // The length of the GP command payload.
-    l_payload.push_back(i_gpd_command_payload.size());
+    std::string::size_type payload_size = i_gpd_command_payload.size();
+    if (payload_size > static_cast<uint8_t>(-1)) {
+        clogE << "Payload size overflow: " << payload_size << ", truncating to a 255\n";
+        payload_size = static_cast<uint8_t>(-1);
+    }
+    l_payload.push_back(static_cast<uint8_t>(payload_size));
     // The GP command payload.
     l_payload.insert(l_payload.end(), i_gpd_command_payload.begin(), i_gpd_command_payload.end());
     // The handle to refer to the GPDF.
