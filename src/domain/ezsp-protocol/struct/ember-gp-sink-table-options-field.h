@@ -128,6 +128,13 @@ class CEmberGpSinkTableOption
         bool isSecurityUse() const { return security_use; }
 
         /**
+         * @brief Setter for RxOnCapability
+         * 
+         * @param i_rx_on_capable
+         */
+        void setRxOnCapability(bool i_rx_on_capable){ rx_on_capability = i_rx_on_capable; }
+
+        /**
          * @brief Dump this instance as a string
          *
          * @return The resulting string
