@@ -8,9 +8,9 @@
 
 #include "ember-process-gp-pairing-parameter.h"
 
-CProcessGpPairingParam::CProcessGpPairingParam() :
+CProcessGpPairingParam::CProcessGpPairingParam(uint32_t i_gpd_source_id) :
         options(0, false, true, 0, 0, false, false, false),
-        addr(),
+        addr(i_gpd_source_id),
         commMode(),
         sinkNetworkAddress(),
         sinkGroupId(),

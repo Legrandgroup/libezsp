@@ -23,10 +23,10 @@ class CProcessGpPairingParam
 {
     public:
         /**
-         * @brief Default constructor, by default add gpd and remove to sink is set
+         * @brief Default constructor, to remove a gpd from proxy table
          *
          */
-        CProcessGpPairingParam();
+        CProcessGpPairingParam(uint32_t i_gpd_source_id);
 
         /**
          * @brief Copy constructor
