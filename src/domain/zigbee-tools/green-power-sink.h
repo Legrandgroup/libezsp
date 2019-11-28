@@ -6,6 +6,8 @@
  
 #pragma once
 
+#include <map>
+
 #include "../zbmessage/green-power-frame.h"
 #include "../zbmessage/green-power-device.h"
 #include "../green-power-observer.h"
@@ -13,6 +15,7 @@
 #include "zigbee-messaging.h"
 #include "../ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "../ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
+#include "../ezsp-protocol/struct/ember-network-parameters.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -27,6 +30,7 @@ typedef enum
     SINK_COM_OPEN,  // GP Proxy Commissioning mode open
     SINK_COM_IN_PROGRESS,  // GP sink receive gpf comm frame
     SINK_COM_OFFLINE_IN_PROGRESS, // Doing offline commissioning for GPD list
+    SINK_AUTHORIZE_ANSWER_CH_RQST,  // be able to answer to channel request maintenance green power frame
 }ESinkState;
 
 class CGpSink : public CEzspDongleObserver
@@ -67,6 +71,13 @@ public:
     void registerGpds( const std::vector<CGpDevice> &gpd );
 
     /**
+     * @brief authorize answer to channel request
+     * 
+     * @param i_authorize : true to authorize, false otherwize
+     */
+    void authorizeAnswerToGpfChannelRqst( bool i_authorize ){ authorizeGpfChannelRqst = i_authorize; }
+
+    /**
      * Observer
      */
     void handleDongleState( EDongleState i_state );
@@ -83,11 +94,15 @@ private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     ESinkState sink_state;
+    CEmberNetworkParameters nwk_parameters;
+    bool authorizeGpfChannelRqst;
     // parameters to save for pairing
     CGpFrame gpf_comm_frame;
     uint8_t sink_table_index;
     std::vector<CGpDevice> gpds_to_register;
     CEmberGpSinkTableEntryStruct sink_table_entry;
+    // gpdf send list
+    std::map<uint8_t, uint32_t> gpd_send_list;
 
     std::set<CGpObserver*> observers;   /*!< List of observers of this class */
 
@@ -136,6 +151,21 @@ private:
      * @brief Update the GP Proxy table based on a GP pairing.
      */
     void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );     
+
+    /**
+     * @brief
+     * 
+     * @param i_action : The action to perform on the GP TX queue (true to add, false to remove).
+     * @param i_use_cca : Whether to use ClearChannelAssessment when transmitting the GPDF.
+     * @param i_gp_addr : The Address of the destination GPD.
+     * @param i_gpd_command_id : The GPD command ID to send.
+     * @param i_gpd_command_payload : The GP command payload.
+     * @param i_life_time_ms : How long to keep the GPDF in the TX Queue.
+     * @param i_handle : an handle value for this frame, use to identify in sent callback.
+     * 
+     */
+    void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr, 
+                    uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
 };
 
 #ifdef USE_RARITAN
