@@ -30,7 +30,7 @@
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
     fprintf(f,"%s - sample test program for libezsp\n\n", progname);
-    fprintf(f,"Usage: %s [-d] [-r channel] [-s source_id [-s source_id2...]]\n", progname);
+    fprintf(f,"Usage: %s [-d] [-u serialport] [-Z] [-G] [-C] [-c channel] [-r *|-r source_id [-r source_id2]] [-s source_id/key [-s source_id2/key...]]\n", progname);
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                       : this help\n");
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     bool debugEnabled = false;
     std::vector<CGpDevice> gpAddedDevDataList;
     std::vector<uint32_t> gpRemovedDevDataList;
-    bool removeAddGpDevs = false;
+    bool removeAllGpDevs = false;
     unsigned int resetToChannel = 0;
     std::string serialPort("/dev/ttyUSB0");
     bool openGpCommissionningAtStartup = false;
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
             {
                 std::string gpDevSourceIdstr(optarg);
                 if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
-                    removeAddGpDevs = true;
+                    removeAllGpDevs = true;
                 }
                 else {
                     std::stringstream gpDevSourceIdStream;
@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, gpAddedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpRemovedDevDataList, gpAddedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
 #ifdef USE_SERIALCPP
     std::string line;

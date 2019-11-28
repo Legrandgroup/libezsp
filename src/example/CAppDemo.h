@@ -31,8 +31,18 @@ class CAppDemo : public CEzspDongleObserver, CGpObserver
 public:
     /**
      * Constructor
+     * FIXME: too many args, this constructor becomes unreadable
     **/
-    CAppDemo(IUartDriver& uartDriver, ITimerFactory &i_timer_factory, bool reset=false, bool openGpCommissionning=false, uint8_t authorizeChannelRequestAnswerTimeout=0, bool openZigbeeCommissionning=false, unsigned int networkChannel=11, const std::vector<CGpDevice>& gpDevicesList={});
+    CAppDemo(IUartDriver& uartDriver,
+             ITimerFactory &i_timer_factory,
+             bool reset=false,
+             bool openGpCommissionning=false,
+             uint8_t authorizeChannelRequestAnswerTimeout=0,
+             bool openZigbeeCommissionning=false,
+             unsigned int networkChannel=11,
+             bool gpRemoveAllDevices=false,
+             const std::vector<uint32_t>& gpDevicesToRemove={},
+             const std::vector<CGpDevice>& gpDevicesList={});
 
     /**
      * Callback
@@ -67,5 +77,7 @@ private:
     uint8_t authorizeChRqstAnswerTimeout; /* local flag to authorize answer to channel request, pass as a remaining time to accept in s */
     bool openZigbeeCommissionningAtStartup;	/* Do we open the Zigbee network at dongle initialization? */
     unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
+    bool removeAllGpds;	/*!< A flag to remove all GP devices from monitoring */
+    std::vector<uint32_t> gpdToRemove;	/*!< A list of source IDs for GP devices to remove from previous monitoring */
     std::vector<CGpDevice> gpdList;	/*!< The list of GP devices we are monitoring */
 };

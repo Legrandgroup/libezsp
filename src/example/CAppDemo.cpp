@@ -24,7 +24,9 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         uint8_t authorizeChannelRequestAnswerTimeout,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
-        const std::vector<CGpDevice>& gpDevicesList) :
+        bool gpRemoveAllDevices,
+        const std::vector<uint32_t>& gpDevicesToRemove,
+        const std::vector<CGpDevice>& gpDevicesToAdd) :
     timer(i_timer_factory.create()),
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
@@ -38,7 +40,9 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     authorizeChRqstAnswerTimeout(authorizeChannelRequestAnswerTimeout),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
-    gpdList(gpDevicesList)
+    removeAllGpds(gpRemoveAllDevices),
+    gpdToRemove(gpDevicesToRemove),
+    gpdList(gpDevicesToAdd)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -262,8 +266,21 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
                 gp_sink.init();
 
+                if (this->removeAllGpds)
+                {
+                    gp_sink.gpClearAllTables();
+                    this->removeAllGpds = false;
+                    this->gpdToRemove = std::vector<uint32_t>();
+                }
+                else
+                {
+                    gp_sink.removeGpds(this->gpdToRemove);
+                    this->gpdToRemove = std::vector<uint32_t>();
+                }
+
                 // manage green power flags
-                if (this->openGpCommissionningAtStartup) {
+                if (this->openGpCommissionningAtStartup)
+                {
                     // If requested to do so, immediately open a GP commissioning session
                     gp_sink.openCommissioningSession();
                 }
