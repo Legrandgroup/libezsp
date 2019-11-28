@@ -29,14 +29,14 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
 
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message):
         status(raw_message.at(0)),
-        options(dble_u8_to_u16(raw_message.at(1),raw_message.at(2))),
+        options(dble_u8_to_u16(raw_message.at(2),raw_message.at(1))),
         gpd(std::vector<uint8_t>(raw_message.begin()+3,raw_message.end())),
         device_id(raw_message.at(13)),
         sink_list(),
-        assigned_alias(dble_u8_to_u16(raw_message.at(36),raw_message.at(37))),
+        assigned_alias(dble_u8_to_u16(raw_message.at(37),raw_message.at(36))),
         groupcast_radius(raw_message.at(38)),
         security_options(raw_message.at(39)),
-        gpdSecurity_frame_counter(static_cast<EmberGpSecurityFrameCounter>(quad_u8_to_u32(raw_message.at(40),raw_message.at(41),raw_message.at(42),raw_message.at(43)))),
+        gpdSecurity_frame_counter(static_cast<EmberGpSecurityFrameCounter>(quad_u8_to_u32(raw_message.at(43),raw_message.at(42),raw_message.at(41),raw_message.at(40)))),
         gpd_key(raw_message.begin()+44,raw_message.begin()+60)
 {
     sink_list[0].push_back(0xFF);
