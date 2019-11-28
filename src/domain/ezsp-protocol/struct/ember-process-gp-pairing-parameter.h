@@ -23,11 +23,10 @@ class CProcessGpPairingParam
 {
     public:
         /**
-         * @brief Default constructor
+         * @brief Default constructor, by default add gpd and remove to sink is set
          *
-         * Construction without arguments is not allowed
          */
-        CProcessGpPairingParam() = delete;
+        CProcessGpPairingParam();
 
         /**
          * @brief Copy constructor

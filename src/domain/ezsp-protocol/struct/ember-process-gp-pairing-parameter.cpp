@@ -8,7 +8,20 @@
 
 #include "ember-process-gp-pairing-parameter.h"
 
+CProcessGpPairingParam::CProcessGpPairingParam() :
+        options(0, false, true, 0, 0, false, false, false),
+        addr(),
+        commMode(),
+        sinkNetworkAddress(),
+        sinkGroupId(),
+        assignedAlias(),
+        sinkIeeeAddress(),
+        gpdKey(),
+        gpdSecurityFrameCounter(),
+        forwardingRadius()
+{
 
+}
 
 CProcessGpPairingParam::CProcessGpPairingParam(CEmberGpSinkTableEntryStruct i_sink_table_entry, bool i_add_sink, bool i_remove_gpd, 
                                                 uint16_t i_sinkNetworkAddress, EmberEUI64 i_sinkIeeeAddress ) :
