@@ -101,10 +101,20 @@ void CGpSink::init()
     setSinkState(SINK_READY);    
 }
 
-void CGpSink::gpClearAllTables()
+bool CGpSink::gpClearAllTables()
 {
-    // sink table
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+    bool lo_success = false;
+
+    if( SINK_READY == sink_state )
+    {
+        // sink table
+        dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+
+        // set state
+        setSinkState(SINK_CLEAR_ALL);    
+        lo_success = true;
+    }
+    return lo_success;
 }
 
 void CGpSink::openCommissioningSession()
@@ -145,6 +155,11 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 {
     switch( i_cmd )
     {
+        case EZSP_GP_SINK_TABLE_CLEAR_ALL:
+        {
+
+        }
+        break;
         case EZSP_GET_NETWORK_PARAMETERS:
         {
             CGetNetworkParamtersResponse l_rsp(i_msg_receive);

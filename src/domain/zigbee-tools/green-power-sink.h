@@ -31,6 +31,7 @@ typedef enum
     SINK_COM_IN_PROGRESS,  // GP sink receive gpf comm frame
     SINK_COM_OFFLINE_IN_PROGRESS, // Doing offline commissioning for GPD list
     SINK_AUTHORIZE_ANSWER_CH_RQST,  // be able to answer to channel request maintenance green power frame
+    SINK_CLEAR_ALL, // clear all tables (sink/proxy) in progress
 }ESinkState;
 
 class CGpSink : public CEzspDongleObserver
@@ -49,9 +50,11 @@ public:
     void init();
 
     /**
-     * Clear all GP tables
+     * @brief Clear all GP tables
+     * 
+     * @return true if action can be done
      */
-    void gpClearAllTables();
+    bool gpClearAllTables();
 
     /**
      * @brief Open a commissioning session for limited time, close as soon as a binding is done.
