@@ -40,6 +40,7 @@ public:
     void handleDongleState( EDongleState i_state );
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
     void handleRxGpFrame( CGpFrame &i_gpf );
+    void handleRxGpdId( uint32_t &i_gpd_id );
 
 private:
     void setAppState( EAppState i_state );

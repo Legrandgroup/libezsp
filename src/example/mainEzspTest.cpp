@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
 
-    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::TRACE);	/* Only display logs for debug level info and higher (up to error) */
+    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;

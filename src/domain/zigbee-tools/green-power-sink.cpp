@@ -216,6 +216,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             // build gpf frame from ezsp rx message
             CGpFrame gpf = CGpFrame(i_msg_receive);
+            notifyObserversOfRxGpdId(gpf.getSourceId());
 
             clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
@@ -599,6 +600,12 @@ bool CGpSink::unregisterObserver(CGpObserver* observer)
 void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     for(auto observer : this->observers) {
         observer->handleRxGpFrame( i_gpf );
+    }
+}
+
+void CGpSink::notifyObserversOfRxGpdId( uint32_t i_gpd_id ) {
+    for(auto observer : this->observers) {
+        observer->handleRxGpdId( i_gpd_id );
     }
 }
 

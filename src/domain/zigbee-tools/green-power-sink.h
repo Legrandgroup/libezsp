@@ -127,6 +127,13 @@ private:
     void notifyObserversOfRxGpFrame( CGpFrame i_gpf );
 
     /**
+     * @brief Notify observers of this class
+     *
+     * @param i_gpd_id The received GPD Id frame
+     */
+    void notifyObserversOfRxGpdId( uint32_t i_gpd_id );
+
+    /**
      * @brief Private utility function to manage error state
      */
     void setSinkState( ESinkState i_state );
