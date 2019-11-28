@@ -32,6 +32,7 @@ typedef enum
     SINK_COM_OFFLINE_IN_PROGRESS, // Doing offline commissioning for GPD list
     SINK_AUTHORIZE_ANSWER_CH_RQST,  // be able to answer to channel request maintenance green power frame
     SINK_CLEAR_ALL, // clear all tables (sink/proxy) in progress
+    SINK_REMOVE_IN_PROGRESS, // remove a list of gpd from sink and proxy table
 }ESinkState;
 
 class CGpSink : public CEzspDongleObserver
@@ -74,6 +75,13 @@ public:
     void registerGpds( const std::vector<CGpDevice> &gpd );
 
     /**
+     * @brief remove a green power device to this sink
+     *
+     * @param gpd list of gpds sourceId to remove
+     */
+    void removeGpds( const std::vector<uint32_t> &gpd );
+
+    /**
      * @brief authorize answer to channel request
      * 
      * @param i_authorize : true to authorize, false otherwize
@@ -105,6 +113,7 @@ private:
     std::vector<CGpDevice> gpds_to_register;
     CEmberGpSinkTableEntryStruct sink_table_entry;
     uint8_t proxy_table_index;
+    std::vector<uint32_t> gpds_to_remove;
     // gpdf send list
     std::map<uint8_t, uint32_t> gpd_send_list;
 
@@ -170,6 +179,24 @@ private:
      */
     void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr, 
                     uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
+
+    /**
+     * @brief remove an entry in sink table
+     * @param i_index : entry index to remove
+     */
+    void gpSinkTableRemoveEntry( uint8_t i_index );
+
+    /**
+     * @brief search entry in proxy table for a gpd by source id
+     * @param i_src_id : source id of gpd to found
+     */
+    void gpProxyTableLookup(uint32_t i_src_id);
+
+    /**
+     * @brief search entry in sink table for a gpd by source id
+     * @param i_src_id : source id of gpd to found
+     */
+    void gpSinkTableLookup(uint32_t i_src_id);
 };
 
 #ifdef USE_RARITAN
