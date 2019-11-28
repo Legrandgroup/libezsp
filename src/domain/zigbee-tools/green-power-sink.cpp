@@ -82,6 +82,7 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     sink_table_index(0xFF),
     gpds_to_register(),
     sink_table_entry(),
+    proxy_table_index(),
     gpd_send_list(),
     observers()
 {
@@ -109,6 +110,10 @@ bool CGpSink::gpClearAllTables()
     {
         // sink table
         dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+
+        // proxy table
+        proxy_table_index = 0;
+        dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
 
         // set state
         setSinkState(SINK_CLEAR_ALL);    
@@ -155,9 +160,25 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 {
     switch( i_cmd )
     {
-        case EZSP_GP_SINK_TABLE_CLEAR_ALL:
+        case EZSP_GP_PROXY_TABLE_GET_ENTRY:
         {
-
+            if( SINK_CLEAR_ALL == sink_state )
+            {
+                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+                if( EMBER_SUCCESS == l_status )
+                {
+                    // do remove action
+                    CProcessGpPairingParam l_param;
+                    gpProxyTableProcessGpPairing(l_param);
+                }
+                else
+                {
+                    // assume end of table
+                    // set new state
+                    setSinkState(SINK_READY);                    
+                }
+                
+            }
         }
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
@@ -447,6 +468,12 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                     // set state
                     setSinkState(SINK_READY);
                 }
+            }
+            else if( SINK_CLEAR_ALL == sink_state )
+            {
+                // retrieve next entry
+                proxy_table_index++;
+                dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
             }
         }
         break;
@@ -774,6 +801,7 @@ void CGpSink::setSinkState( ESinkState i_state )
         { SINK_COM_IN_PROGRESS, "SINK_COM_IN_PROGRESS" },
         { SINK_COM_OFFLINE_IN_PROGRESS, "SINK_COM_OFFLINE_IN_PROGRESS" },
         { SINK_AUTHORIZE_ANSWER_CH_RQST, "SINK_AUTHORIZE_ANSWER_CH_RQST" },
+        { SINK_CLEAR_ALL, "SINK_CLEAR_ALL" },
     };
 
     auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */

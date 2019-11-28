@@ -99,11 +99,12 @@ private:
     ESinkState sink_state;
     CEmberNetworkParameters nwk_parameters;
     bool authorizeGpfChannelRqst;
-    // parameters to save for pairing
+    // parameters to save for pairing/clearing
     CGpFrame gpf_comm_frame;
     uint8_t sink_table_index;
     std::vector<CGpDevice> gpds_to_register;
     CEmberGpSinkTableEntryStruct sink_table_entry;
+    uint8_t proxy_table_index;
     // gpdf send list
     std::map<uint8_t, uint32_t> gpd_send_list;
 
