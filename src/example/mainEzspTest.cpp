@@ -38,7 +38,7 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"-G (--open-gp-commissionning)     : open the Green Power commissionning session at startup\n");
     fprintf(f,"-C (--authorize-ch-request-answer): Authorize answer to channel request command for x seconds\n");
     fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (default: '/dev/ttyUSB0')\n");
-    fprintf(f,"-r (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
+    fprintf(f,"-c (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
     fprintf(f,"-s (--source-id) <id/key>         : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
 }
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     uint8_t authorizeChRqstAnswerTimeout = 0U;
 
     static struct option longOptions[] = {
-        {"reset-to-channel", 1, 0, 'r'},
+        {"reset-to-channel", 1, 0, 'c'},
         {"source-id", 1, 0, 's'},
         {"serial-port", 1, 0, 'u'},
         {"open-zigbee", 0, 0, 'Z'},
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhZGs:u:r:C:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhZGs:u:c:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
             case 'u':
                 serialPort = optarg;
                 break;
-            case 'r':
+            case 'c':
                 std::stringstream(optarg) >> resetToChannel;
                 break;
             case 'G':
