@@ -9,7 +9,7 @@
 #include "ember-gp-address-struct.h"
 
 CEmberGpAddressStruct::CEmberGpAddressStruct():
-	gpdIeeeAddress(),
+	gpdIeeeAddress({0,0,0,0,0,0,0,0}),
 	applicationId(),
 	endpoint()
 {
