@@ -30,7 +30,7 @@
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
     fprintf(f,"%s - sample test program for libezsp\n\n", progname);
-    fprintf(f,"Usage: %s [-d] [-u serialport] [-Z] [-G] [-C] [-c channel] [-r *|-r source_id [-r source_id2]] [-s source_id/key [-s source_id2/key...]]\n", progname);
+    fprintf(f,"Usage: %s [-d] [-u serialport] [-c channel] [-Z] [-C] [-G|[-r *|-r source_id [-r source_id2...]|-s source_id/key [-s source_id2/key...]]\n", progname);
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                       : this help\n");
     fprintf(f,"-d (--debug)                      : enable debug logs\n");
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
 
-    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::INFO);	/* Only display logs for debug level info and higher (up to error) */
+    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
     RaritanEventLoop eventLoop;
@@ -103,6 +103,10 @@ int main(int argc, char **argv) {
         switch (c) {
             case 's':
             {
+                if (gpRemovedDevDataList.size() || removeAllGpDevs) {
+                    std::cerr << "-s option cannot be used if -r was used\n";
+                    exit(1);
+                }
                 std::istringstream gpDevDataStream(optarg);
                 std::string gpDevSourceIdstr;
                 if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
@@ -153,9 +157,17 @@ int main(int argc, char **argv) {
             {
                 std::string gpDevSourceIdstr(optarg);
                 if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
+                    if (gpRemovedDevDataList.size() || gpAddedDevDataList.size()) {
+                        std::cerr << "-r * option cannot be used if another -r or -s was used\n";
+                        exit(1);
+                    }
                     removeAllGpDevs = true;
                 }
                 else {
+                    if (gpAddedDevDataList.size() || removeAllGpDevs) {
+                        std::cerr << "-r option cannot be used if -r '*' or -s was used\n";
+                        exit(1);
+                    }
                     std::stringstream gpDevSourceIdStream;
                     gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
                     unsigned int sourceIdValue;
