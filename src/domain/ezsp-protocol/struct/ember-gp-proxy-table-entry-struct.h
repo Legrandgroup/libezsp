@@ -67,3 +67,7 @@ class CEmberGpProxyTableEntryStruct
         uint8_t groupcast_radius; /*!< The groupcast radius. */
         uint8_t search_counter; /*!< The search counter. */
 };
+
+#ifdef USE_RARITAN
+#include <pp/official_api_end.h>
+#endif // USE_RARITAN
