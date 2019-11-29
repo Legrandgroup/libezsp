@@ -266,18 +266,6 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
                 gp_sink.init();
 
-                if (this->removeAllGpds)
-                {
-                    gp_sink.gpClearAllTables();
-                    this->removeAllGpds = false;
-                    this->gpdToRemove = std::vector<uint32_t>();
-                }
-                else
-                {
-                    gp_sink.removeGpds(this->gpdToRemove);
-                    this->gpdToRemove = std::vector<uint32_t>();
-                }
-
                 // manage green power flags
                 if (this->openGpCommissionningAtStartup)
                 {
@@ -287,6 +275,17 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 else if( gpdList.size() )
                 {
                     gp_sink.registerGpds(gpdList);
+                }
+                else if( this->removeAllGpds )
+                {
+                    gp_sink.gpClearAllTables();
+                    this->removeAllGpds = false;
+                    this->gpdToRemove = std::vector<uint32_t>();
+                }
+                else if( this->gpdToRemove.size() )
+                {
+                    gp_sink.removeGpds(this->gpdToRemove);
+                    this->gpdToRemove = std::vector<uint32_t>();
                 }
 
                 if(this->authorizeChRqstAnswerTimeout) {
