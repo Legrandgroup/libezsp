@@ -13,6 +13,7 @@
 
 #include "green-power-sink.h"
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
+#include "../ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h"
 
 #include "../byte-manip.h"
 
@@ -82,6 +83,8 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     sink_table_index(0xFF),
     gpds_to_register(),
     sink_table_entry(),
+    proxy_table_index(),
+    gpds_to_remove(),
     gpd_send_list(),
     observers()
 {
@@ -101,10 +104,24 @@ void CGpSink::init()
     setSinkState(SINK_READY);    
 }
 
-void CGpSink::gpClearAllTables()
+bool CGpSink::gpClearAllTables()
 {
-    // sink table
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+    bool lo_success = false;
+
+    if( SINK_READY == sink_state )
+    {
+        // sink table
+        dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+
+        // proxy table
+        proxy_table_index = 0;
+        dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
+
+        // set state
+        setSinkState(SINK_CLEAR_ALL);    
+        lo_success = true;
+    }
+    return lo_success;
 }
 
 void CGpSink::openCommissioningSession()
@@ -137,6 +154,18 @@ void CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
 }
 
+void CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
+{
+    // save offline information
+    gpds_to_remove = gpd;
+
+    // request sink table entry
+    gpSinkTableLookup( gpds_to_remove.back() );
+    
+    // set state
+    setSinkState(SINK_REMOVE_IN_PROGRESS);
+}
+
 void CGpSink::handleDongleState( EDongleState i_state )
 {
 }
@@ -145,6 +174,28 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 {
     switch( i_cmd )
     {
+        case EZSP_GP_PROXY_TABLE_GET_ENTRY:
+        {
+            if( SINK_CLEAR_ALL == sink_state )
+            {
+                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+                if( EMBER_SUCCESS == l_status )
+                {
+                    // do remove action
+                    CEmberGpProxyTableEntryStruct l_entry(std::vector<uint8_t>(i_msg_receive.begin()+1,i_msg_receive.end()));
+                    CProcessGpPairingParam l_param(l_entry.getGpdAddress().getSourceId());
+                    gpProxyTableProcessGpPairing(l_param);
+                }
+                else
+                {
+                    // assume end of table
+                    // set new state
+                    setSinkState(SINK_READY);                    
+                }
+                
+            }
+        }
+        break;
         case EZSP_GET_NETWORK_PARAMETERS:
         {
             CGetNetworkParamtersResponse l_rsp(i_msg_receive);
@@ -165,15 +216,13 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             // build gpf frame from ezsp rx message
             CGpFrame gpf = CGpFrame(i_msg_receive);
+            notifyObserversOfRxGpdId(gpf.getSourceId());
 
-            if( (0==gpf.getSourceId()) || (0x01510005==gpf.getSourceId()) )
-            {
-                clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
-                    ", link : " << unsigned(i_msg_receive.at(1)) <<
-                    ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
-                    ", gp address : " << gpf <<
-                    std::endl;
-            }
+            clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
+                ", link : " << unsigned(i_msg_receive.at(1)) <<
+                ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
+                ", gp address : " << gpf <<
+                std::endl;
 
             /**
              * trame gpf:
@@ -311,6 +360,48 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         }
         break;
 
+        case EZSP_GP_SINK_TABLE_LOOKUP:
+        {
+            if ( SINK_REMOVE_IN_PROGRESS == sink_state )
+            {
+                if( 0xFF != i_msg_receive.at(0) )
+                {
+                    // remove index
+                    gpSinkTableRemoveEntry(i_msg_receive.at(0));
+                }
+
+                // find proxy table entry
+                gpProxyTableLookup(gpds_to_remove.back());
+            }
+        }
+        break;
+
+        case EZSP_GP_PROXY_TABLE_LOOKUP:
+        {
+            if ( SINK_REMOVE_IN_PROGRESS == sink_state )
+            {
+                if( 0xFF != i_msg_receive.at(0) )
+                {
+                    // remove index
+                    CProcessGpPairingParam l_param(gpds_to_remove.back());
+                    gpProxyTableProcessGpPairing(l_param);
+                }
+
+                // find next sink table entry
+                gpds_to_remove.pop_back();
+                if( gpds_to_remove.empty() )
+                {
+                    // no more gpd to remove
+                    setSinkState(SINK_READY);
+                }
+                else
+                {
+                    gpSinkTableLookup(gpds_to_remove.back());    
+                }
+            }
+        }
+        break;
+
         case EZSP_GP_SINK_TABLE_GET_ENTRY:
         {
             if( SINK_COM_IN_PROGRESS == sink_state )
@@ -433,6 +524,12 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                     setSinkState(SINK_READY);
                 }
             }
+            else if( SINK_CLEAR_ALL == sink_state )
+            {
+                // retrieve next entry
+                proxy_table_index++;
+                dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
+            }
         }
         break;
 
@@ -503,6 +600,12 @@ bool CGpSink::unregisterObserver(CGpObserver* observer)
 void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     for(auto observer : this->observers) {
         observer->handleRxGpFrame( i_gpf );
+    }
+}
+
+void CGpSink::notifyObserversOfRxGpdId( uint32_t i_gpd_id ) {
+    for(auto observer : this->observers) {
+        observer->handleRxGpdId( i_gpd_id );
     }
 }
 
@@ -746,6 +849,25 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
     dongle.sendCommand(EZSP_D_GP_SEND,l_payload);    
 }
 
+void CGpSink::gpSinkTableRemoveEntry( uint8_t i_index )
+{
+    clogI << "EZSP_GP_SINK_TABLE_REMOVE_ENTRY\n";
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY,{i_index});    
+}
+
+void CGpSink::gpProxyTableLookup(uint32_t i_src_id)
+{
+    CEmberGpAddressStruct i_addr(i_src_id); 
+    clogI << "EZSP_GP_PROXY_TABLE_LOOKUP\n";
+    dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP,i_addr.getRaw());    
+}
+
+void CGpSink::gpSinkTableLookup(uint32_t i_src_id)
+{
+    CEmberGpAddressStruct i_addr(i_src_id); 
+    clogI << "EZSP_GP_SINK_TABLE_LOOKUP\n";
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,i_addr.getRaw());    
+}
 
 void CGpSink::setSinkState( ESinkState i_state )
 {
@@ -759,6 +881,8 @@ void CGpSink::setSinkState( ESinkState i_state )
         { SINK_COM_IN_PROGRESS, "SINK_COM_IN_PROGRESS" },
         { SINK_COM_OFFLINE_IN_PROGRESS, "SINK_COM_OFFLINE_IN_PROGRESS" },
         { SINK_AUTHORIZE_ANSWER_CH_RQST, "SINK_AUTHORIZE_ANSWER_CH_RQST" },
+        { SINK_CLEAR_ALL, "SINK_CLEAR_ALL" },
+        { SINK_REMOVE_IN_PROGRESS, "SINK_REMOVE_IN_PROGRESS" },
     };
 
     auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */

@@ -23,11 +23,10 @@ class CProcessGpPairingParam
 {
     public:
         /**
-         * @brief Default constructor
+         * @brief Default constructor, to remove a gpd from proxy table
          *
-         * Construction without arguments is not allowed
          */
-        CProcessGpPairingParam() = delete;
+        CProcessGpPairingParam(uint32_t i_gpd_source_id);
 
         /**
          * @brief Copy constructor

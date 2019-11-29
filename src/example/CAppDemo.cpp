@@ -24,7 +24,9 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         uint8_t authorizeChannelRequestAnswerTimeout,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
-        const std::vector<CGpDevice>& gpDevicesList) :
+        bool gpRemoveAllDevices,
+        const std::vector<uint32_t>& gpDevicesToRemove,
+        const std::vector<CGpDevice>& gpDevicesToAdd) :
     timer(i_timer_factory.create()),
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
@@ -38,7 +40,9 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
     authorizeChRqstAnswerTimeout(authorizeChannelRequestAnswerTimeout),
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
-    gpdList(gpDevicesList)
+    removeAllGpds(gpRemoveAllDevices),
+    gpdToRemove(gpDevicesToRemove),
+    gpdList(gpDevicesToAdd)
 {
     setAppState(APP_NOT_INIT);
     // uart
@@ -199,28 +203,18 @@ bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
     return validBuffer;
 }
 
+void CAppDemo::handleRxGpdId( uint32_t &i_gpd_id )
+{
+    // Start DEBUG
+    clogI << "CAppDemo::handleRxGpdId : 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id) << std::endl;
+    // Stop DEBUG
+}
+
 void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 {
     // Start DEBUG
-    clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf <</*
-        ", last hop rssi : " << unsigned(last_hop_rssi) <<
-        ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) <<*/
-        std::endl;
-
+    clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf << std::endl;
     // Stop DEBUG
-
-    auto payloadSize = i_gpf.getPayload().size();
-
-    clogD << "Received a green power frame (" << std::dec << payloadSize << " bytes)";
-    if (payloadSize!=0)
-    {
-        clogD << ": ";
-        for (auto i : i_gpf.getPayload())
-        {
-            clogD << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
-        }
-    }
-    clogD << "\n";
 
     switch(i_gpf.getCommandId())
     {
@@ -258,7 +252,7 @@ void CAppDemo::handleRxGpFrame( CGpFrame &i_gpf )
 }
 
 void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) {
-    //-- clogI << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
+    //-- clogD << "CAppDemo::ezspHandler " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 
     switch( i_cmd )
     {
@@ -273,13 +267,25 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 gp_sink.init();
 
                 // manage green power flags
-                if (this->openGpCommissionningAtStartup) {
+                if (this->openGpCommissionningAtStartup)
+                {
                     // If requested to do so, immediately open a GP commissioning session
                     gp_sink.openCommissioningSession();
                 }
                 else if( gpdList.size() )
                 {
                     gp_sink.registerGpds(gpdList);
+                }
+                else if( this->removeAllGpds )
+                {
+                    gp_sink.gpClearAllTables();
+                    this->removeAllGpds = false;
+                    this->gpdToRemove = std::vector<uint32_t>();
+                }
+                else if( this->gpdToRemove.size() )
+                {
+                    gp_sink.removeGpds(this->gpdToRemove);
+                    this->gpdToRemove = std::vector<uint32_t>();
                 }
 
                 if(this->authorizeChRqstAnswerTimeout) {
