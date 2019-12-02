@@ -12,6 +12,21 @@
 
 #include "../ezsp-protocol/struct/ember-gp-address-struct.h"
 
+CGpFrame::CGpFrame():
+    link_value(0),
+    sequence_number(0),
+    source_id(0),
+    security(GPD_NO_SECURITY),
+    key_type(GPD_KEY_TYPE_NO_KEY),
+    auto_commissioning(false),
+    rx_after_tx(false),
+    security_frame_counter(0),
+    command_id(0xFF),
+    mic(0),
+    proxy_table_entry(0xFF),
+    payload()
+{
+}
 
 CGpFrame::CGpFrame(const std::vector<uint8_t>& raw_message):
     link_value(0),

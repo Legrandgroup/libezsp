@@ -26,18 +26,6 @@ CZigBeeMsg::~CZigBeeMsg()
 {
 }
 
-/**
- * @brief SetSpecific   : build a basic cluster specific message
- * @param i_profile_id  : identifier of ZigBee profile to use
- * @param i_manufacturer_code  : set to 0xFFFF if public cluster
- * @param i_endpoint    : destination endpoint
- * @param i_cluster_id  : concerned cluster
- * @param i_cmd_id      : command
- * @param i_direction   : model side
- * @param i_payload     : payload of command
- * @param i_src_ieee    : address ieee to use as source of message
- * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
- */
 void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
                               const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload,
                               const uint64_t i_src_ieee, const uint8_t i_transaction_number, const uint16_t i_grp_id )
@@ -51,17 +39,6 @@ void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manu
   payload = i_payload;
 }
 
-/**
- * @brief SetGeneral   : build a basic cluster general message
- * @param i_msp_nwk     : indicate if it's an msp or public message
- * @param i_endpoint    : destination endpoint
- * @param i_cluster_id  : concerned cluster
- * @param i_cmd_id      : command
- * @param i_direction   : model side
- * @param i_payload     : payload of command
- * @param i_src_ieee    : address ieee to use as source of message
- * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
- */
 void CZigBeeMsg::SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
                  const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
                  const uint8_t i_transaction_number, const uint16_t i_grp_id)
@@ -75,12 +52,6 @@ void CZigBeeMsg::SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufa
   payload = i_payload;
 }
 
-/**
- * @brief CZigBeeMsg::SetZdo : fill a ZDO message
- * @param i_cmd_id : ZDO command
- * @param i_payload : payload for command
- * @param i_transaction_number : transaction sequence number
- */
 void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number)
 {
   aps.SetDefaultAPS( 0x0000, i_cmd_id, 0x00 );
@@ -92,12 +63,6 @@ void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_p
   payload.insert( payload.begin(), i_transaction_number );
 }
 
-
-/**
- * @brief Set : parse an incomming raw EZSP message
- * @param i_aps : aps data
- * @param i_msg : message data included header (ZCL and/or MSP)
- */
 void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_t>& i_msg )
 {
   uint8_t l_idx = 0;
@@ -124,10 +89,6 @@ void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_
   }  
 }
 
-/**
- * @brief Get : format zigbee message frame with header
- * @return return zigbee message with header
- */
 std::vector<uint8_t> CZigBeeMsg::Get( void ) const
 {
   std::vector<uint8_t> lo_msg;
@@ -163,5 +124,3 @@ CZigBeeMsg& CZigBeeMsg::operator=(CZigBeeMsg other)
   swap(*this, other);
   return *this;
 }
-
-

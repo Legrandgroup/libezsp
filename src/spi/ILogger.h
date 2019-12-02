@@ -7,7 +7,9 @@
  */
 
 /**
- * @brief The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking plog()
+ * @defgroup printf_compat_logger_macros printf-style logging functions
+ *
+ * The define below is to allow for seamless integration of the SPI, calls to logger will be as easy as invoking plog()
  *
  * plog() takes at least two arguments: the first one is the log level, the second is the format (following printf convention), followed by as many argument as required by the format string
  * plogE() is a shortcut for the error logging, thus
@@ -18,16 +20,36 @@
  * @code
  * plog(LOG_LEVEL::ERROR, "Hello %!", "World");
  * @endcode
+ *
+ *  @{
  */
-#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().outputGenericLog
-#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().errorLogger.log
-#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().warningLogger.log
-#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().infoLogger.log
-#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
-#define plogT SINGLETON_LOGGER_CLASS_NAME::getInstance().traceLogger.log
 
 /**
- * @brief The defines below allow to log directly through an ostream
+ * @brief Generic logger getter (uses debug level)
+ */
+#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
+/**
+ * @brief Error logger getter
+ */
+#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().errorLogger.log
+/**
+ * @brief Warning logger getter
+ */
+#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().warningLogger.log
+/**
+ * @brief Info logger getter
+ */
+#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().infoLogger.log
+/**
+ * @brief Debug logger getter
+ */
+#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
+/** @} */
+
+/**
+ * @defgroup ostream_compat_logger_macros ostream-style logging functions
+ *
+ * The defines below allow to log directly through an ostream
  *
  * clog is a default logger stream
  * clogE is the error logger stream
@@ -39,12 +61,32 @@
  * @code
  * plogE("Error");
  * @endcode
+ *
+ *  @{
+ */
+
+/**
+ * @brief Generic logger getter (uses debug level)
  */
 #define clog ILogger::loggerDebugStream
+/**
+ * @brief Error logger getter
+ */
 #define clogE ILogger::loggerErrorStream
+/**
+ * @brief Warning logger getter
+ */
 #define clogW ILogger::loggerWarningStream
+/**
+ * @brief Info logger getter
+ */
 #define clogI ILogger::loggerInfoStream
+/**
+ * @brief Debug logger getter
+ */
 #define clogD ILogger::loggerDebugStream
+/** @} */
+
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
  * The code below, however, will be include once, so it is "manually" protected from multiple includes using an #ifdef directive
@@ -136,8 +178,6 @@ public:
 
 	/**
 	 * @brief Unmute this logger output (logs may still not be output depending on the max log level has been setup)
-	 *
-	 * @param enabled Should this logger be enabled?
 	 */
 	virtual void unmute() {
 		this->muted = false;

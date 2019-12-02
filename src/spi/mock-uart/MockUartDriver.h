@@ -144,7 +144,7 @@ public:
 	/**
 	 * @brief Get the number of bytes read from the emulated serial port so far (cumulative)
 	 *
-	 * @param The total number of bytes delivered so far by the emulated serial port
+	 * @return The total number of bytes delivered so far by the emulated serial port
 	 */
 	size_t getDeliveredIncomingBytesCount();
 
@@ -165,7 +165,7 @@ private:
 	std::mutex scheduledReadQueueMutex;	/*!< A mutex to handle access to scheduledReadQueue, scheduledReadBytesCount or deliveredReadBytesCount */
 	std::queue<struct MockUartScheduledByteDelivery> scheduledReadQueue;	/*!< The scheduled read bytes queue. Grab scheduledReadQueueMutex before accessing this */
 public:
-	std::recursive_mutex writeMutex;	/* Mutex to protect writes... recursive to allow the caller to grab the mutex for us */
+	std::recursive_mutex writeMutex;	/*!< Mutex to protect writes... recursive to allow the caller to grab the mutex for us */
 private:
 	GenericAsyncDataInputObservable *dataInputObservable;		/*!< The observable that will notify observers when new bytes are available on the UART */
 	std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback;	/*!< Callback invoked each time bytes are written to the emulated UART, this callback must have a prototype that takes 3 parameters: size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta. delta being the time since last bytes were written (in ms) */

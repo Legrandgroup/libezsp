@@ -6,6 +6,9 @@
 
 #pragma once
 
+/**
+ * @brief Macro to allow logger getter to fetch the singleton instance of this logger class
+**/
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
 #include "../ILogger.h"
 #include <string>
@@ -60,9 +63,7 @@ protected:
 class RaritanErrorLogger : public RaritanGenericLogger {
 public:
 	/**
-	 * @brief Constructor
-	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @brief Default constructor
 	 */
 	RaritanErrorLogger() :
 		RaritanGenericLogger(LOG_LEVEL::ERROR) {
@@ -103,9 +104,7 @@ public:
 class RaritanWarningLogger : public RaritanGenericLogger {
 public:
 	/**
-	 * @brief Constructor
-	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @brief Default constructor
 	 */
 	RaritanWarningLogger() :
 		RaritanGenericLogger(LOG_LEVEL::WARNING) {
@@ -146,9 +145,7 @@ public:
 class RaritanInfoLogger : public RaritanGenericLogger {
 public:
 	/**
-	 * @brief Constructor
-	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @brief Default constructor
 	 */
 	RaritanInfoLogger() :
 		RaritanGenericLogger(LOG_LEVEL::INFO) {
@@ -189,9 +186,7 @@ public:
 class RaritanDebugLogger : public RaritanGenericLogger {
 public:
 	/**
-	 * @brief Constructor
-	 *
-	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
+	 * @brief Default constructor
 	 */
 	RaritanDebugLogger() :
 		RaritanGenericLogger(LOG_LEVEL::DEBUG) {
@@ -232,7 +227,7 @@ public:
 class RaritanLogger : public ILogger {
 private:
 	/**
-	 * @brief Default constructor
+	 * @brief Constructor
 	 *
 	 * @param errorLogger The logger to use for error messages
 	 * @param warningLogger The logger to use for warning messages
