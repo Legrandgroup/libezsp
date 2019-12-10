@@ -7,10 +7,10 @@
 #include <sstream>
 #include <iomanip>
 
-#include "../byte-manip.h"
+#include "domain/byte-manip.h"
 #include "green-power-frame.h"
 
-#include "../ezsp-protocol/struct/ember-gp-address-struct.h"
+#include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
 
 CGpFrame::CGpFrame():
     link_value(0),

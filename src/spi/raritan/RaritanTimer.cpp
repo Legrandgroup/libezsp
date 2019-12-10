@@ -5,7 +5,7 @@
  */
 
 #include "RaritanTimer.h"
-#include "../GenericLogger.h"
+#include "spi/GenericLogger.h"
 
 RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_toutcbhandle() {
 }

@@ -6,7 +6,7 @@
 
 #include "zclheader.h"
 
-#include "../byte-manip.h"
+#include "domain/byte-manip.h"
 
 CZCLHeader::CZCLHeader() :
 	frm_ctrl(),

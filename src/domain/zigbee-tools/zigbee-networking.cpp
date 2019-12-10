@@ -4,7 +4,7 @@
 
 #include <ctime>
 
-#include "../byte-manip.h"
+#include "domain/byte-manip.h"
 
 #include "zigbee-networking.h"
 

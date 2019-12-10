@@ -9,12 +9,12 @@
 #include <map>
 
 #include "CAppDemo.h"
-#include "../domain/ezsp-protocol/get-network-parameters-response.h"
-#include "../domain/ezsp-protocol/struct/ember-key-struct.h"
-#include "../domain/ezsp-protocol/ezsp-enum.h"
-#include "../domain/zbmessage/zdp-enum.h"
-#include "../domain/zbmessage/zigbee-message.h"
-#include "../domain/byte-manip.h"
+#include "domain/ezsp-protocol/get-network-parameters-response.h"
+#include "domain/ezsp-protocol/struct/ember-key-struct.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/zbmessage/zdp-enum.h"
+#include "domain/zbmessage/zigbee-message.h"
+#include "domain/byte-manip.h"
 
 
 CAppDemo::CAppDemo(IUartDriver& uartDriver,

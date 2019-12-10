@@ -7,7 +7,7 @@
 #include "SerialUartDriver.h"
 
 #include <exception>
-#include "../GenericLogger.h"
+#include "spi/GenericLogger.h"
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),

@@ -9,7 +9,7 @@
 
 #include "ember-gp-proxy-table-entry-struct.h"
 
-#include "../../byte-manip.h"
+#include "domain/byte-manip.h"
 
 /** \todo Verify value !!! */
 CEmberGpProxyTableEntryStruct::CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message) :

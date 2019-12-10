@@ -1,7 +1,7 @@
 #include "SerialUartDriver.h"
 #include "CppThreadsTimerFactory.h"
-#include "../GenericAsyncDataInputObservable.h"
-#include "../GenericLogger.h"
+#include "spi/GenericAsyncDataInputObservable.h"
+#include "spi/GenericLogger.h"
 #include <string>
 #include <sstream>	// FIXME: for std::stringstream during debug
 #include <iostream>	// FIXME: for std::cout during debug

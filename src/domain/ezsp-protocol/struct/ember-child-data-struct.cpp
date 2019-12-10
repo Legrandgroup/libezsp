@@ -9,7 +9,7 @@
 
 #include "ember-child-data-struct.h"
 
-#include "../../byte-manip.h"
+#include "domain/byte-manip.h"
 
 CEmberChildDataStruct::CEmberChildDataStruct(const std::vector<uint8_t>& raw_message) :
 	eui64(),

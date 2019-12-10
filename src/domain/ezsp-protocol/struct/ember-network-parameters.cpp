@@ -6,7 +6,7 @@
 
 #include "ember-network-parameters.h"
 
-#include "../../byte-manip.h"
+#include "domain/byte-manip.h"
 
 CEmberNetworkParameters::CEmberNetworkParameters() :
 	extend_pan_id(0),

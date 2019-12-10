@@ -9,7 +9,7 @@
 
 #include "ember-gp-sink-table-entry-struct.h"
 
-#include "../../byte-manip.h"
+#include "domain/byte-manip.h"
 
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
         status(0xFF),

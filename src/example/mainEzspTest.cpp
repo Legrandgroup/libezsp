@@ -7,19 +7,19 @@
 #include <iostream>
 
 #ifdef USE_SERIALCPP
-#include "../spi/serial/SerialUartDriver.h"
-#include "../spi/cppthreads/CppThreadsTimerFactory.h"
+#include "spi/serial/SerialUartDriver.h"
+#include "spi/cppthreads/CppThreadsTimerFactory.h"
 #include <string>
 #else
 #ifdef USE_RARITAN
-#include "../spi/raritan/RaritanEventLoop.h"
-#include "../spi/raritan/RaritanUartDriver.h"
-#include "../spi/raritan/RaritanTimerFactory.h"
+#include "spi/raritan/RaritanEventLoop.h"
+#include "spi/raritan/RaritanUartDriver.h"
+#include "spi/raritan/RaritanTimerFactory.h"
 #else
 #error Compiler directive USE_SERIALCPP or USE_RARITAN is required
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
-#include "../spi/GenericLogger.h"
+#include "spi/GenericLogger.h"
 #include "CAppDemo.h"
 #include <getopt.h>
 #include <string>

@@ -10,7 +10,7 @@
  * @brief Macro to allow logger getter to fetch the singleton instance of this logger class
 **/
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
-#include "../ILogger.h"
+#include "spi/ILogger.h"
 
 /**
  * @brief Class to implement error message logging

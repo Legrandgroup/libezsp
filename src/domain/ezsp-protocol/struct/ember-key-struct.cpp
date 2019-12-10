@@ -9,7 +9,7 @@
 
 #include "ember-key-struct.h"
 
-#include "../../byte-manip.h"
+#include "domain/byte-manip.h"
 
 CEmberKeyStruct::CEmberKeyStruct(const std::vector<uint8_t>& raw_message) :
 	bitmask(static_cast<EmberKeyStructBitmask>(dble_u8_to_u16(raw_message.at(1), raw_message.at(0)))),

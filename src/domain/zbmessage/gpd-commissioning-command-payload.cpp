@@ -8,8 +8,8 @@
 #include <iomanip>
 #include <cstring>
 
-#include "../byte-manip.h"
-#include "../custom-aes.h"
+#include "domain/byte-manip.h"
+#include "domain/custom-aes.h"
 #include "gpd-commissioning-command-payload.h"
 
 CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id):
