@@ -52,6 +52,8 @@ ezsp_SOURCES-$(DUMMY)+=spi/mock-uart/MockUartDriver.cpp
 
 bin-$(TEST)+=mainEzspTest
 
+mainEzspTest_CFLAGS+=-I.
+
 mainEzspTest_SOURCES+=example/CAppDemo.cpp
 mainEzspTest_SOURCES+=example/mainEzspTest.cpp
 mainEzspTest_SOURCES+=example/dummy_db.cpp

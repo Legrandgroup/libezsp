@@ -8,7 +8,7 @@
 #include <iomanip>
 
 #include "domain/byte-manip.h"
-#include "green-power-frame.h"
+#include "domain/zbmessage/green-power-frame.h"
 
 #include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
 

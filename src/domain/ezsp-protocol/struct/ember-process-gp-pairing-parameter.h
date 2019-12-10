@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include "../../byte-manip.h"
-#include "../ezsp-enum.h"
-#include "ember-gp-address-struct.h"
-#include "ember-gp-sink-table-entry-struct.h"
-#include "../../zbmessage/gp-pairing-command-option-struct.h"
+#include "domain/byte-manip.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
+#include "domain/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
+#include "domain/zbmessage/gp-pairing-command-option-struct.h"
 
 
 #ifdef USE_RARITAN

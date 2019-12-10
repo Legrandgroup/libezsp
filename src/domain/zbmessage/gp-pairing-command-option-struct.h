@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
+#include "domain/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

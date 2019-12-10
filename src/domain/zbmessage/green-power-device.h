@@ -7,8 +7,8 @@
 #pragma once
 
 #include <cstdint>
-#include "../ezsp-protocol/ezsp-enum.h"
-#include "../ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
 
 /**
  * @brief Class to encapsulate data representing a green power device

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ember-key-struct.h"
+#include "domain/ezsp-protocol/struct/ember-key-struct.h"
 
 #include "domain/byte-manip.h"
 

@@ -17,8 +17,8 @@
 #pragma once
 
 #include <cstdint>
-#include "../ezsp-enum.h"
-#include "../../zbmessage/gpd-commissioning-command-payload.h" // BAD DEPENDANCY NEED TO BE INPROVE
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/zbmessage/gpd-commissioning-command-payload.h" // BAD DEPENDANCY NEED TO BE INPROVE
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

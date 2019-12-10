@@ -4,7 +4,7 @@
  * @brief Handles encoding/decoding of the ZCL frame control byte
  */
 
-#include "zclframecontrol.h"
+#include "domain/zbmessage/zclframecontrol.h"
 
 
 CZCLFrameControl::CZCLFrameControl() :

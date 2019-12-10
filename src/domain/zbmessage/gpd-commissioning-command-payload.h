@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../ezsp-protocol/ezsp-enum.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
 
 // option bitfield
 #define COM_OPTION_MAC_SEQ_CAPABILITY_BIT       0

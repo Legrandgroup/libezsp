@@ -10,7 +10,7 @@
  * @brief Macro to allow logger getter to fetch the singleton instance of this logger class
 **/
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
-#include "../ILogger.h"
+#include "spi/ILogger.h"
 #include <string>
 
 #ifdef USE_RARITAN

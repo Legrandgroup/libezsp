@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../ITimer.h"
+#include "spi/ITimer.h"
 #include "RaritanEventLoop.h"
 #include <pp/Selector.h>
 

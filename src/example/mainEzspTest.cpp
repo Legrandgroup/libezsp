@@ -20,7 +20,7 @@
 #endif	// USE_RARITAN
 #endif	// USE_SERIALCPP
 #include "spi/GenericLogger.h"
-#include "CAppDemo.h"
+#include "example/CAppDemo.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>

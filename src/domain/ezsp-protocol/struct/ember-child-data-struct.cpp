@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ember-child-data-struct.h"
+#include "domain/ezsp-protocol/struct/ember-child-data-struct.h"
 
 #include "domain/byte-manip.h"
 

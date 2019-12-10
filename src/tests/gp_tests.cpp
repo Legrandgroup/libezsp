@@ -1,14 +1,14 @@
-#include "TestHarness.h"
+#include "tests/TestHarness.h"
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
 
-#include "../spi/mock-uart/MockUartDriver.h"
-#include "../spi/cppthreads/CppThreadsTimerFactory.h"
-#include "../spi/IAsyncDataInputObserver.h"
+#include "spi/mock-uart/MockUartDriver.h"
+#include "spi/cppthreads/CppThreadsTimerFactory.h"
+#include "spi/IAsyncDataInputObserver.h"
 
-#include "../spi/GenericLogger.h"
-#include "../example/CAppDemo.h"
+#include "spi/GenericLogger.h"
+#include "example/CAppDemo.h"
 
 /**
  * @brief Class implementing an observer that validates state transition during a sample ezsp in/out test sequence

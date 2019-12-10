@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "../ezsp-enum.h"
-#include "ember-gp-address-struct.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

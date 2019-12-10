@@ -6,7 +6,7 @@
 
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
-#include "../GenericLogger.h"
+#include "spi/GenericLogger.h"
 
 RaritanUartDriver::RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
 }

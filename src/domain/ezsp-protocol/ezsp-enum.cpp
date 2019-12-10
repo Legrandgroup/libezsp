@@ -3,7 +3,7 @@
  */
 #include <map>
 
-#include "ezsp-enum.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
 
 std::string CEzspEnum::EmberNodeTypeToString( EmberNodeType in )
 {

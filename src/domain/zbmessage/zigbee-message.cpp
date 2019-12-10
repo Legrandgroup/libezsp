@@ -4,7 +4,7 @@
  * @brief Handles encoding/decoding of a zigbee message
  */
 
-#include "zigbee-message.h"
+#include "domain/zbmessage/zigbee-message.h"
 
 CZigBeeMsg::CZigBeeMsg() :
 	aps(),

@@ -7,7 +7,7 @@
 #pragma once
 
 
-#include "ezsp-enum.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
 #include "struct/ember-network-parameters.h"
 
 #ifdef USE_RARITAN

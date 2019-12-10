@@ -6,14 +6,14 @@
 
 #include <vector>
 
-#include "../domain/ezsp-dongle.h"
-#include "../domain/zigbee-tools/zigbee-networking.h"
-#include "../domain/zigbee-tools/zigbee-messaging.h"
-#include "../domain/zigbee-tools/green-power-sink.h"
-#include "../domain/zbmessage/green-power-device.h"
-#include "../spi/IUartDriver.h"
-#include "../spi/ITimerFactory.h"
-#include "../spi/ILogger.h"
+#include "domain/ezsp-dongle.h"
+#include "domain/zigbee-tools/zigbee-networking.h"
+#include "domain/zigbee-tools/zigbee-messaging.h"
+#include "domain/zigbee-tools/green-power-sink.h"
+#include "domain/zbmessage/green-power-device.h"
+#include "spi/IUartDriver.h"
+#include "spi/ITimerFactory.h"
+#include "spi/ILogger.h"
 #include "dummy_db.h"
 
 typedef enum

@@ -11,7 +11,7 @@
 #include <map>
 #include <string>
 
-#include "green-power-sink.h"
+#include "domain/zigbee-tools/green-power-sink.h"
 #include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
 #include "domain/ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h"
 

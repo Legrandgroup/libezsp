@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ember-network-parameters.h"
+#include "domain/ezsp-protocol/struct/ember-network-parameters.h"
 
 #include "domain/byte-manip.h"
 

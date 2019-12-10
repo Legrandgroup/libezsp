@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#include "../ezsp-enum.h"
-#include "../../byte-manip.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "domain/byte-manip.h"
 
 class CEmberGpAddressStruct
 {

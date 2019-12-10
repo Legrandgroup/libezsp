@@ -6,7 +6,7 @@
 
 #include "domain/byte-manip.h"
 
-#include "zigbee-networking.h"
+#include "domain/zigbee-tools/zigbee-networking.h"
 
 #include "domain/ezsp-protocol/get-network-parameters-response.h"
 #include "domain/ezsp-protocol/struct/ember-key-struct.h"

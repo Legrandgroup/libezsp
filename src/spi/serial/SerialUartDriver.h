@@ -7,7 +7,7 @@
 #pragma once
 
 
-#include "../IUartDriver.h"
+#include "spi/IUartDriver.h"
 
 #include <thread>
 #include "serial/serial.h"

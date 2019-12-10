@@ -9,7 +9,7 @@
 #include <pp/Selector.h>
 #include <pp/File.h>
 #include <pp/Tty.h>
-#include "../IUartDriver.h"
+#include "spi/IUartDriver.h"
 #include "RaritanEventLoop.h"
 
 #ifdef USE_RARITAN

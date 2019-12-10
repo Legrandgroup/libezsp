@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "../ezsp-dongle-observer.h"
-#include "../ezsp-dongle.h"
-#include "../zbmessage/zigbee-message.h"
+#include "domain/ezsp-dongle-observer.h"
+#include "domain/ezsp-dongle.h"
+#include "domain/zbmessage/zigbee-message.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

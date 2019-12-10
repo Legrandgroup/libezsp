@@ -8,14 +8,14 @@
 
 #include <map>
 
-#include "../zbmessage/green-power-frame.h"
-#include "../zbmessage/green-power-device.h"
-#include "../green-power-observer.h"
-#include "../ezsp-dongle.h"
-#include "zigbee-messaging.h"
-#include "../ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
-#include "../ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
-#include "../ezsp-protocol/struct/ember-network-parameters.h"
+#include "domain/zbmessage/green-power-frame.h"
+#include "domain/zbmessage/green-power-device.h"
+#include "domain/green-power-observer.h"
+#include "domain/ezsp-dongle.h"
+#include "domain/zigbee-tools/zigbee-messaging.h"
+#include "domain/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
+#include "domain/ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
+#include "domain/ezsp-protocol/struct/ember-network-parameters.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

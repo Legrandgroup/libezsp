@@ -4,7 +4,7 @@
  * @brief Handles encoding/decoding of ZCL headers
  */
 
-#include "zclheader.h"
+#include "domain/zbmessage/zclheader.h"
 
 #include "domain/byte-manip.h"
 

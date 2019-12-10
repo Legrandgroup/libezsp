@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "../ITimerFactory.h"
+#include "spi/ITimerFactory.h"
 #include "CppThreadsTimer.h"
 
 /**

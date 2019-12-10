@@ -4,7 +4,7 @@
  * @brief Manages zigbee message, timeout, retry
  */
 
-#include "zigbee-messaging.h"
+#include "domain/zigbee-tools/zigbee-messaging.h"
 
 #include "spi/GenericLogger.h"
 

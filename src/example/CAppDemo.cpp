@@ -8,7 +8,7 @@
 #include <ctime>
 #include <map>
 
-#include "CAppDemo.h"
+#include "example/CAppDemo.h"
 #include "domain/ezsp-protocol/get-network-parameters-response.h"
 #include "domain/ezsp-protocol/struct/ember-key-struct.h"
 #include "domain/ezsp-protocol/ezsp-enum.h"

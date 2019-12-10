@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "get-network-parameters-response.h"
+#include "domain/ezsp-protocol/get-network-parameters-response.h"
 
 CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message) :
 	status(static_cast<EEmberStatus>(raw_message.at(0))),

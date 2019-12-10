@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../ezsp-enum.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

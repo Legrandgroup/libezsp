@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "aps.h"
-#include "zclheader.h"
+#include "domain/zbmessage/aps.h"
+#include "domain/zbmessage/zclheader.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

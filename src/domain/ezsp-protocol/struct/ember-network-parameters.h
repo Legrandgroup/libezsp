@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "../ezsp-enum.h"
+#include "domain/ezsp-protocol/ezsp-enum.h"
 #include <vector>
 #include <string>
 

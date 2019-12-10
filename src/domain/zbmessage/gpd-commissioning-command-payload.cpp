@@ -10,7 +10,7 @@
 
 #include "domain/byte-manip.h"
 #include "domain/custom-aes.h"
-#include "gpd-commissioning-command-payload.h"
+#include "domain/zbmessage/gpd-commissioning-command-payload.h"
 
 CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id):
         device_id(raw_message.at(0)),

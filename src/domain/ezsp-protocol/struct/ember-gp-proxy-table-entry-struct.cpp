@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ember-gp-proxy-table-entry-struct.h"
+#include "domain/ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h"
 
 #include "domain/byte-manip.h"
 
