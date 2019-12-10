@@ -8,7 +8,7 @@
 
 #include "ash.h"
 
-#include "../spi/GenericLogger.h"
+#include "spi/GenericLogger.h"
 
 using namespace std;
 

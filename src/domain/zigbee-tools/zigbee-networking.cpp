@@ -8,11 +8,11 @@
 
 #include "zigbee-networking.h"
 
-#include "../ezsp-protocol/get-network-parameters-response.h"
-#include "../ezsp-protocol/struct/ember-key-struct.h"
-#include "../ezsp-protocol/struct/ember-child-data-struct.h"
+#include "domain/ezsp-protocol/get-network-parameters-response.h"
+#include "domain/ezsp-protocol/struct/ember-key-struct.h"
+#include "domain/ezsp-protocol/struct/ember-child-data-struct.h"
 
-#include "../../spi/GenericLogger.h"
+#include "spi/GenericLogger.h"
 
 
 CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :

@@ -12,17 +12,17 @@
 #include <string>
 
 #include "green-power-sink.h"
-#include "../ezsp-protocol/struct/ember-gp-address-struct.h"
-#include "../ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h"
+#include "domain/ezsp-protocol/struct/ember-gp-address-struct.h"
+#include "domain/ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h"
 
-#include "../byte-manip.h"
+#include "domain/byte-manip.h"
 
-#include "../../domain/zbmessage/zigbee-message.h"
-#include "../../domain/zbmessage/gpd-commissioning-command-payload.h"
-#include "../ezsp-protocol/get-network-parameters-response.h"
+#include "domain/zbmessage/zigbee-message.h"
+#include "domain/zbmessage/gpd-commissioning-command-payload.h"
+#include "domain/ezsp-protocol/get-network-parameters-response.h"
 
-#include "../../spi/GenericLogger.h"
-#include "../../spi/ILogger.h"
+#include "spi/GenericLogger.h"
+#include "spi/ILogger.h"
 
 // some defines to help understanding
 #define GP_ENDPOINT 242

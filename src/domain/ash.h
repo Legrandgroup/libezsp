@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>	// For std::unique_ptr
 
-#include "../spi/ITimerFactory.h"
+#include "spi/ITimerFactory.h"
 
 
 typedef enum {

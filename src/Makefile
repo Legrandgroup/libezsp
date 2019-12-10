@@ -1,5 +1,7 @@
 lib-y=ezsp
 
+ezsp_CFLAGS+=-I.
+
 ezsp_SOURCES+=domain/ash.cpp
 ezsp_SOURCES+=domain/custom-aes.cpp
 ezsp_SOURCES+=domain/ezsp-dongle.cpp

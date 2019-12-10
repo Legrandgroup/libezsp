@@ -6,10 +6,10 @@
 #include <queue>
 
 #include "ezsp-protocol/ezsp-enum.h"
-#include "../spi/IUartDriver.h"
+#include "spi/IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
-#include "../spi/ITimerFactory.h"
+#include "spi/ITimerFactory.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
