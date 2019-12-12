@@ -26,17 +26,17 @@ endef
 export HELP
 
 # SRC_PATH should point to the src/ folder containing source code for this library (can be overridden from environment)
-SRC_PATH ?= ..
-SRC_DOMAIN_PATH ?= $(SRC_PATH)/domain
-SRC_SPI_PATH ?= $(SRC_PATH)/spi
+SRC_PATH ?= ../
+SRC_DOMAIN_PATH ?= $(SRC_PATH)src/ezsp
+SRC_SPI_PATH ?= $(SRC_PATH)src/spi
 
 include ../libezsp.mk.inc
 
-SRCS = $(SRC_PATH)/tests/mock_serial_self_tests.cpp \
-       $(SRC_PATH)/tests/gp_tests.cpp \
-       $(SRC_PATH)/tests/test_libezsp.cpp \
-       $(SRC_PATH)/example/dummy_db.cpp \
-       $(SRC_PATH)/example/CAppDemo.cpp \
+SRCS = $(SRC_PATH)test/mock_serial_self_tests.cpp \
+       $(SRC_PATH)test/gp_tests.cpp \
+       $(SRC_PATH)test/test_libezsp.cpp \
+       $(SRC_PATH)example/dummy_db.cpp \
+       $(SRC_PATH)example/CAppDemo.cpp \
        $(LIBEZSP_LINUX_MOCKSERIAL_SRC) \
 
 OBJECTFILES = $(patsubst %.cpp, %.o, $(SRCS))

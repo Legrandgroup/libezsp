@@ -5,8 +5,8 @@ CXXFLAGS = -DUSE_SERIALCPP -W -Wall -pedantic -std=c++11 -Wno-unused-parameter -
 LDFLAGS = $(LOCAL_LDFLAGS) -lserialcpp -lpthread
 
 # SRC_PATH should point to the src/ folder containing source code for this library (can be overridden from environment)
-SRC_PATH ?= ..
-SRC_DOMAIN_PATH ?= $(SRC_PATH)/domain
+SRC_PATH ?= ../
+SRC_DOMAIN_PATH ?= $(SRC_PATH)src/ezsp
 SRC_SPI_PATH ?= $(SRC_PATH)/spi
 
 include ../libezsp.mk.inc

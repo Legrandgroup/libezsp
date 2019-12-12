@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "domain/ezsp-protocol/ezsp-enum.h"
+#include "ezsp/ezsp-protocol/ezsp-enum.h"
 
 
 class CProduct
