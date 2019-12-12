@@ -32,7 +32,7 @@ class CEmberGpAddressStruct
 
         /**
          * @brief Construct from sourceId
-         * 
+         *
          * @param i_srcId SourceId to construct from
          */
         CEmberGpAddressStruct(const uint32_t i_srcId);
@@ -46,8 +46,8 @@ class CEmberGpAddressStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second); 
-        
+        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second);
+
         /**
          * @brief Assignment operator
          * @param other The object to assign to the lhs
@@ -78,7 +78,7 @@ class CEmberGpAddressStruct
 
         /**
          * @brief return a raw buffer
-         * 
+         *
          * @return raw buffer
          */
         std::vector<uint8_t> getRaw() const;

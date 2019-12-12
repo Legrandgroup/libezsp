@@ -101,7 +101,7 @@ void CGpSink::init()
     dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
 
     // set state
-    setSinkState(SINK_READY);    
+    setSinkState(SINK_READY);
 }
 
 bool CGpSink::gpClearAllTables()
@@ -111,14 +111,14 @@ bool CGpSink::gpClearAllTables()
     if( SINK_READY == sink_state )
     {
         // sink table
-        dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL); 
+        dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);
 
         // proxy table
         proxy_table_index = 0;
         dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
 
         // set state
-        setSinkState(SINK_CLEAR_ALL);    
+        setSinkState(SINK_CLEAR_ALL);
         lo_success = true;
     }
     return lo_success;
@@ -149,7 +149,7 @@ void CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 
     // request sink table entry
     gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
-    
+
     // set state
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
 }
@@ -161,7 +161,7 @@ void CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
 
     // request sink table entry
     gpSinkTableLookup( gpds_to_remove.back() );
-    
+
     // set state
     setSinkState(SINK_REMOVE_IN_PROGRESS);
 }
@@ -190,16 +190,16 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 {
                     // assume end of table
                     // set new state
-                    setSinkState(SINK_READY);                    
+                    setSinkState(SINK_READY);
                 }
-                
+
             }
         }
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
         {
             CGetNetworkParamtersResponse l_rsp(i_msg_receive);
-            if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() ) 
+            if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() )
             {
                 nwk_parameters = l_rsp.getParameters();
             }
@@ -209,7 +209,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             clogI << "EZSP_GP_SINK_TABLE_INIT RSP" << std::endl;
         }
-        break;        
+        break;
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
         {
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
@@ -396,7 +396,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 }
                 else
                 {
-                    gpSinkTableLookup(gpds_to_remove.back());    
+                    gpSinkTableLookup(gpds_to_remove.back());
                 }
             }
         }
@@ -492,8 +492,8 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                     // \todo replace short and long sink network address by right value, currently we use group mode not so important
                     CProcessGpPairingParam l_param( sink_table_entry, true, false, 0, {0,0,0,0,0,0,0,0} );
                     // call
-                    gpProxyTableProcessGpPairing(l_param);  
-                }              
+                    gpProxyTableProcessGpPairing(l_param);
+                }
             }
         }
         break;
@@ -633,13 +633,13 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option)
 
 
     // create message sending from ep242 to ep242 using green power profile
-    l_gp_comm_msg.SetSpecific(GP_PROFILE_ID, PUBLIC_CODE, GP_ENDPOINT, 
+    l_gp_comm_msg.SetSpecific(GP_PROFILE_ID, PUBLIC_CODE, GP_ENDPOINT,
                                 GP_CLUSTER_ID, GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID,
                                 E_DIR_SERVER_TO_CLIENT, l_gp_comm_payload, 0, 0, 0);
 
     // WARNING use ep 242 as sources
     l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
-    
+
     //
     clogI << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option : " <<  std::hex << std::setw(2) << std::setfill('0') << i_option << std::endl;
     zb_messaging.SendUnicast(0,l_gp_comm_msg);
@@ -769,7 +769,7 @@ void CAppDemo::gpSinkTableLookup( uint32_t i_src_id )
     l_payload.push_back(0x00);
 
     clogI << "EZSP_GP_SINK_TABLE_LOOKUP\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,l_payload);    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,l_payload);
 }
 */
 
@@ -779,7 +779,7 @@ void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
     CEmberGpAddressStruct l_gp_address(i_src_id);
 
     clogI << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());
 }
 
 void CGpSink::gpSinkGetEntry( uint8_t i_index )
@@ -790,7 +790,7 @@ void CGpSink::gpSinkGetEntry( uint8_t i_index )
     l_payload.push_back(i_index);
 
     clogI << "EZSP_GP_SINK_TABLE_GET_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY,l_payload);    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY,l_payload);
 }
 
 
@@ -806,17 +806,17 @@ void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_e
     l_payload.insert(l_payload.end(), i_struct.begin(), i_struct.end());
 
     clogI << "EZSP_GP_SINK_TABLE_SET_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_SET_ENTRY,l_payload);    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_SET_ENTRY,l_payload);
 }
 
 
 void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 {
     clogI << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING\n";
-    dongle.sendCommand(EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING,i_param.get());    
+    dongle.sendCommand(EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING,i_param.get());
 }
 
-void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr, 
+void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
                 uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle )
 {
     std::vector<uint8_t> l_payload;
@@ -844,29 +844,29 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
     // How long to keep the GPDF in the TX Queue.
     l_payload.push_back(static_cast<uint8_t>(i_life_time_ms&0xFF));
     l_payload.push_back(static_cast<uint8_t>((i_life_time_ms>>8)&0xFF));
- 
+
     clogI << "EZSP_D_GP_SEND\n";
-    dongle.sendCommand(EZSP_D_GP_SEND,l_payload);    
+    dongle.sendCommand(EZSP_D_GP_SEND,l_payload);
 }
 
 void CGpSink::gpSinkTableRemoveEntry( uint8_t i_index )
 {
     clogI << "EZSP_GP_SINK_TABLE_REMOVE_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY,{i_index});    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY,{i_index});
 }
 
 void CGpSink::gpProxyTableLookup(uint32_t i_src_id)
 {
-    CEmberGpAddressStruct i_addr(i_src_id); 
+    CEmberGpAddressStruct i_addr(i_src_id);
     clogI << "EZSP_GP_PROXY_TABLE_LOOKUP\n";
-    dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP,i_addr.getRaw());    
+    dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP,i_addr.getRaw());
 }
 
 void CGpSink::gpSinkTableLookup(uint32_t i_src_id)
 {
-    CEmberGpAddressStruct i_addr(i_src_id); 
+    CEmberGpAddressStruct i_addr(i_src_id);
     clogI << "EZSP_GP_SINK_TABLE_LOOKUP\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,i_addr.getRaw());    
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,i_addr.getRaw());
 }
 
 void CGpSink::setSinkState( ESinkState i_state )

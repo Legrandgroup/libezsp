@@ -44,11 +44,11 @@ class CEmberGpProxyTableEntryStruct
          *
          * Assignment is forbidden on this class
          */
-        CEmberGpProxyTableEntryStruct& operator=(const CEmberGpProxyTableEntryStruct& other) = delete;  
+        CEmberGpProxyTableEntryStruct& operator=(const CEmberGpProxyTableEntryStruct& other) = delete;
 
         /**
          * @brief gpd address getter
-         * 
+         *
          * @return gpd address
          */
         CEmberGpAddressStruct getGpdAddress(){ return gpd; }

@@ -34,7 +34,7 @@ class CGpPairingCommandOption
 
         /**
          * @brief Constructor based on sink table entry option field
-         * 
+         *
          * @param i_sink_table_option
          * @param i_add_sink : true to add, false to remove
          * @param i_remove_gpd : true to remove
@@ -45,7 +45,7 @@ class CGpPairingCommandOption
          * @param i_radius_present
          */
         CGpPairingCommandOption(CEmberGpSinkTableOption i_sink_table_option, bool i_add_sink, bool i_remove_gpd,
-                                uint8_t i_security_level, uint8_t i_security_key_type, bool i_frm_counter_present, 
+                                uint8_t i_security_level, uint8_t i_security_key_type, bool i_frm_counter_present,
                                 bool i_key_present, bool i_radius_present );
 
         /**
@@ -58,9 +58,9 @@ class CGpPairingCommandOption
 
     private:
         /**
-         *  Bit 0..2: The ApplicationID sub-field contains the information about the application used by the GPD. 
-         *      ApplicationID = 0b000 indicates the GPD ID field has the length of 4B and contains the GPD SrcID; the Endpoint field is absent. 
-         *      ApplicationID = 0b010 indicates the GPD ID field has the length of 8B and contains the GPD IEEE address; the Endpoint field is present. 
+         *  Bit 0..2: The ApplicationID sub-field contains the information about the application used by the GPD.
+         *      ApplicationID = 0b000 indicates the GPD ID field has the length of 4B and contains the GPD SrcID; the Endpoint field is absent.
+         *      ApplicationID = 0b010 indicates the GPD ID field has the length of 8B and contains the GPD IEEE address; the Endpoint field is present.
          *      All values of ApplicationID other than 0b000 and 0b010 are reserved in the current version of the Green Power cluster specification.
          */
         uint8_t application_id; /*!< The ApplicationID value (contains the information about the application used by the GPD) */
@@ -81,7 +81,7 @@ class CGpPairingCommandOption
          */
         uint8_t communication_mode;     /*!< The Communication mode sub-field defines the communication mode requested by the sink */
         /**
-         * Bit 7: The GPDfixed sub-field and GPD MAC sequence number capabilities sub-field is copied from the corresponding 
+         * Bit 7: The GPDfixed sub-field and GPD MAC sequence number capabilities sub-field is copied from the corresponding
          *          FixedLocation and Sequence number capabilities sub-fields of the Options parameter of the Sink Table for this GPD.
          */
         bool gpd_fixed; /*!< The GPDfixed sub-field value */
@@ -94,17 +94,17 @@ class CGpPairingCommandOption
          */
         uint8_t security_level; /*!< The SecurityLevel for this GDP command */
         /**
-         * Bit 11..13: The sub-fields GPDsecurityFrameCounterPresent and GPDsecurityKeyPresent, if set to 0b1, indicate the presence of the fields 
-         *              GPDsecurityFrameCounter and GPDsecurityKey, respectively, which then carry the corresponding values from the Sink Table for this GPD. 
-         *              When the sub-fields GPDsecurityFrameCounterPresent and GPDsecurityKeyPresent are set to 0b0, 
+         * Bit 11..13: The sub-fields GPDsecurityFrameCounterPresent and GPDsecurityKeyPresent, if set to 0b1, indicate the presence of the fields
+         *              GPDsecurityFrameCounter and GPDsecurityKey, respectively, which then carry the corresponding values from the Sink Table for this GPD.
+         *              When the sub-fields GPDsecurityFrameCounterPresent and GPDsecurityKeyPresent are set to 0b0,
          *              the fields GPDsecurityFrame-Counter and GPDsecurityKey, respectively, are not present.
          */
         uint8_t security_key_type; /*!< The SecurityKeyType for this GDP command */
         /**
-         * Bit 14: The GPDsecurityFrameCounter field SHALL be present whenever the AddSink sub-field of the Options field is set to 0b1; 
-         *          independent of the security level. If the SecurityLevel sub-field is set to 0b10-0b11 or if the SecurityLevel is 0b00 and 
-         *          the GPD MAC sequence number capabilities sub-field is set to 0b1, the GPDsecurityFrameCounter field carries the current value of 
-         *          the GPD security frame counter field from the Sink Table entry corresponding to the GPD ID. If the SecurityLevel is 0b00 and 
+         * Bit 14: The GPDsecurityFrameCounter field SHALL be present whenever the AddSink sub-field of the Options field is set to 0b1;
+         *          independent of the security level. If the SecurityLevel sub-field is set to 0b10-0b11 or if the SecurityLevel is 0b00 and
+         *          the GPD MAC sequence number capabilities sub-field is set to 0b1, the GPDsecurityFrameCounter field carries the current value of
+         *          the GPD security frame counter field from the Sink Table entry corresponding to the GPD ID. If the SecurityLevel is 0b00 and
          *          the GPD MAC sequence number capabilities sub-field is set to 0b0, the GPDsecurityFrameCounter SHALL be set to 0b00000000.
          */
         bool gpd_security_frame_counter_present; /*!< Represents whether the GPD security frame counter is present in this GDP command */
@@ -119,8 +119,8 @@ class CGpPairingCommandOption
         bool assigned_alias_present; /*!< Represents whether the AssignedAlias field is present and carries the Alias value to be used for this GPD instead of the derived alias */
         /**
          * Bit 17: The Forwarding Radius present sub-field, if set to 0b1, indicates that the Forwarding Radius field is
-         *          present and carries the Forwarding Radius value to be used as value of the radius in the groupcast forwarding 
-         *          of the GPDF packet. If the Forwarding Radius field is not present, and a new Proxy Table entry is to be created, 
+         *          present and carries the Forwarding Radius value to be used as value of the radius in the groupcast forwarding
+         *          of the GPDF packet. If the Forwarding Radius field is not present, and a new Proxy Table entry is to be created,
          *          the default value of 0x00 SHALL be used. The value 0x00 indicates unspecified,
          *          i.e. twice the value of the nwkMaxDepth attribute of the NIB, as specified by [1].
          */

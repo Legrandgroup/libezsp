@@ -52,7 +52,7 @@ public:
 
     /**
      * @brief Clear all GP tables
-     * 
+     *
      * @return true if action can be done
      */
     bool gpClearAllTables();
@@ -83,7 +83,7 @@ public:
 
     /**
      * @brief authorize answer to channel request
-     * 
+     *
      * @param i_authorize : true to authorize, false otherwize
      */
     void authorizeAnswerToGpfChannelRqst( bool i_authorize ){ authorizeGpfChannelRqst = i_authorize; }
@@ -154,14 +154,14 @@ private:
 
     /**
      * @brief Finds or allocates a sink entry
-     * 
+     *
      * @param i_src_id GPD source ID address to search
      */
     void gpSinkTableFindOrAllocateEntry( uint32_t i_src_id );
 
     /**
      * @brief Updates the sink table entry at the specified index.
-     * 
+     *
      * @param i_index The index of the requested sink table entry.
      * @param i_entry An EmberGpSinkTableEntry struct containing a copy of the sink entry to be updated.
      */
@@ -170,11 +170,11 @@ private:
     /**
      * @brief Update the GP Proxy table based on a GP pairing.
      */
-    void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );     
+    void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );
 
     /**
      * @brief
-     * 
+     *
      * @param i_action : The action to perform on the GP TX queue (true to add, false to remove).
      * @param i_use_cca : Whether to use ClearChannelAssessment when transmitting the GPDF.
      * @param i_gp_addr : The Address of the destination GPD.
@@ -182,9 +182,9 @@ private:
      * @param i_gpd_command_payload : The GP command payload.
      * @param i_life_time_ms : How long to keep the GPDF in the TX Queue.
      * @param i_handle : an handle value for this frame, use to identify in sent callback.
-     * 
+     *
      */
-    void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr, 
+    void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
                     uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
 
     /**

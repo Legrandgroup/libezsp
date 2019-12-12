@@ -115,7 +115,7 @@ public:
    * @param second The second object
    */
   friend void (::swap)(CZigBeeMsg& first, CZigBeeMsg& second);
-  
+
   // high level
 
   /**

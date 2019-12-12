@@ -409,7 +409,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                     setAppState(APP_FORM_NWK_IN_PROGRESS);
                     reset_wanted = false;
                 }
-                
+
             }
             else
             {
@@ -444,8 +444,8 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
             std::vector<uint8_t>l_msg_raw;
             for(uint8_t loop=0;loop<msg_length;loop++){l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrame::getSize()+loop));}
 
-            clogI << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) << 
-                ", last hop rssi : " << unsigned(last_hop_rssi) << 
+            clogI << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) <<
+                ", last hop rssi : " << unsigned(last_hop_rssi) <<
                 ", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << std::endl;
 
             // not process some type of messages
@@ -474,7 +474,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 for(uint8_t loop=0; loop<ep_count;loop++){ep_list.push_back(zbMsg.GetPayload().at(5U+loop));}
 
                                 // DEBUG
-                                clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
+                                clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
                                     std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
 
                                 // for each active endpoint request simple descriptor
@@ -487,7 +487,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                     payload.push_back(ep_list.at(loop));
                                     zb_messaging.SendZDOCommand(address,ZDP_SIMPLE_DESC,payload);
                                 }
-                                
+
                             }
                             break;
                             case ZDP_SIMPLE_DESC:
@@ -518,7 +518,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                     }
 
                                     std::stringstream buf;
-                                    buf << CZdpEnum::ToString(zdp_low) << " Response : " << 
+                                    buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
                                         "[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]" <<
                                         "[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(address) << "]" <<
                                         "[ lentgh : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(lentgh) << "]" <<
@@ -535,11 +535,11 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                     buf << "]";
                                     clogI << buf.str() << std::endl;
 
-                                    
+
                                     // search in server [in] list
                                     for(uint8_t loop=0; loop<in_list.size(); loop++)
                                     {
-                                        // if we know one cluster we bind to it   
+                                        // if we know one cluster we bind to it
                                         if( 0x0402 == in_list.at(loop) )
                                         {
                                             // Temperature Measurement
@@ -598,7 +598,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                                 }
                                 else
                                 {
-                                    clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " << 
+                                    clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
                                         std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
                                 }
                             }
@@ -647,7 +647,7 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
                 {
                     // applicative zigbee message
                     std::stringstream buf;
-                    buf << "ZCL : " << 
+                    buf << "ZCL : " <<
                         "[ endpoint : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetAps().src_ep) << "]" <<
                         "[ cluster : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(zbMsg.GetAps().cluster_id) << "]" <<
                         "[ type : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetZCLHeader().GetFrmCtrl().GetFrmType()) << "]" <<
@@ -710,9 +710,9 @@ void CAppDemo::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_r
 
 
 /**
- * 
+ *
  * PRIVATE FUNCTIONS
- *  
+ *
  */
 
 /**

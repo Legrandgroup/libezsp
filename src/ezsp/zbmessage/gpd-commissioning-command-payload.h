@@ -60,14 +60,14 @@ class CGpdCommissioningPayload
 
         /**
          * @brief Getter for the enclosed encryption/authentication key
-         * 
+         *
          * @return The enclosed key
          */
         EmberKeyData getKey() const { return key; }
 
         /**
          * @brief Getter for the enclosed device ID
-         * 
+         *
          * @return The enclosed deviceId
          */
         uint8_t getDeviceId() const { return device_id; }
@@ -94,14 +94,14 @@ class CGpdCommissioningPayload
 
         /**
          * @brief Getter for the enclosed extended options
-         * 
+         *
          * @return The enclosed extended options
          */
         uint8_t getExtendedOption() const { return extended_options; }
 
         /**
          * @brief Getter for the enclosed frame counter
-         * 
+         *
          * @return The enclosed frame counter
          */
         uint32_t getOutFrameCounter() const { return out_frame_counter; }

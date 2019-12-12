@@ -53,7 +53,7 @@ void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, ui
 
     // radius
     l_payload.push_back( i_radius );
- 
+
     // message tag : not used for this simplier demo
     l_payload.push_back( 0 );
 
@@ -87,7 +87,7 @@ void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg )
     // aps frame
     std::vector<uint8_t> v_tmp = i_msg.GetAps().GetEmberAPS();
     l_payload.insert(l_payload.end(), v_tmp.begin(), v_tmp.end());
- 
+
     // message tag : not used for this simplier demo
     l_payload.push_back( 0 );
 

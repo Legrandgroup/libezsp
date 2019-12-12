@@ -56,7 +56,7 @@ class CEmberGpSinkTableOption
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second);        
+        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second);
 
         /**
          * @brief raw constructor
@@ -65,7 +65,7 @@ class CEmberGpSinkTableOption
 
         /**
          * @brief constructor from commissioning payload option and more
-         * 
+         *
          * @param i_application_id : application id meeans way to address gpd : by sourceid or ieee
          * @param i_gpdf_commissioning_option : permit to know capability of gpd
          */
@@ -129,7 +129,7 @@ class CEmberGpSinkTableOption
 
         /**
          * @brief Setter for RxOnCapability
-         * 
+         *
          * @param i_rx_on_capable
          */
         void setRxOnCapability(bool i_rx_on_capable){ rx_on_capability = i_rx_on_capable; }
@@ -149,8 +149,8 @@ class CEmberGpSinkTableOption
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data);        
-        
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data);
+
     private:
         uint8_t application_id; /*!< The application ID contained in this sink table entry options bit field */
         uint8_t communication_mode; /*!< The communication mode contained in this sink table entry options bit field */

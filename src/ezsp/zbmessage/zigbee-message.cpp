@@ -86,7 +86,7 @@ void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_
   for(uint16_t loop=l_idx; loop<i_msg.size(); loop++)
   {
       payload.push_back(i_msg.at(loop));
-  }  
+  }
 }
 
 std::vector<uint8_t> CZigBeeMsg::Get( void ) const

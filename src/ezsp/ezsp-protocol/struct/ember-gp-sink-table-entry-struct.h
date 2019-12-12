@@ -43,7 +43,7 @@ class CEmberGpSinkTableEntryStruct
          *              - bit 10..15 : Reserved
          *          sink_list : by reverse set first byte of each to 0xFF to disable usage.
          *          groupcast_radius : The default value of 0x00 indicates undefined
-         * 
+         *
          * @param i_status Internal status of the sink table entry. 0x01 active, 0xff : disable
          * @param i_option see upper
          * @param i_gpd_address The addressing info of the GPD.
@@ -55,7 +55,7 @@ class CEmberGpSinkTableEntryStruct
          */
         CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, CEmberGpSinkTableOption i_options,
                         CEmberGpAddressStruct i_gpd_address, uint8_t i_device_id, uint16_t i_alias,
-                        uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);        
+                        uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);
 
         /**
          * @brief Copy constructor
@@ -73,7 +73,7 @@ class CEmberGpSinkTableEntryStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second); 
+        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second);
 
         /**
          * @brief Assignment operator
@@ -85,7 +85,7 @@ class CEmberGpSinkTableEntryStruct
 
         /**
          * @brief return structure as a raw
-         * 
+         *
          * @return raw of structure
          */
         std::vector<uint8_t> getRaw() const;
@@ -127,7 +127,7 @@ class CEmberGpSinkTableEntryStruct
          * @brief assigned_alias setter
          */
         void setAlias(uint16_t i_alias){ assigned_alias=i_alias; }
-        
+
         /**
          * @brief security_options setter
          */

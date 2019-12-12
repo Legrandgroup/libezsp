@@ -61,14 +61,14 @@ std::string CEmberChildDataStruct::String() const
     buf << "[phy : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(phy) << "]";
     buf << "[power : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(power) << "]";
     buf << "[timeout : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(timeout) << "]";
-/* // todo associate to node type    
+/* // todo associate to node type
     buf << "[gpdIeeeAddress :";
     for(uint8_t loop=0; loop<gpdIeeeAddress.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(gpdIeeeAddress[loop]); }
     buf << "]";
     buf << "[sourceId : "<< std::hex << std::setw(8) << std::setfill('0') << sourceId << "]";
     buf << "[applicationId : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(applicationId) << "]";
     buf << "[endpoint : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(endpoint) << "]";
-*/    
+*/
     buf << " }";
 
     return buf.str();

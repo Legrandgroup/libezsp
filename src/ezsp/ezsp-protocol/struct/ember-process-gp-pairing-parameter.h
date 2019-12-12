@@ -37,14 +37,14 @@ class CProcessGpPairingParam
 
         /**
          * @brief constructor using sink table entry and extra parameter
-         * 
+         *
          * @param i_sink_table_entry : sink table entry corresponding to gpd
          * @param i_add_sink : true to add, false to remove
          * @param i_remove_gpd : true to remove
          * @param i_sinkNetworkAddress : short network address of sink
          * @param i_sinkIeeeAddress : long network address of sink
          */
-        CProcessGpPairingParam(CEmberGpSinkTableEntryStruct i_sink_table_entry, bool i_add_sink, bool i_remove_gpd, 
+        CProcessGpPairingParam(CEmberGpSinkTableEntryStruct i_sink_table_entry, bool i_add_sink, bool i_remove_gpd,
                                 uint16_t i_sinkNetworkAddress, EmberEUI64 i_sinkIeeeAddress );
 
 
