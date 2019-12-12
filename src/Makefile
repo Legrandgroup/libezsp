@@ -35,17 +35,20 @@ ezsp_SOURCES+=domain/zigbee-tools/green-power-sink.cpp
 ezsp_SOURCES+=domain/zigbee-tools/zigbee-messaging.cpp
 ezsp_SOURCES+=domain/zigbee-tools/zigbee-networking.cpp
 
-ezsp_SOURCES+=spi/GenericAsyncDataInputObservable.cpp
 
-ezsp_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanEventLoop.cpp
-ezsp_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanTimer.cpp
-ezsp_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanTimerFactory.cpp
+lib-y+=ezpspi
 
-ezsp_SOURCES-$(USE_CPPTHREADS)+=spi/cppthreads/CppThreadsTimer.cpp
-ezsp_SOURCES-$(USE_CPPTHREADS)+=spi/cppthreads/CppThreadsTimerFactory.cpp
-ezsp_SOURCES-$(USE_SERIALCPP)+=spi/console/ConsoleLogger.cpp
-ezsp_LIBS-$(USE_CPPTHREADS)+=pthread
+ezpspi_SOURCES+=spi/GenericAsyncDataInputObservable.cpp
 
-ezsp_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanUartDriver.cpp
-ezsp_SOURCES-$(USE_SERIALCPP)+=spi/serial/SerialUartDriver.cpp
-ezsp_SOURCES-$(DUMMY)+=spi/mock-uart/MockUartDriver.cpp
+ezpspi_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanEventLoop.cpp
+ezpspi_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanTimer.cpp
+ezpspi_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanTimerFactory.cpp
+
+ezpspi_SOURCES-$(USE_CPPTHREADS)+=spi/cppthreads/CppThreadsTimer.cpp
+ezpspi_SOURCES-$(USE_CPPTHREADS)+=spi/cppthreads/CppThreadsTimerFactory.cpp
+ezpspi_SOURCES-$(USE_SERIALCPP)+=spi/console/ConsoleLogger.cpp
+ezpspi_LIBS-$(USE_CPPTHREADS)+=pthread
+
+ezpspi_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanUartDriver.cpp
+ezpspi_SOURCES-$(USE_SERIALCPP)+=spi/serial/SerialUartDriver.cpp
+ezpspi_SOURCES-$(DUMMY)+=spi/mock-uart/MockUartDriver.cpp
