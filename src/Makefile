@@ -49,13 +49,3 @@ ezsp_LIBS-$(USE_CPPTHREADS)+=pthread
 ezsp_SOURCES-$(USE_RARITAN)+=spi/raritan/RaritanUartDriver.cpp
 ezsp_SOURCES-$(USE_SERIALCPP)+=spi/serial/SerialUartDriver.cpp
 ezsp_SOURCES-$(DUMMY)+=spi/mock-uart/MockUartDriver.cpp
-
-bin-$(TEST)+=mainEzspTest
-
-mainEzspTest_CFLAGS+=-I.
-
-mainEzspTest_SOURCES+=example/CAppDemo.cpp
-mainEzspTest_SOURCES+=example/mainEzspTest.cpp
-mainEzspTest_SOURCES+=example/dummy_db.cpp
-mainEzspTest_LIBRARY+=ezsp
-mainEzspTest_LIBRARY+=serialcpp
