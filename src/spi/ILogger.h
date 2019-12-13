@@ -25,25 +25,30 @@
  */
 
 /**
+ * @brief Generic logger instance getter
+ */
+#define getLogger SINGLETON_LOGGER_CLASS_NAME::getInstance
+
+/**
  * @brief Generic logger getter (uses debug level)
  */
-#define plog SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
+#define plog getLogger().debugLogger.log
 /**
  * @brief Error logger getter
  */
-#define plogE SINGLETON_LOGGER_CLASS_NAME::getInstance().errorLogger.log
+#define plogE getLogger().errorLogger.log
 /**
  * @brief Warning logger getter
  */
-#define plogW SINGLETON_LOGGER_CLASS_NAME::getInstance().warningLogger.log
+#define plogW getLogger().warningLogger.log
 /**
  * @brief Info logger getter
  */
-#define plogI SINGLETON_LOGGER_CLASS_NAME::getInstance().infoLogger.log
+#define plogI getLogger().infoLogger.log
 /**
  * @brief Debug logger getter
  */
-#define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
+#define plogD getLogger().debugLogger.log
 /** @} */
 
 /**
