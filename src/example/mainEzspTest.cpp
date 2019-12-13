@@ -211,9 +211,7 @@ int main(int argc, char **argv) {
         }
     }
 
-#ifdef USE_RARITAN
-    RaritanLogger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
-#endif
+    getLogger().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
 
     clogI << "Starting ezsp test program (info)\n";
 
