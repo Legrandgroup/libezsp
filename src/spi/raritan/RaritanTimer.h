@@ -27,7 +27,7 @@ public:
 	 *
 	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
 	 */
-	RaritanTimer(RaritanEventLoop& eventLoop);
+	RaritanTimer();
 
 	/**
 	 * @brief Destructor
@@ -58,6 +58,6 @@ public:
 
 
 private:
-	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };

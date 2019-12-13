@@ -7,7 +7,10 @@
 #include "RaritanTimer.h"
 #include "spi/GenericLogger.h"
 
-RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_toutcbhandle() {
+RaritanTimer::RaritanTimer() :
+	m_eventSelector(*pp::SelectorSingleton::getInstance()),
+	m_toutcbhandle()
+{
 }
 
 RaritanTimer::~RaritanTimer() {
@@ -38,7 +41,7 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 			plogD("Now running %p timer's callback", this);
 			callBackFunction(this);
 		};
-		m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
+		m_eventSelector.addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
 		started=true;
 	}
 	return true;

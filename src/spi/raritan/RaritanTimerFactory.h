@@ -6,8 +6,8 @@
 
 #pragma once
 
+
 #include "spi/ITimerFactory.h"
-#include "RaritanEventLoop.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -24,7 +24,7 @@ public:
 	 *
 	 * @param eventLoop The current process' Raritan mainloop
 	 */
-	RaritanTimerFactory(RaritanEventLoop& eventLoop);
+	RaritanTimerFactory();
 
 	/**
 	 * @brief Destructor
@@ -38,7 +38,6 @@ public:
 	 */
 	std::unique_ptr<ITimer> create() const;
 private:
-	RaritanEventLoop& m_eventLoop;	/*!< The Raritan event loop */
 };
 
 #ifdef USE_RARITAN
