@@ -66,13 +66,10 @@ int main(int argc, char **argv) {
 #ifdef USE_SERIALCPP
     SerialUartDriver uartDriver;
     CppThreadsTimerFactory timerFactory;
-
-    ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 #endif
 #ifdef USE_RARITAN
-    RaritanEventLoop eventLoop;
-    RaritanUartDriver uartDriver(eventLoop);
-    RaritanTimerFactory timerFactory(eventLoop);
+    RaritanUartDriver uartDriver;
+    RaritanTimerFactory timerFactory;
 #endif
 
     int optionIndex=0;
