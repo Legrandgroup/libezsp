@@ -1,6 +1,6 @@
 set(ezspspi_SOURCES )
 list(APPEND ezspspi_SOURCES GenericAsyncDataInputObservable.cpp)
-list(APPEND ezspspi_SOURCES TimerFactory.cpp)
+list(APPEND ezspspi_SOURCES TimerBuilder.cpp)
 list(APPEND ezspspi_SOURCES UartDriverBuilder.cpp)
 list(APPEND ezspspi_SOURCES Logger.cpp)
 set(ezspspi_LIBS )

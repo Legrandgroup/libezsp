@@ -28,7 +28,7 @@ using namespace std;
 
 #define ASH_MAX_LENGTH 131
 
-CAsh::CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory) :
+CAsh::CAsh(CAshCallback *ipCb, ITimerBuilder &i_timer_factory) :
 	ackNum(0),
 	frmNum(0),
 	seq_num(0),

@@ -12,7 +12,7 @@
 #include "ezsp/zigbee-tools/green-power-sink.h"
 #include "ezsp/zbmessage/green-power-device.h"
 #include "spi/IUartDriver.h"
-#include "spi/ITimerFactory.h"
+#include "spi/ITimerBuilder.h"
 #include "spi/ILogger.h"
 #include "dummy_db.h"
 
@@ -34,7 +34,7 @@ public:
      * FIXME: too many args, this constructor becomes unreadable
     **/
     CAppDemo(IUartDriver *uartDriver,
-             ITimerFactory &i_timer_factory,
+             ITimerBuilder &i_timer_factory,
              bool reset=false,
              bool openGpCommissionning=false,
              uint8_t authorizeChannelRequestAnswerTimeout=0,

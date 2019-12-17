@@ -18,7 +18,7 @@
 
 
 CAppDemo::CAppDemo(IUartDriver *uartDriver,
-        ITimerFactory &i_timer_factory,
+        ITimerBuilder &i_timer_factory,
         bool reset,
         bool openGpCommissionning,
         uint8_t authorizeChannelRequestAnswerTimeout,

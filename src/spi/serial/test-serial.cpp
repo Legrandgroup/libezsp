@@ -1,5 +1,5 @@
 #include "SerialUartDriver.h"
-#include "CppThreadsTimerFactory.h"
+#include "spi/TimerBuilder.h"
 #include "spi/GenericAsyncDataInputObservable.h"
 #include "spi/GenericLogger.h"
 #include <string>
@@ -50,7 +50,7 @@ int main() {
 	SerialUartDriver uartDriver;
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
-	CppThreadsTimerFactory timerFactory;
+	TimerBuilder timerFactory;
 	ITimer *timer = timerFactory.create();
 	timer->start(10000, [](ITimer* triggeringTimer) {
 		clogI << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;

@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>	// For std::unique_ptr
 
-#include "spi/ITimerFactory.h"
+#include "spi/ITimerBuilder.h"
 
 
 typedef enum {
@@ -29,7 +29,7 @@ public:
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
-    CAsh(CAshCallback *ipCb, ITimerFactory &i_timer_factory);
+    CAsh(CAshCallback *ipCb, ITimerBuilder &i_timer_factory);
 
     CAsh(const CAsh&) = delete; /* No copy construction allowed */
 

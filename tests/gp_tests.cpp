@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "spi/mock-uart/MockUartDriver.h"
-#include "spi/cppthreads/CppThreadsTimerFactory.h"
+#include "spi/TimerFactory.h"
 #include "spi/IAsyncDataInputObserver.h"
 
 #include "spi/GenericLogger.h"
@@ -141,7 +141,7 @@ TEST_GROUP(gp_tests) {
 
 
 TEST(gp_tests, gp_recv_sensor_measurement) {
-	CppThreadsTimerFactory timerFactory;
+	TimerBuilder timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	std::vector< std::vector<uint8_t> > stageExpectedTransitions;

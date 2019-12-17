@@ -1,5 +1,5 @@
 /**
- * @file ITimerFactory.h
+ * @file ITimerBuilder.h
  *
  * @brief Abstract interface to which must conforms implementations of factory classes that generate ITimer objects
  *
@@ -18,12 +18,12 @@
 /**
  * @brief Abstract factory to create ITimer instances
  */
-class ITimerFactory {
+class ITimerBuilder {
 public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ITimerFactory() { };
+	virtual ~ITimerBuilder() { };
 
 	/**
 	 * @brief Create a new ITimer instance

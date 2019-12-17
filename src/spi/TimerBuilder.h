@@ -1,28 +1,28 @@
 /**
- * @file TimerFactory.h
+ * @file TimerBuilder.h
  *
  * @brief Concrete implementation of a ITimer factory
  */
 
 
-#include "spi/ITimerFactory.h"
+#include "spi/ITimerBuilder.h"
 
 /**
  * @brief Factory class to generate RaritanTimer objects
  */
-class TimerFactory : public ITimerFactory {
+class TimerBuilder : public ITimerBuilder {
 public:
 	/**
 	 * @brief Constructor
 	 *
 	 * @param eventLoop The current process' Raritan mainloop
 	 */
-	TimerFactory();
+	TimerBuilder();
 
 	/**
 	 * @brief Destructor
 	 */
-	~TimerFactory();
+	~TimerBuilder();
 
 	/**
 	 * @brief Create a new timer

@@ -1,10 +1,10 @@
 /**
- * @file TimerFactory.cpp
+ * @file TimerBuilder.cpp
  *
  * @brief Concrete implementation of a ITimer factory returning RaritanTimer objects
  */
 
-#include "spi/TimerFactory.h"
+#include "spi/TimerBuilder.h"
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanTimer.h"
 #endif
@@ -12,15 +12,15 @@
 #include "spi/cppthreads/CppThreadsTimer.h"
 #endif
 
-TimerFactory::TimerFactory() {
+TimerBuilder::TimerBuilder() {
 
 }
 
-TimerFactory::~TimerFactory() {
+TimerBuilder::~TimerBuilder() {
 
 }
 
-std::unique_ptr<ITimer> TimerFactory::create() const {
+std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
 	return std::unique_ptr<ITimer>(new RaritanTimer());
 #endif

@@ -31,7 +31,7 @@ list(APPEND ezspfull_SOURCES
 )
 
 list(APPEND ezspfull_SOURCES spi/GenericAsyncDataInputObservable.cpp)
-list(APPEND ezspfull_SOURCES spi/TimerFactory.cpp)
+list(APPEND ezspfull_SOURCES spi/TimerBuilder.cpp)
 list(APPEND ezspfull_SOURCES spi/UartDriverBuilder.cpp)
 list(APPEND ezspfull_SOURCES spi/Logger.cpp)
 set(ezspspi_LIBS )

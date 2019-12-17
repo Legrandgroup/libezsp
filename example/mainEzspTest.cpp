@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "spi/TimerFactory.h"
+#include "spi/TimerBuilder.h"
 #include "spi/UartDriverBuilder.h"
 #include "spi/Logger.h"
 #include "CAppDemo.h"
@@ -56,7 +56,7 @@ static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
 
 int main(int argc, char **argv) {
     IUartDriver *uartDriver = UartDriverBuilder::getUartDriver();
-    TimerFactory timerFactory;
+    TimerBuilder timerFactory;
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
