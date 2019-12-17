@@ -6,7 +6,7 @@
 
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 
-#include "spi/GenericLogger.h"
+#include "spi/ILogger.h"
 
 
 CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, ITimerFactory &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)

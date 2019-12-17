@@ -21,7 +21,6 @@
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"
 
-#include "spi/GenericLogger.h"
 #include "spi/ILogger.h"
 
 // some defines to help understanding

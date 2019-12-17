@@ -12,7 +12,7 @@
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"
 #include "ezsp/ezsp-protocol/struct/ember-child-data-struct.h"
 
-#include "spi/GenericLogger.h"
+#include "spi/ILogger.h"
 
 
 CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :

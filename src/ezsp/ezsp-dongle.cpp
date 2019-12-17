@@ -3,7 +3,7 @@
  */
 
 #include "ezsp-dongle.h"
-#include "spi/GenericLogger.h"
+#include "spi/ILogger.h"
 
 CEzspDongle::CEzspDongle( ITimerFactory &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
