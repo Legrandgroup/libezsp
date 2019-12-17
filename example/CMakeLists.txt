@@ -12,4 +12,4 @@ endif()
 add_executable(mainEzspTest CAppDemo.cpp mainEzspTest.cpp dummy_db.cpp)
 
 target_include_directories(mainEzspTest PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(mainEzspTest PUBLIC ezspfull)
+target_link_libraries(mainEzspTest PUBLIC ezsp ezspspi)

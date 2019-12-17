@@ -9,5 +9,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -O0 -ggdb")
 
-add_subdirectory(src)
+#add_subdirectory(src)
+add_subdirectory(src/ezsp)
+add_subdirectory(src/spi)
 add_subdirectory(example)
