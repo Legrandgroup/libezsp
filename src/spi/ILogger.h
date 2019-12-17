@@ -265,7 +265,7 @@ protected:
  * @endcode
  */
 class ILogger {
-public:
+protected:
 	/**
 	 * @brief Constructor
 	 *
@@ -280,7 +280,8 @@ public:
 		warningLogger(usedWarningLogger),
 		infoLogger(usedInfoLogger),
 		debugLogger(usedDebugLogger),
-		traceLogger(usedTraceLogger) {
+		traceLogger(usedTraceLogger)
+	{
 	}
 
 	/**
@@ -295,6 +296,7 @@ public:
 	 */
 	ILogger(const ILogger& other) = delete;
 
+public:
 	/**
 	 * @brief Set logging level
 	 *
@@ -341,7 +343,6 @@ public:
 		va_end(args);
 	}
 
-public:
 	ILoggerStream& errorLogger;	/*!< The enclosed error debugger handler instance */
 	ILoggerStream& warningLogger;	/*!< The enclosed warning debugger handler instance */
 	ILoggerStream& infoLogger;	/*!< The enclosed info debugger handler instance */

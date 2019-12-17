@@ -4,6 +4,7 @@
  * @brief Concrete implementation of a logger using the stdout and stderr output streams on the text console
  */
 
+#include "spi/Logger.h"
 #include "ConsoleLogger.h"
 #include <cstdarg>
 #include <cstdio>
@@ -102,6 +103,11 @@ static ConsoleInfoLogger consoleInfoLogger;	/* Create a unique instance of the C
 static ConsoleDebugLogger consoleDebugLogger;	/* Create a unique instance of the ConsoleDebugLogger that will be used to handle debug logs */
 static ConsoleTraceLogger consoleTraceLogger;	/* Create a unique instance of the ConsoleTraceLogger that will be used to handle trace logs */
 
+ConsoleLogger::ConsoleLogger():
+	ILogger(consoleErrorLogger, consoleWarningLogger, consoleInfoLogger, consoleDebugLogger, consoleTraceLogger)
+{
+}
+
 ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
 		ILogger(errorLogger, warningLogger, infoLogger, debugLogger, traceLogger) {
 }
@@ -109,15 +115,9 @@ ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningL
 ConsoleLogger::~ConsoleLogger() {
 }
 
-ConsoleLogger& ConsoleLogger::getInstance() {
-	static ConsoleLogger instance(consoleErrorLogger, consoleWarningLogger, consoleInfoLogger, consoleDebugLogger, consoleTraceLogger); /* Unique instance of the singleton */
-
-	return instance;
-}
-
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
-std::ostream ILogger::loggerErrorStream(&ConsoleLogger::getInstance().errorLogger);
-std::ostream ILogger::loggerWarningStream(&ConsoleLogger::getInstance().warningLogger);
-std::ostream ILogger::loggerInfoStream(&ConsoleLogger::getInstance().infoLogger);
-std::ostream ILogger::loggerDebugStream(&ConsoleLogger::getInstance().debugLogger);
-std::ostream ILogger::loggerTraceStream(&ConsoleLogger::getInstance().traceLogger);
+std::ostream ILogger::loggerErrorStream(&Logger::getInstance().errorLogger);
+std::ostream ILogger::loggerWarningStream(&Logger::getInstance().warningLogger);
+std::ostream ILogger::loggerInfoStream(&Logger::getInstance().infoLogger);
+std::ostream ILogger::loggerDebugStream(&Logger::getInstance().debugLogger);
+std::ostream ILogger::loggerTraceStream(&Logger::getInstance().traceLogger);

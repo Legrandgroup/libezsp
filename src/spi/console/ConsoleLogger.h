@@ -203,7 +203,8 @@ public:
  * @brief Class to interact with a console logger
  */
 class ConsoleLogger : public ILogger {
-private:
+	friend Logger;
+protected:
 	/**
 	 * @brief Default constructor
 	 *
@@ -215,16 +216,11 @@ private:
 	 */
 	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
 
+	ConsoleLogger();
+
 	~ConsoleLogger();
 
 public:
-	/**
-	 * @brief Get a reference to the singleton (only instance) of this logger class
-	 *
-	 * @return The unique instance as a reference
-	 */
-	static ConsoleLogger& getInstance();
-
 	/**
 	 * @brief Assignment operator
 	 *

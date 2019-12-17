@@ -146,18 +146,16 @@ static RaritanInfoLogger raritanInfoLogger;	/* Create a unique instance of the R
 static RaritanDebugLogger raritanDebugLogger;	/* Create a unique instance of the RaritanDebugLogger that will be used to handle debug logs */
 //static RaritanTraceLogger raritanTraceLogger;	/* Create a unique instance of the RaritanTraceLogger that will be used to handle trace logs */
 
+RaritanLogger::RaritanLogger():
+	ILogger(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanDebugLogger, raritanDebugLogger)
+{
+}
+
 RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& usedWarningLogger, ILoggerStream& usedInfoLogger, ILoggerStream& usedDebugLogger, ILoggerStream& usedTraceLogger) :
 		ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
 }
 
 RaritanLogger::~RaritanLogger() {
-}
-
-RaritanLogger& RaritanLogger::getInstance() {
-	/* FIXME: for now we use debug logger also for trace level */
-	static RaritanLogger instance(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanDebugLogger, raritanDebugLogger); /* Unique instance of the singleton */
-
-	return instance;
 }
 
 

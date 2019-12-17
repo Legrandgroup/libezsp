@@ -225,7 +225,8 @@ public:
  * @brief Class to interact with the logger in the Raritan framework
  */
 class RaritanLogger : public ILogger {
-private:
+	friend Logger;
+protected:
 	/**
 	 * @brief Constructor
 	 *
@@ -237,16 +238,11 @@ private:
 	 */
 	RaritanLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
 
+	RaritanLogger();
+
 	~RaritanLogger();
 
 public:
-	/**
-	 * @brief Get a reference to the singleton (only instance) of this logger class
-	 *
-	 * @return The unique instance as a reference
-	 */
-	static RaritanLogger& getInstance();
-
 	/**
 	 * @brief Assignment operator
 	 *
