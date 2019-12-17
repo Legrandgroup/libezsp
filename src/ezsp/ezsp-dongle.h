@@ -9,7 +9,7 @@
 #include "spi/IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
-#include "spi/ITimerBuilder.h"
+#include "spi/TimerBuilder.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
@@ -27,7 +27,7 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( ITimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
@@ -64,7 +64,7 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
 private:
-    ITimerBuilder &timer_factory;
+    TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;
     GenericAsyncDataInputObservable uartIncomingDataHandler;

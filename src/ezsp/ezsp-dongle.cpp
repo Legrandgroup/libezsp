@@ -5,7 +5,7 @@
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
 
-CEzspDongle::CEzspDongle( ITimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
 	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),

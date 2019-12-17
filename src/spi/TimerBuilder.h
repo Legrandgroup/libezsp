@@ -3,14 +3,16 @@
  *
  * @brief Concrete implementation of a ITimer factory
  */
+#ifndef __TIMERBUILDER_H__
+#define __TIMERBUILDER_H__
 
-
-#include "spi/ITimerBuilder.h"
+#include <memory>
+#include "spi/ITimer.h"
 
 /**
  * @brief Factory class to generate RaritanTimer objects
  */
-class TimerBuilder : public ITimerBuilder {
+class TimerBuilder {
 public:
 	/**
 	 * @brief Constructor
@@ -32,3 +34,5 @@ public:
 	std::unique_ptr<ITimer> create() const;
 private:
 };
+
+#endif
