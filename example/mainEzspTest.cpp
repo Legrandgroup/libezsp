@@ -6,26 +6,18 @@
 
 #include <iostream>
 
-#ifdef USE_SERIALCPP
-#include "spi/serial/SerialUartDriver.h"
-#include "spi/cppthreads/CppThreadsTimerFactory.h"
-#include <string>
-#else
-#ifdef USE_RARITAN
-#include "spi/raritan/RaritanEventLoop.h"
-#include "spi/raritan/RaritanUartDriver.h"
-#include "spi/raritan/RaritanTimerFactory.h"
-#else
-#error Compiler directive USE_SERIALCPP or USE_RARITAN is required
-#endif	// USE_RARITAN
-#endif	// USE_SERIALCPP
-#include "spi/GenericLogger.h"
-#include "example/CAppDemo.h"
+#include "spi/TimerFactory.h"
+#include "spi/UartDriverBuilder.h"
+#include "spi/Logger.h"
+#include "CAppDemo.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>
 #include <sstream>
 //#include <iomanip>	// For debug
+#ifdef USE_RARITAN
+#include <pp/Selector.h>
+#endif
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -63,15 +55,8 @@ static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
 }
 
 int main(int argc, char **argv) {
-#ifdef USE_SERIALCPP
-    SerialUartDriver uartDriver;
-    CppThreadsTimerFactory timerFactory;
-#endif
-#ifdef USE_RARITAN
-    RaritanUartDriver uartDriver;
-    RaritanTimerFactory timerFactory;
-#endif
-
+    IUartDriver *uartDriver = UartDriverBuilder::getUartDriver();
+    TimerFactory timerFactory;
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
@@ -208,25 +193,24 @@ int main(int argc, char **argv) {
         }
     }
 
-#ifdef USE_RARITAN
-    RaritanLogger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
-#endif
+    Logger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver.open(serialPort, 57600) != 0) {
+    if (uartDriver->open(serialPort, 57600) != 0) {
         clogE << "Failed opening serial port. Aborting\n";
         return 1;
     }
 
     CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpRemovedDevDataList, gpAddedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 
-#ifdef USE_SERIALCPP
+#ifdef USE_CPPTHREADS
     std::string line;
     std::getline(std::cin, line);
 #endif
 #ifdef USE_RARITAN
-    eventLoop.run();
+    pp::Selector eventSelector(*pp::SelectorSingleton::getInstance())
+    eventSelector.run();
 #endif
 
     return 0;

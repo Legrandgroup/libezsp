@@ -33,7 +33,7 @@ public:
      * Constructor
      * FIXME: too many args, this constructor becomes unreadable
     **/
-    CAppDemo(IUartDriver& uartDriver,
+    CAppDemo(IUartDriver *uartDriver,
              ITimerFactory &i_timer_factory,
              bool reset=false,
              bool openGpCommissionning=false,

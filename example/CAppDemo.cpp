@@ -17,7 +17,7 @@
 #include "ezsp/byte-manip.h"
 
 
-CAppDemo::CAppDemo(IUartDriver& uartDriver,
+CAppDemo::CAppDemo(IUartDriver *uartDriver,
         ITimerFactory &i_timer_factory,
         bool reset,
         bool openGpCommissionning,
@@ -50,7 +50,7 @@ CAppDemo::CAppDemo(IUartDriver& uartDriver,
         clogE << "Invalid channel: " << channel << ". Using 11 instead\n";
         channel = 11;
     }
-    if( dongle.open(&uartDriver) ) {
+    if( dongle.open(uartDriver) ) {
         clogI << "CAppDemo open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
