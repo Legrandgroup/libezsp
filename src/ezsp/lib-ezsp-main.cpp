@@ -191,7 +191,20 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
             if( (EMBER_NETWORK_UP == status) /*&& (false == reset_wanted)*/ )
             {
-                gp_sink.init();
+                /* Create a sink state change callback to find out when the sink is ready */
+                /* When the sink becomes ready, then libezsp will also switch to ready state */
+                auto clibobs = [this](ESinkState& i_state) -> bool
+                {
+                    clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << "\n";
+                    if (ESinkState::SINK_READY == i_state)
+                    {
+                        this->setState(CLibEzspState::READY);
+                        return false;   /* Ask the caller to withdraw ourselves from the callback */
+                    }
+                    return true;
+                };
+                gp_sink.registerStateCallback(clibobs);
+                gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
 
 /*
                 // manage green power flags

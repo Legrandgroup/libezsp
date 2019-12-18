@@ -100,11 +100,16 @@ public:
     bool registerObserver(CGpObserver* observer);
     bool unregisterObserver(CGpObserver* observer);
 
+    /**
+     * @brief Register callback on current library state
+     */
+    void registerStateCallback(std::function<bool (ESinkState& i_state)> newObsStateCallback);
 
 private:
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
-    ESinkState sink_state;
+    ESinkState sink_state;  /*!< Current state for our internal state machine */
+    std::function<bool (ESinkState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEmberNetworkParameters nwk_parameters;
     bool authorizeGpfChannelRqst;
     // parameters to save for pairing/clearing

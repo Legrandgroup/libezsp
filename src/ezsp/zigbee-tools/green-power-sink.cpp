@@ -76,6 +76,7 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     dongle(i_dongle),
     zb_messaging(i_zb_messaging),
     sink_state(SINK_NOT_INIT),
+    obsStateCallback(nullptr),
     nwk_parameters(),
     authorizeGpfChannelRqst(false),
     gpf_comm_frame(),
@@ -602,6 +603,11 @@ bool CGpSink::unregisterObserver(CGpObserver* observer)
     return static_cast<bool>(this->observers.erase(observer));
 }
 
+void CGpSink::registerStateCallback(std::function<bool (ESinkState& i_state)> newObsStateCallback)
+{
+    this->obsStateCallback=newObsStateCallback;
+}
+
 void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     for(auto observer : this->observers) {
         observer->handleRxGpFrame( i_gpf );
@@ -893,4 +899,13 @@ void CGpSink::setSinkState( ESinkState i_state )
     auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */
     std::string error_str = it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
     clogI << "SINK State change : " << error_str << std::endl;
+
+    if( nullptr != obsStateCallback )
+    {
+        if (!obsStateCallback(i_state))
+        {
+            clogD << "Clearing sink state change callback (it returned false)\n";
+            this->obsStateCallback = nullptr;
+        }
+    }
 }
