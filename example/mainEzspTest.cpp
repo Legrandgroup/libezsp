@@ -55,6 +55,33 @@ static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
     return true;
 }
 
+enum MainState {
+    INIT,
+    REMOVE_ALL_GPD,
+    REMOVE_SPECIFIC_GPD,
+    ADD_GPD,
+    COMMISSION_GPD,
+    OPEN_ZIGBEE_NWK,
+    RUN
+};
+
+class MainStateMachine {
+public:
+    MainStateMachine() :
+        currentState(INIT) { }
+
+    MainStateMachine(const CGpSink&) = delete; /* No copy construction allowed */
+
+    MainStateMachine& operator=(MainStateMachine) = delete; /* No assignment allowed */
+
+    void ezspStateChangeCallback(CLibEzspState& i_state) {
+        clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
+	}
+
+private:
+    MainState currentState;
+};
+
 int main(int argc, char **argv) {
     IUartDriver *uartDriver = UartDriverBuilder::getUartDriver();
     TimerBuilder timerFactory;
@@ -203,13 +230,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    MainStateMachine fsm;
     CLibEzspMain lib_main(uartDriver, timerFactory);
 
     // lib state observer
-	auto clibobs = [](CLibEzspState& i_state) {
-        clogI << "library state change: " << unsigned(i_state) << "\n";
-	};
-	lib_main.registerLibraryStateCallback(clibobs);
+    auto clibobs = [&fsm](CLibEzspState& i_state) {
+        fsm.ezspStateChangeCallback(i_state);
+    };
+    lib_main.registerLibraryStateCallback(clibobs);
 
 /*
                 // manage green power flags
