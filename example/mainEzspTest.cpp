@@ -175,6 +175,40 @@ public:
                             );
                 this->ezspRun();
             }
+            // else if (this->openZigbeeCommissionningAtStartup) {
+            //     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
+            //     zb_nwk.openNetwork(60);
+
+            //     // we retrieve network information and key and eui64 of dongle (can be done before)
+            //     dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
+            //     dongle.sendCommand(EZSP_GET_EUI64);
+            //     std::vector<uint8_t> l_payload;
+            //     l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
+            //     dongle.sendCommand(EZSP_GET_KEY, l_payload);
+
+            //     // start discover of existing product inside network
+            //     zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
+            //         clogI << " Is it a new product ";
+            //         clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
+            //         clogI << "[eui64 :";
+            //         for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
+            //         clogI << "]";
+            //         clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
+            //         clogI << " ?" << std::endl;
+
+            //         if( db.addProduct( i_eui64, i_id ) )
+            //         {
+            //             clogI << "YES !! Retrieve information for binding" << std::endl;
+
+            //             // retrieve information about device, starting by discover list of active endpoint
+            //             std::vector<uint8_t> payload;
+            //             payload.push_back(u16_get_lo_u8(i_id));
+            //             payload.push_back(u16_get_hi_u8(i_id));
+
+            //             zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
+            //         }
+            //     });
+            // }
             else {  /* No preparation step remains... we can swich to normal run state */
                 this->ezspRun();
             }
@@ -310,7 +344,7 @@ int main(int argc, char **argv) {
                 openGpCommissionningAtStartup = true;
                 break;
             case 'C':
-                std::stringstream(optarg) >> authorizeChRqstAnswerTimeout;
+                authorizeChRqstAnswerTimeout = std::stoi(optarg);
                 break;
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
@@ -339,49 +373,12 @@ int main(int argc, char **argv) {
     }
 
     CLibEzspMain lib_main(uartDriver, timerFactory);
+    clogI << "Got timeout " << std::dec << static_cast<unsigned int>(authorizeChRqstAnswerTimeout) << "s\n";
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     auto clibobs = [&fsm, &lib_main](CLibEzspState& i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);
-
-/*
-                // manage other flags
-                if (this->openZigbeeCommissionningAtStartup) {
-                    // If requested to do so, open the zigbee network for a specific duration, so new devices can join
-                    zb_nwk.openNetwork(60);
-
-                    // we retrieve network information and key and eui64 of dongle (can be done before)
-                    dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
-                    dongle.sendCommand(EZSP_GET_EUI64);
-                    std::vector<uint8_t> l_payload;
-                    l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
-                    dongle.sendCommand(EZSP_GET_KEY, l_payload);
-
-                    // start discover of existing product inside network
-                    zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-                        clogI << " Is it a new product ";
-                        clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-                        clogI << "[eui64 :";
-                        for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-                        clogI << "]";
-                        clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-                        clogI << " ?" << std::endl;
-
-                        if( db.addProduct( i_eui64, i_id ) )
-                        {
-                            clogI << "YES !! Retrieve information for binding" << std::endl;
-
-                            // retrieve information about device, starting by discover list of active endpoint
-                            std::vector<uint8_t> payload;
-                            payload.push_back(u16_get_lo_u8(i_id));
-                            payload.push_back(u16_get_hi_u8(i_id));
-
-                            zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
-                        }
-                    });
-                }
-*/
 
     // lib incomming greenpower sourceId callback
 	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
