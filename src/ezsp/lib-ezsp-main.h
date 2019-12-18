@@ -53,7 +53,7 @@ public:
 
 
 private:
-    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle */
+    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
     CLibEzspState lib_state;    /*!< Current state for our internal state machine */
     std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     std::unique_ptr<ITimer> timer;  /*!< Internal timer */

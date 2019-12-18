@@ -50,9 +50,7 @@ CLibEzspState CLibEzspMain::getState() const
 void CLibEzspMain::dongleInit(uint8_t ezsp_version)
 {
     // first request stack protocol version
-    std::vector<uint8_t> payload;
-    payload.push_back(ezsp_version);
-    dongle.sendCommand(EEzspCmd::EZSP_VERSION,payload);
+    dongle.sendCommand(EEzspCmd::EZSP_VERSION, std::vector<uint8_t>({ezsp_version}));
 }
 
 void CLibEzspMain::stackInit()
@@ -298,9 +296,10 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             // Check if the wanted protocol version, and display stack version
             if( i_msg_receive.at(0) > exp_ezsp_version )
             {
-                dongleInit(i_msg_receive.at(0));
+				exp_ezsp_version = i_msg_receive.at(0);
+                dongleInit(exp_ezsp_version);
             }
-            if( i_msg_receive.at(0) == exp_ezsp_version )
+            else if( i_msg_receive.at(0) == exp_ezsp_version )
             {
                 // all is good
                 std::stringstream bufDump;
