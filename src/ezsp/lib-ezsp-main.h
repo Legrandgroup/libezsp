@@ -42,10 +42,14 @@ public:
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
 
     /**
-     * Register callback on current library state
+     * @brief Register callback on current library state
      */
     void registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> obsStateCallback){this->obsStateCallback=obsStateCallback;}
 
+    /**
+     * @brief Register callback to receive all incomming greenpower sourceId
+     */
+    void registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback){this->obsGPSourceIdCallback=obsGPSourceIdCallback;}
 
 
 private:
@@ -56,6 +60,7 @@ private:
     CZigbeeMessaging zb_messaging;
     CZigbeeNetworking zb_nwk;
     CGpSink gp_sink;
+    std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback;	/*!< Callback invoked each a green power message is received. */
 
     void setState( CLibEzspState i_new_state );
 

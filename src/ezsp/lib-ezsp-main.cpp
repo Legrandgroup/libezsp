@@ -14,7 +14,8 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
     zb_nwk(dongle, zb_messaging),
-    gp_sink(dongle, zb_messaging)
+    gp_sink(dongle, zb_messaging),
+    obsGPSourceIdCallback(nullptr)
 {
     setState(CLibEzspState::INIT_FAILED);
 
@@ -58,5 +59,8 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
 
 void CLibEzspMain::handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status )
 {
-
+    if( nullptr != obsGPSourceIdCallback )
+    {
+        obsGPSourceIdCallback(i_gpd_id, i_gpd_known, i_gpd_key_status);
+    }
 }
