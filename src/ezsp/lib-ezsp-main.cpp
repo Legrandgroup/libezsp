@@ -4,6 +4,8 @@
 
 #include "ezsp/lib-ezsp-main.h"
 #include "spi/ILogger.h"
+#include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParamtersResponse
+#include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
 
 #include <sstream>
 #include <iomanip>
@@ -34,8 +36,7 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
 
 void CLibEzspMain::setState( CLibEzspState i_new_state )
 { 
-    lib_state=i_new_state; 
-    /* \todo inform observe of state changed */
+    this->lib_state = i_new_state;
     if( nullptr != obsStateCallback )
     {
         obsStateCallback(i_new_state);
@@ -162,7 +163,7 @@ void CLibEzspMain::stackInit()
  */
 void CLibEzspMain::handleDongleState( EDongleState i_state )
 {
-    clogI << __func__ << "() => dongleState : " << i_state << "\n";
+    // clogI << __func__ << "() => dongleState : " << i_state << "\n";
 
     if( DONGLE_READY == i_state )
     {
@@ -174,7 +175,7 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
     else if( DONGLE_REMOVE == i_state )
     {
         // TODO: manage this !
-        clogE << __func__ << " dongle removal is not handled for now\n";
+        clogW << __func__ << "() dongle removed\n";
     }
 }
 
@@ -187,7 +188,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         case EZSP_STACK_STATUS_HANDLER:
         {
             EEmberStatus status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-            clogI << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << std::endl;
+            clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
             if( (EMBER_NETWORK_UP == status) /*&& (false == reset_wanted)*/ )
             {
                 gp_sink.init();
@@ -264,14 +265,12 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             }
         }
         break;
-        /*
         case EZSP_GET_NETWORK_PARAMETERS:
         {
             CGetNetworkParamtersResponse l_rsp(i_msg_receive);
             clogI << l_rsp.String() << std::endl;
         }
-        break; */
-        /*
+        break;
         case EZSP_GET_KEY:
         {
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
@@ -279,23 +278,23 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             CEmberKeyStruct l_rsp(i_msg_receive);
             clogI << "EZSP_GET_KEY status : " << CEzspEnum::EEmberStatusToString(l_status) << ", " << l_rsp.String() << std::endl;
         }
-        break; */
-        /*
-        case EZSP_GET_EUI64:
-        {
-            // put eui64 on database for later use
-            db.dongleEui64.clear();
-            for( uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++ )
-            {
-                db.dongleEui64.push_back(i_msg_receive.at(loop));
-            }
-        }
-        break; */
+        break;
+        // case EZSP_GET_EUI64:
+        // {
+        //     // put eui64 on database for later use
+        //     db.dongleEui64.clear();
+        //     for( uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++ )
+        //     {
+        //         db.dongleEui64.push_back(i_msg_receive.at(loop));
+        //     }
+        // }
+        // break;
         case EEzspCmd::EZSP_VERSION:
         {
             // Check if the wanted protocol version, and display stack version
             if( i_msg_receive.at(0) > exp_ezsp_version )
             {
+				clogW << "Current EZSP version supported by dongle (" << static_cast<int>(i_msg_receive.at(0)) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_version) << "). Re-initializing dongle\n";
 				exp_ezsp_version = i_msg_receive.at(0);
                 dongleInit(exp_ezsp_version);
             }
