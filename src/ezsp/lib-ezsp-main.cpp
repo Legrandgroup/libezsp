@@ -33,6 +33,16 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     }
 }
 
+void CLibEzspMain::registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> newObsStateCallback)
+{
+    this->obsStateCallback = newObsStateCallback;
+}
+
+void CLibEzspMain::registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> newObsGPSourceIdCallback)
+{
+    this->obsGPSourceIdCallback = newObsGPSourceIdCallback;
+}
+
 
 void CLibEzspMain::setState( CLibEzspState i_new_state )
 { 
@@ -205,71 +215,6 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 };
                 gp_sink.registerStateCallback(clibobs);
                 gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
-
-/*
-                // manage green power flags
-                if (this->openGpCommissionningAtStartup)
-                {
-                    // If requested to do so, immediately open a GP commissioning session
-                    gp_sink.openCommissioningSession();
-                }
-                else if( gpdList.size() )
-                {
-                    gp_sink.registerGpds(gpdList);
-                }
-                else if( this->removeAllGpds )
-                {
-                    gp_sink.gpClearAllTables();
-                    this->removeAllGpds = false;
-                    this->gpdToRemove = std::vector<uint32_t>();
-                }
-                else if( this->gpdToRemove.size() )
-                {
-                    gp_sink.removeGpds(this->gpdToRemove);
-                    this->gpdToRemove = std::vector<uint32_t>();
-                }
-
-                if(this->authorizeChRqstAnswerTimeout) {
-                    gp_sink.authorizeAnswerToGpfChannelRqst(true);
-                    // start timer
-                    timer->start( static_cast<uint16_t>(this->authorizeChRqstAnswerTimeout*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
-                }
-
-                // manage other flags
-                if (this->openZigbeeCommissionningAtStartup) {
-                    // If requested to do so, open the zigbee network for a specific duration, so new devices can join
-                    zb_nwk.openNetwork(60);
-
-                    // we retrieve network information and key and eui64 of dongle (can be done before)
-                    dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
-                    dongle.sendCommand(EZSP_GET_EUI64);
-                    std::vector<uint8_t> l_payload;
-                    l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
-                    dongle.sendCommand(EZSP_GET_KEY, l_payload);
-
-                    // start discover of existing product inside network
-                    zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-                        clogI << " Is it a new product ";
-                        clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-                        clogI << "[eui64 :";
-                        for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-                        clogI << "]";
-                        clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-                        clogI << " ?" << std::endl;
-
-                        if( db.addProduct( i_eui64, i_id ) )
-                        {
-                            clogI << "YES !! Retrieve information for binding" << std::endl;
-
-                            // retrieve information about device, starting by discover list of active endpoint
-                            std::vector<uint8_t> payload;
-                            payload.push_back(u16_get_lo_u8(i_id));
-                            payload.push_back(u16_get_hi_u8(i_id));
-
-                            zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
-                        }
-                    });
-                } */
             }
             else
             {

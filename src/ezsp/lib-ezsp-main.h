@@ -20,7 +20,7 @@
 
 
 /**
- * @brief enumetion for possible status of a gpd key from an incomming gpd
+ * @brief Possible states of the state machine used by class CLibEzspMain
  */
 enum class CLibEzspState { 
     NO_INIT,            /*<! Initial state, before starting. */
@@ -29,11 +29,17 @@ enum class CLibEzspState {
     INIT_IN_PROGRESS,   /*<! Initialisation in progress, no other command can be process */
 };
 
+/**
+ * @brief Class allowing sending commands and receiving events from an EZSP interface
+ */
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
     /**
-     * @brief default constructor with minimal args to initialize library
+     * @brief Default constructor with minimal args to initialize library
+     *
+     * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
+     * @param i_timer_factory An ITimerFactory used to generate ITimer objects
      */
     CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &i_timer_factory );
 
@@ -43,13 +49,17 @@ public:
 
     /**
      * @brief Register callback on current library state
+     *
+     * @param newObsStateCallback A callback function of type void func(CLibEzspState& i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
-    void registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> obsStateCallback){this->obsStateCallback=obsStateCallback;}
+    void registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> newObsStateCallback);
 
     /**
      * @brief Register callback to receive all incomming greenpower sourceId
+     *
+     * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
      */
-    void registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback){this->obsGPSourceIdCallback=obsGPSourceIdCallback;}
+    void registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> newObsGPSourceIdCallback);
 
 
 private:
