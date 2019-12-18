@@ -98,6 +98,7 @@
 #include <cstdarg>
 #include <streambuf>
 #include <ostream>
+#include <iostream>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
