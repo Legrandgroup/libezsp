@@ -9,6 +9,7 @@
 CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
         TimerBuilder &i_timer_factory) :
     lib_state(CLibEzspState::NO_INIT),
+    obsStateCallback(nullptr),
     timer(i_timer_factory.create()),
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
@@ -31,6 +32,10 @@ void CLibEzspMain::setState( CLibEzspState i_new_state )
 { 
     lib_state=i_new_state; 
     /* \todo inform observe of state changed */
+    if( nullptr != obsStateCallback )
+    {
+        obsStateCallback(i_new_state);
+    }
 }
 
 /**

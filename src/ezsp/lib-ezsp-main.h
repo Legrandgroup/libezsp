@@ -41,10 +41,16 @@ public:
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
 
+    /**
+     * Register callback on current library state
+     */
+    void registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> obsStateCallback){this->obsStateCallback=obsStateCallback;}
+
 
 
 private:
     CLibEzspState lib_state;
+    std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Callback invoked each time library state change. */
     std::unique_ptr<ITimer> timer;
     CEzspDongle dongle;
     CZigbeeMessaging zb_messaging;
