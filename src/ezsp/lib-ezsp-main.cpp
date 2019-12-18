@@ -209,7 +209,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                     if (ESinkState::SINK_READY == i_state)
                     {
                         this->setState(CLibEzspState::READY);
-                        return false;   /* Ask the caller to withdraw ourselves from the callback */
+                        return true;   /* Do not ask the caller to withdraw ourselves from the callback */
                     }
                     return true;
                 };

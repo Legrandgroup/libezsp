@@ -47,6 +47,8 @@ public:
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
 
+    CGpSink& getSink() { return this->gp_sink; }
+
     /**
      * @brief Register callback on current library state
      *
