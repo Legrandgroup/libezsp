@@ -23,17 +23,17 @@
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
     fprintf(f,"%s - sample test program for libezsp\n\n", progname);
-    fprintf(f,"Usage: %s [-d] [-u serialport] [-c channel] [-Z] [-C] [-G|[-r *|-r source_id [-r source_id2...]|-s source_id/key [-s source_id2/key...]]\n", progname);
+    fprintf(f,"Usage: %s [-d] [-u serialport] [-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]\n", progname);
     fprintf(f,"Available switches:\n");
-    fprintf(f,"-h (--help)                       : this help\n");
-    fprintf(f,"-d (--debug)                      : enable debug logs\n");
-    fprintf(f,"-Z (--open-zigbee)                : open the zigbee network at startup (for 60s)\n");
-    fprintf(f,"-G (--open-gp-commissionning)     : open the Green Power commissionning session at startup\n");
-    fprintf(f,"-C (--authorize-ch-request-answer): Authorize answer to channel request command for x seconds\n");
-    fprintf(f,"-u (--serial-port) <port>         : use a specific serial port (default: '/dev/ttyUSB0')\n");
-    fprintf(f,"-c (--reset-to-channel) <channel> : force re-creation of a network on the specified channel (discards previously existing network)\n");
-    fprintf(f,"-r (--remove-source-id) <id>      : remove a specific device from the monitored list, based on its source-id, use * to remove all (repeated -r options are allowed)\n");
-    fprintf(f,"-s (--source-id) <id/key>         : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
+    fprintf(f,"-h (--help)                               : this help\n");
+    fprintf(f,"-d (--debug)                              : enable debug logs\n");
+    fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
+    fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
+    fprintf(f,"-C (--authorize-ch-request-answer) <time> : Authorize answer to channel request command for x seconds (0<x<255)\n");
+    fprintf(f,"-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
+    fprintf(f,"-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
+    fprintf(f,"-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all (repeated -r options are allowed)\n");
+    fprintf(f,"-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
 }
 
 /**
@@ -67,7 +67,22 @@ enum MainState {
 
 class MainStateMachine {
 public:
-    MainStateMachine(CLibEzspMain& libEzspHandle,
+    /**
+     * Constructor
+     *
+     * @param timerFactoryUtil An ITimerFactory used to generate ITimer objects
+     * @param libEzspHandle The CLibEzspMain instance to use to communicate with the EZSP adapter
+     * @param requestReset Do we reset the network and re-create a new one?
+     * @param openGpCommissionning Do we open GP commissionning at dongle initialization?
+     * @param authorizeChannelRequestAnswerTimeout During how many second (after startup), we will anwser to a channel request
+     * @param openZigbeeCommissionning Do we open the Zigbee network at dongle initialization?
+     * @param useNetworkChannel The 802.15.4 channel on which to send/receive traffic
+     * @param gpRemoveAllDevices A flag to remove all GP devices from monitoring
+     * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
+     * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
+     */
+    MainStateMachine(TimerBuilder& timerBuilder,
+                     CLibEzspMain& libEzspHandle,
                      bool requestReset=false,
                      bool openGpCommissionning=false,
                      uint8_t authorizeChannelRequestAnswerTimeout=0,
@@ -77,6 +92,7 @@ public:
                      const std::vector<CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={}) :
         initFailures(0),
+        timerBuilder(timerBuilder),
         libEzsp(libEzspHandle),
         resetAtStartup(requestReset),
         openGpCommissionningAtStartup(openGpCommissionning),
@@ -86,11 +102,20 @@ public:
         removeAllGPDAtStartup(gpRemoveAllDevices),
         gpdAddList(gpDevicesToAdd),
         gpdRemoveList(gpDevicesToRemove),
+        channelRequestAnswerTimer(this->timerBuilder.create()),
         currentState(MainState::INIT_PENDING) { }
 
     MainStateMachine(const MainStateMachine&) = delete; /* No copy construction allowed */
 
     MainStateMachine& operator=(MainStateMachine) = delete; /* No assignment allowed */
+
+    /**
+     * @brief Set internal state machine to run mode (waiting for asynchronous sensor reports)
+     */
+    void ezspRun() {
+        clogI << "Preparation steps finished... switching to run state\n";
+        this->currentState = MainState::RUN;
+    }
 
     void ezspStateChangeCallback(CLibEzspState& i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
@@ -139,16 +164,19 @@ public:
                       this->currentState == MainState::REMOVE_SPECIFIC_GPD ||
                       this->currentState == MainState::ADD_GPD) &&
                      this->channelRequestAnswerTimeoutAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
-                clogI << "Opening GP channel request window for " << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
-                clogE << "Not implemented yet\n";
-                // iflibEzsp.getSink().authorizeAnswerToGpfChannelRqst(true);
+                clogI << "Opening GP channel request window for " << std::dec << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
+                libEzsp.setAnswerToGpfChannelRqstPolicy(true);
                 // start timer
-                //timer->start( static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
-                exit(1);
+                this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
+                             [this](ITimer *timer) {
+                                 clogI << "Closing GP channel request window\n";
+                                 this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
+                             }
+                            );
+                this->ezspRun();
             }
             else {  /* No preparation step remains... we can swich to normal run state */
-                clogI << "Preparation steps finished... switching to run state\n";
-                this->currentState = MainState::RUN;
+                this->ezspRun();
             }
             clogI << "Moving to MainState " << static_cast<int>(this->currentState) << "\n";
         }
@@ -156,15 +184,17 @@ public:
 
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
-    CLibEzspMain& libEzsp;
-    bool resetAtStartup;
-    bool openGpCommissionningAtStartup;
+    TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
+    CLibEzspMain& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
+    bool resetAtStartup;    /*!< Do we reset the network and re-create a new one? */
+    bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
-    bool openZigbeeCommissionningAtStartup;
-    unsigned int channel;
+    bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at dongle initialization? */
+    unsigned int channel; /*!< The 802.15.4 channel on which to send/receive traffic */
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
-    std::vector<CGpDevice> gpdAddList; /*!< The list of GP devices to add to the previous monitoring */
+    std::vector<CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
+    std::unique_ptr<ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
 };
 
@@ -309,7 +339,7 @@ int main(int argc, char **argv) {
     }
 
     CLibEzspMain lib_main(uartDriver, timerFactory);
-    MainStateMachine fsm(lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     auto clibobs = [&fsm, &lib_main](CLibEzspState& i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
@@ -353,7 +383,7 @@ int main(int argc, char **argv) {
                 }
 */
 
-    // lib incomming greenpower sourceId observer
+    // lib incomming greenpower sourceId callback
 	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
     //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id)  <<
     //                 ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << unsigned(i_gpd_key_status) <<

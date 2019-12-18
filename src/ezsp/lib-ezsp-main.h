@@ -43,7 +43,7 @@ public:
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
      * @param i_timer_factory An ITimerFactory used to generate ITimer objects
      */
-    CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &i_timer_factory );
+    CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &timerbuilder );
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -94,11 +94,18 @@ public:
      */
     bool addGPDevices(const std::vector<CGpDevice> &gpDevicesList);
 
+    /**
+     * @brief Controls the answer to request channel messages sent by GP devices
+     *
+     * @param allowed Set to true if answers to request channel is allowed
+     */
+    void setAnswerToGpfChannelRqstPolicy(bool allowed);
+
 private:
+    TimerBuilder &timerbuilder;
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
     CLibEzspState lib_state;    /*!< Current state for our internal state machine */
     std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
-    std::unique_ptr<ITimer> timer;  /*!< Internal timer */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */

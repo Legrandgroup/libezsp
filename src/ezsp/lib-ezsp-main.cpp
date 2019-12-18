@@ -11,13 +11,13 @@
 #include <iomanip>
 
 CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
-        TimerBuilder &i_timer_factory) :
+        TimerBuilder &timerbuilder) :
+    timerbuilder(timerbuilder),
     exp_ezsp_version(6),
     lib_state(CLibEzspState::NO_INIT),
     obsStateCallback(nullptr),
-    timer(i_timer_factory.create()),
-    dongle(i_timer_factory, this),
-    zb_messaging(dongle, i_timer_factory),
+    dongle(timerbuilder, this),
+    zb_messaging(dongle, timerbuilder),
     zb_nwk(dongle, zb_messaging),
     gp_sink(dongle, zb_messaging),
     obsGPSourceIdCallback(nullptr)
@@ -220,6 +220,11 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 
     this->setState(CLibEzspState::SINK_BUSY);
     return true;
+}
+
+void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
+{
+    this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);
 }
 
 void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
