@@ -203,10 +203,12 @@ bool CAppDemo::extractMultiClusterReport( std::vector<uint8_t > payload )
     return validBuffer;
 }
 
-void CAppDemo::handleRxGpdId( uint32_t &i_gpd_id )
+void CAppDemo::handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status )
 {
     // Start DEBUG
-    clogI << "CAppDemo::handleRxGpdId : 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id) << std::endl;
+    clogI << "CAppDemo::handleRxGpdId sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id)  <<
+                ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << unsigned(i_gpd_key_status) << 
+                std::endl ;
     // Stop DEBUG
 }
 

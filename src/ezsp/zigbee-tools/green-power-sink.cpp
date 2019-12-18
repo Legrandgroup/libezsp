@@ -215,7 +215,13 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
             // build gpf frame from ezsp rx message
             CGpFrame gpf = CGpFrame(i_msg_receive);
-            notifyObserversOfRxGpdId(gpf.getSourceId());
+
+            // notify
+            CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
+            if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
+            else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
+            else{ l_key_status = CGpdKeyStatus::Undefined; }
+            notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
 
             clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
                 ", link : " << unsigned(i_msg_receive.at(1)) <<
@@ -602,9 +608,9 @@ void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
     }
 }
 
-void CGpSink::notifyObserversOfRxGpdId( uint32_t i_gpd_id ) {
+void CGpSink::notifyObserversOfRxGpdId( uint32_t i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) {
     for(auto observer : this->observers) {
-        observer->handleRxGpdId( i_gpd_id );
+        observer->handleRxGpdId( i_gpd_id, i_gpd_known, i_gpd_key_status );
     }
 }
 

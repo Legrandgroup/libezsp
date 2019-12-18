@@ -131,7 +131,7 @@ private:
      *
      * @param i_gpd_id The received GPD Id frame
      */
-    void notifyObserversOfRxGpdId( uint32_t i_gpd_id );
+    void notifyObserversOfRxGpdId( uint32_t i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
     /**
      * @brief Private utility function to manage error state
