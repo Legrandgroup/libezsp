@@ -9,7 +9,7 @@
 #include "spi/TimerBuilder.h"
 #include "spi/UartDriverBuilder.h"
 #include "spi/Logger.h"
-#include "CAppDemo.h"
+#include "ezsp/lib-ezsp-main.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>
@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CAppDemo app(uartDriver, timerFactory, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CLibEzspMain lib_main(uartDriver, timerFactory);
 
 #ifdef USE_CPPTHREADS
     std::string line;
