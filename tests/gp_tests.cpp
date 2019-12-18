@@ -140,6 +140,7 @@ TEST_GROUP(gp_tests) {
 	} while(0)
 
 
+#define GPD_KEY { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa }
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	TimerBuilder timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
@@ -154,10 +155,10 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		FAILF("Failed opening mock serial port");
 	}
 
-	stageExpectedTransitions.push_back(std::vector<uint8_t>({0x1a, 0xc0, 0x38, 0xbc, 0x7e}));
-	std::vector<uint32_t> sourceIdList;
-	sourceIdList.push_back(0x0500001U);
-	CAppDemo app(uartDriver, timerFactory, true, 11, sourceIdList);	/* Force reset the network channel to 11  */
+	stageExpectedTransitions.push_back({0x1a, 0xc0, 0x38, 0xbc, 0x7e});
+	std::vector<CGpDevice> GPDList;
+	GPDList.push_back(CGpDevice(0x0500001U, GPD_KEY));
+	CAppDemo app(uartDriver, timerFactory, true, false, 0, true, 11, false, GPDList);	/* Force reset the network channel to 11  */
 
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);
