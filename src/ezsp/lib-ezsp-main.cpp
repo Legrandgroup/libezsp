@@ -55,7 +55,7 @@ void CLibEzspMain::setState( CLibEzspState i_new_state )
 
 CLibEzspState CLibEzspMain::getState() const
 {
-    return lib_state;
+    return this->lib_state;
 }
 
 void CLibEzspMain::dongleInit(uint8_t ezsp_version)
@@ -189,6 +189,39 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
     }
 }
 
+bool CLibEzspMain::clearAllGPDevices()
+{
+    if (this->getState() != CLibEzspState::READY)
+        return false;
+    if (!this->gp_sink.gpClearAllTables())
+        return false; /* Probably sink is not ready */
+
+    this->setState(CLibEzspState::SINK_BUSY);
+    return true;
+}
+
+bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
+{
+    if (this->getState() != CLibEzspState::READY)
+        return false;
+    if (!this->gp_sink.removeGpds(sourceIdList))
+        return false; /* Probably sink is not ready */
+
+    this->setState(CLibEzspState::SINK_BUSY);
+    return true;
+}
+
+bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
+{
+    if (this->getState() != CLibEzspState::READY)
+        return false;
+    if (!this->gp_sink.registerGpds(gpDevicesList))
+        return false; /* Probably sink is not ready */
+
+    this->setState(CLibEzspState::SINK_BUSY);
+    return true;
+}
+
 void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
 {
     //-- clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
@@ -201,17 +234,17 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
             if( (EMBER_NETWORK_UP == status) /*&& (false == reset_wanted)*/ )
             {
+                this->setState(CLibEzspState::SINK_BUSY);
                 /* Create a sink state change callback to find out when the sink is ready */
                 /* When the sink becomes ready, then libezsp will also switch to ready state */
                 auto clibobs = [this](ESinkState& i_state) -> bool
                 {
-                    clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << "\n";
-                    if (ESinkState::SINK_READY == i_state)
-                    {
-                        this->setState(CLibEzspState::READY);
-                        return true;   /* Do not ask the caller to withdraw ourselves from the callback */
+                    clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
+                    if (ESinkState::SINK_READY == i_state) {
+                        if (this->getState() == CLibEzspState::SINK_BUSY)
+                            this->setState(CLibEzspState::READY);
                     }
-                    return true;
+                    return true;   /* Do not ask the caller to withdraw ourselves from the callback */
                 };
                 gp_sink.registerStateCallback(clibobs);
                 gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */

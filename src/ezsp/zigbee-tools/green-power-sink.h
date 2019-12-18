@@ -71,15 +71,19 @@ public:
      * @brief Add a green power device to this sink
      *
      * @param gpd list of gpds to add
+     *
+     * @return true if action can be done
      */
-    void registerGpds( const std::vector<CGpDevice> &gpd );
+    bool registerGpds( const std::vector<CGpDevice> &gpd );
 
     /**
      * @brief remove a green power device to this sink
      *
      * @param gpd list of gpds sourceId to remove
+     *
+     * @return true if action can be done
      */
-    void removeGpds( const std::vector<uint32_t> &gpd );
+    bool removeGpds( const std::vector<uint32_t> &gpd );
 
     /**
      * @brief authorize answer to channel request

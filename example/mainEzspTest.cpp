@@ -76,10 +76,11 @@ public:
                      bool gpRemoveAllDevices=false,
                      const std::vector<CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={}) :
+        initFailures(0),
         libEzsp(libEzspHandle),
         resetAtStartup(requestReset),
         openGpCommissionningAtStartup(openGpCommissionning),
-        authorizeChannelRequestAnswerTimeoutAtStartup(authorizeChannelRequestAnswerTimeout),
+        channelRequestAnswerTimeoutAtStartup(authorizeChannelRequestAnswerTimeout),
         openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
         channel(useNetworkChannel),
         removeAllGPDAtStartup(gpRemoveAllDevices),
@@ -98,14 +99,18 @@ public:
             if (this->currentState == MainState::INIT_PENDING && this->removeAllGPDAtStartup) {
                 clogI << "Applying remove all GPD action\n";
                 this->currentState = MainState::REMOVE_ALL_GPD;
-                libEzsp.getSink().gpClearAllTables();  /* FIXME: should not directly invoke methods on sink */
+                if (!libEzsp.clearAllGPDevices()) {
+                    clogE << "Failed clearing GP device list\n";
+                }
                 this->removeAllGPDAtStartup = false;
                 this->gpdRemoveList = std::vector<uint32_t>();
             }
             else if (this->currentState == MainState::INIT_PENDING && this->gpdRemoveList.size()) { /* If in REMOVE_ALL_GPD state, no need to remove specific GPs, we have already flushed all */
                 clogI << "Removing " << this->gpdRemoveList.size() << " provided GPDs\n";
                 this->currentState = MainState::REMOVE_SPECIFIC_GPD;
-                libEzsp.getSink().removeGpds(this->gpdRemoveList);  /* FIXME: should not directly invoke methods on sink */
+                if (!libEzsp.removeGPDevices(this->gpdRemoveList)) {
+                    clogE << "Failed removing GPDs\n";
+                }
                 this->gpdRemoveList = std::vector<uint32_t>();
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
@@ -114,7 +119,10 @@ public:
                      this->gpdAddList.size()) {    /* Once init is done or optional GPD remove has been done... */
                 clogI << "Adding " << this->gpdAddList.size() << " provided GPDs\n";
                 this->currentState = MainState::ADD_GPD;
-                libEzsp.getSink().registerGpds(gpdAddList);  /* FIXME: should not directly invoke methods on sink */
+                if (!libEzsp.addGPDevices(this->gpdAddList)) {
+                    clogE << "Failed adding GPDs\n";
+                }
+                this->gpdAddList = std::vector<CGpDevice>();
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
@@ -122,13 +130,22 @@ public:
                       this->currentState == MainState::ADD_GPD) &&
                      this->openGpCommissionningAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
                 clogI << "Opening GP commisionning session\n";
-                libEzsp.getSink().openCommissioningSession();  /* FIXME: should not directly invoke methods on sink */
+                clogE << "Not implemented yet\n";
+                exit(1);
+                //libEzsp.getSink().openCommissioningSession();  /* FIXME: should not directly invoke methods on sink */
             }
-            /*else if ((this->authorizeChRqstAnswerTimeout) {
-                libEzsp.getSink().authorizeAnswerToGpfChannelRqst(true);
+            else if ((this->currentState == MainState::INIT_PENDING ||
+                      this->currentState == MainState::REMOVE_ALL_GPD ||
+                      this->currentState == MainState::REMOVE_SPECIFIC_GPD ||
+                      this->currentState == MainState::ADD_GPD) &&
+                     this->channelRequestAnswerTimeoutAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
+                clogI << "Opening GP channel request window for " << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
+                clogE << "Not implemented yet\n";
+                // iflibEzsp.getSink().authorizeAnswerToGpfChannelRqst(true);
                 // start timer
-                timer->start( static_cast<uint16_t>(this->authorizeChRqstAnswerTimeout*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
-            }*/
+                //timer->start( static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000), [&](ITimer *ipTimer){this->chRqstTimeout();} );
+                exit(1);
+            }
             else {  /* No preparation step remains... we can swich to normal run state */
                 clogI << "Preparation steps finished... switching to run state\n";
                 this->currentState = MainState::RUN;
@@ -138,16 +155,17 @@ public:
 	}
 
 private:
+    unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
     CLibEzspMain& libEzsp;
     bool resetAtStartup;
     bool openGpCommissionningAtStartup;
-    uint8_t authorizeChannelRequestAnswerTimeoutAtStartup;
+    uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
     bool openZigbeeCommissionningAtStartup;
     unsigned int channel;
-    bool removeAllGPDAtStartup;
-    std::vector<CGpDevice> gpdAddList;
-    std::vector<uint32_t> gpdRemoveList;
-    MainState currentState;
+    bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
+    std::vector<CGpDevice> gpdAddList; /*!< The list of GP devices to add to the previous monitoring */
+    std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
+    MainState currentState; /*!< Our current state (for the internal state machine) */
 };
 
 int main(int argc, char **argv) {

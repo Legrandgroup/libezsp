@@ -106,22 +106,13 @@ void CGpSink::init()
 
 bool CGpSink::gpClearAllTables()
 {
-    bool lo_success = false;
+    if ( SINK_READY != sink_state )
+        return false;
 
-    if( SINK_READY == sink_state )
-    {
-        // sink table
-        dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);
-
-        // proxy table
-        proxy_table_index = 0;
-        dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
-
-        // set state
-        setSinkState(SINK_CLEAR_ALL);
-        lo_success = true;
-    }
-    return lo_success;
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);   /* Handle sink table */
+    dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{0});  /* Handle proxy table */
+    setSinkState(SINK_CLEAR_ALL);
+    return true;
 }
 
 void CGpSink::openCommissioningSession()
@@ -142,9 +133,12 @@ void CGpSink::closeCommissioningSession()
     setSinkState(SINK_READY);
 }
 
-void CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
+bool CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 {
-    // save offline information
+    if( SINK_READY != sink_state )
+        return false;
+
+    // Save GPD list in attributes for background processing
     gpds_to_register = gpd;
 
     // request sink table entry
@@ -152,11 +146,16 @@ void CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 
     // set state
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
+
+    return true;
 }
 
-void CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
+bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
 {
-    // save offline information
+    if( SINK_READY != sink_state )
+        return false;
+
+    // Save GPD list in attributes for background processing
     gpds_to_remove = gpd;
 
     // request sink table entry

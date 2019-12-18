@@ -27,6 +27,7 @@ enum class CLibEzspState {
     READY,              /*<! Library is ready to work and process new command */
     INIT_FAILED,        /*<! Initialisation failed, Library is out of work */
     INIT_IN_PROGRESS,   /*<! Initialisation in progress, no other command can be process */
+    SINK_BUSY,          /*<! Enclosed sink is busy executing commands */
 };
 
 /**
@@ -35,6 +36,7 @@ enum class CLibEzspState {
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
+    typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
     /**
      * @brief Default constructor with minimal args to initialize library
      *
@@ -47,8 +49,6 @@ public:
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
 
-    CGpSink& getSink() { return this->gp_sink; }
-
     /**
      * @brief Register callback on current library state
      *
@@ -57,12 +57,42 @@ public:
     void registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> newObsStateCallback);
 
     /**
-     * @brief Register callback to receive all incomming greenpower sourceId
+     * @brief Register callback to receive all incoming greenpower sourceId
      *
      * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
      */
-    void registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> newObsGPSourceIdCallback);
+    void registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback);
 
+    /**
+     * @brief Remove GP all devices from sink
+     *
+     * After invoking this method, we won't process any message from any GP devices (but registerGPSourceIdCallback will still be triggered)
+     *
+     * @return true if the action is going to be run in the background, false if the sink is busy
+     */
+    bool clearAllGPDevices();
+
+    /**
+     * @brief Remove a specific set of GP devices from sink (identified by their source ID value)
+     *
+     * After invoking this method, we won't process any message from the GP devices provided as argument (but registerGPSourceIdCallback will still be triggered)
+     *
+     * @param sourceIdList A list of source IDs to remove
+     *
+     * @return true if the action is going to be run in the background, false if the sink is busy
+     */
+    bool removeGPDevices(std::vector<uint32_t>& sourceIdList);
+
+    /**
+     * @brief Add a specific set of GP devices from sink (identified by their source ID value+key)
+     *
+     * After invoking this method, we will start taking into acocunt all messages from the GP devices provided as argument
+     *
+     * @param gpDevicesList A list of CGpDevice objects containing source ID + key pairs to add
+     *
+     * @return true if the action is going to be run in the background, false if the sink is busy
+     */
+    bool addGPDevices(const std::vector<CGpDevice> &gpDevicesList);
 
 private:
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
@@ -73,7 +103,7 @@ private:
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
-    std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 
     void setState( CLibEzspState i_new_state );
     CLibEzspState getState() const;
