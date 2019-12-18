@@ -53,6 +53,7 @@ public:
 
 
 private:
+    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle */
     CLibEzspState lib_state;    /*!< Current state for our internal state machine */
     std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     std::unique_ptr<ITimer> timer;  /*!< Internal timer */
@@ -63,6 +64,9 @@ private:
     std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 
     void setState( CLibEzspState i_new_state );
+    CLibEzspState getState() const;
+    void dongleInit( uint8_t ezsp_version);
+    void stackInit();
 
     /**
      * Oberver handlers
