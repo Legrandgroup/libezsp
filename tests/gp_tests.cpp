@@ -1,14 +1,15 @@
-#include "tests/TestHarness.h"
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
 
 #include "spi/mock-uart/MockUartDriver.h"
-#include "spi/TimerFactory.h"
+#include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
 
-#include "spi/GenericLogger.h"
-#include "example/CAppDemo.h"
+#include "spi/Logger.h"
+#include "ezsp/lib-ezsp-main.h"
+
+#include "TestHarness.h"
 
 /**
  * @brief Class implementing an observer that validates state transition during a sample ezsp in/out test sequence
@@ -144,7 +145,7 @@ TEST_GROUP(gp_tests) {
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	TimerBuilder timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	ConsoleLogger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
+	Logger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
 	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
@@ -158,7 +159,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	stageExpectedTransitions.push_back({0x1a, 0xc0, 0x38, 0xbc, 0x7e});
 	std::vector<CGpDevice> GPDList;
 	GPDList.push_back(CGpDevice(0x0500001U, GPD_KEY));
-	CAppDemo app(uartDriver, timerFactory, true, false, 0, true, 11, false, GPDList);	/* Force reset the network channel to 11  */
+	CLibEzspMain lib_main(&uartDriver, timerFactory);
 
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);

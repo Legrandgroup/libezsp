@@ -1,9 +1,9 @@
-#include "tests/TestHarness.h"
 #include <iostream>
 #include <iomanip>
 
 #include "spi/mock-uart/MockUartDriver.h"
 #include "spi/IAsyncDataInputObserver.h"
+#include "TestHarness.h"
 
 /**
  * @brief Write callback class to test the mock serial interface

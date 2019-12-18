@@ -13,6 +13,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include <functional>
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
@@ -34,6 +35,7 @@ public:
  */
 class MockUartDriver : public IUartDriver {
 public:
+	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback;
 	/**
 	 * @brief Default constructor
 	 *
@@ -44,7 +46,7 @@ public:
 	 *        std::chrono::duration<double, std::milli> delta: the elapsed time since last bytes were written (in ms)
 	 *        This callback should return 0 on success, errno on failure
 	 */
-	MockUartDriver(std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback = nullptr);
+	MockUartDriver(FWriteCallback onWriteCallback = nullptr);
 
 	/**
 	 * @brief Destructor
@@ -168,7 +170,7 @@ public:
 	std::recursive_mutex writeMutex;	/*!< Mutex to protect writes... recursive to allow the caller to grab the mutex for us */
 private:
 	GenericAsyncDataInputObservable *dataInputObservable;		/*!< The observable that will notify observers when new bytes are available on the UART */
-	std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback;	/*!< Callback invoked each time bytes are written to the emulated UART, this callback must have a prototype that takes 3 parameters: size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta. delta being the time since last bytes were written (in ms) */
+	FWriteCallback onWriteCallback;	/*!< Callback invoked each time bytes are written to the emulated UART, this callback must have a prototype that takes 3 parameters: size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta. delta being the time since last bytes were written (in ms) */
 	std::chrono::time_point<std::chrono::high_resolution_clock> lastWrittenBytesTimestamp;	/*!< A timestamp of the last bytes written */
 	size_t scheduledReadBytesCount;	/*!< The current size of the scheduled read bytes queue. Grab scheduledReadQueueMutex before accessing this  */
 	size_t deliveredReadBytesCount;	/*!< The cumulative number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer since the instanciation of this object. Grab scheduledReadQueueMutex before accessing this */
