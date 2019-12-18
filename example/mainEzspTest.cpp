@@ -13,6 +13,7 @@
 #include <getopt.h>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 //#include <iomanip>	// For debug
 #ifdef USE_RARITAN
@@ -203,6 +204,21 @@ int main(int argc, char **argv) {
     }
 
     CLibEzspMain lib_main(uartDriver, timerFactory);
+
+    // lib state observer
+	auto clibobs = [](CLibEzspState& i_state) {
+        clogI << "library state change: " << unsigned(i_state) << "\n";
+	};
+	lib_main.registerLibraryStateCallback(clibobs);
+
+    // lib incomming greenpower sourceId observer
+	auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
+        clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id)  <<
+                    ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << unsigned(i_gpd_key_status) <<
+                    std::endl ;	
+    };
+    lib_main.registerGPSourceIdCallback(cgpidobs);
+
 
 #ifdef USE_CPPTHREADS
     std::string line;
