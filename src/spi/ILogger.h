@@ -46,48 +46,6 @@
 #define plogD SINGLETON_LOGGER_CLASS_NAME::getInstance().debugLogger.log
 /** @} */
 
-/**
- * @defgroup ostream_compat_logger_macros ostream-style logging functions
- *
- * The defines below allow to log directly through an ostream
- *
- * clog is a default logger stream
- * clogE is the error logger stream
- * thus
- * @code
- * clogE << "Error!";
- * @endcode
- * is equivalent to
- * @code
- * plogE("Error");
- * @endcode
- *
- *  @{
- */
-
-/**
- * @brief Generic logger getter (uses debug level)
- */
-#define clog ILogger::loggerDebugStream
-/**
- * @brief Error logger getter
- */
-#define clogE ILogger::loggerErrorStream
-/**
- * @brief Warning logger getter
- */
-#define clogW ILogger::loggerWarningStream
-/**
- * @brief Info logger getter
- */
-#define clogI ILogger::loggerInfoStream
-/**
- * @brief Debug logger getter
- */
-#define clogD ILogger::loggerDebugStream
-/** @} */
-
-
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
  * The code below, however, will be include once, so it is "manually" protected from multiple includes using an #ifdef directive
  */
@@ -359,5 +317,46 @@ public:
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
+
+/**
+ * @defgroup ostream_compat_logger_macros ostream-style logging functions
+ *
+ * The defines below allow to log directly through an ostream
+ *
+ * clog is a default logger stream
+ * clogE is the error logger stream
+ * thus
+ * @code
+ * clogE << "Error!";
+ * @endcode
+ * is equivalent to
+ * @code
+ * plogE("Error");
+ * @endcode
+ *
+ *  @{
+ */
+
+/**
+ * @brief Generic logger getter (uses debug level)
+ */
+#define clog ILogger::loggerDebugStream
+/**
+ * @brief Error logger getter
+ */
+#define clogE ILogger::loggerErrorStream
+/**
+ * @brief Warning logger getter
+ */
+#define clogW ILogger::loggerWarningStream
+/**
+ * @brief Info logger getter
+ */
+#define clogI ILogger::loggerInfoStream
+/**
+ * @brief Debug logger getter
+ */
+#define clogD ILogger::loggerDebugStream
+/** @} */
 
 #endif // __ILOGGER_H__

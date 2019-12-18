@@ -1,3 +1,5 @@
+#ifndef __LOGGER_H__
+
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanLogger.h"
@@ -22,3 +24,5 @@ ILogger& Logger::getInstance()
 	}();
 	return *mInstance;
 }
+
+#endif
