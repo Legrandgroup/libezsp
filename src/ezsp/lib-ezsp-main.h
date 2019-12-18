@@ -53,14 +53,14 @@ public:
 
 
 private:
-    CLibEzspState lib_state;
-    std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Callback invoked each time library state change. */
-    std::unique_ptr<ITimer> timer;
-    CEzspDongle dongle;
-    CZigbeeMessaging zb_messaging;
-    CZigbeeNetworking zb_nwk;
-    CGpSink gp_sink;
-    std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback;	/*!< Callback invoked each a green power message is received. */
+    CLibEzspState lib_state;    /*!< Current state for our internal state machine */
+    std::function<void (CLibEzspState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
+    std::unique_ptr<ITimer> timer;  /*!< Internal timer */
+    CEzspDongle dongle; /*!< Dongle manipulation handler */
+    CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
+    CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
+    CGpSink gp_sink;    /*!< Internal Green Power sink utility */
+    std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 
     void setState( CLibEzspState i_new_state );
 
