@@ -56,7 +56,7 @@ static bool hexDigitToNibble(const char hDigit, uint8_t& byte) {
 }
 
 enum MainState {
-    INIT,
+    INIT_PENDING,
     REMOVE_ALL_GPD,
     REMOVE_SPECIFIC_GPD,
     ADD_GPD,
@@ -67,8 +67,23 @@ enum MainState {
 
 class MainStateMachine {
 public:
-    MainStateMachine() :
-        currentState(INIT) { }
+    MainStateMachine(bool requestReset=false,
+                     bool openGpCommissionning=false,
+                     uint8_t authorizeChannelRequestAnswerTimeout=0,
+                     bool openZigbeeCommissionning=false,
+                     unsigned int useNetworkChannel=11,
+                     bool gpRemoveAllDevices=false,
+                     const std::vector<CGpDevice>& gpDevicesToAdd={},
+                     const std::vector<uint32_t>& gpDevicesToRemove={}) :
+        resetAtStartup(requestReset),
+        openGpCommissionningAtStartup(openGpCommissionning),
+        authorizeChannelRequestAnswerTimeoutAtStartup(authorizeChannelRequestAnswerTimeout),
+        openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
+        channel(useNetworkChannel),
+        removeAllGPDAtStartup(gpRemoveAllDevices),
+        gpdAddList(gpDevicesToAdd),
+        gpdRemoveList(gpDevicesToRemove),
+        currentState(MainState::INIT_PENDING) { }
 
     MainStateMachine(const CGpSink&) = delete; /* No copy construction allowed */
 
@@ -76,9 +91,20 @@ public:
 
     void ezspStateChangeCallback(CLibEzspState& i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
+        if (this->currentState == MainState::INIT_PENDING) {
+            this->currentState = MainState::RUN;
+        }
 	}
 
 private:
+    bool resetAtStartup;
+    bool openGpCommissionningAtStartup;
+    uint8_t authorizeChannelRequestAnswerTimeoutAtStartup;
+    bool openZigbeeCommissionningAtStartup;
+    unsigned int channel;
+    bool removeAllGPDAtStartup;
+    const std::vector<CGpDevice> gpdAddList;
+    const std::vector<uint32_t> gpdRemoveList;
     MainState currentState;
 };
 
@@ -230,7 +256,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    MainStateMachine fsm;
+    MainStateMachine fsm((resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     CLibEzspMain lib_main(uartDriver, timerFactory);
 
     // lib state observer
