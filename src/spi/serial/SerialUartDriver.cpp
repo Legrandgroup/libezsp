@@ -4,10 +4,14 @@
  * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
-#include "SerialUartDriver.h"
-
 #include <exception>
+#ifdef DEBUG
+# include <iomanip>
+#endif
+
 #include "spi/ILogger.h"
+
+#include "SerialUartDriver.h"
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),
@@ -35,9 +39,11 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	this->m_serial_port.setStopbits(serial::stopbits_one);
 	this->m_serial_port.setPort(serialPortName);
 
-	/*serial::Timeout timeout;
+/*
+	serial::Timeout timeout;
 	timeout.read_timeout_constant = 1;
-	timeout.write_timeout_constant = -1;*/
+	timeout.write_timeout_constant = -1;
+*/
 	this->m_serial_port.setTimeout(serial::Timeout::max(), -1, 0, -1, 0);
 	//this->m_serial_port.flush();
 
@@ -60,6 +66,9 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 			while (this->m_read_thread_alive) {
 				try {
 					rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
+#ifdef DEBUG
+					clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
+#endif
 					if (this->m_data_input_observable)
 						this->m_data_input_observable->notifyObservers(readData, rdcnt);
 				}
@@ -78,6 +87,15 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 
 int SerialUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 	try {
+#ifdef DEBUG
+		std::stringstream msg;
+		msg << "Writing to serial port:";
+		for (size_t loop=0; loop<cnt; loop++)
+			msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
+			    +((static_cast<const unsigned char*>(buf))[loop]);
+		msg << "\n";
+		clogE << msg.str();
+#endif
 		writtenCnt =  this->m_serial_port.write(static_cast<const uint8_t*>(buf), cnt);
 	}
 	catch (std::exception& e) {
