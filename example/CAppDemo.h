@@ -41,8 +41,8 @@ public:
              bool openZigbeeCommissionning=false,
              unsigned int networkChannel=11,
              bool gpRemoveAllDevices=false,
-             const std::vector<uint32_t>& gpDevicesToRemove={},
-             const std::vector<CGpDevice>& gpDevicesList={});
+             const std::vector<CGpDevice>& gpDevicesList={},
+             const std::vector<uint32_t>& gpDevicesToRemove={});
 
     /**
      * Callback
@@ -78,6 +78,6 @@ private:
     bool openZigbeeCommissionningAtStartup;	/* Do we open the Zigbee network at dongle initialization? */
     unsigned int channel;	/*!< The Zigbee channel on which to create the network (if reset_wanted is set) */
     bool removeAllGpds;	/*!< A flag to remove all GP devices from monitoring */
-    std::vector<uint32_t> gpdToRemove;	/*!< A list of source IDs for GP devices to remove from previous monitoring */
     std::vector<CGpDevice> gpdList;	/*!< The list of GP devices we are monitoring */
+    std::vector<uint32_t> gpdToRemove;	/*!< A list of source IDs for GP devices to remove from previous monitoring */
 };

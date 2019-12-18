@@ -25,8 +25,8 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver,
         bool openZigbeeCommissionning,
         unsigned int networkChannel,
         bool gpRemoveAllDevices,
-        const std::vector<uint32_t>& gpDevicesToRemove,
-        const std::vector<CGpDevice>& gpDevicesToAdd) :
+        const std::vector<CGpDevice>& gpDevicesToAdd,
+        const std::vector<uint32_t>& gpDevicesToRemove) :
     timer(i_timer_factory.create()),
     dongle(i_timer_factory, this),
     zb_messaging(dongle, i_timer_factory),
@@ -41,8 +41,8 @@ CAppDemo::CAppDemo(IUartDriver *uartDriver,
     openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
     channel(networkChannel),
     removeAllGpds(gpRemoveAllDevices),
-    gpdToRemove(gpDevicesToRemove),
-    gpdList(gpDevicesToAdd)
+    gpdList(gpDevicesToAdd),
+    gpdToRemove(gpDevicesToRemove)
 {
     setAppState(APP_NOT_INIT);
     // uart
