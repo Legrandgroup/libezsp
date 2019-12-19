@@ -20,6 +20,7 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     zb_messaging(dongle, timerbuilder),
     zb_nwk(dongle, zb_messaging),
     gp_sink(dongle, zb_messaging),
+    obsGPFrameRecvCallback(nullptr),
     obsGPSourceIdCallback(nullptr)
 {
     setState(CLibEzspState::INIT_FAILED);
@@ -36,6 +37,11 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
 void CLibEzspMain::registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> newObsStateCallback)
 {
     this->obsStateCallback = newObsStateCallback;
+}
+
+void CLibEzspMain::registerGPFrameRecvCallback(std::function<void (CGpFrame &i_gpf)> newObsGPFrameRecvCallback)
+{
+    this->obsGPFrameRecvCallback = newObsGPFrameRecvCallback;
 }
 
 void CLibEzspMain::registerGPSourceIdCallback(std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> newObsGPSourceIdCallback)
@@ -229,7 +235,7 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
 
 void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
 {
-    //-- clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
+    clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 
     switch( i_cmd )
     {
@@ -290,8 +296,8 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             // Check if the wanted protocol version, and display stack version
             if( i_msg_receive.at(0) > exp_ezsp_version )
             {
-				clogW << "Current EZSP version supported by dongle (" << static_cast<int>(i_msg_receive.at(0)) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_version) << "). Re-initializing dongle\n";
-				exp_ezsp_version = i_msg_receive.at(0);
+                clogW << "Current EZSP version supported by dongle (" << static_cast<int>(i_msg_receive.at(0)) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_version) << "). Re-initializing dongle\n";
+                exp_ezsp_version = i_msg_receive.at(0);
                 dongleInit(exp_ezsp_version);
             }
             else if( i_msg_receive.at(0) == exp_ezsp_version )
@@ -382,41 +388,11 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
 {
     // Start DEBUG
     clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf << std::endl;
-    // Stop DEBUG
-    /*
-    switch(i_gpf.getCommandId())
+
+    if( nullptr != obsGPFrameRecvCallback )
     {
-        case 0xa0:	// Attribute reporting
-        {
-            uint8_t usedBytes;
-            if (!CAppDemo::extractClusterReport(i_gpf.getPayload(), usedBytes))
-            {
-                clogE << "Failed decoding attribute reporting payload: ";
-                for (auto i : i_gpf.getPayload())
-                {
-                    clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
-                }
-            }
-        }
-        break;
-
-        case 0xa2:	// Multi-Cluster Reporting
-        {
-            if (!CAppDemo::extractMultiClusterReport(i_gpf.getPayload()))
-            {
-                clogE << "Failed to fully decode multi-cluster reporting payload: ";
-                for (auto i : i_gpf.getPayload())
-                {
-                    clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
-                }
-            }
-        }
-        break;
-
-        default:
-            clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
-            break;
-    }*/
+        obsGPFrameRecvCallback(i_gpf);
+    }
 }
 
 void CLibEzspMain::handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status )
