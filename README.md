@@ -1,4 +1,5 @@
 # libezsp
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=libezsp&metric=alert_status)](https://sonarcloud.io/dashboard?id=libezsp)
 
 C++ library to send/receive wireless traffic to/from a UART transceiver using the EZSP protocol from Silicon Labs.
 The code for a sample demo program is located in `src/example/mainEzspTest.cpp` and `src/example/CAppDemo.cpp`, this code is designed to work seamlessly on Linux within or outside of the Raritan framework.

@@ -20,27 +20,33 @@ This allows dependency inversion paradigm, where the connector depends on the li
 
 ## SPI interface definition
 
-* spi/ITimer.h and spi/ITimerFactory.h
+* spi/ITimer.h and spi/ITimerBuilder.h
   
   Abstract interface to which must conforms implementations of classes that handle timed callbacks and factory classes that generate the associated ITimer objects
   
-  Concrete implementation in the raritan framework:
-  * spi/raritan/RaritanTimer.{h,cpp}
-  * spi/raritan/RaritanTimerFactory.{h,cpp}
+  Concrete Builder API for each framework:
+  * spi/TimerBuilder.{h,cpp}
+
+  Framework implementation:
+    Concrete implementation in the raritan framework:
+    * spi/raritan/RaritanTimer.{h,cpp}
   
-  Concrete implementation using C++ threads:
-  * spi/cppthreads/CppThreadsTimerFactory.{h,cpp}
-  * spi/cppthreads/CppThreadsTimer.{h,cpp}
+    Concrete implementation using C++ threads:
+    * spi/cppthreads/CppThreadsTimer.{h,cpp}
 
 * spi/ILogger.h
   
   Abstract interface to which must conforms implementations of classes that log debug/warning/error messages
   
-  Concrete implementation in the raritan framework:
-  * spi/raritan/RaritanLogger.{h,cpp}
+  Concrete Builder API for each framework:
+  * spi/Logger.{h,cpp}
+
+  Framework implementation:
+    Concrete implementation in the raritan framework:
+    * spi/raritan/RaritanLogger.{h,cpp}
   
-  Concrete implementation that outputs messages on the system console:
-  * spi/console/ConsoleLogger.{h,cpp}
+    Concrete implementation that outputs messages on the system console:
+    * spi/console/ConsoleLogger.{h,cpp}
 
 * spi/IAsyncDataInputObserver.h
   
@@ -51,14 +57,18 @@ This allows dependency inversion paradigm, where the connector depends on the li
   
   Abstract interface to which must conforms concrete implementations of classes that manipulate UARTs
   
-  Concrete implementation in the raritan framework:
-  * spi/raritan/RaritanUartDriver.{h,cpp}
+  Concrete Builder API for each framework:
+  * spi/UartDriver.{h,cpp}
+
+  Framework implementation:
+    Concrete implementation in the raritan framework:
+    * spi/raritan/RaritanUartDriver.{h,cpp}
   
-  Concrete implementation using libserial:
-  * spi/serial/SerialUartDriver.{h,cpp}
+    Concrete implementation using libserial:
+    * spi/serial/SerialUartDriver.{h,cpp}
   
-  Concrete implementation of a robotized emulated serial port for unit testing:
-  * spi/mock-uart/MockUartDriver.{h,cpp}
+    Concrete implementation of a robotized emulated serial port for unit testing:
+    * spi/mock-uart/MockUartDriver.{h,cpp}
 
 ## Generating doxygen documentation
 

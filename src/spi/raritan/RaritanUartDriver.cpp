@@ -6,9 +6,14 @@
 
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
-#include "../GenericLogger.h"
+#include "spi/GenericLogger.h"
 
-RaritanUartDriver::RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler) : m_eventLoop(eventLoop), m_sel_handle(), m_serial_tty(), m_data_input_observable(uartIncomingDataHandler) {
+RaritanUartDriver::RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler) :
+	m_eventSelector(*pp::SelectorSingleton::getInstance()),
+	m_sel_handle(),
+	m_serial_tty(),
+	m_data_input_observable(uartIncomingDataHandler)
+{
 }
 
 RaritanUartDriver::~RaritanUartDriver() {
@@ -43,10 +48,10 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 				PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
 			if (this->m_data_input_observable)
 				this->m_data_input_observable->notifyObservers(readData, rdcnt);
-			//this->m_eventLoop.getSelector().stopAsync();
+			//this->m_eventSelector.stopAsync();
 		}
 	};
-	this->m_eventLoop.getSelector().addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
+	this->m_eventSelector.addSelectable(m_sel_handle, m_serial_tty, POLLIN, cbin);
 	return PP_OK;
 }
 

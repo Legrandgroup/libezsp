@@ -9,8 +9,7 @@
 #include <pp/Selector.h>
 #include <pp/File.h>
 #include <pp/Tty.h>
-#include "../IUartDriver.h"
-#include "RaritanEventLoop.h"
+#include "spi/IUartDriver.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -35,7 +34,7 @@ public:
 	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
 	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
 	 */
-	RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+	RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
 
 	/**
 	 * @brief Copy constructor
@@ -92,7 +91,7 @@ public:
 	void close();
 
 private:
-	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::SelectableHandle m_sel_handle;	/*!< A handle on the selectable (to read bytes) */
 	pp::Tty::SPtr m_serial_tty;	/*!< The serial port file descriptor */
 	GenericAsyncDataInputObservable* m_data_input_observable;	/*!< The observable that will notify observers when new bytes are available on the UART */
