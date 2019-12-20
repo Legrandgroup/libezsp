@@ -111,8 +111,8 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
 {
   std::vector<uint8_t> lo_msg;
 
-  lo_msg.push_back(static_cast<uint8_t>((frmNum << 4) + ackNum) );
-  frmNum = (frmNum + 1) & 0x07;
+  lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
+  frmNum = (static_cast<uint8_t>(frmNum + 1)) & 0x07;
 
   if( 0 != i_data.at(0) )
   {
@@ -202,7 +202,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                   //-- clogD << "CAsh::decode DATA" << std::endl;
 
                   // update ack number, use incoming frm number
-                  ackNum = ((lo_msg.at(0)>>4&0x07) + 1) & 0x07;
+                  ackNum = ((static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1) & 0x07;
 
 
                   lo_msg = dataRandomise(lo_msg,1);
@@ -320,10 +320,10 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       for (auto i = 0; i < 8; i++) {
-          bool bit = ((i_msg.at(cnt) >> (7 - i) & 1) == 1);
-          bool c15 = ((lo_crc >> 15 & 1) == 1);
+          bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> (7 - i)) & 1) == 1);
+          bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);
-          if (c15 ^ bit) {
+          if (c15 == bit) {
               lo_crc ^= polynomial;
           }
       }
@@ -387,7 +387,7 @@ vector<uint8_t> CAsh::dataRandomise(vector<uint8_t> i_data, uint8_t start)
         if ((rand & 0x01) == 0) {
             rand = static_cast<uint8_t>(rand >> 1);
         } else {
-            rand = static_cast<uint8_t>((rand >> 1) ^ 0xb8);
+            rand = static_cast<uint8_t>((rand >> 1) ^ static_cast<uint8_t>(0xb8));
         }
     }
 
