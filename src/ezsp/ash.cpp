@@ -10,8 +10,6 @@
 
 #include "spi/ILogger.h"
 
-using namespace std;
-
 /**
  * The receive timeout settings - min/initial/max - defined in milliseconds
  */
@@ -50,13 +48,13 @@ void CAsh::Timeout(void)
     }
 }
 
-vector<uint8_t> CAsh::resetNCPFrame(void)
+std::vector<uint8_t> CAsh::resetNCPFrame(void)
 {
     ackNum = 0;
     frmNum = 0;
     seq_num = 0;
     stateConnected = false;
-    vector<uint8_t> lo_msg;
+    std::vector<uint8_t> lo_msg;
 
     timer->stop();
     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
@@ -314,14 +312,15 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
  * PRIVATE FUNCTION
  */
 
-uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
+uint16_t CAsh::computeCRC( std::vector<uint8_t> i_msg )
 {
   uint16_t lo_crc = 0xFFFF; // initial value
   uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
-      for (auto i = 0; i < 8; i++) {
-          bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> (7 - i)) & 1) == 1);
+      for (uint8_t i = 0; i < 8; i++) {
+		  
+          bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
           bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);
           if (c15 != bit) {
@@ -335,9 +334,9 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
   return lo_crc;
 }
 
-vector<uint8_t> CAsh::stuffedOutputData(vector<uint8_t> i_msg)
+std::vector<uint8_t> CAsh::stuffedOutputData(std::vector<uint8_t> i_msg)
 {
-  vector<uint8_t> lo_msg;
+  std::vector<uint8_t> lo_msg;
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       switch (i_msg.at(cnt)) {
@@ -376,19 +375,18 @@ vector<uint8_t> CAsh::stuffedOutputData(vector<uint8_t> i_msg)
   return lo_msg;
 }
 
-vector<uint8_t> CAsh::dataRandomise(vector<uint8_t> i_data, uint8_t start)
+std::vector<uint8_t> CAsh::dataRandomise(std::vector<uint8_t> i_data, uint8_t start)
 {
-    vector<uint8_t> lo_data;
+    std::vector<uint8_t> lo_data;
 
     // Randomise the data
     uint8_t rand = 0x42;
     for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
         lo_data.push_back(i_data.at(cnt) ^ rand);
 
-        if ((rand & 0x01) == 0) {
-            rand = static_cast<uint8_t>(rand >> 1);
-        } else {
-            rand = static_cast<uint8_t>((rand >> 1) ^ static_cast<uint8_t>(0xb8));
+		rand = static_cast<uint8_t>(rand >> 1);
+        if ((rand & 0x01) != 0) {
+            rand ^= 0xb8;
         }
     }
 
