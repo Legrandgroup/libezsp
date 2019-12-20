@@ -202,7 +202,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                   //-- clogD << "CAsh::decode DATA" << std::endl;
 
                   // update ack number, use incoming frm number
-                  ackNum = ((static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1) & 0x07;
+                  ackNum = (static_cast<uint8_t>(static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1) & 0x07;
 
 
                   lo_msg = dataRandomise(lo_msg,1);
@@ -323,7 +323,7 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
           bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> (7 - i)) & 1) == 1);
           bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);
-          if (c15 == bit) {
+          if (c15 != bit) {
               lo_crc ^= polynomial;
           }
       }
