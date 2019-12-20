@@ -4,12 +4,13 @@
 
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 
 CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
+	uartIncomingDataHandler(new GenericAsyncDataInputObservable()),
 	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
-	uartIncomingDataHandler(),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers()
@@ -60,8 +61,8 @@ bool CEzspDongle::open(IUartDriver *ipUart)
             else
             {
                 clogD << "CEzspDongle::open register uart !" << std::endl;
-                uartIncomingDataHandler.registerObserver(this);
-                pUart->setIncomingDataHandler(&uartIncomingDataHandler);
+                uartIncomingDataHandler->registerObserver(this);
+                pUart->setIncomingDataHandler(uartIncomingDataHandler);
             }
         }
     }
@@ -69,8 +70,8 @@ bool CEzspDongle::open(IUartDriver *ipUart)
     return lo_success;
 }
 
-void CEzspDongle::ashCbInfo( EAshInfo info ) 
-{ 
+void CEzspDongle::ashCbInfo( EAshInfo info )
+{
     clogD <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
 
     if( ASH_STATE_CHANGE == info )
@@ -119,7 +120,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
             // extract ezsp command
             EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
             // keep only payload
-            lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
+            lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);
 
             // notify observers
             notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
@@ -138,7 +139,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 				}
             }
         }
-    }    
+    }
 }
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload )
@@ -147,7 +148,7 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
 
     l_msg.i_cmd = i_cmd;
     l_msg.payload = i_cmd_payload;
-    
+
     sendingMsgQueue.push(l_msg);
 
     sendNextMsg();
@@ -155,9 +156,9 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
 
 
 /**
- * 
+ *
  * PRIVATE
- * 
+ *
  */
 
 void CEzspDongle::sendNextMsg( void )

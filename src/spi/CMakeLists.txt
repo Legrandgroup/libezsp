@@ -19,7 +19,7 @@ endif()
 
 if(USE_CPPTHREADS)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CPPTHREADS")
-list(APPEND ezspspi_SOURCES 
+list(APPEND ezspspi_SOURCES
 	console/ConsoleLogger.cpp
 	cppthreads/CppThreadsTimer.cpp
 )
@@ -39,7 +39,7 @@ endif()
 
 if(USE_RARITAN)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_RARITAN")
-list(APPEND ezspspi_SOURCES 
+list(APPEND ezspspi_SOURCES
 	raritan/RaritanUartDriver.cpp
 	raritan/RaritanTimer.cpp
 	raritan/RaritanLogger.cpp
@@ -47,6 +47,7 @@ list(APPEND ezspspi_SOURCES
 endif()
 
 add_library(ezspspi ${ezspspi_SOURCES})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezspspi PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(ezspspi PUBLIC ${ezspspi_LIBS})
 

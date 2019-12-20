@@ -12,6 +12,8 @@
 #include <iomanip>	// For std::setw etc.
 #include <iostream>	// FIXME: for std::cerr during debug
 
+#include "spi/GenericAsyncDataInputObservable.h"
+
 MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
 delay(scheduleDelay),
 byteBuffer(scheduledBuffer) { }
@@ -45,7 +47,7 @@ int MockUartDriver::open(const std::string& serialPortName, unsigned int baudRat
 }
 
 int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
-	
+
 	std::lock_guard<std::recursive_mutex> lock(writeMutex);	/* Make sure there is only one simultaneous executiong of method write() */
 	std::chrono::time_point<std::chrono::high_resolution_clock> now =  std::chrono::high_resolution_clock::now();
 	int result = 0;
@@ -68,7 +70,7 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 }
 
 void MockUartDriver::scheduleIncomingChunk(const MockUartScheduledByteDelivery& scheduledBytes) {
-	
+
 	bool frontSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
 	{
 		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);

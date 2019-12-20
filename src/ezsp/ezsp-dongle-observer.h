@@ -7,7 +7,7 @@
 #pragma once
 
 #include <vector>
-#include "ezsp-protocol/ezsp-enum.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 
 class CEzspDongleObserver {
 public:
@@ -20,7 +20,7 @@ public:
      * @param i_state The new dongle state
      */
     virtual void handleDongleState( EDongleState i_state ) = 0;
-    
+
     /**
      * @brief Method that will be invoked on incoming EZSP messages
      *

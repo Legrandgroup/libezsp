@@ -4,7 +4,7 @@
  * @brief Represents data for a green power device
  */
 
-#include "green-power-device.h"
+#include <ezsp/zbmessage/green-power-device.h>
 
 CGpDevice::CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key) :
     source_id(i_source_id),

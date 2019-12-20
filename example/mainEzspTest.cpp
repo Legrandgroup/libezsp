@@ -1,6 +1,6 @@
 /**
  * @file mainEzspTest.cpp
- * 
+ *
  * @brief Sample code for driving a dongle in the Raritan framework or using libserialcpp
  */
 
@@ -9,7 +9,6 @@
 #include "spi/TimerBuilder.h"
 #include "spi/UartDriverBuilder.h"
 #include "spi/Logger.h"
-#include "ezsp/lib-ezsp-main.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>
@@ -19,6 +18,8 @@
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
+
+#include <ezsp/ezsp.h>
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -70,7 +71,7 @@ public:
     /**
      * Constructor
      *
-     * @param timerFactoryUtil An ITimerFactory used to generate ITimer objects
+     * @param timerBuilder An TimerBuilder used to generate ITimer objects
      * @param libEzspHandle The CLibEzspMain instance to use to communicate with the EZSP adapter
      * @param requestReset Do we reset the network and re-create a new one?
      * @param openGpCommissionning Do we open GP commissionning at dongle initialization?
@@ -82,7 +83,7 @@ public:
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
      */
     MainStateMachine(TimerBuilder& timerBuilder,
-                     CLibEzspMain& libEzspHandle,
+                     CEzsp& libEzspHandle,
                      bool requestReset=false,
                      bool openGpCommissionning=false,
                      uint8_t authorizeChannelRequestAnswerTimeout=0,
@@ -219,7 +220,7 @@ public:
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
     TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
-    CLibEzspMain& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
+    CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
     bool resetAtStartup;    /*!< Do we reset the network and re-create a new one? */
     bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
@@ -372,7 +373,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CLibEzspMain lib_main(uartDriver, timerFactory);
+    CEzsp lib_main(uartDriver, timerFactory);
     clogI << "Got timeout " << std::dec << static_cast<unsigned int>(authorizeChRqstAnswerTimeout) << "s\n";
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     auto clibobs = [&fsm, &lib_main](CLibEzspState& i_state) {

@@ -4,12 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <set>
 
-#include "ezsp-protocol/ezsp-enum.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
+#include "spi/IAsyncDataInputObserver.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
@@ -67,7 +69,7 @@ private:
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;
-    GenericAsyncDataInputObservable uartIncomingDataHandler;
+    GenericAsyncDataInputObservable *uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
 

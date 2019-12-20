@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include "GenericAsyncDataInputObservable.h"
 #include <string>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+class GenericAsyncDataInputObservable;
 
 /**
  * @brief Abstract class that manipulate UARTs

@@ -11,6 +11,8 @@
 
 #include "spi/ILogger.h"
 
+#include "spi/GenericAsyncDataInputObservable.h"
+
 #include "SerialUartDriver.h"
 
 SerialUartDriver::SerialUartDriver() :

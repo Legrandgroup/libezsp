@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+class GenericAsyncDataInputObservable;
+
 /**
  * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
  */

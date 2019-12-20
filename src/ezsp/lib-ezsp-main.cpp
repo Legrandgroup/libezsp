@@ -45,7 +45,7 @@ void CLibEzspMain::registerGPSourceIdCallback(std::function<void (uint32_t &i_gp
 
 
 void CLibEzspMain::setState( CLibEzspState i_new_state )
-{ 
+{
     this->lib_state = i_new_state;
     if( nullptr != obsStateCallback )
     {

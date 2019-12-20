@@ -1,5 +1,6 @@
 set(ezsp_SOURCES)
 list(APPEND ezsp_SOURCES
+	ezsp.cpp
 	lib-ezsp-main.cpp
 	ash.cpp
 	custom-aes.cpp
@@ -31,7 +32,7 @@ list(APPEND ezsp_SOURCES
 )
 
 add_library(ezsp ${ezsp_SOURCES})
-include_directories(${PROJECT_SOURCE_DIR}/src/ezsp ${PROJECT_SOURCE_DIR}/src/spi)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 install(TARGETS ezsp DESTINATION lib)

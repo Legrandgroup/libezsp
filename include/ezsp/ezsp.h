@@ -1,43 +1,35 @@
-/**
- * @file lib-ezsp-main.h
- *
- * @brief Main entry point for drive lib ezsp
- */
+#ifndef __EZSP_H__
+#define __EZSP_H__
 
-#pragma once
+#include <functional>
+#include <memory>
+#include <vector>
 
-#include "spi/IUartDriver.h"
-#include "spi/TimerBuilder.h"
-
-#include <ezsp/ezsp.h>
-#include "ezsp/lib-ezsp-main.h"
-#include "ezsp/ezsp-dongle.h"
-#include "ezsp/zigbee-tools/zigbee-networking.h"
-#include "ezsp/zigbee-tools/zigbee-messaging.h"
-#include "ezsp/zigbee-tools/green-power-sink.h"
+#include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
-
-#include "ezsp/ezsp-dongle-observer.h"
-#include "ezsp/green-power-observer.h"
-
+#include <spi/TimerBuilder.h>
 
 /**
- * @brief Class allowing sending commands and receiving events from an EZSP interface
+ * @brief Possible states of the state machine used by class CLibEzspMain
  */
-class CLibEzspMain : public CEzspDongleObserver, CGpObserver
-{
-public:
-    /**
-     * @brief Default constructor with minimal args to initialize library
-     *
-     * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
-     * @param i_timer_factory An ITimerFactory used to generate ITimer objects
-     */
-    CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &timerbuilder );
+enum class CLibEzspState {
+    NO_INIT,            /*<! Initial state, before starting. */
+    READY,              /*<! Library is ready to work and process new command */
+    INIT_FAILED,        /*<! Initialisation failed, Library is out of work */
+    INIT_IN_PROGRESS,   /*<! Initialisation in progress, no other command can be process */
+    SINK_BUSY,          /*<! Enclosed sink is busy executing commands */
+};
 
-    CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
-    CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
-    CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */
+class CLibEzspMain;
+class TimerBuilder;
+class IUartDriver;
+
+typedef std::function<void (CLibEzspState& i_state)> FGStateCallback;
+typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
+
+class CEzsp{
+public:
+	CEzsp(IUartDriver *uartDriver, TimerBuilder &timerbuilder);
 
     /**
      * @brief Register callback on current library state
@@ -92,26 +84,7 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
 private:
-    TimerBuilder &timerbuilder;
-    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
-    CLibEzspState lib_state;    /*!< Current state for our internal state machine */
-    FGStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
-    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
-    CEzspDongle dongle; /*!< Dongle manipulation handler */
-    CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
-    CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
-    CGpSink gp_sink;    /*!< Internal Green Power sink utility */
-
-    void setState( CLibEzspState i_new_state );
-    CLibEzspState getState() const;
-    void dongleInit( uint8_t ezsp_version);
-    void stackInit();
-
-    /**
-     * Oberver handlers
-     */
-    void handleDongleState( EDongleState i_state );
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
-    void handleRxGpFrame( CGpFrame &i_gpf );
-    void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
+	CLibEzspMain *main;
 };
+
+#endif

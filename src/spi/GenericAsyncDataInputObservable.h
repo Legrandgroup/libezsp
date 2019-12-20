@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 #include <cstdlib>	// For size_t
-#include "IAsyncDataInputObserver.h"
+#include "spi/IAsyncDataInputObserver.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

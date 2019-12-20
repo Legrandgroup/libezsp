@@ -17,7 +17,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ember-gp-sink-table-options-field.h"
+#include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
 
 CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
         application_id(),
@@ -69,7 +69,7 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint16_t i_options) :
 
 /**
  * @brief constructor from commissioning payload option and more
- * 
+ *
  * @param i_application_id : application id meeans way to address gpd : by sourceid or ieee
  * @param i_gpdf_commissioning_payload : permit to know capability of gpd
  */
