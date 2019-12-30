@@ -36,6 +36,11 @@ class CEmberNetworkParameters
         CEmberNetworkParameters(const CEmberNetworkParameters& other);
 
         /**
+         * @brief Default destructor
+         */
+        virtual ~CEmberNetworkParameters() {}
+
+        /**
          * @brief Assignment operator
          * @param other The object to assign to the lhs
          *

@@ -33,6 +33,11 @@ public:
   CAPSFrame(const CAPSFrame& other);
 
   /**
+   * @brief Default destructor
+   */
+  virtual ~CAPSFrame(){}
+
+  /**
    * @brief Assignment operator
    * @param other The object to assign to the lhs
    *

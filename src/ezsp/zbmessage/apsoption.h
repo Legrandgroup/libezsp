@@ -16,7 +16,15 @@ void swap(CAPSOption& first, CAPSOption& second); /* Declaration before qualifyi
 class CAPSOption
 {
 public:
+  /**
+   * @brief Default constructor
+   */
   CAPSOption();
+
+  /**
+   * @brief Default destructor
+   */
+  virtual ~CAPSOption(){}
 
   /**
    * @brief Copy constructor

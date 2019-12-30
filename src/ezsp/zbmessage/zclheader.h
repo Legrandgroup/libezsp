@@ -30,7 +30,15 @@ void swap(CZCLHeader& first, CZCLHeader& second); /* Declaration before qualifyi
 class CZCLHeader
 {
 public:
+  /**
+   * @brief Default constructor
+   */
   CZCLHeader();
+
+  /**
+   * @brief Default destructor
+   */
+  virtual ~CZCLHeader() {}
 
   /**
    * @brief Constructor from a buffer

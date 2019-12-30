@@ -44,6 +44,11 @@ public:
   CZCLFrameControl();
 
   /**
+   * @brief Default destructor
+   */
+  virtual ~CZCLFrameControl() {}
+
+  /**
    * @brief Construction from a byte
    *
    * @param i_byte The byte to construct from
