@@ -60,7 +60,7 @@ std::vector<uint8_t> CProcessGpPairingParam::get() const
     lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkNetworkAddress>>8)&0xFF));
     // The group ID of the GP Sink.
     lo_out.push_back(static_cast<uint8_t>(sinkGroupId&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((sinkGroupId>>8)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkGroupId>>8)&0xFF));
     // The alias assigned to the GPD.
     lo_out.push_back(static_cast<uint8_t>(assignedAlias&0xFF));
     lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(assignedAlias>>8)&0xFF));

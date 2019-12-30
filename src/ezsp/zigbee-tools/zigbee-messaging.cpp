@@ -45,7 +45,7 @@ void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, ui
 
     // destination
     l_payload.push_back( static_cast<uint8_t>(i_destination&0xFF) );
-    l_payload.push_back( static_cast<uint8_t>((i_destination>>8)&0xFF) );
+    l_payload.push_back( static_cast<uint8_t>(static_cast<uint8_t>(i_destination>>8)&0xFF) );
 
     // aps frame
     std::vector<uint8_t> v_tmp = i_msg.GetAps().GetEmberAPS();
@@ -82,7 +82,7 @@ void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg )
 
     // destination
     l_payload.push_back( static_cast<uint8_t>(i_node_id&0xFF) );
-    l_payload.push_back( static_cast<uint8_t>((i_node_id>>8)&0xFF) );
+    l_payload.push_back( static_cast<uint8_t>(static_cast<uint8_t>(i_node_id>>8)&0xFF) );
 
     // aps frame
     std::vector<uint8_t> v_tmp = i_msg.GetAps().GetEmberAPS();

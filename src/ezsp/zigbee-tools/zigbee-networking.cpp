@@ -72,7 +72,7 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
             {
                 CEmberNetworkParameters payload;
 
-                payload.setPanId(static_cast<uint16_t>(std::rand()&0xFFFF));
+                payload.setPanId(static_cast<uint16_t>(std::rand())&0xFFFF);
                 payload.setRadioTxPower(3);
                 payload.setRadioChannel(form_channel);
                 payload.setJoinMethod(EMBER_USE_MAC_ASSOCIATION);
@@ -209,7 +209,7 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     payload.clear();
     // security bitmask
     payload.push_back(static_cast<uint8_t>(l_security_bitmak&0xFF));
-    payload.push_back(static_cast<uint8_t>((l_security_bitmak>>8)&0xFF));
+    payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(l_security_bitmak>>8)&0xFF));
     // tc key : HA Key
     payload.push_back(0x5A);
     payload.push_back(0x69);
@@ -228,7 +228,7 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     payload.push_back(0x30);
     payload.push_back(0x39);
     //  network key : random
-    for( uint8_t loop=0; loop<16; loop++ ){ payload.push_back( static_cast<uint8_t>(std::rand()&0xFF )); }
+    for( uint8_t loop=0; loop<16; loop++ ){ payload.push_back( static_cast<uint8_t>(std::rand())&0xFF); }
     // key sequence number
     payload.push_back(0U);
     // eui trust center : not used

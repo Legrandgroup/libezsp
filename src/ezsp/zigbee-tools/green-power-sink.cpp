@@ -853,7 +853,7 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
     l_payload.push_back(i_handle);
     // How long to keep the GPDF in the TX Queue.
     l_payload.push_back(static_cast<uint8_t>(i_life_time_ms&0xFF));
-    l_payload.push_back(static_cast<uint8_t>((i_life_time_ms>>8)&0xFF));
+    l_payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(i_life_time_ms>>8)&0xFF));
 
     clogI << "EZSP_D_GP_SEND\n";
     dongle.sendCommand(EZSP_D_GP_SEND,l_payload);

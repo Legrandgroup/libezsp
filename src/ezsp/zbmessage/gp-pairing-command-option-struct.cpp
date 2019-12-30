@@ -33,7 +33,7 @@ uint32_t CGpPairingCommandOption::get() const
         lo_option |= static_cast<uint32_t>(add_sink)<<3;
         lo_option |= static_cast<uint32_t>(remove_gpd)<<4;
         lo_option |= static_cast<uint32_t>(communication_mode)<<5;
-        lo_option |= static_cast<uint32_t>(gpd_fixed<<7);
+        lo_option |= static_cast<uint32_t>(gpd_fixed)<<7;
         lo_option |= static_cast<uint32_t>(gpd_mac_seq_number_capability)<<8;
         lo_option |= static_cast<uint32_t>(security_level)<<9;
         lo_option |= static_cast<uint32_t>(security_key_type)<<11;
