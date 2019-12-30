@@ -18,10 +18,10 @@ CZCLFrameControl::CZCLFrameControl() :
 
 CZCLFrameControl::CZCLFrameControl(uint8_t i_byte) :
 	frame_type(static_cast<EZCLFrameCtrlFrameType>(i_byte & 0x03)),
-	manufacturer_code_present((i_byte>>2) & 0x01),
-	direction(static_cast<EZCLFrameCtrlDirection>((i_byte>>3) & 0x01)),
-	disable_default_rsp((i_byte>>4) & 0x01),
-	software_code(static_cast<EZCLFrameCtrlSoftwareCode>((i_byte>>5) & 0x07))
+	manufacturer_code_present(static_cast<uint8_t>(i_byte>>2) & 0x01),
+	direction(static_cast<EZCLFrameCtrlDirection>(static_cast<uint8_t>(i_byte>>3) & 0x01)),
+	disable_default_rsp(static_cast<uint8_t>(i_byte>>4) & 0x01),
+	software_code(static_cast<EZCLFrameCtrlSoftwareCode>(static_cast<uint8_t>(i_byte>>5) & 0x07))
 {
 }
 

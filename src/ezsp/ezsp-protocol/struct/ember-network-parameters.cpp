@@ -86,7 +86,7 @@ std::vector<uint8_t> CEmberNetworkParameters::getRaw() const
 
     // nwk_manager_id
     raw_message.push_back(static_cast<uint8_t>(nwk_manager_id&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((nwk_manager_id>>8)&0xFF));
+    raw_message.push_back(static_cast<uint8_t>(static_cast<uint8_t>(nwk_manager_id>>8)&0xFF));
 
     // nwk_update_id
     raw_message.push_back(static_cast<uint8_t>(nwk_update_id));

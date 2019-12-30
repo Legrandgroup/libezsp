@@ -58,7 +58,7 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const CEmberGpSinkTableOption& 
  */
 CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint16_t i_options) :
         application_id(static_cast<uint8_t>(i_options&0x7)),
-        communication_mode(static_cast<uint8_t>((i_options>>3)&0x3)),
+        communication_mode((static_cast<uint8_t>(i_options>>3)&0x3)),
         sequence_number_capabilities((i_options&0x20)!=0),
         rx_on_capability((i_options&0x40)!=0),
         fixed_location((i_options&0x80)!=0),
@@ -115,13 +115,13 @@ CEmberGpSinkTableOption& CEmberGpSinkTableOption::operator=( CEmberGpSinkTableOp
 uint16_t CEmberGpSinkTableOption::get() const
 {
     uint16_t o_options;
-    o_options = static_cast<uint16_t>(application_id<<0);
-    o_options |= static_cast<uint16_t>(communication_mode<<3);
-    o_options |= static_cast<uint16_t>(sequence_number_capabilities<<5);
-    o_options |= static_cast<uint16_t>(rx_on_capability<<6);
-    o_options |= static_cast<uint16_t>(fixed_location<<7);
-    o_options |= static_cast<uint16_t>(assigned_alias<<8);
-    o_options |= static_cast<uint16_t>(security_use<<9);
+    o_options = static_cast<uint16_t>(static_cast<uint16_t>(application_id) << 0);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(communication_mode) << 3);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(sequence_number_capabilities) << 5);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(rx_on_capability) << 6);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(fixed_location) << 7);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(assigned_alias) << 8);
+    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(security_use) << 9);
 
     return o_options;
 }
