@@ -37,7 +37,7 @@ enum class CLibEzspState {
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
-    typedef std::function<void (CLibEzspState& i_state)> FStateCallback;    /*!< Callback type for method registerLibraryStateCallback() */
+    typedef std::function<void (CLibEzspState i_state)> FStateCallback;    /*!< Callback type for method registerLibraryStateCallback() */
     typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
     typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback; /*!< Callback type for method registerGPSourceIdCallback() */
 
@@ -56,7 +56,7 @@ public:
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsStateCallback A callback function of type void func(CLibEzspState& i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
+     * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
     void registerLibraryStateCallback(FStateCallback newObsStateCallback);
 

@@ -34,7 +34,7 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     }
 }
 
-void CLibEzspMain::registerLibraryStateCallback(std::function<void (CLibEzspState& i_state)> newObsStateCallback)
+void CLibEzspMain::registerLibraryStateCallback(std::function<void (CLibEzspState i_state)> newObsStateCallback)
 {
     this->obsStateCallback = newObsStateCallback;
 }
