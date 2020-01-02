@@ -55,7 +55,7 @@ uint8_t CZCLFrameControl::GetFrmCtrlByte() const
  * This method is a friend of CZCLFrameControl class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CZCLFrameControl& first, CZCLFrameControl& second) /* nothrow */
+void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

@@ -108,7 +108,7 @@ std::vector<uint8_t> CZigBeeMsg::Get( void ) const
  * This method is a friend of CZigBeeMsg class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CZigBeeMsg& first, CZigBeeMsg& second) /* nothrow */
+void swap(CZigBeeMsg& first, CZigBeeMsg& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

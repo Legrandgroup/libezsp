@@ -169,7 +169,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanInfoLogger& first, RaritanInfoLogger& second);
+	friend void (::swap)(RaritanInfoLogger& first, RaritanInfoLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -210,7 +210,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanDebugLogger& first, RaritanDebugLogger& second);
+	friend void (::swap)(RaritanDebugLogger& first, RaritanDebugLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator

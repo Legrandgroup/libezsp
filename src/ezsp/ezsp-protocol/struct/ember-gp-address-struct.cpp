@@ -33,7 +33,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
  * This method is a friend of CEmberGpAddressStruct class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothrow */
+void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

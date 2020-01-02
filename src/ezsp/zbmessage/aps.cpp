@@ -98,7 +98,7 @@ void CAPSFrame::SetEmberAPS(std::vector<uint8_t> i_data )
  * This method is a friend of CAPSFrame class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CAPSFrame& first, CAPSFrame& second) /* nothrow */
+void swap(CAPSFrame& first, CAPSFrame& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

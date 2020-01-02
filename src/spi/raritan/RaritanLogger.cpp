@@ -36,7 +36,7 @@ int RaritanGenericLogger::overflow(int c) {
  * This method is a friend of RaritanErrorLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) /* nothrow */ {
+void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -90,7 +90,7 @@ void RaritanWarningLogger::log(const char *format, ...) {
  * This method is a friend of RaritanInfoLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) /* nothrow */ {
+void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);

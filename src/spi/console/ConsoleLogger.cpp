@@ -39,7 +39,7 @@ int ConsoleStderrLogger::overflow(int c) {
  * This method is a friend of ConsoleStderrLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) /* nothrow */ {
+void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -83,7 +83,7 @@ int ConsoleStdoutLogger::overflow(int c) {
  * This method is a friend of ConsoleStdoutLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) /* nothrow */ {
+void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);

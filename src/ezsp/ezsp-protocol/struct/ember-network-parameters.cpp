@@ -127,7 +127,7 @@ std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data
  * This method is a friend of CEmberNetworkParameters class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) /* nothrow */
+void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept /* nothrow */
 {
     using std::swap;	// Enable ADL
 

@@ -25,7 +25,7 @@
 
 
 class CZCLHeader; /* Forward declaration */
-void swap(CZCLHeader& first, CZCLHeader& second); /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
+void swap(CZCLHeader& first, CZCLHeader& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
 
 class CZCLHeader
 {
@@ -72,7 +72,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZCLHeader& first, CZCLHeader& second);
+  friend void (::swap)(CZCLHeader& first, CZCLHeader& second) noexcept;
 
   // high level
 

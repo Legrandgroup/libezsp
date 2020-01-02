@@ -78,7 +78,7 @@ class CEmberGpSinkTableEntryStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second);
+        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept;
 
         /**
          * @brief Assignment operator

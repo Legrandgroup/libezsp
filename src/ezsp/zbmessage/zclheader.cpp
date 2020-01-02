@@ -135,7 +135,7 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
  * This method is a friend of CZigBeeMsg class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CZCLHeader& first, CZCLHeader& second) /* nothrow */
+void swap(CZCLHeader& first, CZCLHeader& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

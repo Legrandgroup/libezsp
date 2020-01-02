@@ -33,7 +33,7 @@ typedef enum
 }EZCLFrameCtrlSoftwareCode;
 
 class CZCLFrameControl; /* Forward declaration */
-void swap(CZCLFrameControl& first, CZCLFrameControl& second); /* Declaration before qualifying ::swap() as friend for class CZCLFrameControl */
+void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZCLFrameControl */
 
 class CZCLFrameControl
 {
@@ -79,7 +79,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZCLFrameControl& first, CZCLFrameControl& second);
+  friend void (::swap)(CZCLFrameControl& first, CZCLFrameControl& second) noexcept;
 
   // direction
   EZCLFrameCtrlDirection GetDirection(void) const { return direction; }

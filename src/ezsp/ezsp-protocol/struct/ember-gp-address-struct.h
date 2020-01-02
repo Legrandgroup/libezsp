@@ -46,7 +46,7 @@ class CEmberGpAddressStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second);
+        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) noexcept;
 
         /**
          * @brief Assignment operator

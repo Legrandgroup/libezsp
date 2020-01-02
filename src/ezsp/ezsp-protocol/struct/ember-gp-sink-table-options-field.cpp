@@ -89,7 +89,7 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint8_t i_application_id,
  * This method is a friend of CEmberGpSinkTableOption class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) /* nothrow */
+void swap(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

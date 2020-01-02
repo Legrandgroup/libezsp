@@ -81,7 +81,7 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTab
  * This method is a friend of CEmberGpSinkTableEntryStruct class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) /* nothrow */
+void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

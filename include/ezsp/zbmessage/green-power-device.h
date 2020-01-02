@@ -47,7 +47,7 @@ class CGpDevice
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CGpDevice& first, CGpDevice& second);
+        friend void (::swap)(CGpDevice& first, CGpDevice& second) noexcept;
 
         /**
          * @brief Retrieve the source id for this device

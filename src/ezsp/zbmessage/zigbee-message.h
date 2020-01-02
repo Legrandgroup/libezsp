@@ -18,7 +18,7 @@
 #endif // USE_RARITAN
 
 class CZigBeeMsg; /* Forward declaration */
-void swap(CZigBeeMsg& first, CZigBeeMsg& second); /* Declaration before qualifying ::swap() as friend for class CZigBeeMsg */
+void swap(CZigBeeMsg& first, CZigBeeMsg& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZigBeeMsg */
 
 // ZCL attribute types
 enum {
@@ -114,7 +114,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZigBeeMsg& first, CZigBeeMsg& second);
+  friend void (::swap)(CZigBeeMsg& first, CZigBeeMsg& second) noexcept;
 
   // high level
 

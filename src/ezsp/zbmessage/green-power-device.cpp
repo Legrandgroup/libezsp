@@ -18,7 +18,7 @@ CGpDevice::CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key) :
  * This method is a friend of CEmberGpSinkTableOption class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CGpDevice& first, CGpDevice& second) /* nothrow */
+void swap(CGpDevice& first, CGpDevice& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

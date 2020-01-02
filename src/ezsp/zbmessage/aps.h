@@ -18,7 +18,7 @@
 #endif // USE_RARITAN
 
 class CAPSFrame; /* Forward declaration */
-void swap(CAPSFrame& first, CAPSFrame& second); /* Declaration before qualifying ::swap() as friend for class CAPSFrame */
+void swap(CAPSFrame& first, CAPSFrame& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CAPSFrame */
 
 class CAPSFrame
 {
@@ -54,7 +54,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CAPSFrame& first, CAPSFrame& second);
+  friend void (::swap)(CAPSFrame& first, CAPSFrame& second) noexcept;
 
   // hight level
   /**

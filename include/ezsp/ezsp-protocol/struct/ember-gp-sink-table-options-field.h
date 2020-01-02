@@ -56,7 +56,7 @@ class CEmberGpSinkTableOption
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second);
+        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept;
 
         /**
          * @brief raw constructor

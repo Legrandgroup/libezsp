@@ -52,7 +52,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(ConsoleStderrLogger& first, ConsoleStderrLogger& second);
+	friend void (::swap)(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -113,7 +113,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second);
+	friend void (::swap)(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator

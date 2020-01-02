@@ -8,7 +8,7 @@
 #include <string>
 
 class CEmberNetworkParameters; /* Forward declaration */
-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second); /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
+void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
 
 class CEmberNetworkParameters
 {
@@ -57,7 +57,7 @@ class CEmberNetworkParameters
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberNetworkParameters& first, CEmberNetworkParameters& second);
+        friend void (::swap)(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept;
 
         std::vector<uint8_t> getRaw() const;
 
