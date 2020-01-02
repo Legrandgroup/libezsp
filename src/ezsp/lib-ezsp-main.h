@@ -23,13 +23,17 @@
  * @brief Possible states of the state machine used by class CLibEzspMain
  */
 enum class CLibEzspState { 
-    NO_INIT,                            /*<! Initial state, before starting. */
+    UNINITIALIZED,                      /*<! Initial state, before starting. */
     READY,                              /*<! Library is ready to work and process new command */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    INIT_IN_PROGRESS,                   /*<! Initialisation in progress, no other command can be process */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! Switch to bootloader is pending */
+    FW_UPGRADE,                         /*<! Firmware upgrade is in progress */
 };
+
+/**
+ * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
+ */
+enum class CLibEzspInternalState;
 
 /**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
@@ -120,7 +124,7 @@ public:
 private:
     TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
-    CLibEzspState lib_state;    /*!< Current state for our internal state machine */
+    CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
     FStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
@@ -129,8 +133,8 @@ private:
     FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 
-    void setState( CLibEzspState i_new_state );
-    CLibEzspState getState() const;
+    void setState( CLibEzspInternalState i_new_state );
+    CLibEzspInternalState getState() const;
     void dongleInit( uint8_t ezsp_version);
     void stackInit();
 

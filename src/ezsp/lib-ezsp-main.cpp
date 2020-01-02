@@ -10,11 +10,30 @@
 #include <sstream>
 #include <iomanip>
 
+/**
+ * @brief Internal states for CLibEzspMain
+ * 
+ * @note Not all these states are exposed to the outside, only CLibEzspState states (and the related changes) are notified
+ *       A mapping between CLibEzspInternalState and CLibEzspMain can be found in method setState()
+ */
+enum class CLibEzspInternalState {
+    UNINITIALIZED,                      /*<! Initial state, before starting */
+    WAIT_DONGLE_READY,
+    GETTING_EZSP_VERSION,               /*<! Inside the EZSP version matching loop */
+    READY,                              /*<! Library is ready to work and process new command */
+    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
+    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
+    SWITCHING_TO_BOOTLOADER_MODE,       /*<! Switch to bootloader is pending */
+    IN_BOOTLOADER_MENU,                 /*<! We are on the bootloader menu prompt */
+    IN_XMODEM_XFR,                      /*<! We are currently doing X-Modem transfer */
+    SWITCHING_TO_EZSP_MODE,             /*<! Switch to EZSP mode (normal mode) is pending */
+};
+
 CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
         TimerBuilder &timerbuilder) :
     timerbuilder(timerbuilder),
     exp_ezsp_version(6),
-    lib_state(CLibEzspState::NO_INIT),
+    lib_state(CLibEzspInternalState::UNINITIALIZED),
     obsStateCallback(nullptr),
     dongle(timerbuilder, this),
     zb_messaging(dongle, timerbuilder),
@@ -23,14 +42,12 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     obsGPFrameRecvCallback(nullptr),
     obsGPSourceIdCallback(nullptr)
 {
-    setState(CLibEzspState::INIT_FAILED);
-
     // uart
     if( dongle.open(uartDriver) ) {
         clogI << "CLibEzspMain open success !" << std::endl;
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
-        setState(CLibEzspState::INIT_IN_PROGRESS);
+        setState(CLibEzspInternalState::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */
     }
 }
 
@@ -50,23 +67,44 @@ void CLibEzspMain::registerGPSourceIdCallback(std::function<void (uint32_t &i_gp
 }
 
 
-void CLibEzspMain::setState( CLibEzspState i_new_state )
+void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
 { 
     this->lib_state = i_new_state;
     if( nullptr != obsStateCallback )
     {
-        obsStateCallback(i_new_state);
+        switch (i_new_state)
+        {
+            case CLibEzspInternalState::UNINITIALIZED:
+            case CLibEzspInternalState::WAIT_DONGLE_READY:
+            case CLibEzspInternalState::GETTING_EZSP_VERSION:
+                obsStateCallback(CLibEzspState::UNINITIALIZED);
+                break;
+            case CLibEzspInternalState::READY:
+                obsStateCallback(CLibEzspState::READY);
+                break;
+            case CLibEzspInternalState::INIT_FAILED:
+                obsStateCallback(CLibEzspState::INIT_FAILED);
+                break;
+            case CLibEzspInternalState::SINK_BUSY:
+                obsStateCallback(CLibEzspState::SINK_BUSY);
+                break;
+            default:
+                clogE << "Internal state can not be translated to public state\n";
+        }
     }
 }
 
-CLibEzspState CLibEzspMain::getState() const
+CLibEzspInternalState CLibEzspMain::getState() const
 {
     return this->lib_state;
 }
 
 void CLibEzspMain::dongleInit(uint8_t ezsp_version)
 {
-    // first request stack protocol version
+    /* First request stack protocol version using the related EZSP command
+     * Note that we really need to send this specific command just after a reset because until we do, the dongle will refuse most other commands anyway
+     */
+    setState(CLibEzspInternalState::GETTING_EZSP_VERSION);
     dongle.sendCommand(EEzspCmd::EZSP_VERSION, std::vector<uint8_t>({ezsp_version}));
 }
 
@@ -183,7 +221,7 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
     if( DONGLE_READY == i_state )
     {
-        if( CLibEzspState::INIT_IN_PROGRESS == getState() )
+        if( CLibEzspInternalState::WAIT_DONGLE_READY == getState() )
         {
             dongleInit(this->exp_ezsp_version);
         }
@@ -197,34 +235,34 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
 bool CLibEzspMain::clearAllGPDevices()
 {
-    if (this->getState() != CLibEzspState::READY)
+    if (this->getState() != CLibEzspInternalState::READY)
         return false;
     if (!this->gp_sink.gpClearAllTables())
         return false; /* Probably sink is not ready */
 
-    this->setState(CLibEzspState::SINK_BUSY);
+    this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 
 bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 {
-    if (this->getState() != CLibEzspState::READY)
+    if (this->getState() != CLibEzspInternalState::READY)
         return false;
     if (!this->gp_sink.removeGpds(sourceIdList))
         return false; /* Probably sink is not ready */
 
-    this->setState(CLibEzspState::SINK_BUSY);
+    this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 
 bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
-    if (this->getState() != CLibEzspState::READY)
+    if (this->getState() != CLibEzspInternalState::READY)
         return false;
     if (!this->gp_sink.registerGpds(gpDevicesList))
         return false; /* Probably sink is not ready */
 
-    this->setState(CLibEzspState::SINK_BUSY);
+    this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 
@@ -236,7 +274,7 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
 void CLibEzspMain::jumpToBootloader()
 {
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
-    this->setState(CLibEzspState::SWITCH_TO_BOOTLOADER_IN_PROGRESS);
+    this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
     clogE << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
     /* Should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage handler below, and only then, issue a carriage return to get the bootloader prompt */
 }
@@ -253,15 +291,15 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
             if( (EMBER_NETWORK_UP == status) /*&& (false == reset_wanted)*/ )
             {
-                this->setState(CLibEzspState::SINK_BUSY);
+                this->setState(CLibEzspInternalState::SINK_BUSY);
                 /* Create a sink state change callback to find out when the sink is ready */
                 /* When the sink becomes ready, then libezsp will also switch to ready state */
                 auto clibobs = [this](ESinkState& i_state) -> bool
                 {
                     clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
                     if (ESinkState::SINK_READY == i_state) {
-                        if (this->getState() == CLibEzspState::SINK_BUSY)
-                            this->setState(CLibEzspState::READY);
+                        if (this->getState() == CLibEzspInternalState::SINK_BUSY)
+                            this->setState(CLibEzspInternalState::READY);
                     }
                     return true;   /* Do not ask the caller to withdraw ourselves from the callback */
                 };
@@ -379,7 +417,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
 
         case EZSP_LAUNCH_STANDALONE_BOOTLOADER:
         {
-            if( this->getState() == CLibEzspState::SWITCH_TO_BOOTLOADER_IN_PROGRESS )
+            if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
             {
                 clogD << "Bootloader prompt mode is going to start now\n";
                 this->dongle.setBootloaderMode(true);
