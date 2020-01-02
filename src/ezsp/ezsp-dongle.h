@@ -63,7 +63,15 @@ public:
 	bool registerObserver(CEzspDongleObserver* observer);
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
+    /**
+     * @brief Switch dongle read/write behaviour to bootloader or EZSP/ASH mode
+     *
+     * @param dongleInBootloaderMode If true, the dongle will consider that the adapter is in bootloader prompt mode, if false, it will consider that the adapter is in EZSP/ASH command mode
+     */
+    void setBootloaderMode(bool dongleInBootloaderMode);
+
 private:
+    bool bootloaderMode;    /*!< Is the adapter in bootloader prompt mode? If false, we are in applicative EZSP/ASH mode */
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;

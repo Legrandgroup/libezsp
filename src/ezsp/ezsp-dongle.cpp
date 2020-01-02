@@ -4,8 +4,11 @@
 
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
+#include <sstream>
+#include <iomanip>
 
 CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+	bootloaderMode(false),
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
 	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
@@ -100,43 +103,69 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
     while( !li_data.empty())
     {
-        lo_msg = ash->decode(li_data);
-
-        // send incomming mesage to application
-        if( !lo_msg.empty() )
+        if(! bootloaderMode )
         {
-            size_t l_size;
+            lo_msg = ash->decode(li_data);
 
-            //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
-
-            // send ack
-            std::vector<uint8_t> l_msg = ash->AckFrame();
-            pUart->write(l_size, l_msg.data(), l_msg.size());
-
-            // call handler
-
-            // ezsp
-            // extract ezsp command
-            EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
-            // keep only payload
-            lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);    
-
-            // notify observers
-            notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
-
-
-            // response to a sending command
-            if( !sendingMsgQueue.empty() )
+            // send incomming mesage to application
+            if( !lo_msg.empty() )
             {
-				sMsg l_msgQ = sendingMsgQueue.front();
-				if( l_msgQ.i_cmd == l_cmd ) // Bug
-				{
-					// remove waiting message and send next
-					sendingMsgQueue.pop();
-					wait_rsp = false;
-					sendNextMsg();
-				}
+                size_t l_size;
+
+                //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
+
+                // send ack
+                std::vector<uint8_t> l_msg = ash->AckFrame();
+                pUart->write(l_size, l_msg.data(), l_msg.size());
+
+                // call handler
+
+                // ezsp
+                // extract ezsp command
+                EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
+                // keep only payload
+                lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);
+
+                // notify observers
+                notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
+
+
+                // response to a sending command
+                if( !sendingMsgQueue.empty() )
+                {
+                    sMsg l_msgQ = sendingMsgQueue.front();
+                    if( l_msgQ.i_cmd == l_cmd ) // Bug
+                    {
+                        // remove waiting message and send next
+                        sendingMsgQueue.pop();
+                        wait_rsp = false;
+                        sendNextMsg();
+                    }
+                }
             }
+        }
+        else
+        {
+            /* No ash decoding in bootloader mode */
+            /* At start of bootloader, we are expecting a prompt:
+Gecko Bootloader v1.6.0
+1. upload gbl
+2. run
+3. ebl info
+BL >
+begin upload
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+*/
+#if 1   /* Just dump the byte stream */
+            std::stringstream msg;
+            msg << "Read buffer from serial port:";
+            for (size_t loop=0; loop<li_data.size(); loop++)
+                msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
+                    +(static_cast<const unsigned char>(li_data[loop]));
+            msg << "\n";
+            clogE << msg.str();
+#endif
+            li_data.clear();
         }
     }    
 }
@@ -162,6 +191,11 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
 
 void CEzspDongle::sendNextMsg( void )
 {
+    if (bootloaderMode)
+    {
+        clogW << "Refusing to send EZSP messages in bootloader mode\n";
+        return; /* No EZSP message can be sent in bootloader mode */
+    }
     if( (!wait_rsp) && (!sendingMsgQueue.empty()) )
     {
         sMsg l_msg = sendingMsgQueue.front();
@@ -202,6 +236,11 @@ bool CEzspDongle::registerObserver(CEzspDongleObserver* observer)
 bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
 {
     return static_cast<bool>(this->observers.erase(observer));
+}
+
+void CEzspDongle::setBootloaderMode(bool dongleInBootloaderMode)
+{
+    this->bootloaderMode = dongleInBootloaderMode;
 }
 
 void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {

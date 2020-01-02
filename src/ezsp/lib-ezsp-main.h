@@ -23,11 +23,12 @@
  * @brief Possible states of the state machine used by class CLibEzspMain
  */
 enum class CLibEzspState { 
-    NO_INIT,            /*<! Initial state, before starting. */
-    READY,              /*<! Library is ready to work and process new command */
-    INIT_FAILED,        /*<! Initialisation failed, Library is out of work */
-    INIT_IN_PROGRESS,   /*<! Initialisation in progress, no other command can be process */
-    SINK_BUSY,          /*<! Enclosed sink is busy executing commands */
+    NO_INIT,                            /*<! Initial state, before starting. */
+    READY,                              /*<! Library is ready to work and process new command */
+    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
+    INIT_IN_PROGRESS,                   /*<! Initialisation in progress, no other command can be process */
+    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
+    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! Switch to bootloader is pending */
 };
 
 /**
@@ -110,6 +111,11 @@ public:
      * @param allowed Set to true if answers to request channel is allowed
      */
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
+
+    /**
+     * @brief Switch the embedded firmware to booloader prompt mode
+     */
+    void jumpToBootloader();
 
 private:
     TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
