@@ -12,6 +12,7 @@ CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
 	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
+	blp(new CBootloaderPrompt(nullptr, timer_factory)),
 	uartIncomingDataHandler(),
 	sendingMsgQueue(),
 	wait_rsp(false),
@@ -27,6 +28,7 @@ CEzspDongle::~CEzspDongle()
 {
     pUart = nullptr;
     delete ash;
+    delete blp;
 }
 
 bool CEzspDongle::open(IUartDriver *ipUart)
@@ -156,16 +158,7 @@ BL >
 begin upload
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 */
-#if 1   /* Just dump the byte stream */
-            std::stringstream msg;
-            msg << "Read buffer from serial port:";
-            for (size_t loop=0; loop<li_data.size(); loop++)
-                msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
-                    +(static_cast<const unsigned char>(li_data[loop]));
-            msg << "\n";
-            clogE << msg.str();
-#endif
-            li_data.clear();
+            blp->decode(li_data);
         }
     }    
 }
@@ -240,6 +233,14 @@ bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
 
 void CEzspDongle::setBootloaderMode(bool dongleInBootloaderMode)
 {
+    if (!bootloaderMode && dongleInBootloaderMode)
+    {
+        /* We are requesting to switch to bootloader parsing mode, while we were previously in EZSP parsing mode */
+        this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
+            return this->pUart->write(writtenCnt, buf, cnt);
+        });    /* Allow the blp object to write to the serial port via our own pUart attribute */
+        this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
+    }
     this->bootloaderMode = dongleInBootloaderMode;
 }
 

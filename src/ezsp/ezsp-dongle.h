@@ -8,6 +8,7 @@
 #include "ezsp-protocol/ezsp-enum.h"
 #include "spi/IUartDriver.h"
 #include "ash.h"
+#include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
 
@@ -75,6 +76,7 @@ private:
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;
+    CBootloaderPrompt *blp;
     GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;

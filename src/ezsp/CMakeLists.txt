@@ -2,6 +2,7 @@ set(ezsp_SOURCES)
 list(APPEND ezsp_SOURCES
 	lib-ezsp-main.cpp
 	ash.cpp
+	bootloader-prompt.cpp
 	custom-aes.cpp
 	ezsp-dongle.cpp
 	ezsp-protocol/ezsp-enum.cpp
