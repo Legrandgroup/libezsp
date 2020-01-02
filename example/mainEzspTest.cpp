@@ -234,7 +234,7 @@ private:
 };
 
 int main(int argc, char **argv) {
-    IUartDriver *uartDriver = UartDriverBuilder::getUartDriver();
+    IUartDriver *uartDriver = UartDriverBuilder::getInstance();
     TimerBuilder timerFactory;
     int optionIndex=0;
     int c;

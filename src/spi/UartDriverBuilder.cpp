@@ -1,24 +1,36 @@
 #include "spi/UartDriverBuilder.h"
 
+//#define DYNAMIC_ALLOCATION
+
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanUartDriver.h"
+typedef RaritanUartDriver UartDriver;
 #endif
 #ifdef USE_SERIALCPP
 #include "spi/serial/SerialUartDriver.h"
+typedef SerialUartDriver UartDriver;
 #endif
 #ifdef USE_MOCKSERIAL
 #include "spi/mock-uart/MockUartDriver.h"
+typedef MockUartDriver UartDriver;
 #endif
 
-IUartDriver *UartDriverBuilder::getUartDriver()
+
+IUartDriverInstance UartDriverBuilder::mInstance;
+
+IUartDriver *UartDriverBuilder::getInstance()
 {
-#ifdef USE_RARITAN
-	return new RaritanUartDriver();
-#endif
-#ifdef USE_SERIALCPP
-	return new SerialUartDriver();
-#endif
-#ifdef USE_MOCKSERIAL
-	return new MockUartDriver();
+#ifndef DYNAMIC_ALLOCATION
+	static UartDriver uartDriver;
+
+	static bool static_init = []()->bool {
+		mInstance = IUartDriverInstance(&uartDriver, [](IUartDriver* ptr)
+        {
+        });
+		return true;
+	}();
+	return mInstance.get();
+#else //DYNAMIC_ALLOCATION
+	return new UartDriver();
 #endif
 }

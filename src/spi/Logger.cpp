@@ -1,4 +1,4 @@
-#ifndef __LOGGER_H__
+#include <memory>
 
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
@@ -8,21 +8,26 @@
 #include "spi/console/ConsoleLogger.h"
 #endif
 
-ILogger *Logger::mInstance;
+Logger::Logger()
+{
+}
+
+std::unique_ptr<ILogger, std::function<void(ILogger*)>> Logger::mInstance;
 
 ILogger& Logger::getInstance()
 {
-
-	static bool static_init = []()->bool {
 #ifdef USE_RARITAN
-		mInstance = new RaritanLogger();
+	static RaritanLogger logger;
 #endif
 #ifdef USE_CPPTHREADS
-		mInstance = new ConsoleLogger();
+	static ConsoleLogger logger;
 #endif
+
+	static bool static_init = []()->bool {
+		mInstance = std::unique_ptr<ILogger, std::function<void(ILogger*)>>(&logger, [](ILogger* ptr)
+        {
+        });
 		return true;
 	}();
 	return *mInstance;
 }
-
-#endif
