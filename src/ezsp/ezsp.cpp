@@ -3,7 +3,12 @@
 
 CEzsp::CEzsp(IUartDriver *uartDriver, TimerBuilder &timerbuilder)
 {
+#ifndef DYNAMIC_ALLOCATION
+	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder);
+	main = &g_MainEzsp;
+#else
 	main = new CLibEzspMain(uartDriver, timerbuilder);
+#endif
 }
 
 void CEzsp::registerLibraryStateCallback(FGStateCallback newObsStateCallback)
