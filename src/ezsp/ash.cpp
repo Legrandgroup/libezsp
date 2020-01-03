@@ -13,16 +13,16 @@
 /**
  * The receive timeout settings - min/initial/max - defined in milliseconds
  */
-#define T_RX_ACK_MIN  400
-#define T_RX_ACK_INIT 1600
-#define T_RX_ACK_MAX 3200
+constexpr size_t T_RX_ACK_MIN = 400;
+constexpr size_t T_RX_ACK_INIT = 1600;
+constexpr size_t T_RX_ACK_MAX = 3200;
 
-#define ASH_CANCEL_BYTE     0x1A
-#define ASH_FLAG_BYTE       0x7E
-#define ASH_SUBSTITUTE_BYTE 0x18
-#define ASH_XON_BYTE        0x11
-#define ASH_OFF_BYTE        0x13
-#define ASH_TIMEOUT         -1
+constexpr uint8_t ASH_CANCEL_BYTE     = 0x1A;
+constexpr uint8_t ASH_FLAG_BYTE       = 0x7E;
+constexpr uint8_t ASH_SUBSTITUTE_BYTE = 0x18;
+constexpr uint8_t ASH_XON_BYTE        = 0x11;
+constexpr uint8_t ASH_OFF_BYTE        = 0x13;
+constexpr uint8_t ASH_TIMEOUT         = -1;
 
 #define ASH_MAX_LENGTH 131
 
