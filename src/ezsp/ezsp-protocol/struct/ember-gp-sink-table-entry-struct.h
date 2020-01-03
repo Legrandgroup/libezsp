@@ -105,7 +105,7 @@ class CEmberGpSinkTableEntryStruct
         EmberKeyData getGpdKey() const { return gpd_key; }
         uint8_t getGroupcastRadius() const { return groupcast_radius; }
         uint8_t getSecurityLevel() const { return security_options&0x03; }
-        uint8_t getSecurityKeyType() const { return (security_options>>2)&0x07; }
+        uint8_t getSecurityKeyType() const { return (static_cast<uint8_t>(security_options>>2)&0x07); }
         bool isActive() const { return status==0x01; }
 
         /**
