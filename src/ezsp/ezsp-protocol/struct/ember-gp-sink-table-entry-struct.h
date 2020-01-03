@@ -28,7 +28,7 @@ class CEmberGpSinkTableEntryStruct
         /**
          * @brief Default destructor
          */
-        virtual ~CEmberGpSinkTableEntryStruct() {}
+        virtual ~CEmberGpSinkTableEntryStruct() = default;
 
         /**
          * @brief Construction from a buffer

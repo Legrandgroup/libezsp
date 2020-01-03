@@ -16,7 +16,7 @@ namespace NSEZSP {
 class CGpObserver {
 public:
     CGpObserver() {};
-    virtual ~CGpObserver() {};
+    virtual ~CGpObserver() = default;
 
     /**
      * @brief Method that will be invoked on incoming valid green power frames

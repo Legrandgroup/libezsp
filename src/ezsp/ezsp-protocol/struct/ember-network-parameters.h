@@ -40,7 +40,7 @@ class CEmberNetworkParameters
         /**
          * @brief Default destructor
          */
-        virtual ~CEmberNetworkParameters() {}
+        virtual ~CEmberNetworkParameters() = default;
 
         /**
          * @brief Assignment operator

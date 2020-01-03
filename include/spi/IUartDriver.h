@@ -31,7 +31,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~IUartDriver() { }
+	virtual ~IUartDriver() = default;
 
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART

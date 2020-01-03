@@ -25,7 +25,7 @@ public:
   /**
    * @brief Default destructor
    */
-  virtual ~CAPSOption(){}
+  virtual ~CAPSOption() = default;
 
   /**
    * @brief Copy constructor

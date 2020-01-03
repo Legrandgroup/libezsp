@@ -18,7 +18,7 @@ typedef enum {
 class CAshCallback
 {
 public:
-    virtual ~CAshCallback() { }
+    virtual ~CAshCallback() = default;
     virtual void ashCbInfo( EAshInfo info ) = 0;
 };
 

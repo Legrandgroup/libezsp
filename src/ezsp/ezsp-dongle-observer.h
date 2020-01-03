@@ -14,7 +14,7 @@ namespace NSEZSP {
 class CEzspDongleObserver {
 public:
     CEzspDongleObserver() {};
-    virtual ~CEzspDongleObserver() {};
+    virtual ~CEzspDongleObserver() = default;
 
     /**
      * @brief Method that will be invoked on dongle state changes

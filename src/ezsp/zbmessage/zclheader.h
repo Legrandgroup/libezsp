@@ -39,7 +39,7 @@ public:
   /**
    * @brief Default destructor
    */
-  virtual ~CZCLHeader() {}
+  virtual ~CZCLHeader() = default;
 
   /**
    * @brief Constructor from a buffer

@@ -37,7 +37,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ITimer() { }
+	virtual ~ITimer() = default;
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time

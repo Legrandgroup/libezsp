@@ -30,7 +30,7 @@ public:
 	/**
 	 * @brief Default destructor
 	 */
-	virtual ~IAsyncDataInputObserver() {};
+	virtual ~IAsyncDataInputObserver() = default;
 
 	/**
 	 * @brief Handler invoked for each input data

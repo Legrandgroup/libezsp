@@ -48,7 +48,7 @@ public:
   /**
    * @brief Default destructor
    */
-  virtual ~CZCLFrameControl() {}
+  virtual ~CZCLFrameControl() = default;
 
   /**
    * @brief Construction from a byte

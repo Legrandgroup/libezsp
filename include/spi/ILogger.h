@@ -131,7 +131,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ILoggerStream() { }
+	virtual ~ILoggerStream() = default;
 
 	/**
 	 * @brief Mute this logger output (whatever max log level has been setup)
@@ -251,7 +251,7 @@ protected:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ILogger() { }
+	virtual ~ILogger() = default;
 
 	/**
 	 * @brief Copy constructor

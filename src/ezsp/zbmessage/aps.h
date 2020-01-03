@@ -37,7 +37,7 @@ public:
   /**
    * @brief Default destructor
    */
-  virtual ~CAPSFrame(){}
+  virtual ~CAPSFrame() = default;
 
   /**
    * @brief Assignment operator

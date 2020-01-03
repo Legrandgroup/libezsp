@@ -21,7 +21,7 @@ class CEmberGpAddressStruct
         /**
          * @brief Default destructor
          */
-        virtual ~CEmberGpAddressStruct() {}
+        virtual ~CEmberGpAddressStruct() = default;
 
         /**
          * @brief Copy constructor
