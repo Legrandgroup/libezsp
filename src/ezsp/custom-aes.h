@@ -67,16 +67,18 @@
 #define DPOLY   0x008d
 
 #define f1(x)   (x)
-#define f2(x)   ((x << 1) ^ (((x >> 7) & 1) * WPOLY))
-#define f4(x)   ((x << 2) ^ (((x >> 6) & 1) * WPOLY) ^ (((x >> 6) & 2) * WPOLY))
-#define f8(x)   ((x << 3) ^ (((x >> 5) & 1) * WPOLY) ^ (((x >> 5) & 2) * WPOLY) \
-                          ^ (((x >> 5) & 4) * WPOLY))
-#define d2(x)   (((x) >> 1) ^ ((x) & 1 ? DPOLY : 0))
+#define f2(x)   (((x) << 1) ^ ((((x) >> 7) & 1) * WPOLY))
+#define f4(x)   (((x) << 2) ^ ((((x) >> 6) & 1) * WPOLY) \
+                          ^ ((((x) >> 6) & 2) * WPOLY))
+#define f8(x)   (((x) << 3) ^ ((((x) >> 5) & 1) * WPOLY) \
+                          ^ ((((x) >> 5) & 2) * WPOLY) \
+                          ^ ((((x) >> 5) & 4) * WPOLY))
+#define d2(x)   ((((x)) >> 1) ^ (((x)) & 1 ? DPOLY : 0))
 
-#define f3(x)   (f2(x) ^ x)
-#define f9(x)   (f8(x) ^ x)
-#define fb(x)   (f8(x) ^ f2(x) ^ x)
-#define fd(x)   (f8(x) ^ f4(x) ^ x)
+#define f3(x)   (f2(x) ^ (x))
+#define f9(x)   (f8(x) ^ (x))
+#define fb(x)   (f8(x) ^ f2(x) ^ (x))
+#define fd(x)   (f8(x) ^ f4(x) ^ (x))
 #define fe(x)   (f8(x) ^ f4(x) ^ f2(x))
 
 #define s_box(x)     sbox[(x)]
@@ -88,8 +90,8 @@
 #define gfm_d(x)     gfmul_d[(x)]
 #define gfm_e(x)     gfmul_e[(x)]
 
-#define block_copy_nn(d, s, l)    memcpy(d, s, l)
-#define block_copy(d, s)          memcpy(d, s, N_BLOCK)
+#define block_copy_nn(d, s, l)    memcpy((d), (s), (l))
+#define block_copy(d, s)          memcpy((d), (s), N_BLOCK)
 
 #define sb_data(w) {    /* S Box data values */                            \
     w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), w(0xc5),\
