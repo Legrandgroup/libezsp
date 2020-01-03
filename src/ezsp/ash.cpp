@@ -145,6 +145,102 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   return lo_msg;
 }
 
+void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
+{
+  // Remove byte stuffing
+  bool escape = false;
+  for (auto &data : in_msg) {
+    if (escape) {
+      escape = false;
+      if ((data & 0x20) == 0) {
+        data = static_cast<uint8_t>(data + 0x20);
+      } else {
+        data = static_cast<uint8_t>(data & 0xDF);
+      }
+    } else if (data == 0x7D) {
+      escape = true;
+      continue;
+    }
+    lo_msg.push_back(data);
+  }
+}
+
+void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
+{
+  if ((lo_msg.at(0) & 0x80) == 0) {
+    // DATA;
+    //-- clogD << "CAsh::decode DATA" << std::endl;
+
+    // update ack number, use incoming frm number
+    ackNum = (static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1;
+    ackNum &= 0x07;
+
+
+    lo_msg = dataRandomise(lo_msg,1);
+
+    if( 0xFF == lo_msg.at(2) )
+    {
+    // WARNING for all frames except "VersionRequest" frame, add exteded header
+    lo_msg.erase(lo_msg.begin()+2);
+    lo_msg.erase(lo_msg.begin()+2);
+    }
+
+  }
+  else if ((lo_msg.at(0) & 0x60) == 0x00) {
+    // ACK;
+    //-- clogD << "CAsh::decode ACK" << std::endl;
+    //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
+    lo_msg.clear();
+    timer->stop();
+
+    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
+  }
+  else if ((lo_msg.at(0) & 0x60) == 0x20) {
+    // NAK;
+    frmNum = lo_msg.at(0) & 0x07;
+
+    clogD << "CAsh::decode NACK" << std::endl;
+
+    //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
+    lo_msg.clear();
+    timer->stop();
+
+    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
+  }
+  else if (lo_msg.at(0) == 0xC0) {
+    // RST;
+    lo_msg.clear();
+    //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
+    clogD << "CAsh::decode RST" << std::endl;
+  }
+  else if (lo_msg.at(0) == 0xC1) {
+    // RSTACK;
+    //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
+    clogD << "CAsh::decode RSTACK" << std::endl;
+
+    lo_msg.clear();
+    if( !stateConnected )
+    {
+    /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
+    timer->stop();
+    stateConnected = true;
+    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+    }
+  }
+  else if (lo_msg.at(0) == 0xC2) {
+    // ERROR;
+    //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
+    clogD << "CAsh::decode ERROR" << std::endl;
+    lo_msg.clear();
+  }
+  else
+  {
+    //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
+    clogD << "CAsh::decode UNKNOWN" << std::endl;
+    lo_msg.clear();
+  }
+}
+
 std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
 {
   bool inputError = false;
@@ -173,23 +269,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
           if (!inputError && !in_msg.empty()) {
             if( in_msg.size() >= 3 )
             {
-              // Remove byte stuffing
-              bool escape = false;
-              for (auto &data : in_msg) {
-                  if (escape) {
-                      escape = false;
-                      if ((data & 0x20) == 0) {
-                          data = static_cast<uint8_t>(data + 0x20);
-                      } else {
-                          data = static_cast<uint8_t>(data & 0xDF);
-                      }
-                  } else if (data == 0x7D) {
-                      escape = true;
-                      continue;
-                  }
-                  lo_msg.push_back(data);
-              }
-
+              clean_flag(lo_msg);
               // Check CRC
               if (computeCRC(lo_msg) != 0) {
                   lo_msg.clear();
@@ -197,78 +277,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
               }
               else
               {
-                if ((lo_msg.at(0) & 0x80) == 0) {
-                  // DATA;
-                  //-- clogD << "CAsh::decode DATA" << std::endl;
-
-                  // update ack number, use incoming frm number
-                  ackNum = (static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1;
-                  ackNum &= 0x07;
-
-
-                  lo_msg = dataRandomise(lo_msg,1);
-
-                  if( 0xFF == lo_msg.at(2) )
-                  {
-                    // WARNING for all frames except "VersionRequest" frame, add exteded header
-                    lo_msg.erase(lo_msg.begin()+2);
-                    lo_msg.erase(lo_msg.begin()+2);
-                  }
-
-                }
-                else if ((lo_msg.at(0) & 0x60) == 0x00) {
-                  // ACK;
-                  //-- clogD << "CAsh::decode ACK" << std::endl;
-                  //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
-                  lo_msg.clear();
-                  timer->stop();
-
-                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
-                }
-                else if ((lo_msg.at(0) & 0x60) == 0x20) {
-                  // NAK;
-                  frmNum = lo_msg.at(0) & 0x07;
-
-                  clogD << "CAsh::decode NACK" << std::endl;
-
-                  //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
-                  lo_msg.clear();
-                  timer->stop();
-
-                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
-                }
-                else if (lo_msg.at(0) == 0xC0) {
-                  // RST;
-                  lo_msg.clear();
-                  //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
-                  clogD << "CAsh::decode RST" << std::endl;
-                }
-                else if (lo_msg.at(0) == 0xC1) {
-                  // RSTACK;
-                  //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
-                  clogD << "CAsh::decode RSTACK" << std::endl;
-
-                  lo_msg.clear();
-                  if( !stateConnected )
-                  {
-                    /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-                    timer->stop();
-                    stateConnected = true;
-                    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
-                  }
-                }
-                else if (lo_msg.at(0) == 0xC2) {
-                  // ERROR;
-                  //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
-                  clogD << "CAsh::decode ERROR" << std::endl;
-                  lo_msg.clear();
-                }
-                else
-                {
-                  //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
-                  clogD << "CAsh::decode UNKNOWN" << std::endl;
-                  lo_msg.clear();
-                }
+                decode_flag(lo_msg);
               }
             }
             else

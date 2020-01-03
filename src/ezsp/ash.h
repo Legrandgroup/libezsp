@@ -61,6 +61,9 @@ private:
     std::vector<uint8_t> in_msg;
 
     uint16_t computeCRC( std::vector<uint8_t> i_msg );
+    void decode_flag(std::vector<uint8_t> &lo_msg);
+    void clean_flag(std::vector<uint8_t> &lo_msg);
     std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
     std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
 };
+}
