@@ -9,8 +9,8 @@
 CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
-	uartIncomingDataHandler(new GenericAsyncDataInputObservable()),
-	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
+	uartIncomingDataHandler(),
+	ash(static_cast<CAshCallback*>(this), timer_factory),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers()
@@ -24,7 +24,6 @@ CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip
 CEzspDongle::~CEzspDongle()
 {
     pUart = nullptr;
-    delete ash;
 }
 
 bool CEzspDongle::open(IUartDriver *ipUart)
@@ -42,7 +41,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
         pUart = ipUart;
 
         // reset ash ncp
-        l_buffer = ash->resetNCPFrame();
+        l_buffer = ash.resetNCPFrame();
 
         if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
         {
@@ -61,8 +60,8 @@ bool CEzspDongle::open(IUartDriver *ipUart)
             else
             {
                 clogD << "CEzspDongle::open register uart !" << std::endl;
-                uartIncomingDataHandler->registerObserver(this);
-                pUart->setIncomingDataHandler(uartIncomingDataHandler);
+                uartIncomingDataHandler.registerObserver(this);
+                pUart->setIncomingDataHandler(&uartIncomingDataHandler);
             }
         }
     }
@@ -77,7 +76,7 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
     if( ASH_STATE_CHANGE == info )
     {
         // inform upper layer that dongle is ready !
-        if( ash->isConnected() )
+        if( ash.isConnected() )
         {
             notifyObserversOfDongleState( DONGLE_READY );
         }
@@ -101,7 +100,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
     while( !li_data.empty())
     {
-        lo_msg = ash->decode(li_data);
+        lo_msg = ash.decode(li_data);
 
         // send incomming mesage to application
         if( !lo_msg.empty() )
@@ -111,7 +110,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
             //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
 
             // send ack
-            std::vector<uint8_t> l_msg = ash->AckFrame();
+            std::vector<uint8_t> l_msg = ash.AckFrame();
             pUart->write(l_size, l_msg.data(), l_msg.size());
 
             // call handler
@@ -179,8 +178,8 @@ void CEzspDongle::sendNextMsg( void )
             li_data.push_back(l_msg.payload.at(loop));
         }
 
-        //-- clogD << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
-        l_enc_data = ash->DataFrame(li_data);
+        //-- clogD << "CEzspDongle::sendCommand ash.DataFrame" << std::endl;
+        l_enc_data = ash.DataFrame(li_data);
         if( nullptr != pUart )
         {
             //-- clogD << "CEzspDongle::sendCommand pUart->write" << std::endl;

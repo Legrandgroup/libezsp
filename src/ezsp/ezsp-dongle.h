@@ -12,6 +12,7 @@
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
@@ -68,8 +69,8 @@ public:
 private:
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
-    CAsh *ash;
-    GenericAsyncDataInputObservable *uartIncomingDataHandler;
+    CAsh ash;
+    GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
 
