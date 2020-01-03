@@ -3,6 +3,9 @@
  */
 #pragma once
 
+#include <algorithm>
+#include <random>
+
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 
 #include "ezsp/ezsp-dongle-observer.h"
@@ -61,6 +64,7 @@ public:
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 
 private:
+    std::default_random_engine random_generator;
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     uint8_t child_idx;
