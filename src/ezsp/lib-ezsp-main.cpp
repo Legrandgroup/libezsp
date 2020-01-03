@@ -444,10 +444,15 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
     }
 }
 
+void CLibEzspMain::handleBootloaderPrompt()
+{
+    clogI << "CLibEzspMain::handleBootloaderPrompt\n";
+}
+
 void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
 {
     // Start DEBUG
-    clogI << "CAppDemo::handleRxGpFrame gp frame : " << i_gpf << std::endl;
+    clogI << "CLibEzspMain::handleRxGpFrame gp frame : " << i_gpf << std::endl;
 
     if( nullptr != obsGPFrameRecvCallback )
     {

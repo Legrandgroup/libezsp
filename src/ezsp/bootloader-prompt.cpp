@@ -18,7 +18,8 @@ CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, TimerBuild
   accumulatedBytes(),
   bootloaderCLIChecked(false),
   state(EBootloaderStage::RX_FLUSH),
-  bootloaderWriteFunc(nullptr)
+  bootloaderWriteFunc(nullptr),
+  promptDetectCallback(nullptr)
 {
 }
 
@@ -26,6 +27,12 @@ void CBootloaderPrompt::registerSerialWriteFunc(FBootloaderWriteFunc newWriteFun
 {
   this->bootloaderWriteFunc = newWriteFunc;
 }
+
+void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback)
+{
+  this->promptDetectCallback = newObsPromptDetectCallback;
+}
+
 
 void CBootloaderPrompt::reset()
 {
@@ -149,7 +156,11 @@ EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       state = EBootloaderStage::TOPLEVEL_MENU_PROMPT;
       clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blPrompt); /* Remove all text up to (and including) the bootloader prompt from accumulated bytes (has been parsed) */
-      this->selectModeRun();
+      if (this->promptDetectCallback)
+      {
+        clogD << "Invoking promptDetectCallback\n";
+        this->promptDetectCallback();
+      }
       return state;
     }
   }

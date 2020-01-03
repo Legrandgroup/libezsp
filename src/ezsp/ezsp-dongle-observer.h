@@ -28,4 +28,9 @@ public:
      * @param i_msg_receive The payload of the message
      */
     virtual void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) = 0;
+
+    /**
+     * @brief Method that will be invoked when bootloader prompt is caught
+     */
+    virtual void handleBootloaderPrompt() = 0;
 };

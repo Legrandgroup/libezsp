@@ -18,6 +18,7 @@ using namespace std;
 #define T_RX_ACK_MIN  400
 #define T_RX_ACK_INIT 1600
 #define T_RX_ACK_MAX 3200
+#define T_ACK_ASH_RESET 5000
 
 #define ASH_CANCEL_BYTE     0x1A
 #define ASH_FLAG_BYTE       0x7E
@@ -48,6 +49,10 @@ void CAsh::Timeout(void)
             pCb->ashCbInfo(ASH_RESET_FAILED);
         }
     }
+    else
+    {
+        clogE << "ASH timetout while connected\n";
+    }
 }
 
 vector<uint8_t> CAsh::resetNCPFrame(void)
@@ -72,7 +77,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+    timer->start( T_ACK_ASH_RESET, [&](ITimer *ipTimer){this->Timeout();} );
 
     return lo_msg;
 }

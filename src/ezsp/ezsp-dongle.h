@@ -72,6 +72,7 @@ public:
     void setBootloaderMode(bool dongleInBootloaderMode);
 
 private:
+    bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
     bool bootloaderMode;    /*!< Is the adapter in bootloader prompt mode? If false, we are in applicative EZSP/ASH mode */
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
@@ -89,6 +90,7 @@ private:
     std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+    void notifyObserversOfBootloaderPrompt();
 };
 
 #ifdef USE_RARITAN

@@ -8,6 +8,7 @@
 #include <iomanip>
 
 CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+	firstStartup(true),
 	bootloaderMode(false),
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
@@ -88,6 +89,20 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         else
         {
             notifyObserversOfDongleState( DONGLE_REMOVE );
+        }
+    }
+    else if( ASH_RESET_FAILED == info )
+    {
+        /* ASH reset failed */
+        if (firstStartup)
+        {
+            /* If this is the startup sequence, we might be in bootloader prompt mode, not in ASH mode, so give it a try */
+            setBootloaderMode(true);
+            firstStartup = false;
+        }
+        else
+        {
+            notifyObserversOfDongleState( DONGLE_NOT_RESPONDING );
         }
     }
 }
@@ -231,7 +246,7 @@ bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
     return static_cast<bool>(this->observers.erase(observer));
 }
 
-void CEzspDongle::setBootloaderMode(bool dongleInBootloaderMode)
+void CEzspDongle::setBootloaderMode(bool dongleInBootloaderMode)    /* FIXME: rename this to selectBootloaderOption and provide an enum with what we want (run, upgrade) */
 {
     if (!bootloaderMode && dongleInBootloaderMode)
     {
@@ -239,6 +254,12 @@ void CEzspDongle::setBootloaderMode(bool dongleInBootloaderMode)
         this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
+        this->blp->registerPromptDetectCallback([this]() -> std::vector<uint8_t> {
+            notifyObserversOfBootloaderPrompt();
+            this->blp->selectModeRun();
+            this->bootloaderMode = false;   /* After launching the run command, we are not in bootloader prompt anymore */
+            return std::vector<uint8_t>();  /* FIXME: we can't return a unique value here because all observers may want to say something... */
+        });
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
     }
     this->bootloaderMode = dongleInBootloaderMode;
@@ -253,5 +274,11 @@ void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {
 void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
 	for(auto observer : this->observers) {
 		observer->handleEzspRxMessage(i_cmd, i_message);
+	}
+}
+
+void CEzspDongle::notifyObserversOfBootloaderPrompt() {
+	for(auto observer : this->observers) {
+		observer->handleBootloaderPrompt();
 	}
 }

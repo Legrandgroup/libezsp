@@ -56,6 +56,8 @@ public:
      */
     void registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc);
 
+    void registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback);
+
     void reset();
 
     void probe();
@@ -71,4 +73,5 @@ private:
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
     EBootloaderStage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
     FBootloaderWriteFunc bootloaderWriteFunc;   /*!< A function to write bytes to the serial port */
+    std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
 };
