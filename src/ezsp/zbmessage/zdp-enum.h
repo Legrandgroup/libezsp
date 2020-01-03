@@ -10,6 +10,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 #define ZDP_HIGHT_BYTE_REQUEST  0x00
 #define ZDP_HIGHT_BYTE_RESPONSE 0x80
 
@@ -38,6 +40,8 @@ class CZdpEnum{
   public:
     static std::string ToString( EZdpLowByte in );
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

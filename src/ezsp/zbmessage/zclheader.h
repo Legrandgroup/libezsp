@@ -23,6 +23,7 @@
 // profile
 #define GP_PROFILE_ID 0xA1E0
 
+namespace NSEZSP {
 
 class CZCLHeader; /* Forward declaration */
 void swap(CZCLHeader& first, CZCLHeader& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
@@ -72,7 +73,16 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZCLHeader& first, CZCLHeader& second) noexcept;
+  friend void swap(CZCLHeader& first, CZCLHeader& second) noexcept{
+    using std::swap;	// Enable ADL
+
+    swap(first.frm_ctrl, second.frm_ctrl);
+    swap(first.manufacturer_code, second.manufacturer_code);
+    swap(first.transaction_number, second.transaction_number);
+    swap(first.cmd_id, second.cmd_id);
+    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+  }
+
 
   // high level
 
@@ -141,6 +151,8 @@ private:
   /** */
   uint8_t cmd_id;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

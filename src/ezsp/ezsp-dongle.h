@@ -17,7 +17,7 @@
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
     {
-        EEzspCmd i_cmd;
+        NSEZSP::EEzspCmd i_cmd;
         std::vector<uint8_t> payload;
     }SMsg;
 }
@@ -26,6 +26,7 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSEZSP {
 
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
@@ -84,6 +85,7 @@ private:
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
 };
 
+} // namespace NSEZSP
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

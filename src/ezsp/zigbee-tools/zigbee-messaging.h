@@ -16,6 +16,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CZigbeeMessaging : public CEzspDongleObserver
 {
 public:
@@ -43,6 +45,8 @@ private:
     CEzspDongle &dongle;
     TimerBuilder &timer_factory; // needed in the future to well manage retry/timeout on unicast zigbee message
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

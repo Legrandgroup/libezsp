@@ -83,14 +83,14 @@ public:
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
      */
     MainStateMachine(TimerBuilder& timerBuilder,
-                     CEzsp& libEzspHandle,
+                     NSEZSP::CEzsp& libEzspHandle,
                      bool requestReset=false,
                      bool openGpCommissionning=false,
                      uint8_t authorizeChannelRequestAnswerTimeout=0,
                      bool openZigbeeCommissionning=false,
                      unsigned int useNetworkChannel=11,
                      bool gpRemoveAllDevices=false,
-                     const std::vector<CGpDevice>& gpDevicesToAdd={},
+                     const std::vector<NSEZSP::CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={}) :
         initFailures(0),
         timerBuilder(timerBuilder),
@@ -118,9 +118,9 @@ public:
         this->currentState = MainState::RUN;
     }
 
-    void ezspStateChangeCallback(CLibEzspState& i_state) {
+    void ezspStateChangeCallback(NSEZSP::CLibEzspState& i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
-        if (i_state == CLibEzspState::READY) {
+        if (i_state == NSEZSP::CLibEzspState::READY) {
             clogI << "EZSP library is ready, entering main state machine with MainState " << static_cast<int>(this->currentState) << "\n";
             if (this->currentState == MainState::INIT_PENDING && this->removeAllGPDAtStartup) {
                 clogI << "Applying remove all GPD action\n";
@@ -148,7 +148,7 @@ public:
                 if (!libEzsp.addGPDevices(this->gpdAddList)) {
                     clogE << "Failed adding GPDs\n";
                 }
-                this->gpdAddList = std::vector<CGpDevice>();
+                this->gpdAddList = std::vector<NSEZSP::CGpDevice>();
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
@@ -220,14 +220,14 @@ public:
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
     TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
-    CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
+    NSEZSP::CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
     bool resetAtStartup;    /*!< Do we reset the network and re-create a new one? */
     bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
     bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at dongle initialization? */
     unsigned int channel; /*!< The 802.15.4 channel on which to send/receive traffic */
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
-    std::vector<CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
+    std::vector<NSEZSP::CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
     std::unique_ptr<ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
-    std::vector<CGpDevice> gpAddedDevDataList;
+    std::vector<NSEZSP::CGpDevice> gpAddedDevDataList;
     std::vector<uint32_t> gpRemovedDevDataList;
     bool removeAllGpDevs = false;
     unsigned int resetToChannel = 0;
@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
                             exit(1);
                         }
                         else {
-                            EmberKeyData keyValue(CGpDevice::UNKNOWN_KEY);
+                            NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
                             if (gpDevKeyStr != "") {
                                 std::vector<uint8_t> argAsBytes;
                                 for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
@@ -299,9 +299,9 @@ int main(int argc, char **argv) {
                                 }
                                 //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
                                 //std::cerr << "\n";
-                                keyValue = EmberKeyData(argAsBytes);
+                                keyValue = NSEZSP::EmberKeyData(argAsBytes);
                             }
-                            gpAddedDevDataList.push_back(CGpDevice(sourceIdValue, keyValue));
+                            gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
                         }
                     }
                     else {
@@ -373,10 +373,10 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CEzsp lib_main(uartDriver, timerFactory);
+    NSEZSP::CEzsp lib_main(uartDriver, timerFactory);
     clogI << "Got timeout " << std::dec << static_cast<unsigned int>(authorizeChRqstAnswerTimeout) << "s\n";
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-    auto clibobs = [&fsm, &lib_main](CLibEzspState& i_state) {
+    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState& i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);

@@ -21,6 +21,7 @@
 #include "ezsp/green-power-observer.h"
 
 
+namespace NSEZSP {
 /**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
  */
@@ -115,3 +116,5 @@ private:
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 };
+
+} // namespace NSEZSP

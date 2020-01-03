@@ -6,6 +6,7 @@
 
 #include "spi/TimerBuilder.h"
 
+namespace NSEZSP {
 
 typedef enum {
   ASH_RESET_FAILED,

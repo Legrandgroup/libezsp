@@ -19,6 +19,8 @@
 
 #include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
 
+using namespace NSEZSP;
+
 CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
         application_id(),
         communication_mode(),
@@ -85,24 +87,6 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint8_t i_application_id,
 
 }
 
-/**
- * This method is a friend of CEmberGpSinkTableOption class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.application_id, second.application_id);
-  swap(first.communication_mode, second.communication_mode);
-  swap(first.sequence_number_capabilities, second.sequence_number_capabilities);
-  swap(first.rx_on_capability, second.rx_on_capability);
-  swap(first.fixed_location, second.fixed_location);
-  swap(first.assigned_alias, second.assigned_alias);
-  swap(first.security_use, second.security_use);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
 CEmberGpSinkTableOption& CEmberGpSinkTableOption::operator=( CEmberGpSinkTableOption other)
 {
   swap(*this, other);
@@ -141,9 +125,4 @@ std::string CEmberGpSinkTableOption::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
-    out << data.String();
-    return out;
 }

@@ -11,6 +11,8 @@
 
 #include "ezsp/zbmessage/green-power-frame.h"
 
+namespace NSEZSP {
+
 class CGpObserver {
 public:
     CGpObserver() {};
@@ -33,3 +35,5 @@ public:
     virtual void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) = 0;
 
 };
+
+} // namespace NSEZSP

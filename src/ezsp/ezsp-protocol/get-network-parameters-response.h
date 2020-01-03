@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CGetNetworkParamtersResponse
 {
     public:
@@ -76,13 +78,19 @@ class CGetNetworkParamtersResponse
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data){
+          out << data.String();
+          return out;
+        }
+
 
     private:
         EEmberStatus status;
         EmberNodeType node_type;
         CEmberNetworkParameters parameters;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

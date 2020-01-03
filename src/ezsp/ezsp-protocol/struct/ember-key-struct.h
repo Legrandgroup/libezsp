@@ -13,6 +13,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CEmberKeyStruct
 {
     public:
@@ -95,7 +97,10 @@ class CEmberKeyStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberKeyStruct& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberKeyStruct& data){
+            out << data.String();
+            return out;
+        }
 
     private:
         EmberKeyStructBitmask bitmask;
@@ -106,6 +111,8 @@ class CEmberKeyStruct
         uint8_t sequenceNumber;
         EmberEUI64 partnerEUI64;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

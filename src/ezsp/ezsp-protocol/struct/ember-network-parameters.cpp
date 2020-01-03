@@ -8,6 +8,8 @@
 
 #include "ezsp/byte-manip.h"
 
+using namespace NSEZSP;
+
 CEmberNetworkParameters::CEmberNetworkParameters() :
 	extend_pan_id(0),
 	pan_id(0),
@@ -118,16 +120,11 @@ std::string CEmberNetworkParameters::String() const
     return buf.str();
 }
 
-std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data){
-    out << data.String();
-    return out;
-}
-
 /**
  * This method is a friend of CEmberNetworkParameters class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept /* nothrow */
+void NSEZSP::swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept /* nothrow */
 {
     using std::swap;	// Enable ADL
 

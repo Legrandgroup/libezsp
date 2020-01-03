@@ -8,6 +8,8 @@
 
 #include "ember-gp-address-struct.h"
 
+using namespace NSEZSP;
+
 CEmberGpAddressStruct::CEmberGpAddressStruct():
 	gpdIeeeAddress({0,0,0,0,0,0,0,0}),
 	applicationId(),
@@ -27,20 +29,6 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 	applicationId(raw_message.at(0)),
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
 {
-}
-
-/**
- * This method is a friend of CEmberGpAddressStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) noexcept /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.gpdIeeeAddress, second.gpdIeeeAddress);
-  swap(first.applicationId, second.applicationId);
-  swap(first.endpoint, second.endpoint);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
 CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
@@ -99,9 +87,4 @@ std::string CEmberGpAddressStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data){
-    out << data.String();
-    return out;
 }

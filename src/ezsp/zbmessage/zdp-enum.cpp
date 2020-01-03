@@ -5,6 +5,8 @@
 
 #include "zdp-enum.h"
 
+using namespace NSEZSP;
+
 std::string CZdpEnum::ToString( EZdpLowByte in )
 {
     const std::map<EZdpLowByte,std::string> MyEnumStrings {

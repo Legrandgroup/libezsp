@@ -11,6 +11,8 @@
 
 #include "ezsp/byte-manip.h"
 
+using namespace NSEZSP;
+
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
         status(0xFF),
         options(),
@@ -76,27 +78,6 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTab
 
 }
 
-
-/**
- * This method is a friend of CEmberGpSinkTableEntryStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.status, second.status);
-  swap(first.options, second.options);
-  swap(first.gpd, second.gpd);
-  swap(first.device_id, second.device_id);
-  swap(first.sink_list, second.sink_list);
-  swap(first.assigned_alias, second.assigned_alias);
-  swap(first.groupcast_radius, second.groupcast_radius);
-  swap(first.security_options, second.security_options);
-  swap(first.gpdSecurity_frame_counter, second.gpdSecurity_frame_counter);
-  swap(first.gpd_key, second.gpd_key);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
 
 CEmberGpSinkTableEntryStruct& CEmberGpSinkTableEntryStruct::operator=(CEmberGpSinkTableEntryStruct other)
 {
@@ -168,9 +149,4 @@ std::string CEmberGpSinkTableEntryStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
-    out << data.String();
-    return out;
 }

@@ -10,6 +10,8 @@
 #include <sstream>
 #include <iomanip>
 
+using namespace NSEZSP;
+
 CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
         TimerBuilder &timerbuilder) :
     timerbuilder(timerbuilder),

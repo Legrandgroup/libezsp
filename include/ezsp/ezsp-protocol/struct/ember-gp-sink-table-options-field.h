@@ -24,6 +24,7 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSEZSP {
 
 class CEmberGpSinkTableOption
 {
@@ -56,7 +57,19 @@ class CEmberGpSinkTableOption
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept;
+        friend void swap(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept{
+		  using std::swap;	// Enable ADL
+
+		  swap(first.application_id, second.application_id);
+		  swap(first.communication_mode, second.communication_mode);
+		  swap(first.sequence_number_capabilities, second.sequence_number_capabilities);
+		  swap(first.rx_on_capability, second.rx_on_capability);
+		  swap(first.fixed_location, second.fixed_location);
+		  swap(first.assigned_alias, second.assigned_alias);
+		  swap(first.security_use, second.security_use);
+		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+		}
+
 
         /**
          * @brief raw constructor
@@ -149,7 +162,10 @@ class CEmberGpSinkTableOption
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         uint8_t application_id; /*!< The application ID contained in this sink table entry options bit field */
@@ -160,6 +176,8 @@ class CEmberGpSinkTableOption
         bool assigned_alias; /*!< The assigned alias toggle contained in this sink table entry options bit field */
         bool security_use; /*!< The security use toggle contained in this sink table entry options bit field */
 };
+
+} //namespace NSEZSP 
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

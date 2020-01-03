@@ -6,6 +6,8 @@
 
 #include "gp-pairing-command-option-struct.h"
 
+using namespace NSEZSP;
+
 CGpPairingCommandOption::CGpPairingCommandOption(CEmberGpSinkTableOption i_sink_table_option, bool i_add_sink, bool i_remove_gpd,
                                                     uint8_t i_security_level, uint8_t i_security_key_type, bool i_frm_counter_present,
                                                     bool i_key_present, bool i_radius_present ):

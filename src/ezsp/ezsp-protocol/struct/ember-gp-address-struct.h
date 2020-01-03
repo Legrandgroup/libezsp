@@ -8,6 +8,8 @@
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/byte-manip.h"
 
+namespace NSEZSP {
+
 class CEmberGpAddressStruct
 {
     public:
@@ -51,7 +53,15 @@ class CEmberGpAddressStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) noexcept;
+        friend void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) noexcept {
+		  using std::swap;	// Enable ADL
+
+		  swap(first.gpdIeeeAddress, second.gpdIeeeAddress);
+		  swap(first.applicationId, second.applicationId);
+		  swap(first.endpoint, second.endpoint);
+		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+		}
+
 
         /**
          * @brief Assignment operator
@@ -103,7 +113,10 @@ class CEmberGpAddressStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         EmberEUI64 gpdIeeeAddress; /*!< The GPD's EUI64 */
@@ -111,3 +124,5 @@ class CEmberGpAddressStruct
         uint8_t endpoint; /*!< The GPD endpoint */
 
 };
+
+} //namespace NSEZSP

@@ -23,6 +23,8 @@
 
 #include "spi/ILogger.h"
 
+using namespace NSEZSP;
+
 // some defines to help understanding
 #define GP_ENDPOINT 242
 

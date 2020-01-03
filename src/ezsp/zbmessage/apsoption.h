@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace NSEZSP {
 
 class CAPSOption; /* Forward declaration */
 void swap(CAPSOption& first, CAPSOption& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CAPSOption */
@@ -50,7 +51,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CAPSOption& first, CAPSOption& second) noexcept;
+  friend void swap(CAPSOption& first, CAPSOption& second) noexcept;
 
   // concatenate ember
   uint16_t GetEmberApsOption(void) const;
@@ -89,3 +90,5 @@ public:
   */
   bool zdo_rsp_requiered;
 };
+
+} // namespace NSEZSP

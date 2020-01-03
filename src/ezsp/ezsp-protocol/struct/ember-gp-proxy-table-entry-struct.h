@@ -14,6 +14,7 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
 
 class CEmberGpProxyTableEntryStruct
 {
@@ -67,6 +68,8 @@ class CEmberGpProxyTableEntryStruct
         uint8_t groupcast_radius; /*!< The groupcast radius. */
         uint8_t search_counter; /*!< The search counter. */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

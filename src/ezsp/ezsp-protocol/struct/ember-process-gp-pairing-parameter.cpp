@@ -8,6 +8,8 @@
 
 #include "ember-process-gp-pairing-parameter.h"
 
+using namespace NSEZSP;
+
 CProcessGpPairingParam::CProcessGpPairingParam(uint32_t i_gpd_source_id) :
         options(0, false, true, 0, 0, false, false, false),
         addr(i_gpd_source_id),

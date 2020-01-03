@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 
+namespace NSEZSP {
+
 class CEmberNetworkParameters; /* Forward declaration */
 void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
 
@@ -57,7 +59,7 @@ class CEmberNetworkParameters
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept;
+        friend void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept;
 
         std::vector<uint8_t> getRaw() const;
 
@@ -144,8 +146,10 @@ class CEmberNetworkParameters
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data);
-
+        friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         uint64_t extend_pan_id;
@@ -158,3 +162,4 @@ class CEmberNetworkParameters
         uint32_t channels;
 };
 
+} // namespace NSEZSP

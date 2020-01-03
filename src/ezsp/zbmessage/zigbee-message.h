@@ -17,6 +17,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CZigBeeMsg; /* Forward declaration */
 void swap(CZigBeeMsg& first, CZigBeeMsg& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZigBeeMsg */
 
@@ -114,7 +116,16 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZigBeeMsg& first, CZigBeeMsg& second) noexcept;
+  friend void swap(CZigBeeMsg& first, CZigBeeMsg& second) noexcept{
+    using std::swap;	// Enable ADL
+
+    swap(first.aps, second.aps);
+    swap(first.zcl_header, second.zcl_header);
+    swap(first.use_zcl_header, second.use_zcl_header);
+    swap(first.payload, second.payload);
+    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+  }
+
 
   // high level
 
@@ -197,6 +208,8 @@ private:
   bool use_zcl_header;  /*!< Do we have a valid content in attribute zcl_header? */
   std::vector<uint8_t> payload; /*!< Enclosed payload */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

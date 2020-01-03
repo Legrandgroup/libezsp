@@ -10,6 +10,8 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 
+namespace NSEZSP {
+
 // option bitfield
 #define COM_OPTION_MAC_SEQ_CAPABILITY_BIT       0
 #define COM_OPTION_RX_ON_CAPABILITY_BIT         1
@@ -122,7 +124,10 @@ class CGpdCommissioningPayload
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpdCommissioningPayload& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGpdCommissioningPayload& data){
+            out << data.String();
+            return out;
+        }
 
     private:
         // define in ZigBee document 13-0166, Master List of Green Power Device Definitions, revision 00 or later
@@ -167,3 +172,5 @@ class CGpdCommissioningPayload
         std::vector<uint8_t> gpd_command_list; /*!< The GPD command list contained in this GPD commissioning command */
         std::vector<uint8_t> gpd_cluster_list; /*!< The GPD cluster list contained in this GPD commissioning command */
 };
+
+} //namespace NSEZSP

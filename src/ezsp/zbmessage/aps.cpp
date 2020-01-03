@@ -7,6 +7,8 @@
 #include "ezsp/zbmessage/aps.h"
 #include "ezsp/byte-manip.h"
 
+using namespace NSEZSP;
+
 CAPSFrame::CAPSFrame() : cluster_id(0), dest_ep(0), group_id(0), option(), profile_id(0), sequence(0), src_ep(0)
 {
 }
@@ -98,7 +100,7 @@ void CAPSFrame::SetEmberAPS(std::vector<uint8_t> i_data )
  * This method is a friend of CAPSFrame class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CAPSFrame& first, CAPSFrame& second) noexcept /* nothrow */
+void NSEZSP::swap(CAPSFrame& first, CAPSFrame& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

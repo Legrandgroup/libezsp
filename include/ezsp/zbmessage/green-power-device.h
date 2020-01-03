@@ -10,6 +10,7 @@
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
 
+namespace NSEZSP {
 /**
  * @brief Class to encapsulate data representing a green power device
  */
@@ -47,7 +48,17 @@ class CGpDevice
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CGpDevice& first, CGpDevice& second) noexcept;
+        friend void swap(CGpDevice& first, CGpDevice& second) noexcept
+        {
+		  using std::swap;	// Enable ADL
+
+		  swap(first.source_id, second.source_id);
+		  swap(first.key, second.key);
+		  swap(first.option, second.option);
+		  swap(first.security_option, second.security_option);
+		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+		}
+
 
         /**
          * @brief Retrieve the source id for this device
@@ -83,3 +94,5 @@ class CGpDevice
         CEmberGpSinkTableOption option; /*!< Sink table option for this device */
         uint8_t security_option; /*!< Sink table security option for this device */
 };
+
+} //namespace NSEZSP

@@ -22,6 +22,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 typedef enum
 {
     SINK_NOT_INIT, // starting state
@@ -214,6 +216,8 @@ private:
      */
     void gpSinkTableLookup(uint32_t i_src_id);
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

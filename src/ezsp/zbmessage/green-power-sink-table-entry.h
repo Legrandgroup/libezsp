@@ -9,6 +9,8 @@
 
 #define GP_INVALID_SOURCE_ID 0xFFFFFFFF
 
+namespace NSEZSP {
+
 typedef enum {
     E_GPD_APPLICATION_SOURCE_ID = 0x0,
     E_GPD_APPLICATION_IEEE      = 0x2
@@ -47,3 +49,5 @@ private:
     EGpdApplicationId application_id;
     uint32_t source_id;
 };
+
+} // namespace NSEZSP

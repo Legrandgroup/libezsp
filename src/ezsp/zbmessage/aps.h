@@ -17,6 +17,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CAPSFrame; /* Forward declaration */
 void swap(CAPSFrame& first, CAPSFrame& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CAPSFrame */
 
@@ -54,7 +56,7 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CAPSFrame& first, CAPSFrame& second) noexcept;
+  friend void swap(CAPSFrame& first, CAPSFrame& second) noexcept;
 
   // hight level
   /**
@@ -93,6 +95,7 @@ public:
   uint8_t src_ep;
 };
 
+} // namespace NSEZSP
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

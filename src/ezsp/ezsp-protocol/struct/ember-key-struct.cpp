@@ -11,6 +11,8 @@
 
 #include "ezsp/byte-manip.h"
 
+using namespace NSEZSP;
+
 CEmberKeyStruct::CEmberKeyStruct(const std::vector<uint8_t>& raw_message) :
 	bitmask(static_cast<EmberKeyStructBitmask>(dble_u8_to_u16(raw_message.at(1), raw_message.at(0)))),
 	type(static_cast<EmberKeyType>(raw_message.at(2))),
@@ -57,9 +59,4 @@ std::string CEmberKeyStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberKeyStruct& data){
-    out << data.String();
-    return out;
 }

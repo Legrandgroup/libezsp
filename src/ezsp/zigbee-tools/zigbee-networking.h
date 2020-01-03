@@ -17,6 +17,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 #define DEFAULT_RADIO_CHANNEL 11
 
 class CZigbeeNetworking : public CEzspDongleObserver
@@ -71,6 +73,8 @@ private:
     std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
     uint8_t form_channel; // radio channel to form network
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

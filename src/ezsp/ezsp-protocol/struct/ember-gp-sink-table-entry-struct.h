@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CEmberGpSinkTableEntryStruct
 {
     public:
@@ -78,7 +80,21 @@ class CEmberGpSinkTableEntryStruct
          * @param first The first object
          * @param second The second object
          */
-        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept;
+        friend void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept{
+		  using std::swap;	// Enable ADL
+
+		  swap(first.status, second.status);
+		  swap(first.options, second.options);
+		  swap(first.gpd, second.gpd);
+		  swap(first.device_id, second.device_id);
+		  swap(first.sink_list, second.sink_list);
+		  swap(first.assigned_alias, second.assigned_alias);
+		  swap(first.groupcast_radius, second.groupcast_radius);
+		  swap(first.security_options, second.security_options);
+		  swap(first.gpdSecurity_frame_counter, second.gpdSecurity_frame_counter);
+		  swap(first.gpd_key, second.gpd_key);
+		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+		}
 
         /**
          * @brief Assignment operator
@@ -163,7 +179,10 @@ class CEmberGpSinkTableEntryStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         EmberGpSinkTableEntryStatus status; /*!< Internal status of the sink table entry */
@@ -177,6 +196,8 @@ class CEmberGpSinkTableEntryStruct
         EmberGpSecurityFrameCounter gpdSecurity_frame_counter; /*!< The security frame counter of the GPD */
         EmberKeyData gpd_key; /*!< The key to use for GPD */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

@@ -12,6 +12,8 @@
 #include "ezsp/custom-aes.h"
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 
+using namespace NSEZSP;
+
 CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id):
         device_id(raw_message.at(0)),
         options(raw_message.at(1)),
@@ -153,9 +155,4 @@ std::string CGpdCommissioningPayload::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CGpdCommissioningPayload& data){
-    out << data.String();
-    return out;
 }

@@ -9,6 +9,10 @@
 #include <ezsp/zbmessage/green-power-device.h>
 #include <spi/TimerBuilder.h>
 
+class TimerBuilder;
+class IUartDriver;
+
+namespace NSEZSP {
 /**
  * @brief Possible states of the state machine used by class CLibEzspMain
  */
@@ -21,8 +25,6 @@ enum class CLibEzspState {
 };
 
 class CLibEzspMain;
-class TimerBuilder;
-class IUartDriver;
 
 typedef std::function<void (CLibEzspState& i_state)> FGStateCallback;
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
@@ -86,5 +88,6 @@ public:
 private:
 	CLibEzspMain *main;
 };
+} //namespace NSEZSP 
 
 #endif

@@ -1,6 +1,8 @@
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 
+using namespace NSEZSP;
+
 CEzsp::CEzsp(IUartDriver *uartDriver, TimerBuilder &timerbuilder)
 {
 #ifndef DYNAMIC_ALLOCATION

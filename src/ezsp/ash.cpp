@@ -10,6 +10,8 @@
 
 #include "spi/ILogger.h"
 
+using namespace NSEZSP;
+
 /**
  * The receive timeout settings - min/initial/max - defined in milliseconds
  */

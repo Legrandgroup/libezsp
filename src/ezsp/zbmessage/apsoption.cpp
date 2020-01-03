@@ -7,6 +7,8 @@
 #include "apsoption.h"
 
 
+using namespace NSEZSP;
+
 CAPSOption::CAPSOption() :
 	dest_ieee(false),
 	enable_addr_discovery(true),
@@ -76,7 +78,7 @@ void CAPSOption::SetEmberApsOption( const uint16_t i_option )
  * This method is a friend of CAPSOption class
  * swap() is needed within operator=() to implement to copy and swap paradigm
 **/
-void swap(CAPSOption& first, CAPSOption& second) noexcept /* nothrow */
+void NSEZSP::swap(CAPSOption& first, CAPSOption& second) noexcept /* nothrow */
 {
   using std::swap;	// Enable ADL
 

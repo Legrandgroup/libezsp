@@ -6,6 +6,7 @@
 
 #include "ezsp/zbmessage/zclframecontrol.h"
 
+using namespace NSEZSP;
 
 CZCLFrameControl::CZCLFrameControl() :
 	frame_type(E_FRM_TYPE_SPECIFIC),
@@ -49,22 +50,6 @@ uint8_t CZCLFrameControl::GetFrmCtrlByte() const
       lo_byte |= 0x20;
 
   return lo_byte;
-}
-
-/**
- * This method is a friend of CZCLFrameControl class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.frame_type, second.frame_type);
-  swap(first.manufacturer_code_present, second.manufacturer_code_present);
-  swap(first.direction, second.direction);
-  swap(first.disable_default_rsp, second.disable_default_rsp);
-  swap(first.software_code, second.software_code);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
 CZCLFrameControl& CZCLFrameControl::operator=(CZCLFrameControl other) {

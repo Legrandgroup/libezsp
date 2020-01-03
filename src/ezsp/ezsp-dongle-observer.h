@@ -9,6 +9,8 @@
 #include <vector>
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 
+namespace NSEZSP {
+
 class CEzspDongleObserver {
 public:
     CEzspDongleObserver() {};
@@ -29,3 +31,5 @@ public:
      */
     virtual void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) = 0;
 };
+
+} // namespace NSEZSP

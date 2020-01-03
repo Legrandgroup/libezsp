@@ -14,6 +14,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 typedef enum
 {
   E_DIR_CLIENT_TO_SERVER = 0,
@@ -79,7 +81,16 @@ public:
    * @param first The first object
    * @param second The second object
    */
-  friend void (::swap)(CZCLFrameControl& first, CZCLFrameControl& second) noexcept;
+  friend void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept{
+    using std::swap;	// Enable ADL
+
+    swap(first.frame_type, second.frame_type);
+    swap(first.manufacturer_code_present, second.manufacturer_code_present);
+    swap(first.direction, second.direction);
+    swap(first.disable_default_rsp, second.disable_default_rsp);
+    swap(first.software_code, second.software_code);
+    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+  }
 
   // direction
   EZCLFrameCtrlDirection GetDirection(void) const { return direction; }
@@ -116,6 +127,8 @@ private:
   /** software version indication, MSP : 0 for short frame (no deviceid and battery fields), 1 for long frame (generation 2.1) */
   EZCLFrameCtrlSoftwareCode software_code;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
