@@ -17,6 +17,11 @@ class CEmberGpAddressStruct
         CEmberGpAddressStruct();
 
         /**
+         * @brief Default destructor
+         */
+        virtual ~CEmberGpAddressStruct() {}
+
+        /**
          * @brief Copy constructor
          *
          * @param other The object instance to construct from
