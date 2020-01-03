@@ -21,7 +21,7 @@ public:
     virtual void ashCbInfo( EAshInfo info ) = 0;
 };
 
-class CAsh
+class CAsh : protected ITimerVisitor
 {
 public:
     CAsh() = delete; /* Construction without arguments is not allowed */
@@ -46,6 +46,8 @@ public:
     bool isConnected(void){ return stateConnected; }
 
     static std::string EAshInfoToString( EAshInfo in );
+protected:
+    void trigger(ITimer* triggeringTimer);
 
 private:
     uint8_t ackNum;
@@ -60,5 +62,4 @@ private:
     uint16_t computeCRC( std::vector<uint8_t> i_msg );
     std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
     std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
-    void Timeout(void);
 };

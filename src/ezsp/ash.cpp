@@ -37,7 +37,7 @@ CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
 {
 }
 
-void CAsh::Timeout(void)
+void CAsh::trigger(ITimer* triggeringTimer)
 {
     if( !stateConnected )
     {
@@ -70,7 +70,7 @@ std::vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+    timer->start( T_RX_ACK_INIT, this);
 
     return lo_msg;
 }
@@ -100,7 +100,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+  timer->start( T_RX_ACK_INIT, this);
 
   return lo_msg;
 }
@@ -138,7 +138,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+  timer->start( T_RX_ACK_INIT, this);
 
   return lo_msg;
 }
