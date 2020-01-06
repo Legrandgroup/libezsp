@@ -40,14 +40,18 @@ uint8_t CZCLFrameControl::GetFrmCtrlByte() const
   uint8_t lo_byte = 0;
 
   lo_byte = frame_type & 0x03;
-  if (manufacturer_code_present)
+  if (manufacturer_code_present) {
       lo_byte |= 0x04;
-  if (direction == E_DIR_SERVER_TO_CLIENT)
+  }
+  if (direction == E_DIR_SERVER_TO_CLIENT) {
       lo_byte |= 0x08;
-  if (disable_default_rsp)
+  }
+  if (disable_default_rsp) {
       lo_byte |= 0x10;
-  if (software_code == E_SW_CODE_EVO2)
+  }
+  if (software_code == E_SW_CODE_EVO2) {
       lo_byte |= 0x20;
+  }
 
   return lo_byte;
 }

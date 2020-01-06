@@ -189,14 +189,22 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
         // TODO: manage this !
         clogW << __func__ << "() dongle removed\n";
     }
+    else
+    {
+        clogD << __func__ << "() dongle state "<< i_state << std::endl;
+    }
 }
 
 bool CLibEzspMain::clearAllGPDevices()
 {
     if (this->getState() != CLibEzspState::READY)
+    {
         return false;
+    }
     if (!this->gp_sink.gpClearAllTables())
+    {
         return false; /* Probably sink is not ready */
+    }
 
     this->setState(CLibEzspState::SINK_BUSY);
     return true;
@@ -205,9 +213,13 @@ bool CLibEzspMain::clearAllGPDevices()
 bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 {
     if (this->getState() != CLibEzspState::READY)
+    {
         return false;
+    }
     if (!this->gp_sink.removeGpds(sourceIdList))
+    {
         return false; /* Probably sink is not ready */
+    }
 
     this->setState(CLibEzspState::SINK_BUSY);
     return true;
@@ -216,9 +228,13 @@ bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
     if (this->getState() != CLibEzspState::READY)
+    {
         return false;
+    }
     if (!this->gp_sink.registerGpds(gpDevicesList))
+    {
         return false; /* Probably sink is not ready */
+    }
 
     this->setState(CLibEzspState::SINK_BUSY);
     return true;
@@ -248,8 +264,9 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 {
                     clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
                     if (ESinkState::SINK_READY == i_state) {
-                        if (this->getState() == CLibEzspState::SINK_BUSY)
+                        if (this->getState() == CLibEzspState::SINK_BUSY) {
                             this->setState(CLibEzspState::READY);
+                        }
                     }
                     return true;   /* Do not ask the caller to withdraw ourselves from the callback */
                 };

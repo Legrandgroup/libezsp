@@ -137,8 +137,9 @@ void CGpSink::closeCommissioningSession()
 
 bool CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 {
-    if( SINK_READY != sink_state )
+    if( SINK_READY != sink_state ) {
         return false;
+    }
 
     // Save GPD list in attributes for background processing
     gpds_to_register = gpd;
@@ -154,8 +155,9 @@ bool CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
 
 bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
 {
-    if( SINK_READY != sink_state )
+    if( SINK_READY != sink_state ) {
         return false;
+    }
 
     // Save GPD list in attributes for background processing
     gpds_to_remove = gpd;
@@ -364,6 +366,10 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                     setSinkState(SINK_READY);
                 }
             }
+            else
+            {
+                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY : sink_state " << sink_state << std::endl;
+            }
         }
         break;
 
@@ -475,6 +481,10 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 // save
                 sink_table_entry = l_entry;
             }
+            else
+            {
+                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY : sink_state" <<  sink_state << std::endl;
+            }
         }
         break;
 
@@ -537,6 +547,10 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
                 proxy_table_index++;
                 dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
             }
+            else
+            {
+                clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING : sink_state " << sink_state << std::endl;
+            }
         }
         break;
 
@@ -553,8 +567,9 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         {
             EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
-            if( EMBER_SUCCESS == l_status )
+            if( EMBER_SUCCESS == l_status ) {
                 gpd_send_list.erase(i_msg_receive.at(1));
+            }
 
             // debug
             clogD << "EZSP_D_GP_SENT_HANDLER Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
