@@ -167,6 +167,7 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
 
     // set state
     setSinkState(SINK_REMOVE_IN_PROGRESS);
+    return true;
 }
 
 void CGpSink::handleDongleState( EDongleState i_state )
