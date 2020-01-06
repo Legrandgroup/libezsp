@@ -8,8 +8,8 @@
 #include <pp/diag.h>
 #include <cstdarg>
 
-RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL setLogLevel) :
-		ILoggerStream(setLogLevel),
+RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel),
 		m_buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
 { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
@@ -20,7 +20,7 @@ RaritanGenericLogger::~RaritanGenericLogger() {
 int RaritanGenericLogger::overflow(int c) {
 	if (c != EOF) {
 		if (c == '\n') {
-			this->log(this->m_buffer.c_str());
+			this->logf(this->m_buffer.c_str());
 			this->m_buffer = "";
 		}
 		else {
@@ -50,7 +50,7 @@ RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
 	return *this;
 }
 
-void RaritanErrorLogger::log(const char *format, ...) {
+void RaritanErrorLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -77,7 +77,7 @@ RaritanWarningLogger& RaritanWarningLogger::operator=(RaritanWarningLogger other
 	return *this;
 }
 
-void RaritanWarningLogger::log(const char *format, ...) {
+void RaritanWarningLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -104,7 +104,7 @@ RaritanInfoLogger& RaritanInfoLogger::operator=(RaritanInfoLogger other) {
 	return *this;
 }
 
-void RaritanInfoLogger::log(const char *format, ...) {
+void RaritanInfoLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -131,7 +131,7 @@ RaritanDebugLogger& RaritanDebugLogger::operator=(RaritanDebugLogger other) {
 	return *this;
 }
 
-void RaritanDebugLogger::log(const char *format, ...) {
+void RaritanDebugLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);

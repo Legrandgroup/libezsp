@@ -41,7 +41,7 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
+	virtual void logf(const char *format, ...);
 
 	/**
 	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStderrLogger
@@ -102,7 +102,7 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
+	virtual void logf(const char *format, ...);
 
 	/**
 	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStdoutLogger
@@ -214,7 +214,7 @@ protected:
 	 * @param debugLogger The logger to use for debug messages
 	 * @param traceLogger The logger to use for trace messages
 	 */
-	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
+	ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& mewInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger);
 
 	ConsoleLogger();
 

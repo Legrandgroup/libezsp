@@ -9,14 +9,14 @@
 #include <cstdarg>
 #include <cstdio>
 
-ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 ConsoleStderrLogger::~ConsoleStderrLogger() {
 }
 
-void ConsoleStderrLogger::log(const char *format, ...) {
+void ConsoleStderrLogger::logf(const char *format, ...) {
 
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -53,14 +53,14 @@ ConsoleStderrLogger& ConsoleStderrLogger::operator=(ConsoleStderrLogger other) {
 	return *this;
 }
 
-ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 ConsoleStdoutLogger::~ConsoleStdoutLogger() {
 }
 
-void ConsoleStdoutLogger::log(const char *format, ...) {
+void ConsoleStdoutLogger::logf(const char *format, ...) {
 
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -108,8 +108,8 @@ ConsoleLogger::ConsoleLogger():
 {
 }
 
-ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
-		ILogger(errorLogger, warningLogger, infoLogger, debugLogger, traceLogger) {
+ConsoleLogger::ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger) :
+		ILogger(newErrorLogger, newWarningLogger, newInfoLogger, newDebugLogger, newTraceLogger) {
 }
 
 ConsoleLogger::~ConsoleLogger() {

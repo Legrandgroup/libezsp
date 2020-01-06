@@ -32,23 +32,23 @@
 /**
  * @brief Generic logger getter (uses debug level)
  */
-#define plog getLogger().debugLogger.log
+#define plog getLogger().debugLogger.logf
 /**
  * @brief Error logger getter
  */
-#define plogE getLogger().errorLogger.log
+#define plogE getLogger().errorLogger.logf
 /**
  * @brief Warning logger getter
  */
-#define plogW getLogger().warningLogger.log
+#define plogW getLogger().warningLogger.logf
 /**
  * @brief Info logger getter
  */
-#define plogI getLogger().infoLogger.log
+#define plogI getLogger().infoLogger.logf
 /**
  * @brief Debug logger getter
  */
-#define plogD getLogger().debugLogger.log
+#define plogD getLogger().debugLogger.logf
 /** @} */
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
@@ -172,7 +172,7 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...) = 0;
+	virtual void logf(const char *format, ...) = 0;
 
 protected:
 	/**
@@ -289,19 +289,19 @@ public:
 		va_start(args, format);
 		switch (logLevel) {
 		case LOG_LEVEL::ERROR:
-			this->errorLogger.log(format, args);
+			this->errorLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::WARNING:
-			this->warningLogger.log(format, args);
+			this->warningLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::INFO:
-			this->infoLogger.log(format, args);
+			this->infoLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::DEBUG:
-			this->debugLogger.log(format, args);
+			this->debugLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::TRACE:
-			this->traceLogger.log(format, args);
+			this->traceLogger.logf(format, args);
 			break;
 		}
 		va_end(args);
