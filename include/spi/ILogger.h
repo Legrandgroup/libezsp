@@ -68,6 +68,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSSPI {
+
 /**
  * @brief Log level description
  */
@@ -319,6 +321,8 @@ public:
 	static std::ostream loggerTraceStream;	/*!< A global trace ostream */
 };
 
+} // namespace NSSPI
+
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN
@@ -345,23 +349,23 @@ public:
 /**
  * @brief Generic logger getter (uses debug level)
  */
-#define clog ILogger::loggerDebugStream
+#define clog NSSPI::ILogger::loggerDebugStream
 /**
  * @brief Error logger getter
  */
-#define clogE ILogger::loggerErrorStream
+#define clogE NSSPI::ILogger::loggerErrorStream
 /**
  * @brief Warning logger getter
  */
-#define clogW ILogger::loggerWarningStream
+#define clogW NSSPI::ILogger::loggerWarningStream
 /**
  * @brief Info logger getter
  */
-#define clogI ILogger::loggerInfoStream
+#define clogI NSSPI::ILogger::loggerInfoStream
 /**
  * @brief Debug logger getter
  */
-#define clogD ILogger::loggerDebugStream
+#define clogD NSSPI::ILogger::loggerDebugStream
 /** @} */
 
 #endif // __ILOGGER_H__

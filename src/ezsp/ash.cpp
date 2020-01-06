@@ -28,7 +28,7 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
+CAsh::CAsh(CAshCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory) :
 	ackNum(0),
 	frmNum(0),
 	seq_num(0),
@@ -39,7 +39,7 @@ CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
 {
 }
 
-void CAsh::trigger(ITimer* triggeringTimer)
+void CAsh::trigger(NSSPI::ITimer* triggeringTimer)
 {
     if( !stateConnected )
     {

@@ -3,7 +3,7 @@
 
 using namespace NSEZSP;
 
-CEzsp::CEzsp(IUartDriver *uartDriver, TimerBuilder &timerbuilder)
+CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder)
 {
 #ifndef DYNAMIC_ALLOCATION
 	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder);

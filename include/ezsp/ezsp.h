@@ -8,9 +8,7 @@
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <spi/TimerBuilder.h>
-
-class TimerBuilder;
-class IUartDriver;
+#include <spi/IUartDriver.h>
 
 namespace NSEZSP {
 /**
@@ -31,7 +29,7 @@ typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus 
 
 class CEzsp{
 public:
-	CEzsp(IUartDriver *uartDriver, TimerBuilder &timerbuilder);
+	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder);
 
     /**
      * @brief Register callback on current library state

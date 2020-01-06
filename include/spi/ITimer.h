@@ -16,6 +16,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSSPI {
+
 class ITimer;
 
 class ITimerVisitor {
@@ -84,6 +86,8 @@ protected:
 public:
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

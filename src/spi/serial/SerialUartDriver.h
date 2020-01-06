@@ -11,6 +11,7 @@
 
 #include <thread>
 #include "serial/serial.h"
+namespace NSSPI {
 
 /**
  * @brief Class to interact with a UART using libserialcpp
@@ -80,3 +81,5 @@ private:
 	volatile bool m_read_thread_alive;	/*!< A boolean, indicating whether the secondary thread m_read_messages_thread is running */
 	std::thread m_read_messages_thread;	/*!< The secondary thread that will block on serial read */
 };
+
+} // namespace NSSPI

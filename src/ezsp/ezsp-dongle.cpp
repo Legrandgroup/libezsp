@@ -8,7 +8,7 @@
 
 using namespace NSEZSP;
 
-CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
 	uartIncomingDataHandler(),
@@ -28,7 +28,7 @@ CEzspDongle::~CEzspDongle()
     pUart = nullptr;
 }
 
-bool CEzspDongle::open(IUartDriver *ipUart)
+bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
 {
     bool lo_success = true;
     std::vector<uint8_t> l_buffer;

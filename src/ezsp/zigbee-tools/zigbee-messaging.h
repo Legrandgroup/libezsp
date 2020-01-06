@@ -21,7 +21,7 @@ namespace NSEZSP {
 class CZigbeeMessaging : public CEzspDongleObserver
 {
 public:
-    CZigbeeMessaging( CEzspDongle &i_dongle, TimerBuilder &i_timer_factory );
+    CZigbeeMessaging( CEzspDongle &i_dongle, NSSPI::TimerBuilder &i_timer_factory );
 
     void SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg);
     void SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg );
@@ -43,7 +43,7 @@ public:
 
 private:
     CEzspDongle &dongle;
-    TimerBuilder &timer_factory; // needed in the future to well manage retry/timeout on unicast zigbee message
+    NSSPI::TimerBuilder &timer_factory; // needed in the future to well manage retry/timeout on unicast zigbee message
 };
 
 } // namespace NSEZSP

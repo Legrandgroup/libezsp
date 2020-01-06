@@ -7,6 +7,7 @@
 #include "RaritanLogger.h"
 #include <pp/diag.h>
 #include <cstdarg>
+using namespace NSSPI;
 
 RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel),
@@ -36,7 +37,7 @@ int RaritanGenericLogger::overflow(int c) {
  * This method is a friend of RaritanErrorLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) noexcept /* nothrow */ {
+void NSSPI::swap(RaritanErrorLogger& first, RaritanErrorLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -46,7 +47,7 @@ void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) noexcept /* not
 }
 
 RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
-	::swap(*this, other);
+	NSSPI::swap(*this, other);
 	return *this;
 }
 
@@ -63,7 +64,7 @@ void RaritanErrorLogger::logf(const char *format, ...) {
  * This method is a friend of RaritanWarningLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow */ {
+void NSSPI::swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -73,7 +74,7 @@ void swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow 
 }
 
 RaritanWarningLogger& RaritanWarningLogger::operator=(RaritanWarningLogger other) {
-	::swap(*this, other);
+	NSSPI::swap(*this, other);
 	return *this;
 }
 

@@ -8,6 +8,8 @@
 #include "spi/console/ConsoleLogger.h"
 #endif
 
+using namespace NSSPI;
+
 std::unique_ptr<ILogger, std::function<void(ILogger*)>> Logger::mInstance;
 
 ILogger& Logger::getInstance()

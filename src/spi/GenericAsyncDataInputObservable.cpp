@@ -1,4 +1,5 @@
 #include "GenericAsyncDataInputObservable.h"
+using namespace NSSPI;
 
 GenericAsyncDataInputObservable::GenericAsyncDataInputObservable() : observers() {
 

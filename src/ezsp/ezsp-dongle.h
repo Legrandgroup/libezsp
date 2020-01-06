@@ -28,10 +28,10 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 #endif // USE_RARITAN
 namespace NSEZSP {
 
-class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     ~CEzspDongle();
@@ -41,7 +41,7 @@ public:
     /**
      * @brief Open connetion to dongle of type ezsp
      */
-    bool open(IUartDriver *ipUart);
+    bool open(NSSPI::IUartDriver *ipUart);
 
 
     /**
@@ -68,10 +68,10 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
 private:
-    TimerBuilder &timer_factory;
-    IUartDriver *pUart;
+    NSSPI::TimerBuilder &timer_factory;
+    NSSPI::IUartDriver *pUart;
     CAsh ash;
-    GenericAsyncDataInputObservable uartIncomingDataHandler;
+    NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
 

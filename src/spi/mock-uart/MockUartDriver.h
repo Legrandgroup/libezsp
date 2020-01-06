@@ -14,6 +14,7 @@
 #include <thread>
 #include <chrono>
 #include <functional>
+namespace NSSPI {
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
@@ -176,3 +177,5 @@ private:
 	size_t deliveredReadBytesCount;	/*!< The cumulative number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer since the instanciation of this object. Grab scheduledReadQueueMutex before accessing this */
 	size_t writtenBytesCount;	/*!< The number of bytes written, as a total sum of the onWriteCallback function's successive writtenCnt returned values */
 };
+
+} // namespace NSSPI

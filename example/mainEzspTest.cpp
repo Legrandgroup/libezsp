@@ -82,7 +82,7 @@ public:
      * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
      */
-    MainStateMachine(TimerBuilder& timerBuilder,
+    MainStateMachine(NSSPI::TimerBuilder& timerBuilder,
                      NSEZSP::CEzsp& libEzspHandle,
                      bool requestReset=false,
                      bool openGpCommissionning=false,
@@ -169,7 +169,7 @@ public:
                 libEzsp.setAnswerToGpfChannelRqstPolicy(true);
                 // start timer
                 this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
-                             [this](ITimer *timer) {
+                             [this](NSSPI::ITimer *timer) {
                                  clogI << "Closing GP channel request window\n";
                                  this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
                              }
@@ -219,7 +219,7 @@ public:
 
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
-    TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
+    NSSPI::TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
     NSEZSP::CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
     bool resetAtStartup;    /*!< Do we reset the network and re-create a new one? */
     bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
@@ -229,13 +229,13 @@ private:
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
     std::vector<NSEZSP::CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
-    std::unique_ptr<ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
+    std::unique_ptr<NSSPI::ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
 };
 
 int main(int argc, char **argv) {
-    IUartDriver *uartDriver = UartDriverBuilder::getInstance();
-    TimerBuilder timerFactory;
+    NSSPI::IUartDriver *uartDriver = NSSPI::UartDriverBuilder::getInstance();
+    NSSPI::TimerBuilder timerFactory;
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    Logger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
+    NSSPI::Logger::getInstance().setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
 
     clogI << "Starting ezsp test program (info)\n";
 

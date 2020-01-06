@@ -34,7 +34,7 @@ public:
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
      * @param i_timer_factory An ITimerFactory used to generate ITimer objects
      */
-    CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &timerbuilder );
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder );
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -93,7 +93,7 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
 private:
-    TimerBuilder &timerbuilder;
+    NSSPI::TimerBuilder &timerbuilder;
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
     CLibEzspState lib_state;    /*!< Current state for our internal state machine */
     FGStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */

@@ -17,6 +17,7 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSSPI {
 
 /**
  * @brief Class to implement error message logging
@@ -87,7 +88,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanErrorLogger& first, RaritanErrorLogger& second);
+	friend void swap(RaritanErrorLogger& first, RaritanErrorLogger& second);
 
 	/**
 	 * @brief Assignment operator
@@ -128,7 +129,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanWarningLogger& first, RaritanWarningLogger& second);
+	friend void swap(RaritanWarningLogger& first, RaritanWarningLogger& second);
 
 	/**
 	 * @brief Assignment operator
@@ -169,7 +170,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanInfoLogger& first, RaritanInfoLogger& second) noexcept;
+	friend void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -210,7 +211,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(RaritanDebugLogger& first, RaritanDebugLogger& second) noexcept;
+	friend void swap(RaritanDebugLogger& first, RaritanDebugLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -250,6 +251,8 @@ public:
 	 */
 	RaritanLogger& operator=(const RaritanLogger& other) = delete;
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

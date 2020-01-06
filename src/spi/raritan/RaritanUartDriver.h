@@ -15,6 +15,7 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSSPI {
 
 /**
  * @brief Class to interact with a UART in the Raritan framework
@@ -96,6 +97,8 @@ private:
 	pp::Tty::SPtr m_serial_tty;	/*!< The serial port file descriptor */
 	GenericAsyncDataInputObservable* m_data_input_observable;	/*!< The observable that will notify observers when new bytes are available on the UART */
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

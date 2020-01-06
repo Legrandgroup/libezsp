@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSSPI {
+
 class GenericAsyncDataInputObservable;
 
 /**
@@ -76,6 +78,8 @@ public:
 	 */
 	virtual void close() = 0;
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

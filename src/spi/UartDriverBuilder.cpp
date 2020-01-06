@@ -2,6 +2,8 @@
 
 //#define DYNAMIC_ALLOCATION
 
+using namespace NSSPI;
+
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanUartDriver.h"
 typedef RaritanUartDriver UartDriver;

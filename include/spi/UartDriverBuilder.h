@@ -5,6 +5,8 @@
 #include <functional>
 #include "spi/IUartDriver.h"
 
+namespace NSSPI {
+
 typedef std::unique_ptr<IUartDriver, std::function<void(IUartDriver*)>> IUartDriverInstance;
 class UartDriverBuilder
 {
@@ -14,5 +16,7 @@ private:
 	UartDriverBuilder() {}
 	static IUartDriverInstance mInstance;
 };
+
+} // namespace NSSPI
 
 #endif

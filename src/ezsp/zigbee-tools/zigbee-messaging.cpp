@@ -10,7 +10,7 @@
 
 using namespace NSEZSP;
 
-CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, TimerBuilder &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)
+CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, NSSPI::TimerBuilder &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)
 {
     dongle.registerObserver(this);
 }

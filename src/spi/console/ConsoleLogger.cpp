@@ -9,6 +9,8 @@
 #include <cstdarg>
 #include <cstdio>
 
+using namespace NSSPI;
+
 ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
@@ -36,7 +38,7 @@ int ConsoleStderrLogger::overflow(int c) {
  * This method is a friend of ConsoleStderrLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept /* nothrow */ {
+void NSSPI::swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -46,7 +48,7 @@ void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept /* n
 }
 
 ConsoleStderrLogger& ConsoleStderrLogger::operator=(ConsoleStderrLogger other) {
-	::swap(*this, other);
+	NSSPI::swap(*this, other);
 	return *this;
 }
 
@@ -77,7 +79,7 @@ int ConsoleStdoutLogger::overflow(int c) {
  * This method is a friend of ConsoleStdoutLogger class
  * swap() is needed within operator=() to implement to copy and swap paradigm
  */
-void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept /* nothrow */ {
+void NSSPI::swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept /* nothrow */ {
 	using std::swap;	// Enable ADL
 
 	swap(first.logLevel, second.logLevel);
@@ -87,7 +89,7 @@ void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept /* n
 }
 
 ConsoleStdoutLogger& ConsoleStdoutLogger::operator=(ConsoleStdoutLogger other) {
-	::swap(*this, other);
+	NSSPI::swap(*this, other);
 	return *this;
 }
 

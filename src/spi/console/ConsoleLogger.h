@@ -12,6 +12,12 @@
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
 #include "spi/ILogger.h"
 
+
+namespace NSSPI {
+
+class ConsoleStderrLogger;
+void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept;
+
 /**
  * @brief Class to implement error message logging
  */
@@ -52,7 +58,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept;
+	friend void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -72,6 +78,9 @@ protected:
 	 */
 	virtual int overflow(int c);
 };
+
+class ConsoleStdoutLogger;
+void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept;
 
 /**
  * @brief Class to implement debug message logging
@@ -113,7 +122,7 @@ public:
 	 * @param first The first object
 	 * @param second The second object
 	 */
-	friend void (::swap)(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept;
+	friend void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept;
 
 	/**
 	 * @brief Assignment operator
@@ -228,3 +237,5 @@ public:
 	 */
 	ConsoleLogger& operator=(const ConsoleLogger& other) = delete;
 };
+
+} // namespace NSSPI

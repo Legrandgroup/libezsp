@@ -12,8 +12,8 @@
 
 using namespace NSEZSP;
 
-CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
-        TimerBuilder &timerbuilder) :
+CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
+        NSSPI::TimerBuilder &timerbuilder) :
     timerbuilder(timerbuilder),
     exp_ezsp_version(6),
     lib_state(CLibEzspState::NO_INIT),

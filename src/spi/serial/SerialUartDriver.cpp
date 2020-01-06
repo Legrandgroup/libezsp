@@ -14,6 +14,7 @@
 #include "spi/GenericAsyncDataInputObservable.h"
 
 #include "SerialUartDriver.h"
+using namespace NSSPI;
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),

@@ -5,6 +5,8 @@
 #include <functional>
 #include "spi/ILogger.h"
 
+namespace NSSPI {
+
 class Logger
 {
 public:
@@ -13,4 +15,7 @@ private:
 	Logger() = default;
 	static std::unique_ptr<ILogger, std::function<void(ILogger*)>> mInstance;
 };
+
+} // namespace NSSPI
+
 #endif

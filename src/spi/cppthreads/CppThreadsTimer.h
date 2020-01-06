@@ -10,6 +10,7 @@
 
 #include <thread>
 #include <condition_variable>
+namespace NSSPI {
 
 /**
  * @brief Concrete implementation of ITimer using C++11 threads
@@ -54,3 +55,5 @@ private:
 	std::condition_variable cv;	/*!< A condition variable that allows to unlock the wait performed by waitingThread (this allows stopping that secondary thread) */
 	std::mutex cv_m;	/*!< A mutex to handle access to variable cv */
 };
+
+} // namespace NSSPI
