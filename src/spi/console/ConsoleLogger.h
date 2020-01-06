@@ -227,7 +227,7 @@ protected:
 
 	ConsoleLogger();
 
-	~ConsoleLogger();
+	~ConsoleLogger() = default;
 
 public:
 	/**

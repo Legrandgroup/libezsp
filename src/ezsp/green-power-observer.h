@@ -5,8 +5,6 @@
  */
 #pragma once
 
-#include <stdbool.h>
-
 #include <ezsp/gpd.h>
 
 #include "ezsp/zbmessage/green-power-frame.h"
@@ -15,7 +13,7 @@ namespace NSEZSP {
 
 class CGpObserver {
 public:
-    CGpObserver() {};
+    CGpObserver() = default;
     virtual ~CGpObserver() = default;
 
     /**

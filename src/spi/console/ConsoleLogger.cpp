@@ -7,7 +7,6 @@
 #include "spi/Logger.h"
 #include "ConsoleLogger.h"
 #include <cstdarg>
-#include <cstdio>
 
 using NSSPI::ILogger;
 using NSSPI::ConsoleStderrLogger;
@@ -114,9 +113,6 @@ ConsoleLogger::ConsoleLogger():
 
 ConsoleLogger::ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger) :
 		ILogger(newErrorLogger, newWarningLogger, newInfoLogger, newDebugLogger, newTraceLogger) {
-}
-
-ConsoleLogger::~ConsoleLogger() {
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
