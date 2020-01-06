@@ -55,7 +55,7 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 	return PP_OK;
 }
 
-int RaritanUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int RaritanUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	if (RaritanLogger::getInstance().debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
 		PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
 	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);

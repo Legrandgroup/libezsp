@@ -71,8 +71,9 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 #ifdef DEBUG
 					clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
 #endif
-					if (this->m_data_input_observable)
+					if (this->m_data_input_observable) {
 						this->m_data_input_observable->notifyObservers(readData, rdcnt);
+					}
 				}
 				catch (std::exception& e) {
 					clogE << "Exception in read thread: " << e.what() << "\n";
@@ -87,7 +88,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	return 0;
 }
 
-int SerialUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	try {
 #ifdef DEBUG
 		std::stringstream msg;

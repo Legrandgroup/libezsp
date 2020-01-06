@@ -67,7 +67,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt) = 0;
+	virtual int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) = 0;
 
 	/**
 	 * @brief Callback to close the serial port

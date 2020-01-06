@@ -67,12 +67,12 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Close the serial port
 	 */
-	void close();
+	void close() final;
 
 private:
 	serial::Serial m_serial_port;	/*!< The serial port in use for read/writes */
