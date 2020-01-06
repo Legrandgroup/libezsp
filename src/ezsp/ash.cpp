@@ -26,7 +26,7 @@ constexpr uint8_t ASH_XON_BYTE        = 0x11;
 constexpr uint8_t ASH_OFF_BYTE        = 0x13;
 constexpr uint8_t ASH_TIMEOUT         = -1;
 
-#define ASH_MAX_LENGTH 131
+constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
 	ackNum(0),

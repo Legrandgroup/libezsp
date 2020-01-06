@@ -17,11 +17,11 @@
 #endif // USE_RARITAN
 
 // manufacturer code
-#define PUBLIC_CODE 0xFFFF
-#define LG_MAN_CODE 0x1021
+constexpr uint16_t PUBLIC_CODE = 0xFFFF;
+constexpr uint16_t LG_MAN_CODE = 0x1021;
 
 // profile
-#define GP_PROFILE_ID 0xA1E0
+constexpr uint16_t GP_PROFILE_ID = 0xA1E0;
 
 namespace NSEZSP {
 

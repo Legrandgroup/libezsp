@@ -26,51 +26,51 @@
 using namespace NSEZSP;
 
 // some defines to help understanding
-#define GP_ENDPOINT 242
+constexpr uint8_t GP_ENDPOINT = 242;
 
 // cluster
-#define GP_CLUSTER_ID   0x0021
+constexpr uint16_t GP_CLUSTER_ID =  0x0021;
 // receive client command
-#define GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID    0x02
+constexpr uint8_t GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID = 0x02;
 
 // GPF Command
-#define GPF_SCENE_0_CMD		0x10
-#define GPF_SCENE_1_CMD		0x11
-#define GPF_SCENE_2_CMD		0x12
-#define GPF_SCENE_3_CMD		0x13
-#define GPF_SCENE_4_CMD		0x14
-#define GPF_SCENE_5_CMD		0x15
-#define GPF_SCENE_6_CMD		0x16
-#define GPF_SCENE_7_CMD		0x17
+constexpr uint8_t GPF_SCENE_0_CMD	=	0x10;
+constexpr uint8_t GPF_SCENE_1_CMD	=	0x11;
+constexpr uint8_t GPF_SCENE_2_CMD	=	0x12;
+constexpr uint8_t GPF_SCENE_3_CMD	=	0x13;
+constexpr uint8_t GPF_SCENE_4_CMD	=	0x14;
+constexpr uint8_t GPF_SCENE_5_CMD	=	0x15;
+constexpr uint8_t GPF_SCENE_6_CMD	=	0x16;
+constexpr uint8_t GPF_SCENE_7_CMD	=	0x17;
 
-#define GPF_STORE_SCENE_0_CMD		0x18
-#define GPF_STORE_SCENE_1_CMD		0x19
-#define GPF_STORE_SCENE_2_CMD		0x1A
-#define GPF_STORE_SCENE_3_CMD		0x1B
-#define GPF_STORE_SCENE_4_CMD		0x1C
-#define GPF_STORE_SCENE_5_CMD		0x1D
-#define GPF_STORE_SCENE_6_CMD		0x1E
-#define GPF_STORE_SCENE_7_CMD		0x1F
+constexpr uint8_t GPF_STORE_SCENE_0_CMD	=	0x18;
+constexpr uint8_t GPF_STORE_SCENE_1_CMD	=	0x19;
+constexpr uint8_t GPF_STORE_SCENE_2_CMD	=	0x1A;
+constexpr uint8_t GPF_STORE_SCENE_3_CMD	=	0x1B;
+constexpr uint8_t GPF_STORE_SCENE_4_CMD	=	0x1C;
+constexpr uint8_t GPF_STORE_SCENE_5_CMD	=	0x1D;
+constexpr uint8_t GPF_STORE_SCENE_6_CMD	=	0x1E;
+constexpr uint8_t GPF_STORE_SCENE_7_CMD	=	0x1F;
 
-#define GPF_OFF_CMD		0x20
-#define GPF_ON_CMD		0x21
-#define GPF_TOGGLE_CMD	0x22
+constexpr uint8_t GPF_OFF_CMD		=	0x20;
+constexpr uint8_t GPF_ON_CMD		=	0x21;
+constexpr uint8_t GPF_TOGGLE_CMD	=	0x22;
 
-#define GPF_UP_W_ON_OFF_CMD		0x34
-#define GPF_STOP_CMD			0x35
-#define GPF_DOWN_W_ON_OFF_CMD	0x36
+constexpr uint8_t GPF_UP_W_ON_OFF_CMD	=	0x34;
+constexpr uint8_t GPF_STOP_CMD			=	0x35;
+constexpr uint8_t GPF_DOWN_W_ON_OFF_CMD	=	0x36;
 
-#define GPF_MANUFACTURER_ATTRIBUTE_REPORTING 0xA1
+constexpr uint8_t GPF_MANUFACTURER_ATTRIBUTE_REPORTING	= 0xA1;
 
-#define GPF_COMMISSIONING_CMD	0xE0
-#define GPF_DECOMMISSIONING_CMD	0xE1
-#define GPF_CHANNEL_REQUEST_CMD	0xE3
+constexpr uint8_t GPF_COMMISSIONING_CMD		=	0xE0;
+constexpr uint8_t GPF_DECOMMISSIONING_CMD	=	0xE1;
+constexpr uint8_t GPF_CHANNEL_REQUEST_CMD	=	0xE3;
 
 // GPDF commands sent to GPD
-#define GPF_CHANNEL_CONFIGURATION   0xF3
+constexpr uint8_t GPF_CHANNEL_CONFIGURATION  = 0xF3;
 
 // MSP GPF
-#define GPF_MSP_CHANNEL_REQUEST_CMD	0xB0
+constexpr uint8_t GPF_MSP_CHANNEL_REQUEST_CMD	=	0xB0;
 
 
 
