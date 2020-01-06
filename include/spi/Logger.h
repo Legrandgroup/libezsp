@@ -10,7 +10,7 @@ class Logger
 public:
 	static ILogger& getInstance();
 private:
-	Logger();
+	Logger() = default;
 	static std::unique_ptr<ILogger, std::function<void(ILogger*)>> mInstance;
 };
 #endif

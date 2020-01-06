@@ -34,7 +34,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ConsoleStderrLogger();
+	virtual ~ConsoleStderrLogger() = default;
 
 	/**
 	 * @brief Output a log message
@@ -95,7 +95,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ConsoleStdoutLogger();
+	virtual ~ConsoleStdoutLogger() = default;
 
 	/**
 	 * @brief Output a log message

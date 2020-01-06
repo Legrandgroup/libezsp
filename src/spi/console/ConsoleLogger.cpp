@@ -13,9 +13,6 @@ ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
-ConsoleStderrLogger::~ConsoleStderrLogger() {
-}
-
 void ConsoleStderrLogger::logf(const char *format, ...) {
 
 	if (this->enabled && !this->muted) {
@@ -55,9 +52,6 @@ ConsoleStderrLogger& ConsoleStderrLogger::operator=(ConsoleStderrLogger other) {
 
 ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
-}
-
-ConsoleStdoutLogger::~ConsoleStdoutLogger() {
 }
 
 void ConsoleStdoutLogger::logf(const char *format, ...) {

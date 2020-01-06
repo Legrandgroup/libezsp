@@ -240,7 +240,7 @@ protected:
 
 	RaritanLogger();
 
-	~RaritanLogger();
+	virtual ~RaritanLogger() = default;
 
 public:
 	/**

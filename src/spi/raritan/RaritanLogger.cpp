@@ -155,10 +155,6 @@ RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& used
 		ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
 }
 
-RaritanLogger::~RaritanLogger() {
-}
-
-
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
 std::ostream ILogger::loggerErrorStream(&RaritanLogger::getInstance().errorLogger);
 std::ostream ILogger::loggerWarningStream(&RaritanLogger::getInstance().warningLogger);

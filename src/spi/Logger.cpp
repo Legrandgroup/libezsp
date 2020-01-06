@@ -8,10 +8,6 @@
 #include "spi/console/ConsoleLogger.h"
 #endif
 
-Logger::Logger()
-{
-}
-
 std::unique_ptr<ILogger, std::function<void(ILogger*)>> Logger::mInstance;
 
 ILogger& Logger::getInstance()
