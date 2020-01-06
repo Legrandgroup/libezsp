@@ -6,7 +6,7 @@
 #include "spi/ILogger.h"
 #include "spi/GenericAsyncDataInputObservable.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEzspDongle;
 
 CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	timer_factory(i_timer_factory),

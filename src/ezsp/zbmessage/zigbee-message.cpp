@@ -6,7 +6,7 @@
 
 #include "ezsp/zbmessage/zigbee-message.h"
 
-using namespace NSEZSP;
+using NSEZSP::CZigBeeMsg;
 
 CZigBeeMsg::CZigBeeMsg() :
 	aps(),

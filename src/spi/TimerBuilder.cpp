@@ -12,7 +12,8 @@
 #include "spi/cppthreads/CppThreadsTimer.h"
 #endif
 
-using namespace NSSPI;
+using NSSPI::TimerBuilder;
+using NSSPI::ITimer;
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN

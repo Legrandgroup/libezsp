@@ -8,7 +8,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberNetworkParameters;
 
 CEmberNetworkParameters::CEmberNetworkParameters() :
 	extend_pan_id(0),

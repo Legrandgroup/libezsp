@@ -11,7 +11,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberGpProxyTableEntryStruct;
 
 /** \todo Verify value !!! */
 CEmberGpProxyTableEntryStruct::CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message) :

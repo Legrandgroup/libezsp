@@ -9,7 +9,15 @@
 #include <cstdarg>
 #include <cstdio>
 
-using namespace NSSPI;
+using NSSPI::ILogger;
+using NSSPI::ConsoleStderrLogger;
+using NSSPI::ConsoleStdoutLogger;
+using NSSPI::ConsoleLogger;
+using NSSPI::ConsoleErrorLogger;
+using NSSPI::ConsoleWarningLogger;
+using NSSPI::ConsoleInfoLogger;
+using NSSPI::ConsoleDebugLogger;
+using NSSPI::ConsoleTraceLogger;
 
 ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */

@@ -12,7 +12,7 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 
-using namespace NSEZSP;
+using NSEZSP::CGpFrame;
 
 CGpFrame::CGpFrame():
     link_value(0),

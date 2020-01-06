@@ -8,7 +8,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CZCLHeader;
 
 CZCLHeader::CZCLHeader() :
 	frm_ctrl(),

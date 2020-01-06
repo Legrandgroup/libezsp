@@ -11,7 +11,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberGpSinkTableEntryStruct;
 
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
         status(0xFF),

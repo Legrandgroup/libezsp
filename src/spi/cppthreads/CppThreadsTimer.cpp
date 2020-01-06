@@ -7,7 +7,8 @@
 #include "CppThreadsTimer.h"
 
 #include <chrono>
-using namespace NSSPI;
+using NSSPI::CppThreadsTimer;
+using NSSPI::ITimer;
 
 CppThreadsTimer::CppThreadsTimer() :  waitingThread(), cv(), cv_m() { }
 

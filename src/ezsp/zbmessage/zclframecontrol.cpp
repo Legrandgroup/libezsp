@@ -6,7 +6,7 @@
 
 #include "ezsp/zbmessage/zclframecontrol.h"
 
-using namespace NSEZSP;
+using NSEZSP::CZCLFrameControl;
 
 CZCLFrameControl::CZCLFrameControl() :
 	frame_type(E_FRM_TYPE_SPECIFIC),

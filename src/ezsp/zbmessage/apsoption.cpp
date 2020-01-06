@@ -7,7 +7,7 @@
 #include "apsoption.h"
 
 
-using namespace NSEZSP;
+using NSEZSP::CAPSOption;
 
 CAPSOption::CAPSOption() :
 	dest_ieee(false),

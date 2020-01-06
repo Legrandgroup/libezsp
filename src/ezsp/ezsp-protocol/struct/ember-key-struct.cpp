@@ -11,7 +11,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberKeyStruct;
 
 CEmberKeyStruct::CEmberKeyStruct(const std::vector<uint8_t>& raw_message) :
 	bitmask(static_cast<EmberKeyStructBitmask>(dble_u8_to_u16(raw_message.at(1), raw_message.at(0)))),

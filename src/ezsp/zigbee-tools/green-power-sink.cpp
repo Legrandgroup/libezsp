@@ -23,7 +23,7 @@
 
 #include "spi/ILogger.h"
 
-using namespace NSEZSP;
+using NSEZSP::CGpSink;
 
 // some defines to help understanding
 constexpr uint8_t GP_ENDPOINT = 242;

@@ -8,7 +8,7 @@
 
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"
 
-using namespace NSEZSP;
+using NSEZSP::CGetNetworkParamtersResponse;
 
 CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message) :
 	status(static_cast<EEmberStatus>(raw_message.at(0))),

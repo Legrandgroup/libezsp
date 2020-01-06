@@ -7,7 +7,9 @@
 #include "RaritanUartDriver.h"
 #include <pp/diag.h>
 #include "spi/GenericLogger.h"
-using namespace NSSPI;
+using NSSPI::GenericAsyncDataInputObservable;
+using NSSPI::RaritanUartDriver;
+using NSSPI::RaritanLogger;
 
 RaritanUartDriver::RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler) :
 	m_eventSelector(*pp::SelectorSingleton::getInstance()),

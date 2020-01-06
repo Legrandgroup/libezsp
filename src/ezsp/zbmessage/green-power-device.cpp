@@ -6,7 +6,8 @@
 
 #include <ezsp/zbmessage/green-power-device.h>
 
-using namespace NSEZSP;
+using NSEZSP::CGpDevice;
+using NSEZSP::EmberKeyData;
 
 CGpDevice::CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key) :
     source_id(i_source_id),

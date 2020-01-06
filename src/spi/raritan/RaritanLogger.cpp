@@ -7,7 +7,13 @@
 #include "RaritanLogger.h"
 #include <pp/diag.h>
 #include <cstdarg>
-using namespace NSSPI;
+using NSSPI::ILogger;
+using NSSPI::RaritanGenericLogger;
+using NSSPI::RaritanErrorLogger;
+using NSSPI::RaritanWarningLogger;
+using NSSPI::RaritanInfoLogger;
+using NSSPI::RaritanDebugLogger;
+using NSSPI::RaritanLogger;
 
 RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel),

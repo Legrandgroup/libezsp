@@ -5,7 +5,7 @@
 
 #include "zdp-enum.h"
 
-using namespace NSEZSP;
+using NSEZSP::CZdpEnum;
 
 std::string CZdpEnum::ToString( EZdpLowByte in )
 {

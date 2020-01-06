@@ -13,7 +13,8 @@
 #include <iostream>	// FIXME: for std::cerr during debug
 
 #include "spi/GenericAsyncDataInputObservable.h"
-using namespace NSSPI;
+using NSSPI::MockUartScheduledByteDelivery;
+using NSSPI::GenericAsyncDataInputObservable;
 
 MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
 delay(scheduleDelay),

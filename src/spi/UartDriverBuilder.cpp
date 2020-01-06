@@ -2,20 +2,29 @@
 
 //#define DYNAMIC_ALLOCATION
 
-using namespace NSSPI;
+using NSSPI::UartDriverBuilder;
+using NSSPI::IUartDriver;
+using NSSPI::IUartDriverInstance;
 
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanUartDriver.h"
+namespace NSSPI {
 typedef RaritanUartDriver UartDriver;
+}
 #endif
 #ifdef USE_SERIALCPP
 #include "spi/serial/SerialUartDriver.h"
+namespace NSSPI {
 typedef SerialUartDriver UartDriver;
+}
 #endif
 #ifdef USE_MOCKSERIAL
 #include "spi/mock-uart/MockUartDriver.h"
+namespace NSSPI {
 typedef MockUartDriver UartDriver;
+}
 #endif
+using NSSPI::UartDriver;
 
 
 IUartDriverInstance UartDriverBuilder::mInstance;

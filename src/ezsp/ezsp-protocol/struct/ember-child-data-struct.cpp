@@ -11,7 +11,7 @@
 
 #include "ezsp/byte-manip.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberChildDataStruct;
 
 CEmberChildDataStruct::CEmberChildDataStruct(const std::vector<uint8_t>& raw_message) :
 	eui64(),

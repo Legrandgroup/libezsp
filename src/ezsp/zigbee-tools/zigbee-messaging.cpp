@@ -8,7 +8,7 @@
 
 #include "spi/ILogger.h"
 
-using namespace NSEZSP;
+using NSEZSP::CZigbeeMessaging;
 
 CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, NSSPI::TimerBuilder &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)
 {

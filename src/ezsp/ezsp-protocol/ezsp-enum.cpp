@@ -5,7 +5,7 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEzspEnum;
 
 std::string CEzspEnum::EmberNodeTypeToString( EmberNodeType in )
 {

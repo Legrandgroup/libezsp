@@ -19,7 +19,7 @@
 
 #include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
 
-using namespace NSEZSP;
+using NSEZSP::CEmberGpSinkTableOption;
 
 CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
         application_id(),

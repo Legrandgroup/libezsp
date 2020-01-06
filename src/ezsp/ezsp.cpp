@@ -1,7 +1,7 @@
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEzsp;
 
 CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder)
 {

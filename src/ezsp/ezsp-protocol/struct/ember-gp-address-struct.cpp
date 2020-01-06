@@ -8,7 +8,7 @@
 
 #include "ember-gp-address-struct.h"
 
-using namespace NSEZSP;
+using NSEZSP::CEmberGpAddressStruct;
 
 CEmberGpAddressStruct::CEmberGpAddressStruct():
 	gpdIeeeAddress({0,0,0,0,0,0,0,0}),

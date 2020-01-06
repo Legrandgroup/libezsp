@@ -17,7 +17,7 @@
 
 static std::random_device g_rd;
 
-using namespace NSEZSP;
+using NSEZSP::CZigbeeNetworking;
 
 CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
     random_generator(g_rd()),

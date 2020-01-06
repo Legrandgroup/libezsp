@@ -12,7 +12,7 @@
 #include "ezsp/custom-aes.h"
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 
-using namespace NSEZSP;
+using NSEZSP::CGpdCommissioningPayload;
 
 CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id):
         device_id(raw_message.at(0)),
