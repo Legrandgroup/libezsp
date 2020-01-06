@@ -25,17 +25,17 @@ void CEzsp::registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCall
 
 bool CEzsp::clearAllGPDevices()
 {
-	main->clearAllGPDevices();
+	return main->clearAllGPDevices();
 }
 
 bool CEzsp::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 {
-	main->removeGPDevices(sourceIdList);
+	return main->removeGPDevices(sourceIdList);
 }
 
 bool CEzsp::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
-	main->addGPDevices(gpDevicesList);
+	return main->addGPDevices(gpDevicesList);
 }
 
 void CEzsp::setAnswerToGpfChannelRqstPolicy(bool allowed)
