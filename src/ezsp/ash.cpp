@@ -51,7 +51,7 @@ void CAsh::Timeout(void)
     }
     else
     {
-        clogE << "ASH timetout while connected\n";
+        clogE << "ASH timeout while connected\n";
     }
 }
 
@@ -105,9 +105,6 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg.push_back(static_cast<uint8_t>(crc&0xFF));
 
   lo_msg = stuffedOutputData(lo_msg);
-
-  // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
 
   return lo_msg;
 }
@@ -222,7 +219,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
                 }
                 else if ((lo_msg.at(0) & 0x60) == 0x00) {
                   // ACK;
-                  //-- clogD << "CAsh::decode ACK" << std::endl;
+                  clogD << "CAsh::decode ACK" << std::endl;
                   //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
                   lo_msg.clear();
                   timer->stop();
