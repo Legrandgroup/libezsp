@@ -17,15 +17,6 @@ class RaritanTimer : public ITimer {
 public:
 	/**
 	 * @brief Default constructor
-	 *
-	 * Construction without arguments is not allowed
-	 */
-	RaritanTimer() = delete;
-
-	/**
-	 * @brief Constructor
-	 *
-	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
 	 */
 	RaritanTimer();
 
