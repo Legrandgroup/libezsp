@@ -16,18 +16,6 @@ CZigBeeMsg::CZigBeeMsg() :
 {
 }
 
-CZigBeeMsg::CZigBeeMsg(const CZigBeeMsg& i_msg) :
-	aps(i_msg.aps),
-	zcl_header(i_msg.zcl_header),
-	use_zcl_header(i_msg.use_zcl_header),
-	payload(i_msg.payload)
-{
-}
-
-CZigBeeMsg::~CZigBeeMsg()
-{
-}
-
 void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
                               const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload,
                               const uint64_t i_src_ieee, const uint8_t i_transaction_number, const uint16_t i_grp_id )

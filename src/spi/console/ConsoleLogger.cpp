@@ -41,24 +41,6 @@ int ConsoleStderrLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of ConsoleStderrLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void NSSPI::swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-ConsoleStderrLogger& ConsoleStderrLogger::operator=(ConsoleStderrLogger other) {
-	NSSPI::swap(*this, other);
-	return *this;
-}
-
 ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL newLogLevel) :
 		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
@@ -82,23 +64,6 @@ int ConsoleStdoutLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of ConsoleStdoutLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void NSSPI::swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) noexcept /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-ConsoleStdoutLogger& ConsoleStdoutLogger::operator=(ConsoleStdoutLogger other) {
-	NSSPI::swap(*this, other);
-	return *this;
-}
 
 static ConsoleErrorLogger consoleErrorLogger;	/* Create a unique instance of the ConsoleErrorLogger that will be used to handle error logs */
 static ConsoleWarningLogger consoleWarningLogger;	/* Create a unique instance of the ConsoleWarningLogger that will be used to handle warning logs */

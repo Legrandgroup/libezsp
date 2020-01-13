@@ -92,12 +92,12 @@ public:
    *
    * @param other The object to copy from
    */
-  CZigBeeMsg(const CZigBeeMsg& i_msg);
+  CZigBeeMsg(const CZigBeeMsg& i_msg) = default;
 
   /**
    * @brief Destructor
    */
-  ~CZigBeeMsg();
+  ~CZigBeeMsg() = default;
 
   /**
    * @brief Assignment operator

@@ -35,14 +35,14 @@ class CEmberGpAddressStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Construct from sourceId
          *
          * @param i_srcId SourceId to construct from
          */
-        CEmberGpAddressStruct(const uint32_t i_srcId);
+        explicit CEmberGpAddressStruct(const uint32_t i_srcId);
 
         /**
          * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpAddressStruct

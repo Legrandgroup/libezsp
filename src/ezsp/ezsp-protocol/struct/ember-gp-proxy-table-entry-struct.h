@@ -31,7 +31,7 @@ class CEmberGpProxyTableEntryStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Copy constructor

@@ -55,7 +55,7 @@ public:
    *
    * @param i_byte The byte to construct from
    */
-  CZCLFrameControl( uint8_t i_byte );
+  explicit CZCLFrameControl( uint8_t i_byte );
 
   /**
    * @brief Copy constructor

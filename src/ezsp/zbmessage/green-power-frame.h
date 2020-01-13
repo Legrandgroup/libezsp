@@ -49,7 +49,7 @@ class CGpFrame
          *
          * @param raw_message The buffer to construct from
          */
-        CGpFrame(const std::vector<uint8_t>& raw_message);
+        explicit CGpFrame(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Dump this instance as a string

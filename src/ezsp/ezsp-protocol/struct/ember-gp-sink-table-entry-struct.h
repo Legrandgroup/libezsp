@@ -35,7 +35,7 @@ class CEmberGpSinkTableEntryStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief constructor with specific value, others are set to default value.

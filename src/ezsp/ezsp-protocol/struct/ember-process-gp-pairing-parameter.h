@@ -28,7 +28,7 @@ class CProcessGpPairingParam
          * @brief Default constructor, to remove a gpd from proxy table
          *
          */
-        CProcessGpPairingParam(uint32_t i_gpd_source_id);
+        explicit CProcessGpPairingParam(uint32_t i_gpd_source_id);
 
         /**
          * @brief Copy constructor

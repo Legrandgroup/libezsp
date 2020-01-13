@@ -30,7 +30,7 @@ class CEmberKeyStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberKeyStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberKeyStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Copy constructor

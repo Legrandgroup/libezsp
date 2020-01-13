@@ -37,7 +37,7 @@ class CGpSinkTableEntry
          * @brief Constructor with minimal parameter
          * @param[IN] i_source_id : source id of gpd, assume application id is E_GPD_APPLICATION_SOURCE_ID
          */
-        CGpSinkTableEntry(uint32_t i_source_id);
+        explicit CGpSinkTableEntry(uint32_t i_source_id);
 
         /**
          * @brief retrieve source id of an entry
