@@ -12,8 +12,8 @@
 
 namespace NSEZSP {
 
-#define ZDP_HIGHT_BYTE_REQUEST  0x00
-#define ZDP_HIGHT_BYTE_RESPONSE 0x80
+constexpr uint8_t ZDP_HIGHT_BYTE_REQUEST  = 0x00;
+constexpr uint8_t ZDP_HIGHT_BYTE_RESPONSE = 0x80;
 
 //ZDP LOW BYTE
 typedef enum

@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#define GP_INVALID_SOURCE_ID 0xFFFFFFFF
+constexpr uint32_t GP_INVALID_SOURCE_ID = 0xFFFFFFFF;
 
 namespace NSEZSP {
 
