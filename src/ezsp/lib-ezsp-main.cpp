@@ -264,10 +264,9 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 auto clibobs = [this](ESinkState& i_state) -> bool
                 {
                     clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
-                    if (ESinkState::SINK_READY == i_state) {
-                        if (this->getState() == CLibEzspState::SINK_BUSY) {
-                            this->setState(CLibEzspState::READY);
-                        }
+                    if ((ESinkState::SINK_READY == i_state) &&
+                        (this->getState() == CLibEzspState::SINK_BUSY)) {
+                       this->setState(CLibEzspState::READY);
                     }
                     return true;   /* Do not ask the caller to withdraw ourselves from the callback */
                 };

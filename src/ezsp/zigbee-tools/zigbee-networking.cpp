@@ -2,7 +2,6 @@
  * @file zigbee-networking.cpp
  */
 
-#include <ctime>
 #include <climits>
 
 #include "ezsp/byte-manip.h"

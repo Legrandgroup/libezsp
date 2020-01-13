@@ -161,6 +161,8 @@ void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
       escape = true;
       continue;
     }
+    else {
+	}
     lo_msg.push_back(data);
   }
 }
@@ -266,9 +268,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
           // Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
-          if (!inputError && !in_msg.empty()) {
-            if( in_msg.size() >= 3 )
-            {
+          if (!inputError && !in_msg.empty() && ( in_msg.size() >= 3 )) {
               clean_flag(lo_msg);
               // Check CRC
               if (computeCRC(lo_msg) != 0) {
@@ -279,11 +279,6 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
               {
                 decode_flag(lo_msg);
               }
-            }
-            else
-            {
-              //LOGGER(logTRACE) << "<-- RX ASH too short !! ";
-            }
           }
           in_msg.clear();
           inputError = false;
