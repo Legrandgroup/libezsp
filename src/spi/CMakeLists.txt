@@ -3,6 +3,7 @@ list(APPEND ezspspi_SOURCES GenericAsyncDataInputObservable.cpp)
 list(APPEND ezspspi_SOURCES TimerBuilder.cpp)
 list(APPEND ezspspi_SOURCES UartDriverBuilder.cpp)
 list(APPEND ezspspi_SOURCES Logger.cpp)
+list(APPEND ezspspi_SOURCES aes/AesBuilder.cpp)
 set(ezspspi_LIBS )
 
 option(USE_RARITAN "Use RARITAN environment" ON)
@@ -45,6 +46,13 @@ list(APPEND ezspspi_SOURCES
 	raritan/RaritanLogger.cpp
 )
 endif()
+
+option(USE_AESCUSTOM "Use AESCUSTOM" ON)
+if(USE_AESCUSTOM)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_AESCUSTOM")
+list(APPEND ezspspi_SOURCES aes/custom/custom-aes.cpp)
+endif()
+
 
 add_library(ezspspi ${ezspspi_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)

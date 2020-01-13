@@ -9,7 +9,7 @@
 #include <cstring>
 
 #include "ezsp/byte-manip.h"
-#include "ezsp/custom-aes.h"
+#include "spi/aes/AesBuilder.h"
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 
 using NSEZSP::CGpdCommissioningPayload;
@@ -53,7 +53,7 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
             uint8_t nonce[16];
             uint8_t in_key[16];
             uint8_t out_key[16];
-            CAes aes;
+            NSSPI::IAes *aes = NSSPI::AesBuilder::create();
             // fill in_key
             memcpy(in_key,key.data(),16);
             // fill out key
@@ -69,10 +69,10 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const std::vector<uint8_t>& r
             nonce[15]=0x01;
 
             // decrypt
-            aes.aes_set_key(TC_LK);
-            aes.xor_block(out_key, nonce);
-            aes.aes_encrypt(out_key, out_key);
-            aes.xor_block(out_key, in_key);
+            aes->set_key(TC_LK);
+            aes->xor_block(out_key, nonce);
+            aes->encrypt(out_key, out_key);
+            aes->xor_block(out_key, in_key);
 
             // fill key with uncrypt value
             key.clear();
