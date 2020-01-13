@@ -3,30 +3,32 @@
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
 #include "spi/raritan/RaritanLogger.h"
+namespace NSSPI {
+typedef RaritanLogger LoggerInstance;
+}
 #endif
 #ifdef USE_CPPTHREADS
 #include "spi/console/ConsoleLogger.h"
+namespace NSSPI {
+typedef ConsoleLogger LoggerInstance;
+}
 #endif
+
 
 using NSSPI::Logger;
 using NSSPI::ILogger;
 
-std::unique_ptr<ILogger, std::function<void(ILogger*)>> Logger::mInstance;
+NSSPI::ILoggerInstance Logger::mInstance;
 
-ILogger& Logger::getInstance()
+ILogger *Logger::getInstance()
 {
-#ifdef USE_RARITAN
-	static RaritanLogger logger;
-#endif
-#ifdef USE_CPPTHREADS
-	static ConsoleLogger logger;
-#endif
+	static NSSPI::LoggerInstance logger;
 
 	static bool static_init = []()->bool {
-		mInstance = std::unique_ptr<ILogger, std::function<void(ILogger*)>>(&logger, [](ILogger* ptr)
+		mInstance = NSSPI::ILoggerInstance(&logger, [](ILogger* ptr)
         {
         });
 		return true;
 	}();
-	return *mInstance;
+	return mInstance.get();
 }

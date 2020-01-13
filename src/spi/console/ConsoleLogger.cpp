@@ -116,8 +116,8 @@ ConsoleLogger::ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWa
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
-std::ostream ILogger::loggerErrorStream(&Logger::getInstance().errorLogger);
-std::ostream ILogger::loggerWarningStream(&Logger::getInstance().warningLogger);
-std::ostream ILogger::loggerInfoStream(&Logger::getInstance().infoLogger);
-std::ostream ILogger::loggerDebugStream(&Logger::getInstance().debugLogger);
-std::ostream ILogger::loggerTraceStream(&Logger::getInstance().traceLogger);
+std::ostream ILogger::loggerErrorStream(&Logger::getInstance()->errorLogger);
+std::ostream ILogger::loggerWarningStream(&Logger::getInstance()->warningLogger);
+std::ostream ILogger::loggerInfoStream(&Logger::getInstance()->infoLogger);
+std::ostream ILogger::loggerDebugStream(&Logger::getInstance()->debugLogger);
+std::ostream ILogger::loggerTraceStream(&Logger::getInstance()->traceLogger);

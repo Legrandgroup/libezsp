@@ -68,6 +68,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+#include "spi/Logger.h"
+
 namespace NSSPI {
 
 /**
@@ -231,7 +233,8 @@ protected:
  * @endcode
  */
 class ILogger {
-protected:
+public:
+
 	/**
 	 * @brief Constructor
 	 *
@@ -262,7 +265,6 @@ protected:
 	 */
 	ILogger(const ILogger& other) = delete;
 
-public:
 	/**
 	 * @brief Set logging level
 	 *

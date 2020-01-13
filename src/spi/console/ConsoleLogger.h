@@ -11,6 +11,7 @@
 **/
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
 #include "spi/ILogger.h"
+#include "spi/Logger.h"
 
 
 namespace NSSPI {
@@ -212,8 +213,10 @@ public:
  * @brief Class to interact with a console logger
  */
 class ConsoleLogger : public ILogger {
-	friend Logger;
-protected:
+	friend class Logger;
+	friend ILogger* Logger::getInstance();
+//protected:
+public:
 	/**
 	 * @brief Default constructor
 	 *

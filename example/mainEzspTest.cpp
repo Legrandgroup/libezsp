@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    NSSPI::Logger::getInstance().setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
+    NSSPI::Logger::getInstance()->setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
 
     clogI << "Starting ezsp test program (info)\n";
 
