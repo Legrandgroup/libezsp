@@ -5,7 +5,7 @@
  */
 
 #include "RaritanTimer.h"
-#include "spi/GenericLogger.h"
+#include "spi/Logger.h"
 
 RaritanTimer::RaritanTimer() :
 	m_eventSelector(*pp::SelectorSingleton::getInstance()),
@@ -18,20 +18,20 @@ RaritanTimer::~RaritanTimer() {
 }
 
 bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
-	plogD("Starting timer %p for %ums", this, timeout);
+	clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
-	if (started) {
-		plogD("First stopping the already existing timer %p before starting again", this);
+	if (this->started) {
+		clogD << "First stopping the already existing timer " << static_cast<void *>(this) << " before starting again\n";
 		this->stop();
 	}
 
 	if (!callBackFunction) {
-		clogW << "Invalid callback function provided during start()\n";
+		clogW << "No callback function provided\n";
 		return false;
 	}
 
-	duration = timeout;
-	if (duration == 0) {
+	this->duration = timeout;
+	if (this->duration == 0) {
 		clogD << "Timeout set to 0, directly running callback function\n";
 		callBackFunction(this);
 	}
@@ -41,8 +41,8 @@ bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggerin
 			plogD("Now running %p timer's callback", this);
 			callBackFunction(this);
 		};
-		m_eventSelector.addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
-		started=true;
+		this->started = true;
+		m_eventSelector.addCallback(m_toutcbhandle, this->duration, pp::Selector::ONCE, tcb);
 	}
 	return true;
 }
