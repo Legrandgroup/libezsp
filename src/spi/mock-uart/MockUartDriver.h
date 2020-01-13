@@ -103,7 +103,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Schedule a byte sequence to be ready for read on emulated serial port

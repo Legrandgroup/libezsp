@@ -13,6 +13,7 @@
 #include <iostream>	// FIXME: for std::cerr during debug
 
 #include "spi/GenericAsyncDataInputObservable.h"
+using NSSPI::MockUartDriver;
 using NSSPI::MockUartScheduledByteDelivery;
 using NSSPI::GenericAsyncDataInputObservable;
 
@@ -48,7 +49,7 @@ int MockUartDriver::open(const std::string& serialPortName, unsigned int baudRat
 	return 0;
 }
 
-int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int MockUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 
 	std::lock_guard<std::recursive_mutex> lock(writeMutex);	/* Make sure there is only one simultaneous executiong of method write() */
 	std::chrono::time_point<std::chrono::high_resolution_clock> now =  std::chrono::high_resolution_clock::now();
