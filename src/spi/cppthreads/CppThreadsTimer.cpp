@@ -5,6 +5,7 @@
  */
 
 #include "CppThreadsTimer.h"
+#include "spi/Logger.h"
 
 #include <chrono>
 
@@ -15,17 +16,21 @@ CppThreadsTimer::~CppThreadsTimer() {
 }
 
 bool CppThreadsTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
+	clogE << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {
-		return false;
+		clogD << "First stopping the already existing timer " << static_cast<void *>(this) << " before starting again\n";
+		this->stop();
 	}
 
 	if (!callBackFunction) {
+		clogW << "No callback function provided\n";
 		return false;
 	}
 
 	this->duration = timeout;
-	if (duration == 0) {
+	if (this->duration == 0) {
+		clogD << "Timeout set to 0, directly running callback function\n";
 		callBackFunction(this);
 	}
 	else {
