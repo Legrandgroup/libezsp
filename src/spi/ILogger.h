@@ -32,23 +32,23 @@
 /**
  * @brief Generic logger getter (uses debug level)
  */
-#define plog getLogger().debugLogger.log
+#define plog Logger::getInstance().debugLogger.log
 /**
  * @brief Error logger getter
  */
-#define plogE getLogger().errorLogger.log
+#define plogE Logger::getInstance().errorLogger.log
 /**
  * @brief Warning logger getter
  */
-#define plogW getLogger().warningLogger.log
+#define plogW Logger::getInstance().warningLogger.log
 /**
  * @brief Info logger getter
  */
-#define plogI getLogger().infoLogger.log
+#define plogI Logger::getInstance().infoLogger.log
 /**
  * @brief Debug logger getter
  */
-#define plogD getLogger().debugLogger.log
+#define plogD Logger::getInstance().debugLogger.log
 /** @} */
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
