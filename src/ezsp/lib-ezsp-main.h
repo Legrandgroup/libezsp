@@ -20,7 +20,7 @@
 
 
 /**
- * @brief Possible states of the state machine used by class CLibEzspMain
+ * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
  */
 enum class CLibEzspState { 
     UNINITIALIZED,                      /*<! Initial state, before starting. */

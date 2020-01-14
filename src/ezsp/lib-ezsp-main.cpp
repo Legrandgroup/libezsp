@@ -402,7 +402,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
             }
             clogI << "CAppDemo::stackInit Returned EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternalState=" << static_cast<unsigned int>(this->getState()) << "\n";
-            if (EMBER_NO_NETWORK == i_msg_receive.at(0) )
+            if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
             {
                 // We create a network on the required channel
                 if (this->getState() == CLibEzspInternalState::STACK_INIT)
