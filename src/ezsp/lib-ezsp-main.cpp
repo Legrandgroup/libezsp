@@ -246,6 +246,14 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
     this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);
 }
 
+void CLibEzspMain::jumpToBootloader()
+{
+    this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
+    this->setState(CLibEzspState::SWITCH_TO_BOOTLOADER_IN_PROGRESS);
+    clogE << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
+    /* Should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage handler below, and only then, issue a carriage return to get the bootloader prompt */
+}
+
 void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
 {
     //-- clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
@@ -381,6 +389,20 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             clogW << "Got an incoming Zigbee message (decoding not yet supported)\n";
         }
         break; */
+
+        case EZSP_LAUNCH_STANDALONE_BOOTLOADER:
+        {
+            if( this->getState() == CLibEzspState::SWITCH_TO_BOOTLOADER_IN_PROGRESS )
+            {
+                clogD << "Bootloader prompt mode is going to start now\n";
+                this->dongle.setBootloaderMode(true);
+            }
+            else
+            {
+                clogE << "Unexpected switch over to bootloader mode. Further commands will fail\n";
+            }
+        }
+        break;
 
         default:
         {

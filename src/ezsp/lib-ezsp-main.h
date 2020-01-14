@@ -92,6 +92,11 @@ public:
      */
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
+    /**
+     * @brief Switch the embedded firmware to booloader prompt mode
+     */
+    void jumpToBootloader();
+
 private:
     NSSPI::TimerBuilder &timerbuilder;
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */

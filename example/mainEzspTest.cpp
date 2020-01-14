@@ -63,7 +63,8 @@ enum MainState {
     ADD_GPD,
     COMMISSION_GPD,
     OPEN_ZIGBEE_NWK,
-    RUN
+    RUN,
+    FW_UPGRADE,
 };
 
 class MainStateMachine {
@@ -116,6 +117,17 @@ public:
     void ezspRun() {
         clogI << "Preparation steps finished... switching to run state\n";
         this->currentState = MainState::RUN;
+        //clogE << "Switching to bootloader mode just for tests\n";
+        //this->ezspSwitchToBootloader();
+    }
+
+    /**
+     * @brief Switch to bootloader prompt mode
+     */
+    void ezspSwitchToBootloader() {
+        clogI << "Switchover to bootloader\n";
+        this->currentState = MainState::FW_UPGRADE;
+        libEzsp.jumpToBootloader();
     }
 
     void ezspStateChangeCallback(NSEZSP::CLibEzspState& i_state) {

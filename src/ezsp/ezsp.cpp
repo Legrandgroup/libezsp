@@ -42,3 +42,8 @@ void CEzsp::setAnswerToGpfChannelRqstPolicy(bool allowed)
 {
 	main->setAnswerToGpfChannelRqstPolicy(allowed);
 }
+
+void CEzsp::jumpToBootloader()
+{
+	main->jumpToBootloader();
+}
