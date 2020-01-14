@@ -255,14 +255,47 @@ public:
             return false;
         }
 
+        /* Cluster IDs are defined in the ZCL specification (Zigbee Alliance document 07-5123-06) */
         uint16_t clusterId = NSEZSP::dble_u8_to_u16(payload.at(1), payload.at(0));
+        /* Attribute IDs are also defined in the ZCL specs */
         uint16_t attributeId = NSEZSP::dble_u8_to_u16(payload.at(3), payload.at(2));
         uint8_t type = payload.at(4);
 
         switch (clusterId)
         {
+            case 0x0000: /* Basic */
+                if ((attributeId == 0x4000 /* SWBuildID */) && (type == NSEZSP::ZCL_CHAR_STRING_ATTRIBUTE_TYPE))
+                {
+                    if (payloadSize < 6)
+                    {
+                        clogE << "Firmware version string is too short: " << payloadSize << " bytes\n";
+                        usedBytes = 0;
+                        return false;
+                    }
+                    else
+                    {
+                        uint8_t strLength = payload.at(5);
+                        if (payloadSize < 6+strLength)
+                        {
+                            clogE << "String frame is too short: " << payloadSize << " bytes\n";
+                            usedBytes = 0;
+                            return false;
+                        }
+                        std::string fwVersion(payload.begin()+6, payload.begin()+6+strLength);
+                        std::cout << "Firmware version is \"" << fwVersion << "\"\n";
+                        usedBytes = 6;
+                        return true;
+                    }
+                }
+                else
+                {
+                    clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                    usedBytes = 0;
+                    return false;
+                }
+                break;
             case 0x000F: /* Binary input */
-                if ((attributeId == 0x0055) && (type == NSEZSP::ZCL_BOOLEAN_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0055 /* PresentValue */) && (type == NSEZSP::ZCL_BOOLEAN_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 6)
                     {
@@ -285,8 +318,8 @@ public:
                     return false;
                 }
                 break;
-            case 0x0402: /* Temperature */
-                if ((attributeId == 0x0000) && (type == NSEZSP::ZCL_INT16S_ATTRIBUTE_TYPE))
+            case 0x0402: /* Temperature Measurement */
+                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == NSEZSP::ZCL_INT16S_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 7)
                     {
@@ -310,7 +343,7 @@ public:
                 }
                 break;
             case 0x0405: /* Humidity */
-                if ((attributeId == 0x0000) && (type == NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 7)
                     {
@@ -333,8 +366,8 @@ public:
                     return false;
                 }
                 break;
-            case 0x0001: /* Battery level */
-                if ((attributeId == 0x0020) && (type == NSEZSP::ZCL_INT8U_ATTRIBUTE_TYPE))
+            case 0x0001: /* Power Configuration */
+                if ((attributeId == 0x0020 /* BatteryVoltage */) && (type == NSEZSP::ZCL_INT8U_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 6)
                     {
