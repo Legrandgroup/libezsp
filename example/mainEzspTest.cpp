@@ -130,7 +130,7 @@ public:
         libEzsp.jumpToBootloader();
     }
 
-    void ezspStateChangeCallback(NSEZSP::CLibEzspState& i_state) {
+    void ezspStateChangeCallback(NSEZSP::CLibEzspState i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
         if (i_state == NSEZSP::CLibEzspState::READY) {
             clogI << "EZSP library is ready, entering main state machine with MainState " << static_cast<int>(this->currentState) << "\n";
@@ -388,7 +388,7 @@ int main(int argc, char **argv) {
     NSEZSP::CEzsp lib_main(uartDriver, timerFactory);
     clogI << "Got timeout " << std::dec << static_cast<unsigned int>(authorizeChRqstAnswerTimeout) << "s\n";
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState& i_state) {
+    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);

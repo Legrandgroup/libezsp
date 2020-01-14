@@ -25,7 +25,7 @@ enum class CLibEzspState {
 
 class CLibEzspMain;
 
-typedef std::function<void (CLibEzspState& i_state)> FGStateCallback;
+typedef std::function<void (CLibEzspState i_state)> FGStateCallback;
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
 
 class CEzsp{

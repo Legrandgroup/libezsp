@@ -43,7 +43,7 @@ public:
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsStateCallback A callback function of type void func(CLibEzspState& i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
+     * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
     void registerLibraryStateCallback(FGStateCallback newObsStateCallback);
 
