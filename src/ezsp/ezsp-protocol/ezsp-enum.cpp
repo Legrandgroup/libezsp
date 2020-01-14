@@ -1,5 +1,7 @@
 /**
+ * @file ezsp-enum.cpp
  *
+ * @brief Various EZSP-constants from the EZSP specs and related manipulation functions
  */
 #include <map>
 
@@ -42,7 +44,9 @@ std::string CEzspEnum::EEmberStatusToString( EEmberStatus in )
         { EMBER_NETWORK_BUSY, "EMBER_NETWORK_BUSY" },
         { EMBER_NO_BEACONS, "EMBER_NO_BEACONS" },
         { EMBER_RECEIVED_KEY_IN_THE_CLEAR, "EMBER_RECEIVED_KEY_IN_THE_CLEAR" },
-        { EMBER_NO_NETWORK_KEY_RECEIVED, "EMBER_NO_NETWORK_KEY_RECEIVED" }
+        { EMBER_NO_NETWORK_KEY_RECEIVED, "EMBER_NO_NETWORK_KEY_RECEIVED" },
+        { UNDOCUMENTED_WRONG_MIC_FOR_SOURCE_ID, "UNDOCUMENTED_WRONG_MIC_FOR_SOURCE_ID" },
+        { UNDOCUMENTED_UNKNOWN_KEY_FOR_SOURCE_ID, "UNDOCUMENTED_UNKNOWN_KEY_FOR_SOURCE_ID" },
     };
     auto   it  = MyEnumStrings.find(in);
     return it == MyEnumStrings.end() ? "OUT_OF_RANGE : " + std::to_string(in) : it->second;

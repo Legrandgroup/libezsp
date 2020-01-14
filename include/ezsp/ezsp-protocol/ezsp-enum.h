@@ -1,5 +1,7 @@
 /**
+ * @file ezsp-enum.h
  *
+ * @brief Various EZSP-constants from the EZSP specs and related manipulation functions
  */
 
 #pragma once
@@ -353,6 +355,14 @@ typedef enum
   EMBER_MAX_MESSAGE_LIMIT_REACHED = 0x72U,
 
   EMBER_ADDRESS_TABLE_ENTRY_IS_ACTIVE = 0x76U,
+
+  // Lionel: the 2 values below are undocumented but have been guessed from GP behaviour
+  // Use with caution (only for debug) as these values may change with time
+  // Source ID and key is known by sink, but a GP frame was receive with a MIC than does not match the known key
+  UNDOCUMENTED_WRONG_MIC_FOR_SOURCE_ID = 0x7EU,
+  
+  // No key is known for this source ID, so authentication could not be checked for a received GP frame
+  UNDOCUMENTED_UNKNOWN_KEY_FOR_SOURCE_ID = 0x7FU,
 
   // The stack software has completed initialization and is ready
   // to send and receive packets over the air
@@ -887,7 +897,7 @@ typedef struct {
 enum
 {
   /** The node is not associated with a network in any way. */
-  EMBER_NO_NETWORK,
+  EMBER_NO_NETWORK = 0x00,
   /** The node is currently attempting to join a network. */
   EMBER_JOINING_NETWORK,
   /** The node is joined to a network. */
