@@ -23,13 +23,6 @@ namespace NSSPI {
 class RaritanUartDriver : public IUartDriver {
 public:
 	/**
-	 * @brief Default constructor
-	 *
-	 * Construction without arguments is not allowed
-	 */
-	RaritanUartDriver() = delete;
-
-	/**
 	 * @brief Constructor
 	 *
 	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector

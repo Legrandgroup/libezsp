@@ -6,10 +6,13 @@
 
 #pragma once
 
-#include "spi/ITimer.h"
-#include "RaritanEventLoop.h"
 #include <pp/Selector.h>
 
+#include "spi/ITimer.h"
+#include "spi/Logger.h"
+
+using NSSPI::ITimer;
+using NSSPI::Logger;
 /**
  * @brief Concrete implementation of ITimer using the Raritan framework
  */

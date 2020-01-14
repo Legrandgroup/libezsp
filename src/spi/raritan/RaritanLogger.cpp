@@ -21,9 +21,6 @@ RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
 { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
-RaritanGenericLogger::~RaritanGenericLogger() {
-}
-
 int RaritanGenericLogger::overflow(int c) {
 	if (c != EOF) {
 		if (c == '\n') {
@@ -39,24 +36,6 @@ int RaritanGenericLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of RaritanErrorLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void NSSPI::swap(RaritanErrorLogger& first, RaritanErrorLogger& second) noexcept /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
-	NSSPI::swap(*this, other);
-	return *this;
-}
-
 void RaritanErrorLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -64,24 +43,6 @@ void RaritanErrorLogger::logf(const char *format, ...) {
 		PPD_ERR(format, args);
 		va_end(args);
 	}
-}
-
-/**
- * This method is a friend of RaritanWarningLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void NSSPI::swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanWarningLogger& RaritanWarningLogger::operator=(RaritanWarningLogger other) {
-	NSSPI::swap(*this, other);
-	return *this;
 }
 
 void RaritanWarningLogger::logf(const char *format, ...) {
@@ -93,24 +54,6 @@ void RaritanWarningLogger::logf(const char *format, ...) {
 	}
 }
 
-/**
- * This method is a friend of RaritanInfoLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) noexcept /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanInfoLogger& RaritanInfoLogger::operator=(RaritanInfoLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
 void RaritanInfoLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -118,24 +61,6 @@ void RaritanInfoLogger::logf(const char *format, ...) {
 		PPD_INFO(format, args);
 		va_end(args);
 	}
-}
-
-/**
- * This method is a friend of RaritanDebugLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanDebugLogger& first, RaritanDebugLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanDebugLogger& RaritanDebugLogger::operator=(RaritanDebugLogger other) {
-	::swap(*this, other);
-	return *this;
 }
 
 void RaritanDebugLogger::logf(const char *format, ...) {
@@ -163,11 +88,11 @@ RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& used
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
-std::ostream ILogger::loggerErrorStream(&RaritanLogger::getInstance().errorLogger);
-std::ostream ILogger::loggerWarningStream(&RaritanLogger::getInstance().warningLogger);
-std::ostream ILogger::loggerInfoStream(&RaritanLogger::getInstance().infoLogger);
-std::ostream ILogger::loggerDebugStream(&RaritanLogger::getInstance().debugLogger);
-std::ostream ILogger::loggerTraceStream(&RaritanLogger::getInstance().traceLogger);
+std::ostream ILogger::loggerErrorStream(&Logger::getInstance()->errorLogger);
+std::ostream ILogger::loggerWarningStream(&Logger::getInstance()->warningLogger);
+std::ostream ILogger::loggerInfoStream(&Logger::getInstance()->infoLogger);
+std::ostream ILogger::loggerDebugStream(&Logger::getInstance()->debugLogger);
+std::ostream ILogger::loggerTraceStream(&Logger::getInstance()->traceLogger);
 
 /* TODO: convert the old TRACE methods below into ILoggerStream methods and remove all RaritanLogger::* methods below... today TRACE level messages are handled as DEBUG level messages */
 //void RaritanLogger::outputTraceLog(const char *format, ...) {
