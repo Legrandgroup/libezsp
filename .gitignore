@@ -1,3 +1,11 @@
-*.o
 /.Build.stamp
 /.project
+/.cproject
+CMakeFiles/
+/CMakeCache.txt
+cmake_install.cmake
+example/mainEzspTest
+/version.h
+*.o
+*.a
+/doc
