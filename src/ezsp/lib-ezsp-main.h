@@ -26,7 +26,9 @@ enum class CLibEzspState {
     NO_INIT,            /*<! Initial state, before starting. */
     READY,              /*<! Library is ready to work and process new command */
     INIT_FAILED,        /*<! Initialisation failed, Library is out of work */
-    INIT_IN_PROGRESS,   /*<! Initialisation in progress, no other command can be process */
+    INIT_IN_PROGRESS,         /*<! We are starting up the Zigbee stack in the adapter */
+    LEAVE_NWK_IN_PROGRESS, /*<! We are currently creating a new Zigbee network */
+    FORM_NWK_IN_PROGRESS, /*<! We are currently leaving the Zigbee network we previously joined */
     SINK_BUSY,          /*<! Enclosed sink is busy executing commands */
 };
 
@@ -45,8 +47,9 @@ public:
      *
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
+     * @param requestZbNetworkReset Set this to true if we should destroy any pre-existing Zigbee network in the EZSP adapter
      */
-    CLibEzspMain( IUartDriver* uartDriver, TimerBuilder &timerbuilder );
+    CLibEzspMain(IUartDriver* uartDriver, TimerBuilder &timerbuilder, bool requestZbNetworkReset=false);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -122,6 +125,7 @@ private:
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
     FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    bool resetZbNetworkAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup */
 
     void setState( CLibEzspState i_new_state );
     CLibEzspState getState() const;
