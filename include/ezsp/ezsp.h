@@ -13,17 +13,14 @@
 
 namespace NSEZSP {
 /**
- * @brief Possible states of the state machine used by class CLibEzspMain
+ * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
  */
 enum class CLibEzspState {
-    NO_INIT,                            /*<! Initial state, before starting. */
+    UNINITIALIZED,                      /*<! Initial state, before starting. */
     READY,                              /*<! Library is ready to work and process new command */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    INIT_IN_PROGRESS,         /*<! We are starting up the Zigbee stack in the adapter */
-    LEAVE_NWK_IN_PROGRESS, /*<! We are currently creating a new Zigbee network */
-    FORM_NWK_IN_PROGRESS, /*<! We are currently leaving the Zigbee network we previously joined */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! Switch to bootloader is pending */
+    FW_UPGRADE,                         /*<! Firmware upgrade is in progress */
 };
 
 class CLibEzspMain;
@@ -46,7 +43,7 @@ public:
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsStateCallback A callback function of type void func(CLibEzspState& i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
+     * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
     void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 

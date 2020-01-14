@@ -23,6 +23,11 @@
 
 namespace NSEZSP {
 /**
+ * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
+ */
+enum class CLibEzspInternalState;
+
+/**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
  */
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
@@ -108,7 +113,7 @@ public:
 private:
     NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
-    CLibEzspState lib_state;    /*!< Current state for our internal state machine */
+    CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
     FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
@@ -118,8 +123,8 @@ private:
     FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 
-    void setState( CLibEzspState i_new_state );
-    CLibEzspState getState() const;
+    void setState( CLibEzspInternalState i_new_state );
+    CLibEzspInternalState getState() const;
     void dongleInit( uint8_t ezsp_version);
     void stackInit();
 
