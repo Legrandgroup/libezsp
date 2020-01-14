@@ -326,42 +326,17 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
         case EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state )
+            if( SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
             {
-                // save allocate index
-                sink_table_index = i_msg_receive.at(0);
-
-                // debug
-                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index : " << std::hex << std::setw(2) << std::setfill('0') << sink_table_index << std::endl;
-
-                // retrieve entry at selected index
+                sink_table_index = i_msg_receive.at(0); // get allocated index
+                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sink_table_index) << "\n";
                 if( 0xFF != sink_table_index )
                 {
-                    gpSinkGetEntry( sink_table_index );
+                    gpSinkGetEntry( sink_table_index ); // retrieve the entry at the selected index
                 }
                 else
                 {
-                    // no place to done pairing : FAILED
-                    clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
-                    setSinkState(SINK_READY);
-                }
-            }
-            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-            {
-                // save allocate index
-                sink_table_index = i_msg_receive.at(0);
-
-                // debug
-                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index : " << std::hex << std::setw(2) << std::setfill('0') << sink_table_index << std::endl;
-
-                // retrieve entry at selected index
-                if( 0xFF != sink_table_index )
-                {
-                    gpSinkGetEntry( sink_table_index );
-                }
-                else
-                {
-                    // no place to done pairing : FAILED
+                    // no place to record pairing : FAILED
                     clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
                     setSinkState(SINK_READY);
                 }
@@ -417,7 +392,8 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
 
         case EZSP_GP_SINK_TABLE_GET_ENTRY:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state )
+            if( SINK_COM_IN_PROGRESS == sink_state ) /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
+            /* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
             {
                 EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
                 CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
