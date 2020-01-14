@@ -4,8 +4,9 @@
  * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
+#define SERIAL_DEBUG
 #include <exception>
-#ifdef DEBUG
+#ifdef SERIAL_DEBUG
 # include <iomanip>
 #endif
 
@@ -70,7 +71,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 			while (this->m_read_thread_alive) {
 				try {
 					rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
-#ifdef DEBUG
+#ifdef SERIAL_DEBUG
 					clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
 #endif
 					if (this->m_data_input_observable) {
@@ -92,7 +93,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 
 int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	try {
-#ifdef DEBUG
+#ifdef SERIAL_DEBUG
 		std::stringstream msg;
 		msg << "Writing to serial port:";
 		for (size_t loop=0; loop<cnt; loop++)
