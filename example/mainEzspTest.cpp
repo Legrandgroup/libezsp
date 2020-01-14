@@ -624,7 +624,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    NSEZSP::CEzsp lib_main(uartDriver, timerFactory);
+    NSEZSP::CEzsp lib_main(uartDriver, timerFactory, (resetToChannel!=0));
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);

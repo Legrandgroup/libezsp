@@ -33,8 +33,9 @@ public:
      *
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
+     * @param requestZbNetworkReset Set this to true if we should destroy any pre-existing Zigbee network in the EZSP adapter
      */
-    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder );
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, bool requestZbNetworkReset);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -112,9 +113,10 @@ private:
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
-	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
+	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+	bool resetZbNetworkAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup */
 
     void setState( CLibEzspState i_new_state );
     CLibEzspState getState() const;

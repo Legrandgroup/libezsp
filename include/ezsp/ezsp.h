@@ -19,7 +19,9 @@ enum class CLibEzspState {
     NO_INIT,                            /*<! Initial state, before starting. */
     READY,                              /*<! Library is ready to work and process new command */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    INIT_IN_PROGRESS,                   /*<! Initialisation in progress, no other command can be process */
+    INIT_IN_PROGRESS,         /*<! We are starting up the Zigbee stack in the adapter */
+    LEAVE_NWK_IN_PROGRESS, /*<! We are currently creating a new Zigbee network */
+    FORM_NWK_IN_PROGRESS, /*<! We are currently leaving the Zigbee network we previously joined */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
     SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! Switch to bootloader is pending */
 };
@@ -32,7 +34,7 @@ typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback;
 
 class CEzsp{
 public:
-	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder);
+	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, bool requestZbNetworkReset=false);
 
     /**
      * @brief Register callback on current library state

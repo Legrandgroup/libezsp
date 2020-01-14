@@ -3,13 +3,13 @@
 
 using NSEZSP::CEzsp;
 
-CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder)
+CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, bool requestZbNetworkReset)
 {
 #ifndef DYNAMIC_ALLOCATION
-	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder);
+	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder, requestZbNetworkReset);
 	main = &g_MainEzsp;
 #else
-	main = new CLibEzspMain(uartDriver, timerbuilder);
+	main = new CLibEzspMain(uartDriver, timerbuilder, requestZbNetworkReset);
 #endif
 }
 
