@@ -33,9 +33,9 @@ public:
      *
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
-     * @param requestZbNetworkReset Set this to true if we should destroy any pre-existing Zigbee network in the EZSP adapter
+     * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, bool requestZbNetworkReset);
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -116,7 +116,7 @@ private:
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
-	bool resetZbNetworkAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup */
+	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 
     void setState( CLibEzspState i_new_state );
     CLibEzspState getState() const;

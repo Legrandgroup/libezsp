@@ -34,7 +34,14 @@ typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback;
 
 class CEzsp{
 public:
-	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, bool requestZbNetworkReset=false);
+    /**
+     * @brief Default constructor with minimal args to initialize library
+     *
+     * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
+     * @param timerbuilder An ITimerFactory used to generate ITimer objects
+     * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
+     */
+	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
     /**
      * @brief Register callback on current library state
