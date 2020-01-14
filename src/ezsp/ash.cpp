@@ -224,8 +224,8 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
     if( !stateConnected )
     {
     /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-    timer->stop();
     stateConnected = true;
+    timer->stop();
     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
     }
   }

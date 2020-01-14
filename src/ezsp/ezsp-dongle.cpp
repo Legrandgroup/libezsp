@@ -90,7 +90,7 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
- {
+{
     std::vector<uint8_t> li_data;
     std::vector<uint8_t> lo_msg;
 
