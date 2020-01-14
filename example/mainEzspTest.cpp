@@ -73,33 +73,27 @@ public:
      *
      * @param timerFactoryUtil An ITimerFactory used to generate ITimer objects
      * @param libEzspHandle The CLibEzspMain instance to use to communicate with the EZSP adapter
-     * @param requestReset Do we reset the network and re-create a new one?
      * @param openGpCommissionning Do we open GP commissionning at dongle initialization?
      * @param authorizeChannelRequestAnswerTimeout During how many second (after startup), we will anwser to a channel request
      * @param openZigbeeCommissionning Do we open the Zigbee network at dongle initialization?
-     * @param useNetworkChannel The 802.15.4 channel on which to send/receive traffic
      * @param gpRemoveAllDevices A flag to remove all GP devices from monitoring
      * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
      */
     MainStateMachine(TimerBuilder& timerBuilder,
                      CLibEzspMain& libEzspHandle,
-                     bool requestReset=false,
                      bool openGpCommissionning=false,
                      uint8_t authorizeChannelRequestAnswerTimeout=0,
                      bool openZigbeeCommissionning=false,
-                     unsigned int useNetworkChannel=11,
                      bool gpRemoveAllDevices=false,
                      const std::vector<CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={}) :
         initFailures(0),
         timerBuilder(timerBuilder),
         libEzsp(libEzspHandle),
-        resetAtStartup(requestReset),
         openGpCommissionningAtStartup(openGpCommissionning),
         channelRequestAnswerTimeoutAtStartup(authorizeChannelRequestAnswerTimeout),
         openZigbeeCommissionningAtStartup(openZigbeeCommissionning),
-        channel(useNetworkChannel),
         removeAllGPDAtStartup(gpRemoveAllDevices),
         gpdAddList(gpDevicesToAdd),
         gpdRemoveList(gpDevicesToRemove),
@@ -471,11 +465,9 @@ private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
     TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
     CLibEzspMain& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
-    bool resetAtStartup;    /*!< Do we reset the network and re-create a new one? */
     bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
     bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at dongle initialization? */
-    unsigned int channel; /*!< The 802.15.4 channel on which to send/receive traffic */
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
     std::vector<CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
@@ -623,8 +615,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CLibEzspMain lib_main(uartDriver, timerFactory);
-    MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    CLibEzspMain lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);
     auto clibobs = [&fsm, &lib_main](CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };

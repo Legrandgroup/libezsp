@@ -20,6 +20,9 @@ enum class CLibEzspInternalState {
     UNINITIALIZED,                      /*<! Initial state, before starting */
     WAIT_DONGLE_READY,
     GETTING_EZSP_VERSION,               /*<! Inside the EZSP version matching loop */
+    STACK_INIT,                         /*<! We are starting up the Zigbee stack in the adapter */
+    FORM_NWK_IN_PROGRESS,               /*<! We are currently creating a new Zigbee network */
+    LEAVE_NWK_IN_PROGRESS,              /*<! We are currently leaving the Zigbee network we previously joined */
     READY,                              /*<! Library is ready to work and process new command */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
@@ -30,7 +33,8 @@ enum class CLibEzspInternalState {
 };
 
 CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
-        TimerBuilder &timerbuilder) :
+        TimerBuilder &timerbuilder,
+        unsigned int requestZbNetworkResetToChannel) :
     timerbuilder(timerbuilder),
     exp_ezsp_version(6),
     lib_state(CLibEzspInternalState::UNINITIALIZED),
@@ -40,7 +44,8 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     zb_nwk(dongle, zb_messaging),
     gp_sink(dongle, zb_messaging),
     obsGPFrameRecvCallback(nullptr),
-    obsGPSourceIdCallback(nullptr)
+    obsGPSourceIdCallback(nullptr),
+    resetDot154ChannelAtInit(requestZbNetworkResetToChannel)
 {
     // uart
     if( dongle.open(uartDriver) ) {
@@ -77,6 +82,7 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
             case CLibEzspInternalState::UNINITIALIZED:
             case CLibEzspInternalState::WAIT_DONGLE_READY:
             case CLibEzspInternalState::GETTING_EZSP_VERSION:
+            case CLibEzspInternalState::STACK_INIT:
                 obsStateCallback(CLibEzspState::UNINITIALIZED);
                 break;
             case CLibEzspInternalState::READY:
@@ -86,6 +92,8 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
                 obsStateCallback(CLibEzspState::INIT_FAILED);
                 break;
             case CLibEzspInternalState::SINK_BUSY:
+            case CLibEzspInternalState::FORM_NWK_IN_PROGRESS:
+            case CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS:
                 obsStateCallback(CLibEzspState::SINK_BUSY);
                 break;
             default:
@@ -288,28 +296,42 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         case EZSP_STACK_STATUS_HANDLER:
         {
             EEmberStatus status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-            clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
-            if( (EMBER_NETWORK_UP == status) /*&& (false == reset_wanted)*/ )
+            /* We handle EZSP_STACK_STATUS_HANDLER only if we are not currently leaving network.
+             * This is because EZSP adapter send spurious EMBER_NETWORK_UP or EMBER_NOT_JOINED while leaving the network.
+             * We will ignore all these until we get a EZSP_LEAVE_NETWORK message (see handler below)
+             */
+            if (this->getState() != CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS)
             {
-                this->setState(CLibEzspInternalState::SINK_BUSY);
-                /* Create a sink state change callback to find out when the sink is ready */
-                /* When the sink becomes ready, then libezsp will also switch to ready state */
-                auto clibobs = [this](ESinkState& i_state) -> bool
+                clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
+                /* Note: we start the sink below only if network is up, but even if this is the case, we will not do it if we have been asked to reset the Zigbee network
+                * Indeed, if the Zigbee network needs to be reset, we will first have to leave and re-create a network in the EZSP_NETWORK_STATE case below, and only then
+                * will we get called again with EMBER_NETWORK_UP once the Zigbee network has been re-created */
+                if ((EMBER_NETWORK_UP == status) && !this->resetDot154ChannelAtInit)
                 {
-                    clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
-                    if (ESinkState::SINK_READY == i_state) {
-                        if (this->getState() == CLibEzspInternalState::SINK_BUSY)
-                            this->setState(CLibEzspInternalState::READY);
-                    }
-                    return true;   /* Do not ask the caller to withdraw ourselves from the callback */
-                };
-                gp_sink.registerStateCallback(clibobs);
-                gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
+                    this->setState(CLibEzspInternalState::SINK_BUSY);
+                    /* Create a sink state change callback to find out when the sink is ready */
+                    /* When the sink becomes ready, then libezsp will also switch to ready state */
+                    auto clibobs = [this](ESinkState& i_state) -> bool
+                    {
+                        clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
+                        if (ESinkState::SINK_READY == i_state) {
+                            if (this->getState() == CLibEzspInternalState::SINK_BUSY)
+                                this->setState(CLibEzspInternalState::READY);
+                        }
+                        return true;   /* Do not ask the caller to withdraw ourselves from the callback */
+                    };
+                    gp_sink.registerStateCallback(clibobs);
+                    gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
+                }
+                else
+                {
+                    clogD << "Call EZSP_NETWORK_STATE\n";
+                    dongle.sendCommand(EZSP_NETWORK_STATE);
+                }
             }
             else
             {
-                clogD << "Call EZSP_NETWORK_STATE\n";
-                dongle.sendCommand(EZSP_NETWORK_STATE);
+                clogD << "Ignoring CEZSP_STACK_STATUS_HANDLER status (while in network leave state): " << CEzspEnum::EEmberStatusToString(status) << "\n";
             }
         }
         break;
@@ -364,6 +386,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 clogI << "Stack version : " << bufDump.str() << std::endl;
 
                 // configure stack for this application
+                setState(CLibEzspInternalState::STACK_INIT);
                 stackInit();
             }
             else
@@ -372,45 +395,51 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             }
         }
         break;
-        /*
         case EZSP_NETWORK_STATE:
         {
-            clogI << "CAppDemo::stackInit Return EZSP_NETWORK_STATE : " << unsigned(i_msg_receive.at(0)) << std::endl;
-            if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
+            if (this->getState() != CLibEzspInternalState::STACK_INIT)
             {
-                // We create an HA1.2 network on the required channel
-                if( APP_INIT_IN_PROGRESS == app_state )
+                clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
+            }
+            clogI << "CAppDemo::stackInit Returned EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternalState=" << static_cast<unsigned int>(this->getState()) << "\n";
+            if (EMBER_NO_NETWORK == i_msg_receive.at(0) )
+            {
+                // We create a network on the required channel
+                if (this->getState() == CLibEzspInternalState::STACK_INIT)
                 {
                     clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
-                    zb_nwk.formHaNetwork(static_cast<uint8_t>(channel));
+                    zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
                     //set new state
-                    setAppState(APP_FORM_NWK_IN_PROGRESS);
-                    reset_wanted = false;
+                    this->setState(CLibEzspInternalState::FORM_NWK_IN_PROGRESS);
+                    this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
                 }
             }
             else
             {
-                if(( APP_INIT_IN_PROGRESS == app_state ) && ( true == reset_wanted ))
+                if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit))
                 {
+                    clogD << "Zigbee reset requested... Leaving current network\n";
                     // leave current network
                     zb_nwk.leaveNetwork();
-                    setAppState(APP_LEAVE_IN_PROGRESS);
-                    reset_wanted = false;
+                    this->setState(CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS);
                 }
             }
         }
-        break; */
-        /*
+        break;
         case EZSP_LEAVE_NETWORK:
         {
-            // set new state as initialized state
-            setAppState(APP_INIT_IN_PROGRESS);
+            if (this->getState() != CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS)
+            {
+                clogW << "Got EZSP_LEAVE_NETWORK while not in CLibEzspInternalState=LEAVE_NWK_IN_PROGRESS\n";
+            }
+            // Reset our current state to stack init
+            this->setState(CLibEzspInternalState::STACK_INIT);
         }
-        break; */
+        break;
         /*
         case EZSP_INCOMING_MESSAGE_HANDLER:
         {
-            // the most important function where all zigbee incomming message arrive
+            // the most important function where all zigbee incoming message arrive
             clogW << "Got an incoming Zigbee message (decoding not yet supported)\n";
         }
         break; */
