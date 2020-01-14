@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <vector>
 
+#include <ezsp/zbmessage/zcl.h>
+
 namespace NSEZSP {
 
 typedef enum

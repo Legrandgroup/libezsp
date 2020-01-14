@@ -14,12 +14,12 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-//#include <iomanip>	// For debug
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
 
 #include <ezsp/ezsp.h>
+#include <ezsp/byte-manip.h>
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -30,7 +30,7 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"-d (--debug)                              : enable debug logs\n");
     fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
     fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
-    fprintf(f,"-C (--authorize-ch-request-answer) <time> : Authorize answer to channel request command for x seconds (0<x<255)\n");
+    fprintf(f,"-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds. Note: responses to MSP authenticated requests is always allowed\n");
     fprintf(f,"-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
     fprintf(f,"-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
     fprintf(f,"-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all (repeated -r options are allowed)\n");
@@ -130,6 +130,11 @@ public:
         libEzsp.jumpToBootloader();
     }
 
+    /**
+     * @brief Callback invoked when the underlying EZSP library changes state
+     *
+     * @param i_state The new state of the EZSP library
+     */
     void ezspStateChangeCallback(NSEZSP::CLibEzspState i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
         if (i_state == NSEZSP::CLibEzspState::READY) {
@@ -227,7 +232,208 @@ public:
             }
             clogI << "Moving to MainState " << static_cast<int>(this->currentState) << "\n";
         }
-	}
+    }
+
+    /**
+     * @brief Extract one cluster report from the beginning payload buffer
+     *
+     * @note The buffer may contain trailing data, that won't be parsed. @p usedBytes can be used to find out what remains after the cluster report
+     *
+     * @param[in] payload The payload (byte buffer) out of which we will parse the leading bytes
+     * @param[out] usedBytes The number of bytes successfully dissected at the beginning of the buffer
+     *
+     * @return true If a cluster report could be parsed, in such case @p usedBytes will contain the number of bytes decoded to generate the cluster report
+     */
+    static bool extractClusterReport( const std::vector<uint8_t >& payload, uint8_t& usedBytes )
+    {
+        size_t payloadSize = payload.size();
+
+        if (payloadSize < 5)
+        {
+            clogE << "Attribute reporting frame is too short: " << payloadSize << " bytes\n";
+            usedBytes = 0;
+            return false;
+        }
+
+        uint16_t clusterId = NSEZSP::dble_u8_to_u16(payload.at(1), payload.at(0));
+        uint16_t attributeId = NSEZSP::dble_u8_to_u16(payload.at(3), payload.at(2));
+        uint8_t type = payload.at(4);
+
+        switch (clusterId)
+        {
+            case 0x000F: /* Binary input */
+                if ((attributeId == 0x0055) && (type == NSEZSP::ZCL_BOOLEAN_ATTRIBUTE_TYPE))
+                {
+                    if (payloadSize < 6)
+                    {
+                        clogE << "Binary input frame is too short: " << payloadSize << " bytes\n";
+                        usedBytes = 0;
+                        return false;
+                    }
+                    else
+                    {
+                        uint8_t value = payload.at(5);
+                        std::cout << "Door is " << (value?"closed":"open") << "\n";
+                        usedBytes = 6;
+                        return true;
+                    }
+                }
+                else
+                {
+                    clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                    usedBytes = 0;
+                    return false;
+                }
+                break;
+            case 0x0402: /* Temperature */
+                if ((attributeId == 0x0000) && (type == NSEZSP::ZCL_INT16S_ATTRIBUTE_TYPE))
+                {
+                    if (payloadSize < 7)
+                    {
+                        clogE << "Temperature frame is too short: " << payloadSize << " bytes\n";
+                        usedBytes = 0;
+                        return false;
+                    }
+                    else
+                    {
+                        int16_t value = static_cast<int16_t>(NSEZSP::dble_u8_to_u16(payload.at(6), payload.at(5)));
+                        std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
+                        usedBytes = 7;
+                        return true;
+                    }
+                }
+                else
+                {
+                    clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                    usedBytes = 0;
+                    return false;
+                }
+                break;
+            case 0x0405: /* Humidity */
+                if ((attributeId == 0x0000) && (type == NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE))
+                {
+                    if (payloadSize < 7)
+                    {
+                        clogE << "Humidity frame is too short: " << payloadSize << " bytes\n";
+                        usedBytes = 0;
+                        return false;
+                    }
+                    else
+                    {
+                        int16_t value = static_cast<int16_t>(NSEZSP::dble_u8_to_u16(payload.at(6), payload.at(5)));
+                        std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
+                        usedBytes = 7;
+                        return true;
+                    }
+                }
+                else
+                {
+                    clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                    usedBytes = 0;
+                    return false;
+                }
+                break;
+            case 0x0001: /* Battery level */
+                if ((attributeId == 0x0020) && (type == NSEZSP::ZCL_INT8U_ATTRIBUTE_TYPE))
+                {
+                    if (payloadSize < 6)
+                    {
+                        clogE << "Battery level frame is too short: " << payloadSize << " bytes\n";
+                        usedBytes = 0;
+                        return false;
+                    }
+                    else
+                    {
+                        uint8_t value = static_cast<uint8_t>(payload.at(5));
+                        std::cout << "Battery level: " << value/10 << "." << std::setw(1) << std::setfill('0') << value%10 << "V\n";
+                        usedBytes = 6;
+                        return true;
+                    }
+                }
+                else
+                {
+                    clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
+                    usedBytes = 0;
+                    return false;
+                }
+                break;
+            default:
+                clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
+                usedBytes = 0;
+                return false;
+        }
+        clogE << "Payload parsing error\n";
+        usedBytes = 0;
+        return false;
+    }
+
+    /**
+     * @brief Extract multiple concatenated cluster reports from the beginning payload buffer
+     *
+     * @param[in] payload The payload (byte buffer) we will parse
+     *
+     * @return true If the buffer only contains 0, 1 or more concatenated cluster report(s) that were succesfully parsed, false otherwise (also returned when there are undecoded trailing bytes)
+     */
+    static bool extractMultiClusterReport( std::vector<uint8_t > payload )
+    {
+        uint8_t usedBytes = 0;
+        bool validBuffer = true;
+
+        while (payload.size()>0 && validBuffer)
+        {
+            validBuffer = extractClusterReport(payload, usedBytes);
+            if (validBuffer)
+            {
+                payload.erase(payload.begin(), payload.begin()+static_cast<int>(usedBytes));
+            }
+        }
+        return validBuffer;
+    }
+
+    /**
+     * @brief Handler to be invoked when a new green power frame is received
+     *
+     * It will take the appropriate actions
+     *
+     * @warning Currently, this method only handles green power attribute single or multi report frames
+     *
+     * @param[in] i_gpf The frame received
+     */
+    void onReceivedGPFrame(NSEZSP::CGpFrame &i_gpf) {
+        switch(i_gpf.getCommandId())
+        {
+            case 0xa0:	// Attribute reporting
+            {
+                uint8_t usedBytes;
+                if (!extractClusterReport(i_gpf.getPayload(), usedBytes))
+                {
+                    clogE << "Failed decoding attribute reporting payload: ";
+                    for (auto i : i_gpf.getPayload())
+                    {
+                        clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
+                    }
+                }
+            }
+            break;
+
+            case 0xa2:	// Multi-Cluster Reporting
+            {
+                if (!extractMultiClusterReport(i_gpf.getPayload()))
+                {
+                    clogE << "Failed to fully decode multi-cluster reporting payload: ";
+                    for (auto i : i_gpf.getPayload())
+                    {
+                        clogE << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i) << " ";
+                    }
+                }
+            }
+            break;
+
+            default:
+                clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
+                break;
+        }
+    }
 
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
@@ -386,18 +592,21 @@ int main(int argc, char **argv) {
     }
 
     NSEZSP::CEzsp lib_main(uartDriver, timerFactory);
-    clogI << "Got timeout " << std::dec << static_cast<unsigned int>(authorizeChRqstAnswerTimeout) << "s\n";
     MainStateMachine fsm(timerFactory, lib_main, (resetToChannel!=0), openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, resetToChannel, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);
 
+    auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
+        fsm.onReceivedGPFrame(i_gpf);
+    };
+    lib_main.registerGPFrameRecvCallback(gprecvobs);
     // lib incomming greenpower sourceId callback
-	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
-    //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << unsigned(i_gpd_id)  <<
-    //                 ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << unsigned(i_gpd_key_status) <<
-    //                 std::endl;
+    // auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
+    //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
+    //              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
+    //              "\n";
     // };
     // lib_main.registerGPSourceIdCallback(cgpidobs);
 

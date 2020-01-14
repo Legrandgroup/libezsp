@@ -13,9 +13,14 @@ CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder)
 #endif
 }
 
-void CEzsp::registerLibraryStateCallback(FGStateCallback newObsStateCallback)
+void CEzsp::registerLibraryStateCallback(FLibStateCallback newObsStateCallback)
 {
 	main->registerLibraryStateCallback(newObsStateCallback);
+}
+
+void CEzsp::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsStateCallback)
+{
+	main->registerGPFrameRecvCallback(newObsStateCallback);
 }
 
 void CEzsp::registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback)

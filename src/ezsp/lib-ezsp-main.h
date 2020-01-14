@@ -32,7 +32,7 @@ public:
      * @brief Default constructor with minimal args to initialize library
      *
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
-     * @param i_timer_factory An ITimerFactory used to generate ITimer objects
+     * @param timerbuilder An ITimerFactory used to generate ITimer objects
      */
     CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder );
 
@@ -45,7 +45,14 @@ public:
      *
      * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
-    void registerLibraryStateCallback(FGStateCallback newObsStateCallback);
+    void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
+
+    /**
+     * @brief Register callback to receive all incoming greenpower sourceId
+     *
+     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     */
+    void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
     /**
      * @brief Register callback to receive all incoming greenpower sourceId
@@ -98,15 +105,16 @@ public:
     void jumpToBootloader();
 
 private:
-    NSSPI::TimerBuilder &timerbuilder;
+    NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
     CLibEzspState lib_state;    /*!< Current state for our internal state machine */
-    FGStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
-    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
+	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
+    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 
     void setState( CLibEzspState i_new_state );
     CLibEzspState getState() const;

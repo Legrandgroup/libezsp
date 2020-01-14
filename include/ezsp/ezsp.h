@@ -7,6 +7,7 @@
 
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
+#include <ezsp/zbmessage/green-power-frame.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
 
@@ -25,8 +26,9 @@ enum class CLibEzspState {
 
 class CLibEzspMain;
 
-typedef std::function<void (CLibEzspState i_state)> FGStateCallback;
+typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
+typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback;
 
 class CEzsp{
 public:
@@ -37,7 +39,14 @@ public:
      *
      * @param newObsStateCallback A callback function of type void func(CLibEzspState& i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
-    void registerLibraryStateCallback(FGStateCallback newObsStateCallback);
+    void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
+
+    /**
+     * @brief Register callback to receive all incoming greenpower sourceId
+     *
+     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     */
+    void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
     /**
      * @brief Register callback to receive all incoming greenpower sourceId
