@@ -34,17 +34,22 @@ This should result in a binary shared library built as file `~/serial/libserialc
 Now, we have to compile libezsp pointing it to the libserialcpp library we have just generated (in the example below, we assume the sources for libezsp are located in directory `~/libezsp`).
 Issue the following commands in order to compile libezsp:
 ```
-cd ~/libezsp/src/example
-LOCAL_LDFLAGS=-L$HOME/serial LOCAL_INC=-I$HOME/serial/include make
+cd ~/libezsp
+LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_CPPTHREADS=ON
+make
 ```
 
 This will tell the compiler that libserialcpp.so can be found in `$HOME/serial` and headers are in `$HOME/serial/include` (this should be the default after the libserialcpp compilation steps above).
 
 In order to run the sample code under Linux, issue the following command in a terminal:
 ```
-cd ~/libezsp/src/example
-LD_LIBRARY_PATH=$HOME/serial ./mainEzspTest
+cd ~/libezsp
+LD_LIBRARY_PATH=$HOME/serial ./example/mainEzspTest -C 11 -c 26 -r '*' -s '0x01510004/0123456789abcdef0123456789abcdef' -d
 ```
+
+The example above will open Green Power commissionning mode for 11s, and use the Zigbee channel 26 (for both Zigbee and Green Power transmission and reception).
+
+The `-r` switch will flush any pre-existing known source ID & associated keys, and `-s` will manually add decoding support for a Green Power device with source ID 0x01510004 (and provides its associated 128-bit AES key).
 
 ### Execution
 
