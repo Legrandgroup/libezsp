@@ -10,13 +10,12 @@
  * @brief Macro to allow logger getter to fetch the singleton instance of this logger class
 **/
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
-#include "spi/ILogger.h"
 #include <string>
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
+#include <pp/diag.h>
+
+#include "spi/ILogger.h"
+
 namespace NSSPI {
 
 /**
@@ -180,6 +179,3 @@ public:
 
 } // namespace NSSPI
 
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN

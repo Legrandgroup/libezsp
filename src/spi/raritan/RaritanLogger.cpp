@@ -4,9 +4,10 @@
  * @brief Concrete implementation of a logger using Raritan's framework
  */
 
-#include "RaritanLogger.h"
-#include <pp/diag.h>
 #include <cstdarg>
+
+#include "RaritanLogger.h"
+
 using NSSPI::ILogger;
 using NSSPI::RaritanGenericLogger;
 using NSSPI::RaritanErrorLogger;
