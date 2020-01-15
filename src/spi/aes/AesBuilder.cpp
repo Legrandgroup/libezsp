@@ -10,5 +10,11 @@ using NSSPI::IAes;
 
 IAes *AesBuilder::create()
 {
+#ifndef DYNAMIC_ALLOCATION
+	static Aes instance;
+
+	return &instance;
+#else //DYNAMIC_ALLOCATION
   return new Aes();
+#endif
 }
