@@ -390,9 +390,10 @@ std::vector<uint8_t> CAsh::dataRandomise(std::vector<uint8_t> i_data, uint8_t st
     for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
         lo_data.push_back(i_data.at(cnt) ^ data);
 
-		data = static_cast<uint8_t>(data >> 1);
-        if ((data & 0x01) != 0) {
-            data ^= 0xb8;
+        if ((data & 0x01) == 0) {
+            data = static_cast<uint8_t>(data >> 1);
+        } else {
+            data = static_cast<uint8_t>((data >> 1) ^ static_cast<uint8_t>(0xb8));
         }
     }
 
