@@ -22,18 +22,6 @@ CEmberNetworkParameters::CEmberNetworkParameters() :
 {
 }
 
-CEmberNetworkParameters::CEmberNetworkParameters(const CEmberNetworkParameters& other) :
-	extend_pan_id(other.extend_pan_id),
-	pan_id(other.pan_id),
-	radio_tx_power(other.radio_tx_power),
-	radio_channel(other.radio_channel),
-	join_method(other.join_method),
-	nwk_manager_id(other.nwk_manager_id),
-	nwk_update_id(other.nwk_update_id),
-	channels(other.channels)
-{
-}
-
 CEmberNetworkParameters::CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip) :
 	extend_pan_id(
 		static_cast<uint64_t>(raw_message.at(0+skip)) |
@@ -118,28 +106,4 @@ std::string CEmberNetworkParameters::String() const
     buf << " }";
 
     return buf.str();
-}
-
-/**
- * This method is a friend of CEmberNetworkParameters class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void NSEZSP::swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept /* nothrow */
-{
-    using std::swap;	// Enable ADL
-
-    swap(first.extend_pan_id, second.extend_pan_id);
-    swap(first.pan_id, second.pan_id);
-    swap(first.radio_tx_power, second.radio_tx_power);
-    swap(first.radio_channel, second.radio_channel);
-    swap(first.join_method, second.join_method);
-    swap(first.nwk_manager_id, second.nwk_manager_id);
-    swap(first.nwk_update_id, second.nwk_update_id);
-    swap(first.channels, second.channels);
-    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberNetworkParameters& CEmberNetworkParameters::operator=(CEmberNetworkParameters other) {
-    swap(*this, other);
-    return *this;
 }

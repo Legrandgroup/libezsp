@@ -57,41 +57,6 @@ public:
    */
   explicit CZCLFrameControl( uint8_t i_byte );
 
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CZCLFrameControl(const CZCLFrameControl& other);
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CZCLFrameControl& operator=(CZCLFrameControl other);
-
-  /**
-   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZCLFrameControl
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept{
-    using std::swap;	// Enable ADL
-
-    swap(first.frame_type, second.frame_type);
-    swap(first.manufacturer_code_present, second.manufacturer_code_present);
-    swap(first.direction, second.direction);
-    swap(first.disable_default_rsp, second.disable_default_rsp);
-    swap(first.software_code, second.software_code);
-    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-  }
-
   // direction
   EZCLFrameCtrlDirection GetDirection(void) const { return direction; }
   void SetDirection( const EZCLFrameCtrlDirection i_direction ) { direction = i_direction; }

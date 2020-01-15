@@ -49,41 +49,6 @@ public:
    */
   CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx);
 
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CZCLHeader(const CZCLHeader& other);
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CZCLHeader& operator=(CZCLHeader other);
-
-  /**
-   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZCLHeader
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void swap(CZCLHeader& first, CZCLHeader& second) noexcept{
-    using std::swap;	// Enable ADL
-
-    swap(first.frm_ctrl, second.frm_ctrl);
-    swap(first.manufacturer_code, second.manufacturer_code);
-    swap(first.transaction_number, second.transaction_number);
-    swap(first.cmd_id, second.cmd_id);
-    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-  }
-
-
   // high level
 
   /**

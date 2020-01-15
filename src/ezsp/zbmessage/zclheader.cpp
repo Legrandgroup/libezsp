@@ -43,14 +43,6 @@ CZCLHeader::CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx) :
   }
 }
 
-CZCLHeader::CZCLHeader(const CZCLHeader& other) :
-	frm_ctrl(other.frm_ctrl),
-	manufacturer_code(other.manufacturer_code),
-	transaction_number(other.transaction_number),
-	cmd_id(other.cmd_id)
-{
-}
-
 /**
  * @brief SetMSPSpecific : build default msp cluster specific ZCL header
  * @param i_cmd_id       : command identifier
@@ -131,10 +123,4 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
   lo_data.push_back(cmd_id);
 
   return lo_data;
-}
-
-CZCLHeader& CZCLHeader::operator=(CZCLHeader other)
-{
-  swap(*this, other);
-  return *this;
 }

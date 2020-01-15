@@ -13,7 +13,7 @@ namespace NSEZSP {
 
 class CEzspDongleObserver {
 public:
-    CEzspDongleObserver() {};
+    CEzspDongleObserver() = default;
     virtual ~CEzspDongleObserver() = default;
 
     /**

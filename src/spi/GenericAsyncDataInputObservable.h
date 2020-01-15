@@ -23,7 +23,7 @@ namespace NSSPI {
 class GenericAsyncDataInputObservable {
 public:
 	GenericAsyncDataInputObservable();
-	virtual ~GenericAsyncDataInputObservable();
+	virtual ~GenericAsyncDataInputObservable() = default;
 
 	/**
 	 * @brief Register a new observer

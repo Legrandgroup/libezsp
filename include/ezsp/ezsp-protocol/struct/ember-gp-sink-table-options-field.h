@@ -35,43 +35,6 @@ class CEmberGpSinkTableOption
         CEmberGpSinkTableOption();
 
         /**
-         * @brief Copy constructor
-         *
-         * @param other The object to copy from
-         */
-        CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other);
-
-        /**
-         * @brief Assignment operator
-         *
-         * @param other The object to assign from
-         */
-        CEmberGpSinkTableOption& operator=( CEmberGpSinkTableOption other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void swap(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second) noexcept{
-		  using std::swap;	// Enable ADL
-
-		  swap(first.application_id, second.application_id);
-		  swap(first.communication_mode, second.communication_mode);
-		  swap(first.sequence_number_capabilities, second.sequence_number_capabilities);
-		  swap(first.rx_on_capability, second.rx_on_capability);
-		  swap(first.fixed_location, second.fixed_location);
-		  swap(first.assigned_alias, second.assigned_alias);
-		  swap(first.security_use, second.security_use);
-		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-		}
-
-
-        /**
          * @brief raw constructor
          */
         CEmberGpSinkTableOption(const uint16_t i_options);

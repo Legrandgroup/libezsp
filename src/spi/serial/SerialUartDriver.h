@@ -26,7 +26,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~SerialUartDriver();
+	virtual ~SerialUartDriver();
 
 	/**
 	 * @brief Copy constructor

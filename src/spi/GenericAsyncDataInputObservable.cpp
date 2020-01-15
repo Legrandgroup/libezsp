@@ -5,9 +5,6 @@ GenericAsyncDataInputObservable::GenericAsyncDataInputObservable() : observers()
 
 }
 
-GenericAsyncDataInputObservable::~GenericAsyncDataInputObservable() {
-}
-
 bool GenericAsyncDataInputObservable::registerObserver(IAsyncDataInputObserver* observer) {
 	return this->observers.emplace(observer).second;
 }

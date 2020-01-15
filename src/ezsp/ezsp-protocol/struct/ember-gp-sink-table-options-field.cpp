@@ -33,20 +33,6 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
 
 }
 
-
-CEmberGpSinkTableOption::CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other) :
-        application_id(other.application_id),
-        communication_mode(other.communication_mode),
-        sequence_number_capabilities(other.sequence_number_capabilities),
-        rx_on_capability(other.rx_on_capability),
-        fixed_location(other.fixed_location),
-        assigned_alias(other.assigned_alias),
-        security_use(other.security_use)
-{
-
-}
-
-
 /**
  * raw constructor
  *              - bits 0..2 : Application Id (0b000 : use source Id)
@@ -85,12 +71,6 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint8_t i_application_id,
         security_use(i_gpdf_commissioning_payload.isExtendedOptionsFieldPresent())
 {
 
-}
-
-CEmberGpSinkTableOption& CEmberGpSinkTableOption::operator=( CEmberGpSinkTableOption other)
-{
-  swap(*this, other);
-  return *this;
 }
 
 /**

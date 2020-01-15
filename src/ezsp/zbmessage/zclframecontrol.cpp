@@ -26,15 +26,6 @@ CZCLFrameControl::CZCLFrameControl(uint8_t i_byte) :
 {
 }
 
-CZCLFrameControl::CZCLFrameControl(const CZCLFrameControl& other) :
-	frame_type(other.frame_type),
-	manufacturer_code_present(other.manufacturer_code_present),
-	direction(other.direction),
-	disable_default_rsp(other.disable_default_rsp),
-	software_code(other.software_code)
-{
-}
-
 uint8_t CZCLFrameControl::GetFrmCtrlByte() const
 {
   uint8_t lo_byte = 0;
@@ -54,9 +45,4 @@ uint8_t CZCLFrameControl::GetFrmCtrlByte() const
   }
 
   return lo_byte;
-}
-
-CZCLFrameControl& CZCLFrameControl::operator=(CZCLFrameControl other) {
-  swap(*this, other);
-  return *this;
 }

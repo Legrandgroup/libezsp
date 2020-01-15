@@ -93,9 +93,3 @@ std::vector<uint8_t> CZigBeeMsg::Get( void ) const
 
   return lo_msg;
 }
-
-CZigBeeMsg& CZigBeeMsg::operator=(CZigBeeMsg other)
-{
-  swap(*this, other);
-  return *this;
-}

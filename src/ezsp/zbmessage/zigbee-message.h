@@ -28,46 +28,6 @@ class CZigBeeMsg
 {
 public:
   CZigBeeMsg();
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CZigBeeMsg(const CZigBeeMsg& i_msg) = default;
-
-  /**
-   * @brief Destructor
-   */
-  ~CZigBeeMsg() = default;
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CZigBeeMsg& operator=(CZigBeeMsg other);
-
-  /**
-   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZigBeeMsg
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void swap(CZigBeeMsg& first, CZigBeeMsg& second) noexcept{
-    using std::swap;	// Enable ADL
-
-    swap(first.aps, second.aps);
-    swap(first.zcl_header, second.zcl_header);
-    swap(first.use_zcl_header, second.use_zcl_header);
-    swap(first.payload, second.payload);
-    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-  }
-
-
   // high level
 
   /**

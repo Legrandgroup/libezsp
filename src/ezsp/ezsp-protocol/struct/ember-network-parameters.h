@@ -30,37 +30,6 @@ class CEmberNetworkParameters
          */
         CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip = 0);
 
-        /**
-         * @brief Copy constructor
-         *
-         * @param other The object to copy from
-         */
-        CEmberNetworkParameters(const CEmberNetworkParameters& other);
-
-        /**
-         * @brief Default destructor
-         */
-        virtual ~CEmberNetworkParameters() = default;
-
-        /**
-         * @brief Assignment operator
-         * @param other The object to assign to the lhs
-         *
-         * @return The object that has been assigned the value of @p other
-         */
-        CEmberNetworkParameters& operator=(CEmberNetworkParameters other);
-
-        /**
-         *  @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberNetworkParameters
-         *
-         * This function will swap all attributes of @p first and @p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept;
-
         std::vector<uint8_t> getRaw() const;
 
         /**

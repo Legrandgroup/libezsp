@@ -26,7 +26,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~CppThreadsTimer();
+	virtual ~CppThreadsTimer();
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
