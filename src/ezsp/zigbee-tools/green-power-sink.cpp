@@ -107,8 +107,9 @@ void CGpSink::init()
 
 bool CGpSink::gpClearAllTables()
 {
-    if ( SINK_READY != sink_state )
+    if ( SINK_READY != sink_state ) {
         return false;
+	}
 
     dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);   /* Handle sink table */
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{0});  /* Handle proxy table */
@@ -171,6 +172,354 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
 
 void CGpSink::handleDongleState( EDongleState i_state )
 {
+	// do nothing
+}
+
+void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive)
+{
+	CGetNetworkParamtersResponse l_rsp(i_msg_receive);
+	if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() )
+	{
+		nwk_parameters = l_rsp.getParameters();
+	}
+}
+
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame& gpf)
+{
+	// do action only if we are in commissioning mode
+	if( SINK_COM_OPEN == sink_state )
+	{
+		if(  GPF_COMMISSIONING_CMD == gpf.getCommandId() )
+		{
+			// find entry in sink table
+			gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
+
+			// save incomming message
+			gpf_comm_frame = gpf;
+
+			// set new state
+			setSinkState(SINK_COM_IN_PROGRESS);
+		}
+	}
+	if( authorizeGpfChannelRqst && (GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId()) )
+	{
+		// response only if next attempt is on same channel as us
+		uint8_t l_next_channel_attempt = static_cast<uint8_t>(gpf.getPayload().at(0)&0x0F);
+		if( l_next_channel_attempt == (nwk_parameters.getRadioChannel()-11U) )
+		{
+			// send hannel configuration with timeout of 500ms
+			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
+			std::vector<uint8_t> l_payload;
+			l_payload.push_back(0x10|l_next_channel_attempt);
+			gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 2000 );
+
+			// \todo is it necessary to let SINK open for commissioning ?
+		}
+	}
+}
+
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gpf)
+{
+	// manage channel request
+	if( GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId() )
+	{
+		// assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
+		uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
+		if( 0x1021 == l_manufacturer_id )
+		{
+			uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
+			uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
+			uint8_t l_type_id = gpf.getPayload().at(6);
+			//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
+
+			if( (0==l_cluster_id) && (0x5000==l_attribute_id) && (0x20==l_type_id) )
+			{
+				// verify that no message is waiting to send
+				bool l_found = false;
+				for (auto it : gpd_send_list)
+					if( it.second == gpf.getSourceId() ){ l_found = true; }
+
+				if( !l_found )
+				{
+					static uint8_t l_handle_counter = 0;
+
+					// response on same channel, attribute contain device_id of gpd
+					// \todo use to update sink table entry
+
+					// send hannel configuration with timeout of 1000ms
+					CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
+					std::vector<uint8_t> l_payload;
+					l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
+					gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
+					gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
+				}
+			}
+		}
+	}
+
+	// notify
+	notifyObserversOfRxGpFrame( gpf );
+}
+
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> i_msg_receive)
+{
+	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+
+	// build gpf frame from ezsp rx message
+	CGpFrame gpf = CGpFrame(i_msg_receive);
+
+	// notify
+	CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
+	if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
+	else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
+	else{ l_key_status = CGpdKeyStatus::Undefined; }
+	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
+
+	clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
+		", link : " << unsigned(i_msg_receive.at(1)) <<
+		", sequence number : " << unsigned(i_msg_receive.at(2)) <<
+		", gp address : " << gpf <<
+		std::endl;
+
+	/**
+	 * trame gpf:
+	 * - no cryptée : on essaye de la validé en donner la TC link key (zig...009), dans le cas ou il s'agit d'une trame de commissioning
+	 * - crypté :
+	 *      - on cherche dans la table du sink (créé une class sink table entry comme décrit tabnle 25 section A3.3.2.2.2 du doc Green Power Basic spec v1.0)
+	 *      - si trouvé on essaye de la validé en passant la key associéé
+	 * - si la validation réussi on notifie le gpf au observateur
+	 */
+
+	if( GPD_NO_SECURITY == gpf.getSecurity() )
+	{
+		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(gpf);
+	}
+	else if(  EEmberStatus::EMBER_SUCCESS == l_status )
+	{
+		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(gpf);
+	}
+}
+
+void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<uint8_t> i_msg_receive)
+{
+	if( SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
+	{
+		sink_table_index = i_msg_receive.at(0); // get allocated index
+		clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sink_table_index) << "\n";
+		if( 0xFF != sink_table_index )
+		{
+			gpSinkGetEntry( sink_table_index ); // retrieve the entry at the selected index
+		}
+		else
+		{
+			// no place to record pairing : FAILED
+			clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
+			setSinkState(SINK_READY);
+		}
+	}
+	else
+	{
+		clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY : sink_state " << sink_state << std::endl;
+	}
+}
+
+void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive)
+{
+	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
+	{
+		if( 0xFF != i_msg_receive.at(0) )
+		{
+			// remove index
+			gpSinkTableRemoveEntry(i_msg_receive.at(0));
+		}
+
+		// find proxy table entry
+		gpProxyTableLookup(gpds_to_remove.back());
+	}
+}
+
+void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive)
+{
+	if( SINK_COM_IN_PROGRESS == sink_state ) /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
+	/* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
+	{
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
+
+		// debug
+		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+
+		// decode payload
+		CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
+
+		// debug
+		clogD << "GPD Commissioning payload : " << l_payload << std::endl;
+
+		// update sink table entry
+		CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
+		CEmberGpSinkTableOption l_options(l_gpd_addr.getApplicationId(),l_payload);
+
+		l_entry.setEntryActive(true);
+		l_entry.setOptions(l_options);
+		l_entry.setGpdAddress(l_gpd_addr);
+		l_entry.setDeviceId(l_payload.getDeviceId());
+		l_entry.setAlias(static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF));
+		l_entry.setSecurityOption(l_payload.getExtendedOption()&0x1F);
+		l_entry.setFrameCounter(l_payload.getOutFrameCounter());
+		l_entry.setKey(l_payload.getKey());
+
+		// debug
+		clogD << "Update table entry : " << l_entry << std::endl;
+
+		// call
+		gpSinkSetEntry(sink_table_index,l_entry);
+
+		// save
+		sink_table_entry = l_entry;
+	}
+	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
+	{
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
+
+		// debug
+		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+
+		// update sink table entry
+		CEmberGpAddressStruct l_gp_addr(gpds_to_register.back().getSourceId());
+
+		l_entry.setEntryActive(true);
+		l_entry.setOptions(gpds_to_register.back().getSinkOption());
+		l_entry.setGpdAddress(l_gp_addr);
+		l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
+		l_entry.setSecurityOption(gpds_to_register.back().getSinkSecurityOption());
+		l_entry.setFrameCounter(0);
+		l_entry.setKey(gpds_to_register.back().getKey());
+
+		// debug
+		clogD << "Update table entry : " << l_entry << std::endl;
+
+		// call
+		gpSinkSetEntry(sink_table_index,l_entry);
+
+		// save
+		sink_table_entry = l_entry;
+	}
+	else
+	{
+		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY : sink_state" <<  sink_state << std::endl;
+	}
+}
+
+void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_msg_receive)
+{
+	if( (SINK_COM_IN_PROGRESS == sink_state) || (SINK_COM_OFFLINE_IN_PROGRESS == sink_state) )
+	{
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+
+		// debug
+		clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+
+		if( EMBER_SUCCESS != l_status )
+		{
+			// error
+			clogD << "ERROR, Stop commissioning process !!" << std::endl;
+			setSinkState(SINK_READY);
+		}
+		else
+		{
+			// do proxy pairing
+			// \todo replace short and long sink network address by right value, currently we use group mode not so important
+			CProcessGpPairingParam l_param( sink_table_entry, true, false, 0, {0,0,0,0,0,0,0,0} );
+			// call
+			gpProxyTableProcessGpPairing(l_param);
+		}
+	}
+}
+
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive)
+{
+	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
+	{
+		if( 0xFF != i_msg_receive.at(0) )
+		{
+			// remove index
+			CProcessGpPairingParam l_param(gpds_to_remove.back());
+			gpProxyTableProcessGpPairing(l_param);
+		}
+
+		// find next sink table entry
+		gpds_to_remove.pop_back();
+		if( gpds_to_remove.empty() )
+		{
+			// no more gpd to remove
+			setSinkState(SINK_READY);
+		}
+		else
+		{
+			gpSinkTableLookup(gpds_to_remove.back());
+		}
+	}
+}
+
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive)
+{
+	if( SINK_CLEAR_ALL == sink_state )
+	{
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		if( EMBER_SUCCESS == l_status )
+		{
+			// do remove action
+			CEmberGpProxyTableEntryStruct l_entry(std::vector<uint8_t>(i_msg_receive.begin()+1,i_msg_receive.end()));
+			CProcessGpPairingParam l_param(l_entry.getGpdAddress().getSourceId());
+			gpProxyTableProcessGpPairing(l_param);
+		}
+		else
+		{
+			// assume end of table
+			// set new state
+			setSinkState(SINK_READY);
+		}
+
+	}
+}
+
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uint8_t> i_msg_receive)
+{
+	if( SINK_COM_IN_PROGRESS == sink_state )
+	{
+		clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+
+		// close commissioning session
+		closeCommissioningSession();
+	}
+	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
+	{
+		clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+
+		gpds_to_register.pop_back();
+
+		if( gpds_to_register.size() )
+		{
+			// request sink table entry
+			gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
+		}
+		else
+		{
+			// set state
+			setSinkState(SINK_READY);
+		}
+	}
+	else if( SINK_CLEAR_ALL == sink_state )
+	{
+		// retrieve next entry
+		proxy_table_index++;
+		dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
+	}
+	else
+	{
+		clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING : sink_state " << sink_state << std::endl;
+	}
 }
 
 void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
@@ -179,33 +528,12 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
     {
         case EZSP_GP_PROXY_TABLE_GET_ENTRY:
         {
-            if( SINK_CLEAR_ALL == sink_state )
-            {
-                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-                if( EMBER_SUCCESS == l_status )
-                {
-                    // do remove action
-                    CEmberGpProxyTableEntryStruct l_entry(std::vector<uint8_t>(i_msg_receive.begin()+1,i_msg_receive.end()));
-                    CProcessGpPairingParam l_param(l_entry.getGpdAddress().getSourceId());
-                    gpProxyTableProcessGpPairing(l_param);
-                }
-                else
-                {
-                    // assume end of table
-                    // set new state
-                    setSinkState(SINK_READY);
-                }
-
-            }
+            handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(i_msg_receive);
         }
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
         {
-            CGetNetworkParamtersResponse l_rsp(i_msg_receive);
-            if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() )
-            {
-                nwk_parameters = l_rsp.getParameters();
-            }
+            handleEzspRxMessage_GET_NETWORK_PARAMETERS(i_msg_receive);
         }
         break;
         case EZSP_GP_SINK_TABLE_INIT:
@@ -215,318 +543,43 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         break;
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
         {
-            EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-
-            // build gpf frame from ezsp rx message
-            CGpFrame gpf = CGpFrame(i_msg_receive);
-
-            // notify
-            CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
-            if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
-            else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
-            else{ l_key_status = CGpdKeyStatus::Undefined; }
-            notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
-
-            clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
-                ", link : " << unsigned(i_msg_receive.at(1)) <<
-                ", sequence number : " << unsigned(i_msg_receive.at(2)) <<
-                ", gp address : " << gpf <<
-                std::endl;
-
-            /**
-             * trame gpf:
-             * - no cryptée : on essaye de la validé en donner la TC link key (zig...009), dans le cas ou il s'agit d'une trame de commissioning
-             * - crypté :
-             *      - on cherche dans la table du sink (créé une class sink table entry comme décrit tabnle 25 section A3.3.2.2.2 du doc Green Power Basic spec v1.0)
-             *      - si trouvé on essaye de la validé en passant la key associéé
-             * - si la validation réussi on notifie le gpf au observateur
-             */
-
-            if( GPD_NO_SECURITY == gpf.getSecurity() )
-            {
-                // do action only if we are in commissioning mode
-                if( SINK_COM_OPEN == sink_state )
-                {
-                    if(  GPF_COMMISSIONING_CMD == gpf.getCommandId() )
-                    {
-                        // find entry in sink table
-                        gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
-
-                        // save incomming message
-                        gpf_comm_frame = gpf;
-
-                        // set new state
-                        setSinkState(SINK_COM_IN_PROGRESS);
-                    }
-                }
-                if( authorizeGpfChannelRqst && (GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId()) )
-                {
-                    // response only if next attempt is on same channel as us
-                    uint8_t l_next_channel_attempt = static_cast<uint8_t>(gpf.getPayload().at(0)&0x0F);
-                    if( l_next_channel_attempt == (nwk_parameters.getRadioChannel()-11U) )
-                    {
-                        // send hannel configuration with timeout of 500ms
-                        CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-                        std::vector<uint8_t> l_payload;
-                        l_payload.push_back(0x10|l_next_channel_attempt);
-                        gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 2000 );
-
-                        // \todo is it necessary to let SINK open for commissioning ?
-                    }
-                }
-            }
-            else
-            {
-                // if success notify
-                if(  EEmberStatus::EMBER_SUCCESS == l_status )
-                {
-                    // manage channel request
-                    if( GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId() )
-                    {
-                        // assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
-                        uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
-                        if( 0x1021 == l_manufacturer_id )
-                        {
-                            uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
-                            uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
-                            uint8_t l_type_id = gpf.getPayload().at(6);
-                            //uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
-
-                            if( (0==l_cluster_id) && (0x5000==l_attribute_id) && (0x20==l_type_id) )
-                            {
-                                // verify that no message is waiting to send
-                                bool l_found = false;
-                                for (auto it : gpd_send_list)
-                                    if( it.second == gpf.getSourceId() ){ l_found = true; }
-
-                                if( !l_found )
-                                {
-                                    static uint8_t l_handle_counter = 0;
-
-                                    // response on same channel, attribute contain device_id of gpd
-                                    // \todo use to update sink table entry
-
-                                    // send hannel configuration with timeout of 1000ms
-                                    CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-                                    std::vector<uint8_t> l_payload;
-                                    l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
-                                    gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
-                                    gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
-                                }
-                            }
-                        }
-                    }
-
-                    // notify
-                    notifyObserversOfRxGpFrame( gpf );
-                }
-            }
+            handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(i_msg_receive);
         }
         break;
 
         case EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-            {
-                sink_table_index = i_msg_receive.at(0); // get allocated index
-                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sink_table_index) << "\n";
-                if( 0xFF != sink_table_index )
-                {
-                    gpSinkGetEntry( sink_table_index ); // retrieve the entry at the selected index
-                }
-                else
-                {
-                    // no place to record pairing : FAILED
-                    clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
-                    setSinkState(SINK_READY);
-                }
-            }
-            else
-            {
-                clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY : sink_state " << sink_state << std::endl;
-            }
+            handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(i_msg_receive);
         }
         break;
 
         case EZSP_GP_SINK_TABLE_LOOKUP:
         {
-            if ( SINK_REMOVE_IN_PROGRESS == sink_state )
-            {
-                if( 0xFF != i_msg_receive.at(0) )
-                {
-                    // remove index
-                    gpSinkTableRemoveEntry(i_msg_receive.at(0));
-                }
-
-                // find proxy table entry
-                gpProxyTableLookup(gpds_to_remove.back());
-            }
+            handleEzspRxMessage_SINK_TABLE_LOOKUP(i_msg_receive);
         }
         break;
 
         case EZSP_GP_PROXY_TABLE_LOOKUP:
         {
-            if ( SINK_REMOVE_IN_PROGRESS == sink_state )
-            {
-                if( 0xFF != i_msg_receive.at(0) )
-                {
-                    // remove index
-                    CProcessGpPairingParam l_param(gpds_to_remove.back());
-                    gpProxyTableProcessGpPairing(l_param);
-                }
-
-                // find next sink table entry
-                gpds_to_remove.pop_back();
-                if( gpds_to_remove.empty() )
-                {
-                    // no more gpd to remove
-                    setSinkState(SINK_READY);
-                }
-                else
-                {
-                    gpSinkTableLookup(gpds_to_remove.back());
-                }
-            }
+            handleEzspRxMessage_PROXY_TABLE_LOOKUP(i_msg_receive);
         }
         break;
 
         case EZSP_GP_SINK_TABLE_GET_ENTRY:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state ) /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
-            /* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
-            {
-                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-                CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
-
-                // debug
-                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
-
-                // decode payload
-                CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
-
-                // debug
-                clogD << "GPD Commissioning payload : " << l_payload << std::endl;
-
-                // update sink table entry
-                CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
-                CEmberGpSinkTableOption l_options(l_gpd_addr.getApplicationId(),l_payload);
-
-                l_entry.setEntryActive(true);
-                l_entry.setOptions(l_options);
-                l_entry.setGpdAddress(l_gpd_addr);
-                l_entry.setDeviceId(l_payload.getDeviceId());
-                l_entry.setAlias(static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF));
-                l_entry.setSecurityOption(l_payload.getExtendedOption()&0x1F);
-                l_entry.setFrameCounter(l_payload.getOutFrameCounter());
-                l_entry.setKey(l_payload.getKey());
-
-                // debug
-                clogD << "Update table entry : " << l_entry << std::endl;
-
-                // call
-                gpSinkSetEntry(sink_table_index,l_entry);
-
-                // save
-                sink_table_entry = l_entry;
-            }
-            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-            {
-                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-                CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
-
-                // debug
-                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
-
-                // update sink table entry
-                CEmberGpAddressStruct l_gp_addr(gpds_to_register.back().getSourceId());
-
-                l_entry.setEntryActive(true);
-                l_entry.setOptions(gpds_to_register.back().getSinkOption());
-                l_entry.setGpdAddress(l_gp_addr);
-                l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
-                l_entry.setSecurityOption(gpds_to_register.back().getSinkSecurityOption());
-                l_entry.setFrameCounter(0);
-                l_entry.setKey(gpds_to_register.back().getKey());
-
-                // debug
-                clogD << "Update table entry : " << l_entry << std::endl;
-
-                // call
-                gpSinkSetEntry(sink_table_index,l_entry);
-
-                // save
-                sink_table_entry = l_entry;
-            }
-            else
-            {
-                clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY : sink_state" <<  sink_state << std::endl;
-            }
+            handleEzspRxMessage_SINK_TABLE_GET_ENTRY(i_msg_receive);
         }
         break;
 
         case EZSP_GP_SINK_TABLE_SET_ENTRY:
         {
-            if( (SINK_COM_IN_PROGRESS == sink_state) || (SINK_COM_OFFLINE_IN_PROGRESS == sink_state) )
-            {
-                EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-
-                // debug
-                clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
-
-                if( EMBER_SUCCESS != l_status )
-                {
-                    // error
-                    clogD << "ERROR, Stop commissioning process !!" << std::endl;
-                    setSinkState(SINK_READY);
-                }
-                else
-                {
-                    // do proxy pairing
-                    // \todo replace short and long sink network address by right value, currently we use group mode not so important
-                    CProcessGpPairingParam l_param( sink_table_entry, true, false, 0, {0,0,0,0,0,0,0,0} );
-                    // call
-                    gpProxyTableProcessGpPairing(l_param);
-                }
-            }
+            handleEzspRxMessage_SINK_TABLE_SET_ENTRY(i_msg_receive);
         }
         break;
 
         case EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING:
         {
-            if( SINK_COM_IN_PROGRESS == sink_state )
-            {
-                clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
-
-                // close commissioning session
-                closeCommissioningSession();
-            }
-            else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-            {
-                clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
-
-                gpds_to_register.pop_back();
-
-                if( gpds_to_register.size() )
-                {
-                    // request sink table entry
-                    gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
-                }
-                else
-                {
-                    // set state
-                    setSinkState(SINK_READY);
-                }
-            }
-            else if( SINK_CLEAR_ALL == sink_state )
-            {
-                // retrieve next entry
-                proxy_table_index++;
-                dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
-            }
-            else
-            {
-                clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING : sink_state " << sink_state << std::endl;
-            }
+            handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(i_msg_receive);
         }
         break;
 

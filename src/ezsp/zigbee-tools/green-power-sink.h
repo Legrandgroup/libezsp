@@ -215,6 +215,18 @@ private:
      * @param i_src_id : source id of gpd to found
      */
     void gpSinkTableLookup(uint32_t i_src_id);
+
+    void handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame& gpf);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gpf);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uint8_t> i_msg_receive);
 };
 
 } // namespace NSEZSP
