@@ -19,7 +19,7 @@
 
 namespace NSEZSP {
 
-#define DEFAULT_RADIO_CHANNEL 11
+constexpr uint8_t DEFAULT_RADIO_CHANNEL = 11;
 
 class CZigbeeNetworking : public CEzspDongleObserver
 {
