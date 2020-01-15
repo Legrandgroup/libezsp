@@ -329,7 +329,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 /* Note: we start the sink below only if network is up, but even if this is the case, we will not do it if we have been asked to reset the Zigbee network
                 * Indeed, if the Zigbee network needs to be reset, we will first have to leave and re-create a network in the EZSP_NETWORK_STATE case below, and only then
                 * will we get called again with EMBER_NETWORK_UP once the Zigbee network has been re-created */
-                if ((EMBER_NETWORK_UP == status) && !this->resetDot154ChannelAtInit)
+                if ((EMBER_NETWORK_UP == status) && (this->resetDot154ChannelAtInit == 0))
 				{
 					this->setState(CLibEzspInternalState::SINK_BUSY);
 					/* Create a sink state change callback to find out when the sink is ready */
@@ -439,7 +439,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             }
             else
             {
-                if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit))
+                if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit != 0))
                 {
                     clogD << "Zigbee reset requested... Leaving current network\n";
                     // leave current network
