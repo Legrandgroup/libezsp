@@ -135,6 +135,10 @@ private:
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
+
+	void handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive );
 };
 
 } // namespace NSEZSP
