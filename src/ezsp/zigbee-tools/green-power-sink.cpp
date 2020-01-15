@@ -340,15 +340,17 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_r
 
 void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive)
 {
+	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+	CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
+	CEmberGpSinkTableOption l_options;
+	CEmberGpAddressStruct l_gp_addr;
+
+	// debug
+	clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+
 	if( SINK_COM_IN_PROGRESS == sink_state ) /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
 	/* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
 	{
-		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-		CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
-
-		// debug
-		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
-
 		// decode payload
 		CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
 
@@ -356,59 +358,43 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_ms
 		clogD << "GPD Commissioning payload : " << l_payload << std::endl;
 
 		// update sink table entry
-		CEmberGpAddressStruct l_gpd_addr(gpf_comm_frame.getSourceId());
-		CEmberGpSinkTableOption l_options(l_gpd_addr.getApplicationId(),l_payload);
+		l_gp_addr = CEmberGpAddressStruct(gpf_comm_frame.getSourceId());
+		l_options = CEmberGpSinkTableOption(l_gp_addr.getApplicationId(),l_payload);
 
-		l_entry.setEntryActive(true);
-		l_entry.setOptions(l_options);
-		l_entry.setGpdAddress(l_gpd_addr);
 		l_entry.setDeviceId(l_payload.getDeviceId());
 		l_entry.setAlias(static_cast<uint16_t>(gpf_comm_frame.getSourceId()&0xFFFF));
 		l_entry.setSecurityOption(l_payload.getExtendedOption()&0x1F);
 		l_entry.setFrameCounter(l_payload.getOutFrameCounter());
 		l_entry.setKey(l_payload.getKey());
-
-		// debug
-		clogD << "Update table entry : " << l_entry << std::endl;
-
-		// call
-		gpSinkSetEntry(sink_table_index,l_entry);
-
-		// save
-		sink_table_entry = l_entry;
 	}
 	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
 	{
-		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-		CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
-
-		// debug
-		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
-
 		// update sink table entry
-		CEmberGpAddressStruct l_gp_addr(gpds_to_register.back().getSourceId());
+		l_gp_addr = CEmberGpAddressStruct(gpds_to_register.back().getSourceId());
+		l_options = gpds_to_register.back().getSinkOption();
 
-		l_entry.setEntryActive(true);
-		l_entry.setOptions(gpds_to_register.back().getSinkOption());
-		l_entry.setGpdAddress(l_gp_addr);
 		l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
 		l_entry.setSecurityOption(gpds_to_register.back().getSinkSecurityOption());
 		l_entry.setFrameCounter(0);
 		l_entry.setKey(gpds_to_register.back().getKey());
 
-		// debug
-		clogD << "Update table entry : " << l_entry << std::endl;
-
-		// call
-		gpSinkSetEntry(sink_table_index,l_entry);
-
-		// save
-		sink_table_entry = l_entry;
 	}
 	else
 	{
 		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY : sink_state" <<  sink_state << std::endl;
+		return;
 	}
+	l_entry.setEntryActive(true);
+	l_entry.setOptions(l_options);
+	l_entry.setGpdAddress(l_gp_addr);
+	// debug
+	clogD << "Update table entry : " << l_entry << std::endl;
+
+	// call
+	gpSinkSetEntry(sink_table_index,l_entry);
+
+	// save
+	sink_table_entry = l_entry;
 }
 
 void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_msg_receive)
