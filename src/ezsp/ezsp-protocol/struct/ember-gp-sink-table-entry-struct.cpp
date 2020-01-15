@@ -63,28 +63,6 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntry
     sink_list[1].push_back(0xFF);
 }
 
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other):
-        status(other.status),
-        options(other.options),
-        gpd(other.gpd),
-        device_id(other.device_id),
-        sink_list(other.sink_list),
-        assigned_alias(other.assigned_alias),
-        groupcast_radius(other.groupcast_radius),
-        security_options(other.security_options),
-        gpdSecurity_frame_counter(other.gpdSecurity_frame_counter),
-        gpd_key(other.gpd_key)
-{
-
-}
-
-
-CEmberGpSinkTableEntryStruct& CEmberGpSinkTableEntryStruct::operator=(CEmberGpSinkTableEntryStruct other)
-{
-  swap(*this, other);
-  return *this;
-}
-
 std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
 {
     std::vector<uint8_t> l_struct;

@@ -26,11 +26,6 @@ class CEmberGpSinkTableEntryStruct
         CEmberGpSinkTableEntryStruct();
 
         /**
-         * @brief Default destructor
-         */
-        virtual ~CEmberGpSinkTableEntryStruct() = default;
-
-        /**
          * @brief Construction from a buffer
          *
          * @param raw_message The buffer to construct from
@@ -63,46 +58,6 @@ class CEmberGpSinkTableEntryStruct
         CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntryStatus i_status, CEmberGpSinkTableOption i_options,
                         CEmberGpAddressStruct i_gpd_address, uint8_t i_device_id, uint16_t i_alias,
                         uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);
-
-        /**
-         * @brief Copy constructor
-         *
-         * @param other The object instance to construct from
-         */
-        CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableEntryStruct
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) noexcept{
-		  using std::swap;	// Enable ADL
-
-		  swap(first.status, second.status);
-		  swap(first.options, second.options);
-		  swap(first.gpd, second.gpd);
-		  swap(first.device_id, second.device_id);
-		  swap(first.sink_list, second.sink_list);
-		  swap(first.assigned_alias, second.assigned_alias);
-		  swap(first.groupcast_radius, second.groupcast_radius);
-		  swap(first.security_options, second.security_options);
-		  swap(first.gpdSecurity_frame_counter, second.gpdSecurity_frame_counter);
-		  swap(first.gpd_key, second.gpd_key);
-		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-		}
-
-        /**
-         * @brief Assignment operator
-         * @param other The object to assign to the lhs
-         *
-         * @return The object that has been assigned the value of @p other
-         */
-        CEmberGpSinkTableEntryStruct& operator=(CEmberGpSinkTableEntryStruct other);
 
         /**
          * @brief return structure as a raw

@@ -25,7 +25,7 @@ class CEmberChildDataStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberChildDataStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberChildDataStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Assignment operator
