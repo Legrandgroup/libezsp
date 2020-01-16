@@ -81,6 +81,29 @@ bool CBootloaderPrompt::selectModeRun()
   return true;
 }
 
+bool CBootloaderPrompt::selectModeUpgradeFw()
+{
+  static const uint8_t cmdSeq[] = "1";
+
+  if (this->state != EBootloaderStage::TOPLEVEL_MENU_PROMPT)
+  {
+    clogE << "Cannot type command without a valid prompt\n";
+    return false;
+  }
+  if (this->bootloaderWriteFunc)
+  {
+    size_t writtenBytes;
+    clogD << "Entering upload ebl command\n";
+    clogD << "Stopping here in menu for debug\n"; exit(1);
+    this->bootloaderWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
+  }
+  else
+  {
+    clogE << "Cannot type commands on CLI because no write functor is available\n";
+  }
+  return true;
+}
+
 EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
 {
   uint8_t val;

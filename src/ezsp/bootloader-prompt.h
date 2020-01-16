@@ -62,7 +62,19 @@ public:
 
     void probe();
 
+    /**
+     * @brief Select the application run bootloader menu
+     * 
+     * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
+     */
     bool selectModeRun();
+
+    /**
+     * @brief Select the firmware upgrade bootloader menu
+     * 
+     * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
+     */
+    bool selectModeUpgradeFw();
 
     EBootloaderStage decode(std::vector<uint8_t> &i_data);
 

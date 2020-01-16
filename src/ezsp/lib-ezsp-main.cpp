@@ -407,7 +407,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
                 // We create a network on the required channel
                 if (this->getState() == CLibEzspInternalState::STACK_INIT)
                 {
-                    clogI << "CAppDemo::stackInit Call formHaNetwork" << std::endl;
+                    clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
                     zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
                     //set new state
                     this->setState(CLibEzspInternalState::FORM_NWK_IN_PROGRESS);
@@ -418,7 +418,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             {
                 if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit))
                 {
-                    clogD << "Zigbee reset requested... Leaving current network\n";
+                    clogI << "Zigbee reset requested... Leaving current network\n";
                     // leave current network
                     zb_nwk.leaveNetwork();
                     this->setState(CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS);
@@ -449,7 +449,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
             {
                 clogD << "Bootloader prompt mode is going to start now\n";
-                this->dongle.setBootloaderMode(true);
+                this->dongle.setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
             }
             else
             {

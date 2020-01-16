@@ -25,6 +25,16 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+/**
+ * @brief Requested state for the ezsp adapter
+ */
+enum class CEzspDongleMode {
+    UNKNOWN,                            /*<! Unknown initial run mode for the dongle */
+    EZSP_NCP,                           /*<! Dongle is in EZSP commands processor mode */
+    BOOTLOADER_FIRMWARE_UPGRADE,        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */
+    BOOTLOADER_EXIT_TO_EZSP_NCP,        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */
+};
+
 class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
 {
 public:
@@ -65,15 +75,15 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
     /**
-     * @brief Switch dongle read/write behaviour to bootloader or EZSP/ASH mode
+     * @brief Switch the EZSP adatper read/write behaviour to bootloader or EZSP/ASH mode
      *
-     * @param dongleInBootloaderMode If true, the dongle will consider that the adapter is in bootloader prompt mode, if false, it will consider that the adapter is in EZSP/ASH command mode
+     * @param requestedMode The new requested mode
      */
-    void setBootloaderMode(bool dongleInBootloaderMode);
+    void setMode(CEzspDongleMode requestedMode);
 
 private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
-    bool bootloaderMode;    /*!< Is the adapter in bootloader prompt mode? If false, we are in applicative EZSP/ASH mode */
+    CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;
