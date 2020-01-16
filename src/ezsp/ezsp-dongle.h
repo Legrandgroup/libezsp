@@ -75,6 +75,14 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
     /**
+     * @brief Makes initialization timeout trigger a switch to firmware upgrade mode
+     *
+     * Default behaviour for initialization timeouts is to probe the bootloader prompt and if found, to run the EZSP application
+     * in the hope the adapter will move back to EZSP mode
+     */
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
      * @brief Switch the EZSP adatper read/write behaviour to bootloader or EZSP/ASH mode
      *
      * @param requestedMode The new requested mode
@@ -84,6 +92,7 @@ public:
 private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
     CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
+    bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     TimerBuilder &timer_factory;
     IUartDriver *pUart;
     CAsh *ash;

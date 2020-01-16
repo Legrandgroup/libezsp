@@ -56,6 +56,11 @@ CLibEzspMain::CLibEzspMain(IUartDriver *uartDriver,
     }
 }
 
+void CLibEzspMain::forceFirmwareUpgradeOnInitTimeout()
+{
+    this->dongle.forceFirmwareUpgradeOnInitTimeout();
+}
+
 void CLibEzspMain::registerLibraryStateCallback(std::function<void (CLibEzspState i_state)> newObsStateCallback)
 {
     this->obsStateCallback = newObsStateCallback;

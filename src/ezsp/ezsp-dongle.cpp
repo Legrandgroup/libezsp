@@ -10,6 +10,7 @@
 CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	firstStartup(true),
 	lastKnownMode(CEzspDongleMode::UNKNOWN),
+	switchToFirmwareUpgradeOnInitTimeout(false),
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
 	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
@@ -98,11 +99,19 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         if (firstStartup)
         {
             /* If this is the startup sequence, we might be in bootloader prompt mode, not in ASH mode, so try to exit to EZSP/ASH mode from bootloader */
-            this->setMode(CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP);
+            if (this->switchToFirmwareUpgradeOnInitTimeout)
+            {
+                this->setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
+            }
+            else
+            {
+                this->setMode(CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP);
+            }
             firstStartup = false;
         }
         else
         {
+            clogE << "EZSP adapter is not responding\n";
             notifyObserversOfDongleState( DONGLE_NOT_RESPONDING );
         }
     }
@@ -239,6 +248,11 @@ bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
     return static_cast<bool>(this->observers.erase(observer));
 }
 
+void CEzspDongle::forceFirmwareUpgradeOnInitTimeout()
+{
+    this->switchToFirmwareUpgradeOnInitTimeout = true;
+}
+
 void CEzspDongle::setMode(CEzspDongleMode requestedMode)
 {
     if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP
@@ -253,6 +267,8 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
             notifyObserversOfBootloaderPrompt();
             this->blp->selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongleMode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
+            /* Restart the EZSP startup procedure here */
+            this->open(this->pUart); /* FIXME: we don't need to run all the code from open(), just reset state variables, send the reset frame and arm again the ASH reset timeout */
         });
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;

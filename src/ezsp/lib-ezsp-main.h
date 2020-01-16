@@ -118,6 +118,14 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
     /**
+     * @brief Makes initialization timeout trigger a switch to firmware upgrade mode
+     *
+     * Default behaviour for initialization timeouts is to probe the bootloader prompt and if found, to run the EZSP application
+     * in the hope the adapter will move back to EZSP mode
+     */
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
      * @brief Switch the EZSP adapter to firmware upgrade mode
      * 
      * Method handleFirmwareXModemXfr() should then be invoked when the adapter is ready to receive a firmware
