@@ -26,6 +26,8 @@ protected:
 	virtual void trigger(ITimer* triggeringTimer) = 0;
 };
 
+typedef std::function<void (ITimer* triggeringTimer)> TimerCallback;
+
 /**
  * @brief Abstract class to execute a callback after a given timeout
  */
@@ -47,7 +49,7 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	virtual bool start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) = 0;
+	virtual bool start(uint16_t timeout, TimerCallback callBackFunction) = 0;
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time

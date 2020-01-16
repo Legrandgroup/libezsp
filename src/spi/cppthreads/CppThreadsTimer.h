@@ -12,8 +12,6 @@
 #include <condition_variable>
 namespace NSSPI {
 
-typedef std::function<void (ITimer* triggeringTimer)> TimerCallback;
-
 /**
  * @brief Concrete implementation of ITimer using C++11 threads
  */
