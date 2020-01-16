@@ -17,26 +17,12 @@ CEmberGpAddressStruct::CEmberGpAddressStruct():
 {
 }
 
-CEmberGpAddressStruct::CEmberGpAddressStruct(const CEmberGpAddressStruct& other):
-	gpdIeeeAddress(other.getGpdIeeeAddress()),
-	applicationId(other.getApplicationId()),
-	endpoint(other.getEndpoint())
-{
-}
-
 CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message):
 	gpdIeeeAddress(raw_message.begin()+1,raw_message.begin()+1+EMBER_EUI64_BYTE_SIZE),
 	applicationId(raw_message.at(0)),
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
 {
 }
-
-CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
-{
-  swap(*this, other);
-  return *this;
-}
-
 
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
 	gpdIeeeAddress(),	/* FIXME */
