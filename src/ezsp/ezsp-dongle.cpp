@@ -20,6 +20,7 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
 	wait_rsp(false),
 	observers()
 {
+	registerObserver(this);
     if( nullptr != ip_observer )
     {
         registerObserver(ip_observer);
@@ -130,20 +131,6 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
                 // notify observers
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
-
-
-                // response to a sending command
-                if( !sendingMsgQueue.empty() )
-                {
-                    sMsg l_msgQ = sendingMsgQueue.front();
-                    if( l_msgQ.i_cmd == l_cmd ) // Bug
-                    {
-                        // remove waiting message and send next
-                        sendingMsgQueue.pop();
-                        wait_rsp = false;
-                        sendNextMsg();
-                    }
-                }
              }
         }
         else
@@ -161,9 +148,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #if 1   /* Just dump the byte stream */
             std::stringstream msg;
             msg << "Read buffer from serial port:";
-            for (size_t loop=0; loop<li_data.size(); loop++)
+            for (size_t loop=0; loop<li_data.size(); loop++) {
                 msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
                     +(static_cast<const unsigned char>(li_data[loop]));
+            }
             msg << "\n";
             clogE << msg.str();
 #endif
@@ -254,5 +242,26 @@ void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {
 void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
 	for(auto observer : this->observers) {
 		observer->handleEzspRxMessage(i_cmd, i_message);
+	}
+}
+
+void CEzspDongle::handleDongleState( EDongleState i_state )
+{
+	// do nothing
+}
+
+void CEzspDongle::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+{
+    // response to a sending command
+	if( wait_rsp && !sendingMsgQueue.empty() )
+	{
+		sMsg l_msgQ = sendingMsgQueue.front();
+		if( l_msgQ.i_cmd == i_cmd ) // Bug
+		{
+			// remove waiting message and send next
+			sendingMsgQueue.pop();
+			wait_rsp = false;
+			sendNextMsg();
+		}
 	}
 }

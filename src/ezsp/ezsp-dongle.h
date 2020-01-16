@@ -28,13 +28,13 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 #endif // USE_RARITAN
 namespace NSEZSP {
 
-class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback, public CEzspDongleObserver
 {
 public:
     CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    ~CEzspDongle();
+    virtual ~CEzspDongle();
 
     CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 
@@ -91,6 +91,12 @@ private:
     std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+
+	/**
+	 * CEzspDongleObserver handle functions on 'this' self
+	 */
+	void handleDongleState( EDongleState i_state );
+	void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 };
 
 } // namespace NSEZSP
