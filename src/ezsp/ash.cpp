@@ -169,6 +169,13 @@ void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
 
 void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
 {
+  clean_flag(lo_msg);
+  // Check CRC
+  if (computeCRC(lo_msg) != 0) {
+	  lo_msg.clear();
+	  clogD << "CAsh::decode Wrong CRC" << std::endl;
+	  return;
+  }
   if ((lo_msg.at(0) & 0x80) == 0) {
     // DATA;
     //-- clogD << "CAsh::decode DATA" << std::endl;
@@ -269,16 +276,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
           if (!inputError && !in_msg.empty() && ( in_msg.size() >= 3 )) {
-              clean_flag(lo_msg);
-              // Check CRC
-              if (computeCRC(lo_msg) != 0) {
-                  lo_msg.clear();
-                  clogD << "CAsh::decode Wrong CRC" << std::endl;
-              }
-              else
-              {
-                decode_flag(lo_msg);
-              }
+            decode_flag(lo_msg);
           }
           in_msg.clear();
           inputError = false;
