@@ -20,6 +20,7 @@ enum class CLibEzspInternalState {
     UNINITIALIZED,                      /*<! Initial state, before starting */
     WAIT_DONGLE_READY,
     GETTING_EZSP_VERSION,               /*<! Inside the EZSP version matching loop */
+    GETTING_XNCP_INFO,                  /*<! Inside the XNCP info check */
     STACK_INIT,                         /*<! We are starting up the Zigbee stack in the adapter */
     FORM_NWK_IN_PROGRESS,               /*<! We are currently creating a new Zigbee network */
     LEAVE_NWK_IN_PROGRESS,              /*<! We are currently leaving the Zigbee network we previously joined */
@@ -87,6 +88,7 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
             case CLibEzspInternalState::UNINITIALIZED:
             case CLibEzspInternalState::WAIT_DONGLE_READY:
             case CLibEzspInternalState::GETTING_EZSP_VERSION:
+            case CLibEzspInternalState::GETTING_XNCP_INFO:
             case CLibEzspInternalState::STACK_INIT:
                 obsStateCallback(CLibEzspState::UNINITIALIZED);
                 break;
@@ -121,9 +123,16 @@ void CLibEzspMain::dongleInit(uint8_t ezsp_version)
 {
     /* First request stack protocol version using the related EZSP command
      * Note that we really need to send this specific command just after a reset because until we do, the dongle will refuse most other commands anyway
+    /* Response to this should be the reception of an EZSP_VERSION in the handleEzspRxMessage() handler below
      */
     setState(CLibEzspInternalState::GETTING_EZSP_VERSION);
     dongle.sendCommand(EEzspCmd::EZSP_VERSION, std::vector<uint8_t>({ezsp_version}));
+}
+
+void CLibEzspMain::getXncpInfo()
+{
+    setState(CLibEzspInternalState::GETTING_XNCP_INFO);
+    dongle.sendCommand(EEzspCmd::EZSP_GET_XNCP_INFO);
 }
 
 void CLibEzspMain::stackInit()
@@ -377,6 +386,9 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         // break;
         case EEzspCmd::EZSP_VERSION:
         {
+            std::stringstream bufDump;
+            for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
+            clogD << "Got EZSP_VERSION payload:" << bufDump.str() << "\n";
             // Check if the wanted protocol version, and display stack version
             if( i_msg_receive.at(0) > exp_ezsp_version )
             {
@@ -397,18 +409,38 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
 
                 // version
                 uint16_t l_version = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
-                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(l_version);
+                bufDump << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(l_version);
 
                 clogI << "Stack version : " << bufDump.str() << std::endl;
 
-                // configure stack for this application
-                setState(CLibEzspInternalState::STACK_INIT);
-                stackInit();
+                // Now request the XNCP version
+                this->getXncpInfo();
             }
             else
             {
-                clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " Not supported !" << std::endl;
+                clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " is not supported !" << std::endl;
             }
+        }
+        break;
+        case EZSP_GET_XNCP_INFO:
+        {
+            std::stringstream bufDump;
+            for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
+            clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
+            if (i_msg_receive.size() < 4)
+            {
+                clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
+            }
+            else
+            {
+                uint16_t xncpVersionNumber = dble_u8_to_u16(i_msg_receive[1], i_msg_receive[0]);
+                uint16_t xncpManufacturerId = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
+                clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpManufacturerId)
+                      << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpVersionNumber) << "\n";
+            }
+            // Now, configure and startup the adapter's embedded stack
+            setState(CLibEzspInternalState::STACK_INIT);
+            stackInit();
         }
         break;
         case EZSP_NETWORK_STATE:

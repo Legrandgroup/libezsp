@@ -151,6 +151,11 @@ private:
     void stackInit();
 
     /**
+     * @brief Request the XNCP info by sending a EZSP_GET_XNCP_INFO command
+     */
+    void getXncpInfo();
+
+    /**
      * Oberver handlers
      */
     void handleDongleState( EDongleState i_state );
