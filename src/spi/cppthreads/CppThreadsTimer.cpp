@@ -17,7 +17,7 @@ CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();
 }
 
-bool CppThreadsTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
+bool CppThreadsTimer::start(uint16_t timeout, TimerCallback callBackFunction) {
 	clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {
@@ -37,13 +37,8 @@ bool CppThreadsTimer::start(uint16_t timeout, std::function<void (ITimer* trigge
 	}
 	else {
 		this->started = true;
-		this->waitingThread = std::thread([=]() {
-			std::unique_lock<std::mutex> lock(this->cv_m);
-			this->cv.wait_for(lock, std::chrono::milliseconds(timeout), [this]{return !this->started;});
-			if (this->started) {
-				callBackFunction(this);
-			}
-		});
+    this->callback = callBackFunction;
+		this->waitingThread = std::thread(&CppThreadsTimer::routine, this);
 	}
 
 	return true;
@@ -67,4 +62,13 @@ bool CppThreadsTimer::stop() {
 
 bool CppThreadsTimer::isRunning() {
 	return this->started;
+}
+
+void CppThreadsTimer::routine()
+{
+	std::unique_lock<std::mutex> lock(this->cv_m);
+	this->cv.wait_for(lock, std::chrono::milliseconds(this->duration), [this]{return !this->started;});
+	if (this->started) {
+		this->callback(this);
+	}
 }

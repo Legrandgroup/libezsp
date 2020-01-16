@@ -96,9 +96,10 @@ int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) 
 #ifdef SERIAL_DEBUG
 		std::stringstream msg;
 		msg << "Writing to serial port:";
-		for (size_t loop=0; loop<cnt; loop++)
+		for (size_t loop=0; loop<cnt; loop++) {
 			msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
 			    +((static_cast<const unsigned char*>(buf))[loop]);
+    }
 		msg << "\n";
 		clogE << msg.str();
 #endif

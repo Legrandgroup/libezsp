@@ -12,6 +12,8 @@
 #include <condition_variable>
 namespace NSSPI {
 
+typedef std::function<void (ITimer* triggeringTimer)> TimerCallback;
+
 /**
  * @brief Concrete implementation of ITimer using C++11 threads
  */
@@ -34,14 +36,14 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	bool start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) override;
+	bool start(uint16_t timeout, TimerCallback callBackFunction) override;
 
 	/**
 	 * @brief Stop and reset the timer
 	 *
 	 * @return true if we actually could stop a running timer
 	 */
-	bool stop();
+	bool stop() final;
 
 	/**
 	 * @brief Is the timer currently running?
@@ -50,10 +52,16 @@ public:
 	 */
 	bool isRunning();
 
+  /**
+   * @brief the thread routine
+   */
+  void routine();
+
 private:
 	std::thread waitingThread;	/*!< The thread that will wait for the specified timeout and will then run the callback */
 	std::condition_variable cv;	/*!< A condition variable that allows to unlock the wait performed by waitingThread (this allows stopping that secondary thread) */
 	std::mutex cv_m;	/*!< A mutex to handle access to variable cv */
+  TimerCallback callback;
 };
 
 } // namespace NSSPI

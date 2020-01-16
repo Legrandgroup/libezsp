@@ -41,7 +41,7 @@ public:
 	 *
 	 * @return true if we actually could stop a running timer
 	 */
-	bool stop();
+	bool stop() final;
 
 	/**
 	 * @brief Is the timer currently running?
