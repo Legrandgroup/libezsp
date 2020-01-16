@@ -279,11 +279,11 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
     this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);
 }
 
-void CLibEzspMain::jumpToBootloader()
+void CLibEzspMain::upgradeAdapterFirmware(const std::string& filename)
 {
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
     this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
-    clogE << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
+    clogI << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
     /* Should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage handler below, and only then, issue a carriage return to get the bootloader prompt */
 }
 
@@ -448,7 +448,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         {
             if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
             {
-                clogD << "Bootloader prompt mode is going to start now\n";
+                clogD << "Bootloader prompt mode is now going to start. Scheduling a firmware upgrade command\n";
                 this->dongle.setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
             }
             else

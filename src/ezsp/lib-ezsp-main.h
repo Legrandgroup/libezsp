@@ -118,9 +118,11 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
     /**
-     * @brief Switch the embedded firmware to booloader prompt mode
+     * @brief Upgrade the embedded firmware with the firmware stored in the file provided as argument
+     * 
+     * @param filename The name of the file containing the new firmware
      */
-    void jumpToBootloader();
+    void upgradeAdapterFirmware(const std::string& filename);
 
 private:
     TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */

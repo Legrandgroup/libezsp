@@ -249,7 +249,8 @@ bool CEzspDongle::unregisterObserver(CEzspDongleObserver* observer)
 
 void CEzspDongle::setMode(CEzspDongleMode requestedMode)
 {
-    if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP && requestedMode == CEzspDongleMode::EZSP_NCP)
+    if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP
+        && (requestedMode == CEzspDongleMode::EZSP_NCP || requestedMode == CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP))
     {
         /* We are requested to get out of the booloader */
         this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
@@ -264,8 +265,10 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
-    if (this->lastKnownMode == CEzspDongleMode::EZSP_NCP && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE)
+    if ((this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
+        && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE)
     {
+        clogE << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
@@ -279,7 +282,9 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
-    clogE << "Adapter mode request combination in not implemented\n";
+    clogE << "Adapter mode request combination in not implemented (last known="
+          << static_cast<unsigned int>(this->lastKnownMode) << ", requested="
+          << static_cast<unsigned int>(requestedMode) << ")\n";
 }
 
 void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {
