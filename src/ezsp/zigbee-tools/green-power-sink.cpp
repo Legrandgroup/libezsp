@@ -221,39 +221,37 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame&
 void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gpf)
 {
 	// manage channel request
-	if( GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId() )
+	if( (GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId()) && (gpf.getPayload().size() > 6) )
 	{
+		// verify that no message is waiting to send
+		bool l_found = false;
+		for (auto it : gpd_send_list) {
+			if( it.second == gpf.getSourceId() ){ l_found = true; break;}
+		}
+
 		// assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
 		uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
-		if( 0x1021 == l_manufacturer_id )
+		uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
+		uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
+		uint8_t l_type_id = gpf.getPayload().at(6);
+		//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
+		if( (0x1021 == l_manufacturer_id ) &&
+			(0==l_cluster_id) &&
+			(0x5000==l_attribute_id) &&
+			(0x20==l_type_id) &&
+			!l_found)
 		{
-			uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
-			uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
-			uint8_t l_type_id = gpf.getPayload().at(6);
-			//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
+			static uint8_t l_handle_counter = 0;
 
-			if( (0==l_cluster_id) && (0x5000==l_attribute_id) && (0x20==l_type_id) )
-			{
-				// verify that no message is waiting to send
-				bool l_found = false;
-				for (auto it : gpd_send_list)
-					if( it.second == gpf.getSourceId() ){ l_found = true; }
+			// response on same channel, attribute contain device_id of gpd
+			// \todo use to update sink table entry
 
-				if( !l_found )
-				{
-					static uint8_t l_handle_counter = 0;
-
-					// response on same channel, attribute contain device_id of gpd
-					// \todo use to update sink table entry
-
-					// send hannel configuration with timeout of 1000ms
-					CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-					std::vector<uint8_t> l_payload;
-					l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
-					gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
-					gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
-				}
-			}
+			// send hannel configuration with timeout of 1000ms
+			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
+			std::vector<uint8_t> l_payload;
+			l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
+			gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
+			gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
 		}
 	}
 
@@ -297,6 +295,10 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> 
 	else if(  EEmberStatus::EMBER_SUCCESS == l_status )
 	{
 		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(gpf);
+	}
+	else
+	{
+		// do nothing
 	}
 }
 
