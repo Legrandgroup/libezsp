@@ -33,4 +33,9 @@ public:
      * @brief Method that will be invoked when bootloader prompt is caught
      */
     virtual void handleBootloaderPrompt() = 0;
+
+    /**
+     * @brief Method that will be invoked when the bootloader is waiting for a firmware image transfer using X-modem
+     */
+    virtual void handleFirmwareXModemXfr() = 0;
 };

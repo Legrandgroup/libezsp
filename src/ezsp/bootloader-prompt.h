@@ -19,6 +19,8 @@ enum class EBootloaderStage {
     TOPLEVEL_MENU_HEADER,   /*<! Toplevel menu header, displaying Gecko Bootloader v1.6.0 */
     TOPLEVEL_MENU_CONTENT,  /*<! Toplevel menu content, displaying a menu with the various numeric options */
     TOPLEVEL_MENU_PROMPT,   /*<! String "BL >" following the toplevel menu header */
+    XMODEM_READY_CHAR_WAIT, /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */
+    XMODEM_XFR,             /*<! A firmware image transfer using X-modem is ongoing */
 };
 
 
@@ -37,6 +39,7 @@ public:
     static const uint16_t GECKO_QUIET_RX_TIMEOUT;
 
     typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
+    typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
 
     CBootloaderPrompt() = delete; /* Construction without arguments is not allowed */
     /**
@@ -72,9 +75,11 @@ public:
     /**
      * @brief Select the firmware upgrade bootloader menu
      * 
+     * @param callback Is a method of type void func(void) that will be invoked when the bootloader is waiting for an image transfer
+     * 
      * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
      */
-    bool selectModeUpgradeFw();
+    bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
 
     EBootloaderStage decode(std::vector<uint8_t> &i_data);
 
@@ -86,4 +91,5 @@ private:
     EBootloaderStage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
     FBootloaderWriteFunc bootloaderWriteFunc;   /*!< A function to write bytes to the serial port */
     std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
+    FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
 };

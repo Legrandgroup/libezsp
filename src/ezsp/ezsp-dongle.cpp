@@ -165,15 +165,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         else
         {
             /* No ash decoding in bootloader mode */
-            /* At start of bootloader, we are expecting a prompt:
-Gecko Bootloader v1.6.0
-1. upload gbl
-2. run
-3. ebl info
-BL >
-begin upload
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-*/
+            /* When switching to the bootloader, we are expecting a prompt (see class CBootloaderPrompt for more details) */
             blp->decode(li_data);
         }
     }    
@@ -253,14 +245,14 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
         && (requestedMode == CEzspDongleMode::EZSP_NCP || requestedMode == CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP))
     {
         /* We are requested to get out of the booloader */
+        this->lastKnownMode = requestedMode;
         this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
-        this->blp->registerPromptDetectCallback([this]() -> std::vector<uint8_t> {
+        this->blp->registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             this->blp->selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongleMode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
-            return std::vector<uint8_t>();  /* FIXME: we can't return a unique value here because all observers may want to say something... */
         });
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
@@ -270,14 +262,16 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
     {
         clogE << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
+        this->lastKnownMode = requestedMode;
         this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
-        this->blp->registerPromptDetectCallback([this]() -> std::vector<uint8_t> {
+        this->blp->registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
-            this->blp->selectModeUpgradeFw();
+            /* Note: we provide selectModeUpgradeFw() with a callback that will be invoked when the firmware image transfer over serial link can start */
+            /* This callback will only invoke our own notifyObserversOfFirmwareXModemXfrReady() method, that will in turn notify all observers that the firmware image transfer can start */
+            this->blp->selectModeUpgradeFw([this]() { this->notifyObserversOfFirmwareXModemXfrReady(); });
             this->lastKnownMode = CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE;   /* After launching the upgrade command, we are in firmware upgrade mode (X-modem) */
-            return std::vector<uint8_t>();  /* FIXME: we can't return a unique value here because all observers may want to say something... */
         });
         this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
@@ -302,5 +296,11 @@ void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<ui
 void CEzspDongle::notifyObserversOfBootloaderPrompt() {
 	for(auto observer : this->observers) {
 		observer->handleBootloaderPrompt();
+	}
+}
+
+void CEzspDongle::notifyObserversOfFirmwareXModemXfrReady() {
+	for(auto observer : this->observers) {
+		observer->handleFirmwareXModemXfr();
 	}
 }

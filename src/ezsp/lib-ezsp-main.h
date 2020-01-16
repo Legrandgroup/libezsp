@@ -118,11 +118,11 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
     /**
-     * @brief Upgrade the embedded firmware with the firmware stored in the file provided as argument
+     * @brief Switch the EZSP adapter to firmware upgrade mode
      * 
-     * @param filename The name of the file containing the new firmware
+     * Method handleFirmwareXModemXfr() should then be invoked when the adapter is ready to receive a firmware
      */
-    void upgradeAdapterFirmware(const std::string& filename);
+    void setFirmwareUpgradeMode();
 
 private:
     TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
@@ -148,6 +148,7 @@ private:
     void handleDongleState( EDongleState i_state );
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
     void handleBootloaderPrompt();
+    void handleFirmwareXModemXfr();
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 };

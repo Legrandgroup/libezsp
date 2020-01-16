@@ -91,16 +91,34 @@ private:
     GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
+    std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
 
     void sendNextMsg( void );
 
     /**
-     * Notify Observer of this class
+     * @brief Notify all observers of this instance that the dongle state has changed
+     * 
+     * @param i_state The new dongle state
      */
-    std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
+
+    /**
+     * @brief Notify all observers of this instance of a newly incoming EZSP message
+     * 
+     * @param i_cmd The EZSP command received
+     * @param i_message The payload of the EZSP command
+     */
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+
+    /**
+     * @brief Notify all observers of this instance that the dongle is running the booloader and that a bootloader prompt has been detected
+     */
     void notifyObserversOfBootloaderPrompt();
+
+    /**
+     * @brief Notify all observers of this instance that the dongle is waiting for a firmware image transfer using X-modem for a firmware update
+     */
+    void notifyObserversOfFirmwareXModemXfrReady();
 };
 
 #ifdef USE_RARITAN

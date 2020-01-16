@@ -19,7 +19,8 @@ CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, TimerBuild
   bootloaderCLIChecked(false),
   state(EBootloaderStage::RX_FLUSH),
   bootloaderWriteFunc(nullptr),
-  promptDetectCallback(nullptr)
+  promptDetectCallback(nullptr),
+  firmwareTransferStartFunc(nullptr)
 {
 }
 
@@ -36,9 +37,10 @@ void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> 
 
 void CBootloaderPrompt::reset()
 {
-  state = EBootloaderStage::RX_FLUSH;
+  this->state = EBootloaderStage::RX_FLUSH;
   accumulatedBytes.clear();
   bootloaderCLIChecked = false;
+  this->firmwareTransferStartFunc = nullptr;  /* Remove any callback for image transfer */
   /* If we don't receive any byte after GECKO_QUIET_RX_TIMEOUT ms, assume we have flushed the RX */
   timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, [this](ITimer *ipTimer) { clogD << "Initial flush is over\n"; this->probe(); } );
 }
@@ -72,6 +74,7 @@ bool CBootloaderPrompt::selectModeRun()
   {
     size_t writtenBytes;
     clogD << "Entering run command\n";
+    this->state = EBootloaderStage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
     this->bootloaderWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
   }
   else
@@ -81,7 +84,7 @@ bool CBootloaderPrompt::selectModeRun()
   return true;
 }
 
-bool CBootloaderPrompt::selectModeUpgradeFw()
+bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback)
 {
   static const uint8_t cmdSeq[] = "1";
 
@@ -94,7 +97,8 @@ bool CBootloaderPrompt::selectModeUpgradeFw()
   {
     size_t writtenBytes;
     clogD << "Entering upload ebl command\n";
-    clogD << "Stopping here in menu for debug\n"; exit(1);
+    this->state = EBootloaderStage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
+    this->firmwareTransferStartFunc = callback;
     this->bootloaderWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
   }
   else
@@ -108,7 +112,11 @@ EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
 {
   uint8_t val;
 
-  if (!i_data.empty() && this->state == EBootloaderStage::RX_FLUSH)
+  if (i_data.empty())
+  {
+    return this->state;
+  }
+  if (this->state == EBootloaderStage::RX_FLUSH)
   {
     /* We are flushing the leading bytes, discard input and restart the initial RX timer */
     //clogD << "Received " << i_data.size() << " bytes while in flush mode (discarding)\n";
@@ -116,6 +124,20 @@ EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     timer->stop();
     timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, [this](ITimer *ipTimer) { clogD << "Initial flush is over\n"; this->probe(); } );
     return state;
+  }
+  else if (this->state == EBootloaderStage::XMODEM_READY_CHAR_WAIT)
+  {
+    if (i_data.back() == 'C') /* 'C' is the X-modem ready character */
+    {
+      clogD << "Got the X-modem ready character from adapter\n";
+      if (this->firmwareTransferStartFunc)
+      {
+        this->state == EBootloaderStage::XMODEM_XFR;
+        this->firmwareTransferStartFunc();  /* Invoke the firmware transfer ready function that has been set in selectModeUpgradeFw() */
+        this->firmwareTransferStartFunc = nullptr;  /* Remove the callback */
+        this->probe();  /* Restart probing to find out if we are back in the bootloader prompt */
+      }
+    }
   }
   while( !i_data.empty() )
   {

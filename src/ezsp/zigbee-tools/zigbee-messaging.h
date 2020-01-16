@@ -38,7 +38,8 @@ public:
      */
     void handleDongleState( EDongleState i_state ){(void) i_state;}
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
-    void handleBootloaderPrompt(){;}
+    void handleBootloaderPrompt() {}
+    void handleFirmwareXModemXfr() {}
 
 private:
     CEzspDongle &dongle;

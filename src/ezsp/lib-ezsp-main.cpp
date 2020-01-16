@@ -96,6 +96,11 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
             case CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS:
                 obsStateCallback(CLibEzspState::SINK_BUSY);
                 break;
+            case CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE:
+            case CLibEzspInternalState::IN_BOOTLOADER_MENU:
+            case CLibEzspInternalState::IN_XMODEM_XFR:
+                obsStateCallback(CLibEzspState::SINK_BUSY);
+                break;
             default:
                 clogE << "Internal state can not be translated to public state\n";
         }
@@ -279,12 +284,18 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
     this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);
 }
 
-void CLibEzspMain::upgradeAdapterFirmware(const std::string& filename)
+void CLibEzspMain::setFirmwareUpgradeMode()
 {
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
     this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
-    clogI << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
-    /* Should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage handler below, and only then, issue a carriage return to get the bootloader prompt */
+    /* We should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage() handler below, and only then, issue a carriage return to get the bootloader prompt */
+}
+
+void CLibEzspMain::handleFirmwareXModemXfr()
+{
+    this->setState(CLibEzspInternalState::IN_XMODEM_XFR);
+    clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
+    exit(0);
 }
 
 void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )

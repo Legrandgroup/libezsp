@@ -117,10 +117,10 @@ public:
     /**
      * @brief Upgrade the firmware in the EZSP adapter
      */
-    void ezspFirmwareUpgrade(const std::string& filename="") {
+    void ezspFirmwareUpgrade() {
         clogI << "Switchover to bootloader for firmware upgrade\n";
         this->currentState = MainState::FW_UPGRADE;
-        libEzsp.upgradeAdapterFirmware(filename);
+        libEzsp.setFirmwareUpgradeMode();
     }
 
     /**
