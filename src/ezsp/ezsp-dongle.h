@@ -34,7 +34,7 @@ public:
     CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    virtual ~CEzspDongle();
+    virtual ~CEzspDongle() = default;
 
     CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 

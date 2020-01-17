@@ -27,11 +27,6 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
     }
 }
 
-CEzspDongle::~CEzspDongle()
-{
-    pUart = nullptr;
-}
-
 bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
 {
     bool lo_success = true;
