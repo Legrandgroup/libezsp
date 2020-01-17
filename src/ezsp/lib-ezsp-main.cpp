@@ -254,8 +254,7 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
 bool CLibEzspMain::clearAllGPDevices()
 {
-    if (this->getState() != CLibEzspInternalState::READY)
-    {
+    if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
     if (!this->gp_sink.gpClearAllTables())
@@ -269,8 +268,7 @@ bool CLibEzspMain::clearAllGPDevices()
 
 bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 {
-    if (this->getState() != CLibEzspInternalState::READY)
-    {
+    if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
     if (!this->gp_sink.removeGpds(sourceIdList))
@@ -284,8 +282,7 @@ bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
 
 bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
-    if (this->getState() != CLibEzspInternalState::READY)
-    {
+    if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
     if (!this->gp_sink.registerGpds(gpDevicesList))

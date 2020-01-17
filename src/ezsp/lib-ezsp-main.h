@@ -28,11 +28,20 @@ namespace NSEZSP {
 enum class CLibEzspInternalState;
 
 /**
+ * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
+ */
+enum class CLibEzspInternalState;
+
+/**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
  */
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
+    typedef std::function<void (CLibEzspState i_state)> FStateCallback;    /*!< Callback type for method registerLibraryStateCallback() */
+    typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
+    typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback; /*!< Callback type for method registerGPSourceIdCallback() */
+
     /**
      * @brief Default constructor with minimal args to initialize library
      *
@@ -61,11 +70,11 @@ public:
     void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
     /**
-     * @brief Register callback to receive all incoming greenpower sourceId
+     * @brief Register callback to receive all incoming green power sourceId
      *
-     * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
+     * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
      */
-    void registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback);
+    void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
 
     /**
      * @brief Remove GP all devices from sink

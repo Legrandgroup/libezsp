@@ -622,6 +622,10 @@ int main(int argc, char **argv) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);
+    auto gprecvobs = [&fsm](CGpFrame &i_gpf) {
+        fsm.onReceivedGPFrame(i_gpf);
+    };
+    lib_main.registerGPFrameRecvCallback(gprecvobs);
 
     auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
         fsm.onReceivedGPFrame(i_gpf);
