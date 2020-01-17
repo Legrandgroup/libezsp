@@ -57,7 +57,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 57600);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
