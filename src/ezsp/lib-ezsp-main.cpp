@@ -427,16 +427,24 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
             std::stringstream bufDump;
             for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
             clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
-            if (i_msg_receive.size() < 4)
+
+            if (i_msg_receive.size() < 5)
             {
                 clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
             }
             else
             {
-                uint16_t xncpVersionNumber = dble_u8_to_u16(i_msg_receive[1], i_msg_receive[0]);
-                uint16_t xncpManufacturerId = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
-                clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpManufacturerId)
-                      << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpVersionNumber) << "\n";
+                if (i_msg_receive[0] != EMBER_SUCCESS)
+                {
+                    clogE << "EZSP_GET_XNCP_INFO failed\n";
+                }
+                else
+                {
+                    uint16_t xncpVersionNumber = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
+                    uint16_t xncpManufacturerId = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
+                    clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpManufacturerId)
+                          << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpVersionNumber) << "\n";
+                }
             }
             // Now, configure and startup the adapter's embedded stack
             setState(CLibEzspInternalState::STACK_INIT);

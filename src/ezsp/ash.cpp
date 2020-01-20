@@ -142,13 +142,18 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+  timer->stop();
+  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout(static_cast<void *>(ipTimer));} );
+  //clogE << "Timer started!!!!!!!!!!!!!!!!!!!!!\n";
 
   return lo_msg;
 }
 
 std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
 {
+  /**
+   * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
+   */
   bool inputError = false;
   //std::list<uint8_t> li_data;
   std::vector<uint8_t> lo_msg;
