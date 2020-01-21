@@ -264,7 +264,7 @@ public:
                         }
                         std::string fwVersion(payload.begin()+6, payload.begin()+6+strLength);
                         std::cout << "Firmware version is \"" << fwVersion << "\"\n";
-                        usedBytes = 6;
+                        usedBytes = 6 + strLength;
                         return true;
                     }
                 }
