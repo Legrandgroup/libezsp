@@ -161,7 +161,7 @@ public:
 	 * @param debugLogger The logger to use for debug messages
 	 * @param traceLogger The logger to use for trace messages
 	 */
-	ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& mewInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger);
+	ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger);
 
 	ConsoleLogger();
 
