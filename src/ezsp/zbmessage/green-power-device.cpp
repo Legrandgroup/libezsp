@@ -17,12 +17,6 @@ CGpDevice::CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key) :
 {
 }
 
-CGpDevice& CGpDevice::operator=( CGpDevice other)
-{
-  swap(*this, other);
-  return *this;
-}
-
 uint32_t CGpDevice::getSourceId() const
 {
 	return this->source_id;

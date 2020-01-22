@@ -34,33 +34,6 @@ class CGpDevice
         CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key);
 
         /**
-         * @brief Assignment operator
-         *
-         */
-        CGpDevice& operator=(const CGpDevice other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void swap(CGpDevice& first, CGpDevice& second) noexcept
-        {
-		  using std::swap;	// Enable ADL
-
-		  swap(first.source_id, second.source_id);
-		  swap(first.key, second.key);
-		  swap(first.option, second.option);
-		  swap(first.security_option, second.security_option);
-		  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-		}
-
-
-        /**
          * @brief Retrieve the source id for this device
          *
          * @return The source ID
