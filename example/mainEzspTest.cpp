@@ -64,7 +64,6 @@ enum MainState {
     COMMISSION_GPD,
     OPEN_ZIGBEE_NWK,
     RUN,
-    FW_UPGRADE,
 };
 
 class MainStateMachine {
@@ -113,15 +112,6 @@ public:
         this->currentState = MainState::RUN;
         //clogE << "Switching to bootloader mode just for tests\n";
         //this->ezspSwitchToBootloader();
-    }
-
-    /**
-     * @brief Switch to bootloader prompt mode
-     */
-    void ezspSwitchToBootloader() {
-        clogI << "Switchover to bootloader\n";
-        this->currentState = MainState::FW_UPGRADE;
-        libEzsp.jumpToBootloader();
     }
 
     /**
@@ -616,8 +606,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);
-    MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);
     auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
