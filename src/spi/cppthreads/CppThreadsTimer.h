@@ -50,10 +50,10 @@ public:
 	 */
 	bool isRunning();
 
-  /**
-   * @brief the thread routine
-   */
-  void routine();
+	/**
+	 * @brief the thread routine
+	 */
+	void routine();
 
 private:
 	std::thread waitingThread;	/*!< The thread that will wait for the specified timeout and will then run the callback */

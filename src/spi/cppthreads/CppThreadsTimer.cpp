@@ -37,7 +37,7 @@ bool CppThreadsTimer::start(uint16_t timeout, TimerCallback callBackFunction) {
 	}
 	else {
 		this->started = true;
-    this->callback = callBackFunction;
+		this->callback = callBackFunction;
 		this->waitingThread = std::thread(&CppThreadsTimer::routine, this);
 	}
 
