@@ -44,6 +44,7 @@ list(APPEND ezspspi_SOURCES
 	raritan/RaritanTimer.cpp
 	raritan/RaritanLogger.cpp
 )
+list(APPEND ezspspi_LIBS pp_base)
 endif()
 
 add_library(ezspspi ${ezspspi_SOURCES})

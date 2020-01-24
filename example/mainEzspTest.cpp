@@ -628,7 +628,7 @@ int main(int argc, char **argv) {
     std::getline(std::cin, line);
 #endif
 #ifdef USE_RARITAN
-    pp::Selector eventSelector(*pp::SelectorSingleton::getInstance())
+    pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
     eventSelector.run();
 #endif
 
