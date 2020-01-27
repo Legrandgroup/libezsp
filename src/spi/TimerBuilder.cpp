@@ -1,7 +1,7 @@
 /**
  * @file TimerBuilder.cpp
  *
- * @brief Concrete implementation of a ITimer factory returning RaritanTimer objects
+ * @brief Builder returning a concrete implementation of ITimer objects (matching with the architecture)
  */
 
 #include "spi/TimerBuilder.h"
@@ -17,11 +17,10 @@ using NSSPI::ITimer;
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
-	static RaritanTimer gTimer;
+       return std::unique_ptr<ITimer>(new RaritanTimer());
 #endif
 #ifdef USE_CPPTHREADS
-	static CppThreadsTimer gTimer;
+       return std::unique_ptr<ITimer>(new CppThreadsTimer());
 #endif
-	return std::unique_ptr<ITimer>(&gTimer);
 }
 
