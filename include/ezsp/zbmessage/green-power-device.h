@@ -7,9 +7,10 @@
 #pragma once
 
 #include <cstdint>
-#include "ezsp/ezsp-protocol/ezsp-enum.h"
-#include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
+#include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
 
+namespace NSEZSP {
 /**
  * @brief Class to encapsulate data representing a green power device
  */
@@ -31,23 +32,6 @@ class CGpDevice
          * @param i_key : key used by the GP device
          */
         CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key);
-
-        /**
-         * @brief Assignment operator
-         *
-         */
-        CGpDevice& operator=(const CGpDevice other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void (::swap)(CGpDevice& first, CGpDevice& second);
 
         /**
          * @brief Retrieve the source id for this device
@@ -83,3 +67,5 @@ class CGpDevice
         CEmberGpSinkTableOption option; /*!< Sink table option for this device */
         uint8_t security_option; /*!< Sink table security option for this device */
 };
+
+} //namespace NSEZSP

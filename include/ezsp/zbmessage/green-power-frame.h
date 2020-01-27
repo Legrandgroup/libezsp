@@ -8,6 +8,10 @@
 #include <cstdint>
 #include <vector>
 
+#include <ezsp/zbmessage/zcl.h>
+
+namespace NSEZSP {
+
 typedef enum
 {
     GPD_NO_SECURITY                      =       0x0,
@@ -47,7 +51,7 @@ class CGpFrame
          *
          * @param raw_message The buffer to construct from
          */
-        CGpFrame(const std::vector<uint8_t>& raw_message);
+        explicit CGpFrame(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Dump this instance as a string
@@ -64,7 +68,10 @@ class CGpFrame
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data){
+            out << data.String();
+            return out;
+        }
 
         // getter
         uint8_t getLinkValue() const {return link_value;}
@@ -94,3 +101,5 @@ class CGpFrame
         uint8_t proxy_table_entry;
         std::vector<uint8_t> payload;
 };
+
+} // namespace NSEZSP

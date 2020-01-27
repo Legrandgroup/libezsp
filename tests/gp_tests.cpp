@@ -11,6 +11,17 @@
 
 #include "TestHarness.h"
 
+using NSSPI::IAsyncDataInputObserver;
+using NSSPI::Logger;
+using NSSPI::LOG_LEVEL;
+using NSSPI::TimerBuilder;
+using NSSPI::GenericAsyncDataInputObservable;
+using NSSPI::MockUartDriver;
+using NSSPI::MockUartScheduledByteDelivery;
+
+using NSEZSP::CLibEzspMain;
+using NSEZSP::CGpDevice;
+
 /**
  * @brief Class implementing an observer that validates state transition during a sample ezsp in/out test sequence
 **/
@@ -145,7 +156,7 @@ TEST_GROUP(gp_tests) {
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	TimerBuilder timerFactory;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	Logger::getInstance().setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
+	Logger::getInstance()->setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
 	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {

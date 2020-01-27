@@ -14,6 +14,7 @@
 #include <thread>
 #include <chrono>
 #include <functional>
+namespace NSSPI {
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
@@ -91,7 +92,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 115200);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -102,7 +103,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Schedule a byte sequence to be ready for read on emulated serial port
@@ -176,3 +177,5 @@ private:
 	size_t deliveredReadBytesCount;	/*!< The cumulative number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer since the instanciation of this object. Grab scheduledReadQueueMutex before accessing this */
 	size_t writtenBytesCount;	/*!< The number of bytes written, as a total sum of the onWriteCallback function's successive writtenCnt returned values */
 };
+
+} // namespace NSSPI

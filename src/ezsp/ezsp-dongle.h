@@ -4,18 +4,21 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <set>
 
-#include "ezsp-protocol/ezsp-enum.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
 #include "ash.h"
 #include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
+#include "spi/IAsyncDataInputObserver.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
     {
-        EEzspCmd i_cmd;
+        NSEZSP::EEzspCmd i_cmd;
         std::vector<uint8_t> payload;
     }SMsg;
 }
@@ -24,6 +27,7 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSEZSP {
 
 /**
  * @brief Requested state for the ezsp adapter
@@ -35,20 +39,20 @@ enum class CEzspDongleMode {
     BOOTLOADER_EXIT_TO_EZSP_NCP,        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */
 };
 
-class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback, public CEzspDongleObserver
 {
 public:
-    CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    ~CEzspDongle();
+    virtual ~CEzspDongle() = default;
 
     CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 
     /**
      * @brief Open connetion to dongle of type ezsp
      */
-    bool open(IUartDriver *ipUart);
+    bool open(NSSPI::IUartDriver *ipUart);
 
 
     /**
@@ -93,11 +97,11 @@ private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
     CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
-    TimerBuilder &timer_factory;
-    IUartDriver *pUart;
-    CAsh *ash;
-    CBootloaderPrompt *blp;
-    GenericAsyncDataInputObservable uartIncomingDataHandler;
+    NSSPI::TimerBuilder &timer_factory;
+    NSSPI::IUartDriver *pUart;
+    CAsh ash;
+    CBootloaderPrompt blp;
+    NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
     std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
@@ -128,8 +132,18 @@ private:
      * @brief Notify all observers of this instance that the dongle is waiting for a firmware image transfer using X-modem for a firmware update
      */
     void notifyObserversOfFirmwareXModemXfrReady();
+
+    /**
+     * CEzspDongleObserver handle functions on 'this' self
+     */
+    void handleDongleState( EDongleState i_state );
+    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+
+    void handleBootloaderPrompt() {} /* FIXME: only needed if we keep inheriting from CEzspDongleObserver (subject to discussion) */
+    void handleFirmwareXModemXfr() {} /* FIXME: only needed if we keep inheriting from CEzspDongleObserver (subject to discussion) */
 };
 
+} // namespace NSEZSP
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

@@ -2,7 +2,7 @@
  * @file zigbee-networking.cpp
  */
 
-#include <ctime>
+#include <climits>
 
 #include "ezsp/byte-manip.h"
 
@@ -14,8 +14,12 @@
 
 #include "spi/ILogger.h"
 
+static std::random_device g_rd;
+
+using NSEZSP::CZigbeeNetworking;
 
 CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
+    random_generator(g_rd()),
     dongle(i_dongle),
     zb_messaging(i_zb_messaging),
     child_idx(0),
@@ -68,11 +72,12 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
         case EZSP_SET_INITIAL_SECURITY_STATE:
         {
             clogD << "EZSP_SET_INITIAL_SECURITY_STATE status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
+            std::uniform_int_distribution<uint16_t> dis(0, USHRT_MAX);
             if( EMBER_SUCCESS == i_msg_receive.at(0) )
             {
                 CEmberNetworkParameters payload;
 
-                payload.setPanId(static_cast<uint16_t>(std::rand()&0xFFFF));
+                payload.setPanId(dis(this->random_generator)&0xFFFF);
                 payload.setRadioTxPower(3);
                 payload.setRadioChannel(form_channel);
                 payload.setJoinMethod(EMBER_USE_MAC_ASSOCIATION);
@@ -182,7 +187,6 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     // set HA policy
     std::vector<uint8_t> payload;
     uint16_t l_security_bitmak = 0;
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     payload.push_back(EZSP_TRUST_CENTER_POLICY); // EZSP_TRUST_CENTER_POLICY
     payload.push_back(0x01); // EZSP_ALLOW_PRECONFIGURED_KEY_JOINS
@@ -209,7 +213,7 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     payload.clear();
     // security bitmask
     payload.push_back(static_cast<uint8_t>(l_security_bitmak&0xFF));
-    payload.push_back(static_cast<uint8_t>((l_security_bitmak>>8)&0xFF));
+    payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(l_security_bitmak>>8)&0xFF));
     // tc key : HA Key
     payload.push_back(0x5A);
     payload.push_back(0x69);
@@ -228,7 +232,8 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     payload.push_back(0x30);
     payload.push_back(0x39);
     //  network key : random
-    for( uint8_t loop=0; loop<16; loop++ ){ payload.push_back( static_cast<uint8_t>(std::rand()&0xFF )); }
+    std::uniform_int_distribution<uint8_t> dis(0, 255);
+    for( uint8_t loop=0; loop<16; loop++ ){ payload.push_back( dis(this->random_generator)&0xFF); }
     // key sequence number
     payload.push_back(0U);
     // eui trust center : not used

@@ -6,6 +6,7 @@
 
 #include "spi/TimerBuilder.h"
 
+namespace NSEZSP {
 
 typedef enum {
   ASH_RESET_FAILED,
@@ -17,11 +18,11 @@ typedef enum {
 class CAshCallback
 {
 public:
-    virtual ~CAshCallback() { }
+    virtual ~CAshCallback() = default;
     virtual void ashCbInfo( EAshInfo info ) = 0;
 };
 
-class CAsh
+class CAsh : protected NSSPI::ITimerVisitor
 {
 public:
     CAsh() = delete; /* Construction without arguments is not allowed */
@@ -29,7 +30,7 @@ public:
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
-    CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory);
+    CAsh(CAshCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory);
 
     CAsh(const CAsh&) = delete; /* No copy construction allowed */
 
@@ -46,19 +47,23 @@ public:
     bool isConnected(void){ return stateConnected; }
 
     static std::string EAshInfoToString( EAshInfo in );
+protected:
+    void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
     uint8_t ackNum;
     uint8_t frmNum;
     uint8_t seq_num;
     bool stateConnected;
-    std::unique_ptr<ITimer> timer;
+    std::unique_ptr<NSSPI::ITimer> timer;
     CAshCallback *pCb;
 
     std::vector<uint8_t> in_msg;
 
     uint16_t computeCRC( std::vector<uint8_t> i_msg );
+    void decode_flag(std::vector<uint8_t> &lo_msg);
+    void clean_flag(std::vector<uint8_t> &lo_msg);
     std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
     std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
-    void Timeout(void);
 };
+}

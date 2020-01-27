@@ -17,20 +17,29 @@
 #endif // USE_RARITAN
 
 // manufacturer code
-#define PUBLIC_CODE 0xFFFF
-#define LG_MAN_CODE 0x1021
+constexpr uint16_t PUBLIC_CODE = 0xFFFF;
+constexpr uint16_t LG_MAN_CODE = 0x1021;
 
 // profile
-#define GP_PROFILE_ID 0xA1E0
+constexpr uint16_t GP_PROFILE_ID = 0xA1E0;
 
+namespace NSEZSP {
 
 class CZCLHeader; /* Forward declaration */
-void swap(CZCLHeader& first, CZCLHeader& second); /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
+void swap(CZCLHeader& first, CZCLHeader& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZCLHeader */
 
 class CZCLHeader
 {
 public:
+  /**
+   * @brief Default constructor
+   */
   CZCLHeader();
+
+  /**
+   * @brief Default destructor
+   */
+  virtual ~CZCLHeader() = default;
 
   /**
    * @brief Constructor from a buffer
@@ -39,32 +48,6 @@ public:
    * @param[out] o_idx The number of bytes used (in buffer i_data) to construct the ZCL header
    */
   CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx);
-
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CZCLHeader(const CZCLHeader& other);
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CZCLHeader& operator=(CZCLHeader other);
-
-  /**
-   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZCLHeader
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void (::swap)(CZCLHeader& first, CZCLHeader& second);
 
   // high level
 
@@ -133,6 +116,8 @@ private:
   /** */
   uint8_t cmd_id;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

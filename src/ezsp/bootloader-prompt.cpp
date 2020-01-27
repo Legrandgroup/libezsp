@@ -3,16 +3,16 @@
  **/
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include "bootloader-prompt.h"
 
 #include "spi/ILogger.h"
-#include <sstream>
-#include <iomanip>
 
-using namespace std;
+using NSEZSP::CBootloaderPrompt;
 
-CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, TimerBuilder &i_timer_factory) :
+CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory) :
 	timer(i_timer_factory.create()),
   pCb(nullptr),
   accumulatedBytes(),
@@ -22,6 +22,12 @@ CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, TimerBuild
   promptDetectCallback(nullptr),
   firmwareTransferStartFunc(nullptr)
 {
+}
+
+void CBootloaderPrompt::trigger(NSSPI::ITimer* triggeringTimer)
+{
+  clogD << "Initial flush is over\n";
+  this->probe();
 }
 
 void CBootloaderPrompt::registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc)
@@ -42,7 +48,7 @@ void CBootloaderPrompt::reset()
   bootloaderCLIChecked = false;
   this->firmwareTransferStartFunc = nullptr;  /* Remove any callback for image transfer */
   /* If we don't receive any byte after GECKO_QUIET_RX_TIMEOUT ms, assume we have flushed the RX */
-  timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, [this](ITimer *ipTimer) { clogD << "Initial flush is over\n"; this->probe(); } );
+  timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, this);
 }
 
 void CBootloaderPrompt::probe()
@@ -108,7 +114,7 @@ bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback)
   return true;
 }
 
-EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
+NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
 {
   uint8_t val;
 
@@ -122,7 +128,7 @@ EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     //clogD << "Received " << i_data.size() << " bytes while in flush mode (discarding)\n";
     i_data.clear();
     timer->stop();
-    timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, [this](ITimer *ipTimer) { clogD << "Initial flush is over\n"; this->probe(); } );
+    timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, this);
     return state;
   }
   else if (this->state == EBootloaderStage::XMODEM_READY_CHAR_WAIT)

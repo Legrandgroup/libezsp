@@ -5,23 +5,16 @@
  */
 #pragma once
 
-#include <stdbool.h>
+#include <ezsp/gpd.h>
 
-#include "zbmessage/green-power-frame.h"
+#include "ezsp/zbmessage/green-power-frame.h"
 
-/**
- * @brief enumetion for possible status of a gpd key from an incomming gpd
- */
-enum class CGpdKeyStatus {
-    Valid,      /*<! key is known for this gpd and it's the good one */
-    Invalid,    /*<! key is known for this gpd but decryption failed, wrong key ? */
-    Undefined   /*<! it's not possible to know the status of key for this gpd. */
-};
+namespace NSEZSP {
 
 class CGpObserver {
 public:
-    CGpObserver() {};
-    virtual ~CGpObserver() {};
+    CGpObserver() = default;
+    virtual ~CGpObserver() = default;
 
     /**
      * @brief Method that will be invoked on incoming valid green power frames
@@ -40,3 +33,5 @@ public:
     virtual void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) = 0;
 
 };
+
+} // namespace NSEZSP

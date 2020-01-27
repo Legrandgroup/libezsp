@@ -5,6 +5,13 @@
 #include "spi/IAsyncDataInputObserver.h"
 #include "TestHarness.h"
 
+#include "spi/GenericAsyncDataInputObservable.h"
+
+using NSSPI::MockUartDriver;
+using NSSPI::MockUartScheduledByteDelivery;
+using NSSPI::IAsyncDataInputObserver;
+using NSSPI::GenericAsyncDataInputObservable;
+
 /**
  * @brief Write callback class to test the mock serial interface
  */

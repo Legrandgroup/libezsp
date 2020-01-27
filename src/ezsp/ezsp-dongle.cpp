@@ -1,39 +1,36 @@
 /**
  * @file ezsp-dongle.cpp
  */
-
-#include "ezsp-dongle.h"
-#include "spi/ILogger.h"
 #include <sstream>
 #include <iomanip>
 
-CEzspDongle::CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+#include "ezsp-dongle.h"
+#include "spi/ILogger.h"
+#include "spi/GenericAsyncDataInputObservable.h"
+
+using NSEZSP::CEzspDongle;
+
+CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
 	firstStartup(true),
 	lastKnownMode(CEzspDongleMode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
 	timer_factory(i_timer_factory),
 	pUart(nullptr),
-	ash(new CAsh(static_cast<CAshCallback*>(this), timer_factory)),
-	blp(new CBootloaderPrompt(nullptr, timer_factory)),
 	uartIncomingDataHandler(),
+	ash(static_cast<CAshCallback*>(this), timer_factory),
+	blp(nullptr, timer_factory),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers()
 {
+    registerObserver(this);
     if( nullptr != ip_observer )
     {
         registerObserver(ip_observer);
     }
 }
 
-CEzspDongle::~CEzspDongle()
-{
-    pUart = nullptr;
-    delete ash;
-    delete blp;
-}
-
-bool CEzspDongle::open(IUartDriver *ipUart)
+bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
 {
     bool lo_success = true;
     std::vector<uint8_t> l_buffer;
@@ -48,7 +45,7 @@ bool CEzspDongle::open(IUartDriver *ipUart)
         pUart = ipUart;
 
         // reset ash ncp
-        l_buffer = ash->resetNCPFrame();
+        l_buffer = ash.resetNCPFrame();
 
         if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
         {
@@ -76,14 +73,14 @@ bool CEzspDongle::open(IUartDriver *ipUart)
     return lo_success;
 }
 
-void CEzspDongle::ashCbInfo( EAshInfo info ) 
-{ 
+void CEzspDongle::ashCbInfo( EAshInfo info )
+{
     clogD <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
 
     if( ASH_STATE_CHANGE == info )
     {
         // inform upper layer that dongle is ready !
-        if( ash->isConnected() )
+        if( ash.isConnected() )
         {
             notifyObserversOfDongleState( DONGLE_READY );
             this->lastKnownMode = CEzspDongleMode::EZSP_NCP;    /* We are now sure the dongle is communicating over ASH */
@@ -118,7 +115,7 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
- {
+{
     std::vector<uint8_t> li_data;
     std::vector<uint8_t> lo_msg;
 
@@ -132,7 +129,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
     {
         if (this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
         {
-            lo_msg = ash->decode(li_data);
+            lo_msg = ash.decode(li_data);
 
             // send incomming mesage to application
             if( !lo_msg.empty() )
@@ -142,7 +139,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
 
                 // send ack
-                std::vector<uint8_t> l_msg = ash->AckFrame();
+                std::vector<uint8_t> l_msg = ash.AckFrame();
                 pUart->write(l_size, l_msg.data(), l_msg.size());
 
                 // call handler
@@ -156,7 +153,8 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 // notify observers
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
 
-
+                /* FIXME: Subject to discussion whether the code should be inlined here, instead of inside handleEzspRxMessage()
+                   see also ezsp-dongle.h for a similar comment
                 // response to a sending command
                 if( !sendingMsgQueue.empty() )
                 {
@@ -169,13 +167,14 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                         sendNextMsg();
                     }
                 }
+                */
             }
         }
         else
         {
             /* No ash decoding in bootloader mode */
             /* When switching to the bootloader, we are expecting a prompt (see class CBootloaderPrompt for more details) */
-            blp->decode(li_data);
+            blp.decode(li_data);
         }
     }    
 }
@@ -186,7 +185,7 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
 
     l_msg.i_cmd = i_cmd;
     l_msg.payload = i_cmd_payload;
-    
+
     sendingMsgQueue.push(l_msg);
 
     sendNextMsg();
@@ -194,9 +193,9 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload
 
 
 /**
- * 
+ *
  * PRIVATE
- * 
+ *
  */
 
 void CEzspDongle::sendNextMsg( void )
@@ -222,8 +221,8 @@ void CEzspDongle::sendNextMsg( void )
             li_data.push_back(l_msg.payload.at(loop));
         }
 
-        //-- clogD << "CEzspDongle::sendCommand ash->DataFrame" << std::endl;
-        l_enc_data = ash->DataFrame(li_data);
+        //-- clogD << "CEzspDongle::sendCommand ash.DataFrame" << std::endl;
+        l_enc_data = ash.DataFrame(li_data);
         if( nullptr != pUart )
         {
             //-- clogD << "CEzspDongle::sendCommand pUart->write" << std::endl;
@@ -260,17 +259,17 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
     {
         /* We are requested to get out of the booloader */
         this->lastKnownMode = requestedMode;
-        this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
+        this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
-        this->blp->registerPromptDetectCallback([this]() {
+        this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
-            this->blp->selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
+            this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongleMode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
             /* Restart the EZSP startup procedure here */
             this->open(this->pUart); /* FIXME: we don't need to run all the code from open(), just reset state variables, send the reset frame and arm again the ASH reset timeout */
         });
-        this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
+        this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
     if ((this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
@@ -279,17 +278,17 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
         clogE << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
-        this->blp->registerSerialWriteFunc([this](size_t& writtenCnt, const void* buf, size_t cnt) -> int {
+        this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
             return this->pUart->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
-        this->blp->registerPromptDetectCallback([this]() {
+        this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             /* Note: we provide selectModeUpgradeFw() with a callback that will be invoked when the firmware image transfer over serial link can start */
             /* This callback will only invoke our own notifyObserversOfFirmwareXModemXfrReady() method, that will in turn notify all observers that the firmware image transfer can start */
-            this->blp->selectModeUpgradeFw([this]() { this->notifyObserversOfFirmwareXModemXfrReady(); });
+            this->blp.selectModeUpgradeFw([this]() { this->notifyObserversOfFirmwareXModemXfrReady(); });
             this->lastKnownMode = CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE;   /* After launching the upgrade command, we are in firmware upgrade mode (X-modem) */
         });
-        this->blp->reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
+        this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
     clogE << "Adapter mode request combination in not implemented (last known="
@@ -318,5 +317,26 @@ void CEzspDongle::notifyObserversOfBootloaderPrompt() {
 void CEzspDongle::notifyObserversOfFirmwareXModemXfrReady() {
 	for(auto observer : this->observers) {
 		observer->handleFirmwareXModemXfr();
+	}
+}
+
+void CEzspDongle::handleDongleState( EDongleState i_state )
+{
+	// do nothing
+}
+
+void CEzspDongle::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+{
+    // response to a sending command
+	if( wait_rsp && !sendingMsgQueue.empty() )
+	{
+		sMsg l_msgQ = sendingMsgQueue.front();
+		if( l_msgQ.i_cmd == i_cmd ) // Bug
+		{
+			// remove waiting message and send next
+			sendingMsgQueue.pop();
+			wait_rsp = false;
+			sendNextMsg();
+		}
 	}
 }

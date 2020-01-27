@@ -9,12 +9,13 @@
 #include <set>
 #include <vector>
 #include <cstdlib>	// For size_t
-#include "IAsyncDataInputObserver.h"
+#include "spi/IAsyncDataInputObserver.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSSPI {
 
 /**
  * @brief An observable class that will invoke method handleInputData() on all its observers when new async data is received
@@ -22,7 +23,7 @@
 class GenericAsyncDataInputObservable {
 public:
 	GenericAsyncDataInputObservable();
-	virtual ~GenericAsyncDataInputObservable();
+	virtual ~GenericAsyncDataInputObservable() = default;
 
 	/**
 	 * @brief Register a new observer
@@ -52,6 +53,8 @@ public:
 private:
 	std::set<IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

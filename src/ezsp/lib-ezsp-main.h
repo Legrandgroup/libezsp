@@ -3,32 +3,29 @@
  *
  * @brief Main entry point for drive lib ezsp
  */
- 
+
 #pragma once
 
 #include "spi/IUartDriver.h"
 #include "spi/TimerBuilder.h"
 
+#include <ezsp/ezsp.h>
+#include "ezsp/lib-ezsp-main.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
-#include "ezsp/zbmessage/green-power-device.h"
+#include <ezsp/zbmessage/green-power-device.h>
 
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/green-power-observer.h"
 
 
+namespace NSEZSP {
 /**
- * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
+ * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
  */
-enum class CLibEzspState { 
-    UNINITIALIZED,                      /*<! Initial state, before starting. */
-    READY,                              /*<! Library is ready to work and process new command */
-    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    FW_UPGRADE,                         /*<! Firmware upgrade is in progress */
-};
+enum class CLibEzspInternalState;
 
 /**
  * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
@@ -52,23 +49,23 @@ public:
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain(IUartDriver* uartDriver, TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
-    CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
+    CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */
 
     /**
      * @brief Register callback on current library state
      *
      * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
      */
-    void registerLibraryStateCallback(FStateCallback newObsStateCallback);
+    void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 
     /**
-     * @brief Register callback to receive all authenticated incoming green power frames
+     * @brief Register callback to receive all incoming greenpower sourceId
      *
-     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
      */
     void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
@@ -133,16 +130,16 @@ public:
     void setFirmwareUpgradeMode();
 
 private:
-    TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
+    NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
     CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
-    FStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
+    FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
     FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
-    FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
     unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 
     void setState( CLibEzspInternalState i_new_state );
@@ -164,4 +161,12 @@ private:
     void handleFirmwareXModemXfr();
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
+
+	void handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive );
 };
+
+} // namespace NSEZSP

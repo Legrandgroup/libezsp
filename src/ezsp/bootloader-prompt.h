@@ -7,6 +7,8 @@
 
 #include "spi/TimerBuilder.h"
 
+namespace NSEZSP {
+
 /**
  * @brief Internal states for CLibEzspMain
  * 
@@ -31,14 +33,14 @@ public:
     virtual void blpCbInfo( ) = 0;
 };
 
-class CBootloaderPrompt
+class CBootloaderPrompt : protected NSSPI::ITimerVisitor
 {
 public:
     static const std::string GECKO_BOOTLOADER_HEADER;
     static const std::string GECKO_BOOTLOADER_PROMPT;
     static const uint16_t GECKO_QUIET_RX_TIMEOUT;
 
-    typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
+    typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
     typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
 
     CBootloaderPrompt() = delete; /* Construction without arguments is not allowed */
@@ -46,7 +48,7 @@ public:
      * ipCb : call to inform state of ash
      * ipTimer : timer object pass to ash module to manage internal timer
      */
-    CBootloaderPrompt(CBootloaderPromptCallback *ipCb, TimerBuilder &i_timer_factory);
+    CBootloaderPrompt(CBootloaderPromptCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory);
 
     CBootloaderPrompt(const CBootloaderPrompt&) = delete; /* No copy construction allowed */
 
@@ -83,8 +85,11 @@ public:
 
     EBootloaderStage decode(std::vector<uint8_t> &i_data);
 
+protected:
+    void trigger(NSSPI::ITimer* triggeringTimer);
+
 private:
-    std::unique_ptr<ITimer> timer;  /*!< A pointer to a timer instance */
+    std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
     CBootloaderPromptCallback *pCb; /*!< A callback to invoke when bootloader prompt has been reached */
     std::vector<uint8_t> accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
@@ -93,3 +98,5 @@ private:
     std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
     FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
 };
+
+}

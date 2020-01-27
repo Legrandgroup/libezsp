@@ -3,6 +3,9 @@
  */
 #pragma once
 
+#include <algorithm>
+#include <random>
+
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 
 #include "ezsp/ezsp-dongle-observer.h"
@@ -14,7 +17,9 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
-#define DEFAULT_RADIO_CHANNEL 11
+namespace NSEZSP {
+
+constexpr uint8_t DEFAULT_RADIO_CHANNEL = 11;
 
 class CZigbeeNetworking : public CEzspDongleObserver
 {
@@ -63,12 +68,15 @@ public:
     void handleFirmwareXModemXfr() {}
 
 private:
+    std::default_random_engine random_generator;
     CEzspDongle &dongle;
     CZigbeeMessaging &zb_messaging;
     uint8_t child_idx;
     std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
     uint8_t form_channel; // radio channel to form network
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

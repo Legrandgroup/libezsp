@@ -7,6 +7,7 @@ list(APPEND gptest_SOURCES gp_tests.cpp)
 list(APPEND gptest_SOURCES test_libezsp.cpp)
 add_executable(gptest ${gptest_SOURCES})
 
+target_include_directories(gptest PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(gptest PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(gptest PUBLIC ezsp ezspspi)
 endif()

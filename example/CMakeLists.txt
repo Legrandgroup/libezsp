@@ -11,5 +11,5 @@ endif()
 
 add_executable(mainEzspTest mainEzspTest.cpp)
 
-target_include_directories(mainEzspTest PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(mainEzspTest PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(mainEzspTest PUBLIC ezsp ezspspi)

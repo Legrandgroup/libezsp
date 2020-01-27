@@ -4,9 +4,16 @@
  * @brief Concrete implementation of a UART driver using Raritan's framework
  */
 
-#include "RaritanUartDriver.h"
 #include <pp/diag.h>
-#include "spi/GenericLogger.h"
+#include "spi/Logger.h"
+#include "spi/GenericAsyncDataInputObservable.h"
+
+#include "RaritanUartDriver.h"
+#include "RaritanLogger.h"
+
+using NSSPI::GenericAsyncDataInputObservable;
+using NSSPI::RaritanUartDriver;
+using NSSPI::RaritanLogger;
 
 RaritanUartDriver::RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler) :
 	m_eventSelector(*pp::SelectorSingleton::getInstance()),
@@ -44,7 +51,7 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 				return;
 			}
 
-			if (RaritanLogger::getInstance().debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
+			if (Logger::getInstance()->debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
 				PPD_DEBUG_HEX("read from dongle: ", readData, rdcnt);
 			if (this->m_data_input_observable)
 				this->m_data_input_observable->notifyObservers(readData, rdcnt);
@@ -55,8 +62,8 @@ int RaritanUartDriver::open(const std::string& serialPortName, unsigned int baud
 	return PP_OK;
 }
 
-int RaritanUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
-	if (RaritanLogger::getInstance().debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
+int RaritanUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
+	if (Logger::getInstance()->debugLogger.isOutputting())	/* Before directly using PPD_DEBUG_*, make sure DEBUG level logs are activated */
 		PPD_DEBUG_HEX("write to dongle: ", buf, cnt);
 	int result = this->m_serial_tty->write(writtenCnt, buf, cnt);
 	if (result == PP_OK) {

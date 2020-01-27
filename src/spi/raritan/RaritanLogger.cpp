@@ -4,23 +4,28 @@
  * @brief Concrete implementation of a logger using Raritan's framework
  */
 
-#include "RaritanLogger.h"
-#include <pp/diag.h>
 #include <cstdarg>
 
-RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL setLogLevel) :
-		ILoggerStream(setLogLevel),
+#include "RaritanLogger.h"
+
+using NSSPI::ILogger;
+using NSSPI::RaritanGenericLogger;
+using NSSPI::RaritanErrorLogger;
+using NSSPI::RaritanWarningLogger;
+using NSSPI::RaritanInfoLogger;
+using NSSPI::RaritanDebugLogger;
+using NSSPI::RaritanLogger;
+
+RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel),
 		m_buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
 { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
-}
-
-RaritanGenericLogger::~RaritanGenericLogger() {
 }
 
 int RaritanGenericLogger::overflow(int c) {
 	if (c != EOF) {
 		if (c == '\n') {
-			this->log(this->m_buffer.c_str());
+			this->logf(this->m_buffer.c_str());
 			this->m_buffer = "";
 		}
 		else {
@@ -32,25 +37,7 @@ int RaritanGenericLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of RaritanErrorLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanErrorLogger& first, RaritanErrorLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanErrorLogger& RaritanErrorLogger::operator=(RaritanErrorLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
-void RaritanErrorLogger::log(const char *format, ...) {
+void RaritanErrorLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -59,25 +46,7 @@ void RaritanErrorLogger::log(const char *format, ...) {
 	}
 }
 
-/**
- * This method is a friend of RaritanWarningLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanWarningLogger& first, RaritanWarningLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanWarningLogger& RaritanWarningLogger::operator=(RaritanWarningLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
-void RaritanWarningLogger::log(const char *format, ...) {
+void RaritanWarningLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -86,25 +55,7 @@ void RaritanWarningLogger::log(const char *format, ...) {
 	}
 }
 
-/**
- * This method is a friend of RaritanInfoLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanInfoLogger& first, RaritanInfoLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanInfoLogger& RaritanInfoLogger::operator=(RaritanInfoLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
-void RaritanInfoLogger::log(const char *format, ...) {
+void RaritanInfoLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -113,25 +64,7 @@ void RaritanInfoLogger::log(const char *format, ...) {
 	}
 }
 
-/**
- * This method is a friend of RaritanDebugLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(RaritanDebugLogger& first, RaritanDebugLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-RaritanDebugLogger& RaritanDebugLogger::operator=(RaritanDebugLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
-void RaritanDebugLogger::log(const char *format, ...) {
+void RaritanDebugLogger::logf(const char *format, ...) {
 	if (this->enabled && !this->muted) {
 		va_list args;
 		va_start(args, format);
@@ -155,16 +88,12 @@ RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& used
 		ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
 }
 
-RaritanLogger::~RaritanLogger() {
-}
-
-
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
-std::ostream ILogger::loggerErrorStream(&RaritanLogger::getInstance().errorLogger);
-std::ostream ILogger::loggerWarningStream(&RaritanLogger::getInstance().warningLogger);
-std::ostream ILogger::loggerInfoStream(&RaritanLogger::getInstance().infoLogger);
-std::ostream ILogger::loggerDebugStream(&RaritanLogger::getInstance().debugLogger);
-std::ostream ILogger::loggerTraceStream(&RaritanLogger::getInstance().traceLogger);
+std::ostream ILogger::loggerErrorStream(&Logger::getInstance()->errorLogger);
+std::ostream ILogger::loggerWarningStream(&Logger::getInstance()->warningLogger);
+std::ostream ILogger::loggerInfoStream(&Logger::getInstance()->infoLogger);
+std::ostream ILogger::loggerDebugStream(&Logger::getInstance()->debugLogger);
+std::ostream ILogger::loggerTraceStream(&Logger::getInstance()->traceLogger);
 
 /* TODO: convert the old TRACE methods below into ILoggerStream methods and remove all RaritanLogger::* methods below... today TRACE level messages are handled as DEBUG level messages */
 //void RaritanLogger::outputTraceLog(const char *format, ...) {

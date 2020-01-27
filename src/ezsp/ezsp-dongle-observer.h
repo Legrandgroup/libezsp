@@ -7,12 +7,14 @@
 #pragma once
 
 #include <vector>
-#include "ezsp-protocol/ezsp-enum.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
+
+namespace NSEZSP {
 
 class CEzspDongleObserver {
 public:
-    CEzspDongleObserver() {};
-    virtual ~CEzspDongleObserver() {};
+    CEzspDongleObserver() = default;
+    virtual ~CEzspDongleObserver() = default;
 
     /**
      * @brief Method that will be invoked on dongle state changes
@@ -20,7 +22,7 @@ public:
      * @param i_state The new dongle state
      */
     virtual void handleDongleState( EDongleState i_state ) = 0;
-    
+
     /**
      * @brief Method that will be invoked on incoming EZSP messages
      *
@@ -39,3 +41,5 @@ public:
      */
     virtual void handleFirmwareXModemXfr() = 0;
 };
+
+} // namespace NSEZSP
