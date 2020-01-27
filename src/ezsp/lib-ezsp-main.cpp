@@ -434,7 +434,7 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::ve
 {
     if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
     {
-        clogD << "Bootloader prompt mode is now going to start. Scheduling a firmware upgrade command\n";
+        clogD << "Bootloader prompt mode is now going to start. Scheduling selection of the firmware upgrade option.\n";
         this->dongle.setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
     }
     else
