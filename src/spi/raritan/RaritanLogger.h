@@ -12,6 +12,9 @@
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
 #include <string>
 
+#define PP_DIAG_CTX_libezsp 255
+#define PP_MODULE_NAME libezsp
+
 #include <pp/diag.h>
 
 #include "spi/ILogger.h"
@@ -40,7 +43,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~RaritanGenericLogger();
+	~RaritanGenericLogger() = default;
 
 protected:
 	/**
@@ -166,7 +169,7 @@ protected:
 
 	RaritanLogger();
 
-	virtual ~RaritanLogger() = default;
+	~RaritanLogger() = default;
 
 public:
 	/**

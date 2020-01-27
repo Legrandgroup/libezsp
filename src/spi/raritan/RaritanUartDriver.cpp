@@ -4,12 +4,12 @@
  * @brief Concrete implementation of a UART driver using Raritan's framework
  */
 
-#include <pp/diag.h>
 #include "spi/Logger.h"
 #include "spi/GenericAsyncDataInputObservable.h"
 
-#include "RaritanUartDriver.h"
 #include "RaritanLogger.h"
+#include "RaritanUartDriver.h"
+#include <pp/diag.h>
 
 using NSSPI::GenericAsyncDataInputObservable;
 using NSSPI::RaritanUartDriver;
