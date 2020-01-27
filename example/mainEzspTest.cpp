@@ -1,6 +1,6 @@
 /**
  * @file mainEzspTest.cpp
- * 
+ *
  * @brief Sample code for driving a dongle in the Raritan framework or using libserialcpp
  */
 
@@ -9,16 +9,17 @@
 #include "spi/TimerBuilder.h"
 #include "spi/UartDriverBuilder.h"
 #include "spi/Logger.h"
-#include "ezsp/lib-ezsp-main.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include "../src/ezsp/byte-manip.h"
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
+
+#include <ezsp/ezsp.h>
+#include <ezsp/byte-manip.h>
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -62,7 +63,7 @@ enum MainState {
     ADD_GPD,
     COMMISSION_GPD,
     OPEN_ZIGBEE_NWK,
-    RUN
+    RUN,
 };
 
 class MainStateMachine {
@@ -70,7 +71,7 @@ public:
     /**
      * Constructor
      *
-     * @param timerFactoryUtil An ITimerFactory used to generate ITimer objects
+     * @param timerBuilder An TimerBuilder used to generate ITimer objects
      * @param libEzspHandle The CLibEzspMain instance to use to communicate with the EZSP adapter
      * @param openGpCommissionning Do we open GP commissionning at dongle initialization?
      * @param authorizeChannelRequestAnswerTimeout During how many second (after startup), we will anwser to a channel request
@@ -79,13 +80,13 @@ public:
      * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
      */
-    MainStateMachine(TimerBuilder& timerBuilder,
-                     CLibEzspMain& libEzspHandle,
+    MainStateMachine(NSSPI::TimerBuilder& timerBuilder,
+                     NSEZSP::CEzsp& libEzspHandle,
                      bool openGpCommissionning=false,
                      uint8_t authorizeChannelRequestAnswerTimeout=0,
                      bool openZigbeeCommissionning=false,
                      bool gpRemoveAllDevices=false,
-                     const std::vector<CGpDevice>& gpDevicesToAdd={},
+                     const std::vector<NSEZSP::CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={}) :
         initFailures(0),
         timerBuilder(timerBuilder),
@@ -109,6 +110,8 @@ public:
     void ezspRun() {
         clogI << "Preparation steps finished... switching to run state\n";
         this->currentState = MainState::RUN;
+        //clogE << "Switching to bootloader mode just for tests\n";
+        //this->ezspSwitchToBootloader();
     }
 
     /**
@@ -116,9 +119,9 @@ public:
      *
      * @param i_state The new state of the EZSP library
      */
-    void ezspStateChangeCallback(CLibEzspState& i_state) {
+    void ezspStateChangeCallback(NSEZSP::CLibEzspState i_state) {
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
-        if (i_state == CLibEzspState::READY) {
+        if (i_state == NSEZSP::CLibEzspState::READY) {
             clogI << "EZSP library is ready, entering main state machine with MainState " << static_cast<int>(this->currentState) << "\n";
             if (this->currentState == MainState::INIT_PENDING && this->removeAllGPDAtStartup) {
                 clogI << "Applying remove all GPD action\n";
@@ -146,7 +149,7 @@ public:
                 if (!libEzsp.addGPDevices(this->gpdAddList)) {
                     clogE << "Failed adding GPDs\n";
                 }
-                this->gpdAddList = std::vector<CGpDevice>();
+                this->gpdAddList = std::vector<NSEZSP::CGpDevice>();
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
@@ -167,7 +170,7 @@ public:
                 libEzsp.setAnswerToGpfChannelRqstPolicy(true);
                 // start timer
                 this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
-                             [this](ITimer *timer) {
+                             [this](NSSPI::ITimer *timer) {
                                  clogI << "Closing GP channel request window\n";
                                  this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
                              }
@@ -237,15 +240,15 @@ public:
         }
 
         /* Cluster IDs are defined in the ZCL specification (Zigbee Alliance document 07-5123-06) */
-        uint16_t clusterId = dble_u8_to_u16(payload.at(1), payload.at(0));
+        uint16_t clusterId = NSEZSP::dble_u8_to_u16(payload.at(1), payload.at(0));
         /* Attribute IDs are also defined in the ZCL specs */
-        uint16_t attributeId = dble_u8_to_u16(payload.at(3), payload.at(2));
+        uint16_t attributeId = NSEZSP::dble_u8_to_u16(payload.at(3), payload.at(2));
         uint8_t type = payload.at(4);
 
         switch (clusterId)
         {
             case 0x0000: /* Basic */
-                if ((attributeId == 0x4000 /* SWBuildID */) && (type == ZCL_CHAR_STRING_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x4000 /* SWBuildID */) && (type == NSEZSP::ZCL_CHAR_STRING_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 6)
                     {
@@ -276,7 +279,7 @@ public:
                 }
                 break;
             case 0x000F: /* Binary input */
-                if ((attributeId == 0x0055 /* PresentValue */) && (type == ZCL_BOOLEAN_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0055 /* PresentValue */) && (type == NSEZSP::ZCL_BOOLEAN_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 6)
                     {
@@ -300,7 +303,7 @@ public:
                 }
                 break;
             case 0x0402: /* Temperature Measurement */
-                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == ZCL_INT16S_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == NSEZSP::ZCL_INT16S_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 7)
                     {
@@ -310,7 +313,7 @@ public:
                     }
                     else
                     {
-                        int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
+                        int16_t value = static_cast<int16_t>(NSEZSP::dble_u8_to_u16(payload.at(6), payload.at(5)));
                         std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
                         usedBytes = 7;
                         return true;
@@ -324,7 +327,7 @@ public:
                 }
                 break;
             case 0x0405: /* Humidity */
-                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == ZCL_INT16U_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0000 /* MeasuredValue */) && (type == NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 7)
                     {
@@ -334,7 +337,7 @@ public:
                     }
                     else
                     {
-                        int16_t value = static_cast<int16_t>(dble_u8_to_u16(payload.at(6), payload.at(5)));
+                        int16_t value = static_cast<int16_t>(NSEZSP::dble_u8_to_u16(payload.at(6), payload.at(5)));
                         std::cout << "Humidity: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "%\n";
                         usedBytes = 7;
                         return true;
@@ -348,7 +351,7 @@ public:
                 }
                 break;
             case 0x0001: /* Power Configuration */
-                if ((attributeId == 0x0020 /* BatteryVoltage */) && (type == ZCL_INT8U_ATTRIBUTE_TYPE))
+                if ((attributeId == 0x0020 /* BatteryVoltage */) && (type == NSEZSP::ZCL_INT8U_ATTRIBUTE_TYPE))
                 {
                     if (payloadSize < 6)
                     {
@@ -413,7 +416,7 @@ public:
      *
      * @param[in] i_gpf The frame received
      */
-    void onReceivedGPFrame(CGpFrame &i_gpf) {
+    void onReceivedGPFrame(NSEZSP::CGpFrame &i_gpf) {
         switch(i_gpf.getCommandId())
         {
             case 0xa0:	// Attribute reporting
@@ -451,25 +454,25 @@ public:
 
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
-    TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
-    CLibEzspMain& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
+    NSSPI::TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
+    NSEZSP::CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
     bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
     bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at dongle initialization? */
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
-    std::vector<CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
+    std::vector<NSEZSP::CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
-    std::unique_ptr<ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
+    std::unique_ptr<NSSPI::ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
 };
 
 int main(int argc, char **argv) {
-    IUartDriver *uartDriver = UartDriverBuilder::getUartDriver();
-    TimerBuilder timerFactory;
+    NSSPI::IUartDriver *uartDriver = NSSPI::UartDriverBuilder::getInstance();
+    NSSPI::TimerBuilder timerFactory;
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
-    std::vector<CGpDevice> gpAddedDevDataList;
+    std::vector<NSEZSP::CGpDevice> gpAddedDevDataList;
     std::vector<uint32_t> gpRemovedDevDataList;
     bool removeAllGpDevs = false;
     unsigned int resetToChannel = 0;
@@ -511,7 +514,7 @@ int main(int argc, char **argv) {
                             exit(1);
                         }
                         else {
-                            EmberKeyData keyValue(CGpDevice::UNKNOWN_KEY);
+                            NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
                             if (gpDevKeyStr != "") {
                                 std::vector<uint8_t> argAsBytes;
                                 for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
@@ -529,9 +532,9 @@ int main(int argc, char **argv) {
                                 }
                                 //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
                                 //std::cerr << "\n";
-                                keyValue = EmberKeyData(argAsBytes);
+                                keyValue = NSEZSP::EmberKeyData(argAsBytes);
                             }
-                            gpAddedDevDataList.push_back(CGpDevice(sourceIdValue, keyValue));
+                            gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
                         }
                     }
                     else {
@@ -594,7 +597,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    Logger::getInstance().setLogLevel(debugEnabled ? LOG_LEVEL::DEBUG : LOG_LEVEL::INFO);
+    NSSPI::Logger::getInstance()->setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
 
     clogI << "Starting ezsp test program (info)\n";
 
@@ -603,17 +606,17 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    CLibEzspMain lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);
-    auto clibobs = [&fsm, &lib_main](CLibEzspState i_state) {
+    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         fsm.ezspStateChangeCallback(i_state);
     };
     lib_main.registerLibraryStateCallback(clibobs);
-    auto gprecvobs = [&fsm](CGpFrame &i_gpf) {
+
+    auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
         fsm.onReceivedGPFrame(i_gpf);
     };
     lib_main.registerGPFrameRecvCallback(gprecvobs);
-
     // lib incomming greenpower sourceId callback
     // auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
     //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<

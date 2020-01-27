@@ -7,6 +7,8 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 
+using NSEZSP::CEzspEnum;
+
 std::string CEzspEnum::EmberNodeTypeToString( EmberNodeType in )
 {
     const std::map<EmberNodeType,std::string> MyEnumStrings {

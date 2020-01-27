@@ -7,16 +7,22 @@
 #include "spi/Logger.h"
 #include "ConsoleLogger.h"
 #include <cstdarg>
-#include <cstdio>
 
-ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+using NSSPI::ILogger;
+using NSSPI::ConsoleStderrLogger;
+using NSSPI::ConsoleStdoutLogger;
+using NSSPI::ConsoleLogger;
+using NSSPI::ConsoleErrorLogger;
+using NSSPI::ConsoleWarningLogger;
+using NSSPI::ConsoleInfoLogger;
+using NSSPI::ConsoleDebugLogger;
+using NSSPI::ConsoleTraceLogger;
+
+ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
-ConsoleStderrLogger::~ConsoleStderrLogger() {
-}
-
-void ConsoleStderrLogger::log(const char *format, ...) {
+void ConsoleStderrLogger::logf(const char *format, ...) {
 
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -35,32 +41,11 @@ int ConsoleStderrLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of ConsoleStderrLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
+ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL newLogLevel) :
+		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
-ConsoleStderrLogger& ConsoleStderrLogger::operator=(ConsoleStderrLogger other) {
-	::swap(*this, other);
-	return *this;
-}
-
-ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL logLevel) :
-		ILoggerStream(logLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
-}
-
-ConsoleStdoutLogger::~ConsoleStdoutLogger() {
-}
-
-void ConsoleStdoutLogger::log(const char *format, ...) {
+void ConsoleStdoutLogger::logf(const char *format, ...) {
 
 	if (this->enabled && !this->muted) {
 		va_list args;
@@ -79,23 +64,6 @@ int ConsoleStdoutLogger::overflow(int c) {
 	return c;
 }
 
-/**
- * This method is a friend of ConsoleStdoutLogger class
- * swap() is needed within operator=() to implement to copy and swap paradigm
- */
-void swap(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second) /* nothrow */ {
-	using std::swap;	// Enable ADL
-
-	swap(first.logLevel, second.logLevel);
-	swap(first.enabled, second.enabled);
-	swap(first.muted, second.muted);
-	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-ConsoleStdoutLogger& ConsoleStdoutLogger::operator=(ConsoleStdoutLogger other) {
-	::swap(*this, other);
-	return *this;
-}
 
 static ConsoleErrorLogger consoleErrorLogger;	/* Create a unique instance of the ConsoleErrorLogger that will be used to handle error logs */
 static ConsoleWarningLogger consoleWarningLogger;	/* Create a unique instance of the ConsoleWarningLogger that will be used to handle warning logs */
@@ -108,16 +76,13 @@ ConsoleLogger::ConsoleLogger():
 {
 }
 
-ConsoleLogger::ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger) :
-		ILogger(errorLogger, warningLogger, infoLogger, debugLogger, traceLogger) {
-}
-
-ConsoleLogger::~ConsoleLogger() {
+ConsoleLogger::ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger) :
+		ILogger(newErrorLogger, newWarningLogger, newInfoLogger, newDebugLogger, newTraceLogger) {
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */
-std::ostream ILogger::loggerErrorStream(&Logger::getInstance().errorLogger);
-std::ostream ILogger::loggerWarningStream(&Logger::getInstance().warningLogger);
-std::ostream ILogger::loggerInfoStream(&Logger::getInstance().infoLogger);
-std::ostream ILogger::loggerDebugStream(&Logger::getInstance().debugLogger);
-std::ostream ILogger::loggerTraceStream(&Logger::getInstance().traceLogger);
+std::ostream ILogger::loggerErrorStream(&Logger::getInstance()->errorLogger);
+std::ostream ILogger::loggerWarningStream(&Logger::getInstance()->warningLogger);
+std::ostream ILogger::loggerInfoStream(&Logger::getInstance()->infoLogger);
+std::ostream ILogger::loggerDebugStream(&Logger::getInstance()->debugLogger);
+std::ostream ILogger::loggerTraceStream(&Logger::getInstance()->traceLogger);

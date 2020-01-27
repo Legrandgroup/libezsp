@@ -10,25 +10,25 @@
 
 #include "spi/ILogger.h"
 
-using namespace std;
+using NSEZSP::CAsh;
 
 /**
  * The receive timeout settings - min/initial/max - defined in milliseconds
  */
-#define T_RX_ACK_MIN  400
-#define T_RX_ACK_INIT 1600
-#define T_RX_ACK_MAX 3200
+constexpr size_t T_RX_ACK_MIN = 400;
+constexpr size_t T_RX_ACK_INIT = 1600;
+constexpr size_t T_RX_ACK_MAX = 3200;
 
-#define ASH_CANCEL_BYTE     0x1A
-#define ASH_FLAG_BYTE       0x7E
-#define ASH_SUBSTITUTE_BYTE 0x18
-#define ASH_XON_BYTE        0x11
-#define ASH_OFF_BYTE        0x13
-#define ASH_TIMEOUT         -1
+constexpr uint8_t ASH_CANCEL_BYTE     = 0x1A;
+constexpr uint8_t ASH_FLAG_BYTE       = 0x7E;
+constexpr uint8_t ASH_SUBSTITUTE_BYTE = 0x18;
+constexpr uint8_t ASH_XON_BYTE        = 0x11;
+constexpr uint8_t ASH_OFF_BYTE        = 0x13;
+constexpr uint8_t ASH_TIMEOUT         = -1;
 
-#define ASH_MAX_LENGTH 131
+constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
+CAsh::CAsh(CAshCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory) :
 	ackNum(0),
 	frmNum(0),
 	seq_num(0),
@@ -39,7 +39,7 @@ CAsh::CAsh(CAshCallback *ipCb, TimerBuilder &i_timer_factory) :
 {
 }
 
-void CAsh::Timeout(void)
+void CAsh::trigger(NSSPI::ITimer* triggeringTimer)
 {
     if( !stateConnected )
     {
@@ -50,13 +50,13 @@ void CAsh::Timeout(void)
     }
 }
 
-vector<uint8_t> CAsh::resetNCPFrame(void)
+std::vector<uint8_t> CAsh::resetNCPFrame(void)
 {
     ackNum = 0;
     frmNum = 0;
     seq_num = 0;
     stateConnected = false;
-    vector<uint8_t> lo_msg;
+    std::vector<uint8_t> lo_msg;
 
     timer->stop();
     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
@@ -72,7 +72,7 @@ vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+    timer->start( T_RX_ACK_INIT, this);
 
     return lo_msg;
 }
@@ -102,7 +102,7 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+  timer->start( T_RX_ACK_INIT, this);
 
   return lo_msg;
 }
@@ -111,8 +111,8 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
 {
   std::vector<uint8_t> lo_msg;
 
-  lo_msg.push_back(static_cast<uint8_t>((frmNum << 4) + ackNum) );
-  frmNum = (frmNum + 1) & 0x07;
+  lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
+  frmNum = (static_cast<uint8_t>(frmNum + 1)) & 0x07;
 
   if( 0 != i_data.at(0) )
   {
@@ -140,9 +140,114 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
-  timer->start( T_RX_ACK_INIT, [&](ITimer *ipTimer){this->Timeout();} );
+  timer->start( T_RX_ACK_INIT, this);
 
   return lo_msg;
+}
+
+void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
+{
+  // Remove byte stuffing
+  bool escape = false;
+  for (auto &data : in_msg) {
+    if (escape) {
+      escape = false;
+      if ((data & 0x20) == 0) {
+        data = static_cast<uint8_t>(data + 0x20);
+      } else {
+        data = static_cast<uint8_t>(data & 0xDF);
+      }
+    } else if (data == 0x7D) {
+      escape = true;
+      continue;
+    }
+    else {
+	}
+    lo_msg.push_back(data);
+  }
+}
+
+void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
+{
+  clean_flag(lo_msg);
+  // Check CRC
+  if (computeCRC(lo_msg) != 0) {
+	  lo_msg.clear();
+	  clogD << "CAsh::decode Wrong CRC" << std::endl;
+	  return;
+  }
+  if ((lo_msg.at(0) & 0x80) == 0) {
+    // DATA;
+    //-- clogD << "CAsh::decode DATA" << std::endl;
+
+    // update ack number, use incoming frm number
+    ackNum = (static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1;
+    ackNum &= 0x07;
+
+
+    lo_msg = dataRandomise(lo_msg,1);
+
+    if( 0xFF == lo_msg.at(2) )
+    {
+    // WARNING for all frames except "VersionRequest" frame, add exteded header
+    lo_msg.erase(lo_msg.begin()+2);
+    lo_msg.erase(lo_msg.begin()+2);
+    }
+
+  }
+  else if ((lo_msg.at(0) & 0x60) == 0x00) {
+    // ACK;
+    //-- clogD << "CAsh::decode ACK" << std::endl;
+    //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
+    lo_msg.clear();
+    timer->stop();
+
+    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
+  }
+  else if ((lo_msg.at(0) & 0x60) == 0x20) {
+    // NAK;
+    frmNum = lo_msg.at(0) & 0x07;
+
+    clogD << "CAsh::decode NACK" << std::endl;
+
+    //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
+    lo_msg.clear();
+    timer->stop();
+
+    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
+  }
+  else if (lo_msg.at(0) == 0xC0) {
+    // RST;
+    lo_msg.clear();
+    //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
+    clogD << "CAsh::decode RST" << std::endl;
+  }
+  else if (lo_msg.at(0) == 0xC1) {
+    // RSTACK;
+    //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
+    clogD << "CAsh::decode RSTACK" << std::endl;
+
+    lo_msg.clear();
+    if( !stateConnected )
+    {
+    /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
+    stateConnected = true;
+    timer->stop();
+    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+    }
+  }
+  else if (lo_msg.at(0) == 0xC2) {
+    // ERROR;
+    //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
+    clogD << "CAsh::decode ERROR" << std::endl;
+    lo_msg.clear();
+  }
+  else
+  {
+    //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
+    clogD << "CAsh::decode UNKNOWN" << std::endl;
+    lo_msg.clear();
+  }
 }
 
 std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
@@ -170,110 +275,8 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
           // Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
           // last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
           //LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
-          if (!inputError && !in_msg.empty()) {
-            if( in_msg.size() >= 3 )
-            {
-              // Remove byte stuffing
-              bool escape = false;
-              for (auto &data : in_msg) {
-                  if (escape) {
-                      escape = false;
-                      if ((data & 0x20) == 0) {
-                          data = static_cast<uint8_t>(data + 0x20);
-                      } else {
-                          data = static_cast<uint8_t>(data & 0xDF);
-                      }
-                  } else if (data == 0x7D) {
-                      escape = true;
-                      continue;
-                  }
-                  lo_msg.push_back(data);
-              }
-
-              // Check CRC
-              if (computeCRC(lo_msg) != 0) {
-                  lo_msg.clear();
-                  clogD << "CAsh::decode Wrong CRC" << std::endl;
-              }
-              else
-              {
-                if ((lo_msg.at(0) & 0x80) == 0) {
-                  // DATA;
-                  //-- clogD << "CAsh::decode DATA" << std::endl;
-
-                  // update ack number, use incoming frm number
-                  ackNum = ((lo_msg.at(0)>>4&0x07) + 1) & 0x07;
-
-
-                  lo_msg = dataRandomise(lo_msg,1);
-
-                  if( 0xFF == lo_msg.at(2) )
-                  {
-                    // WARNING for all frames except "VersionRequest" frame, add exteded header
-                    lo_msg.erase(lo_msg.begin()+2);
-                    lo_msg.erase(lo_msg.begin()+2);
-                  }
-
-                }
-                else if ((lo_msg.at(0) & 0x60) == 0x00) {
-                  // ACK;
-                  //-- clogD << "CAsh::decode ACK" << std::endl;
-                  //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
-                  lo_msg.clear();
-                  timer->stop();
-
-                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
-                }
-                else if ((lo_msg.at(0) & 0x60) == 0x20) {
-                  // NAK;
-                  frmNum = lo_msg.at(0) & 0x07;
-
-                  clogD << "CAsh::decode NACK" << std::endl;
-
-                  //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
-                  lo_msg.clear();
-                  timer->stop();
-
-                  if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
-                }
-                else if (lo_msg.at(0) == 0xC0) {
-                  // RST;
-                  lo_msg.clear();
-                  //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
-                  clogD << "CAsh::decode RST" << std::endl;
-                }
-                else if (lo_msg.at(0) == 0xC1) {
-                  // RSTACK;
-                  //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
-                  clogD << "CAsh::decode RSTACK" << std::endl;
-
-                  lo_msg.clear();
-                  if( !stateConnected )
-                  {
-                    /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-                    timer->stop();
-                    stateConnected = true;
-                    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
-                  }
-                }
-                else if (lo_msg.at(0) == 0xC2) {
-                  // ERROR;
-                  //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
-                  clogD << "CAsh::decode ERROR" << std::endl;
-                  lo_msg.clear();
-                }
-                else
-                {
-                  //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
-                  clogD << "CAsh::decode UNKNOWN" << std::endl;
-                  lo_msg.clear();
-                }
-              }
-            }
-            else
-            {
-              //LOGGER(logTRACE) << "<-- RX ASH too short !! ";
-            }
+          if (!inputError && !in_msg.empty() && ( in_msg.size() >= 3 )) {
+            decode_flag(lo_msg);
           }
           in_msg.clear();
           inputError = false;
@@ -313,17 +316,18 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
  * PRIVATE FUNCTION
  */
 
-uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
+uint16_t CAsh::computeCRC( std::vector<uint8_t> i_msg )
 {
   uint16_t lo_crc = 0xFFFF; // initial value
   uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
-      for (auto i = 0; i < 8; i++) {
-          bool bit = ((i_msg.at(cnt) >> (7 - i) & 1) == 1);
-          bool c15 = ((lo_crc >> 15 & 1) == 1);
+      for (uint8_t i = 0; i < 8; i++) {
+		  
+          bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
+          bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);
-          if (c15 ^ bit) {
+          if (c15 != bit) {
               lo_crc ^= polynomial;
           }
       }
@@ -334,9 +338,9 @@ uint16_t CAsh::computeCRC( vector<uint8_t> i_msg )
   return lo_crc;
 }
 
-vector<uint8_t> CAsh::stuffedOutputData(vector<uint8_t> i_msg)
+std::vector<uint8_t> CAsh::stuffedOutputData(std::vector<uint8_t> i_msg)
 {
-  vector<uint8_t> lo_msg;
+  std::vector<uint8_t> lo_msg;
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       switch (i_msg.at(cnt)) {
@@ -375,19 +379,19 @@ vector<uint8_t> CAsh::stuffedOutputData(vector<uint8_t> i_msg)
   return lo_msg;
 }
 
-vector<uint8_t> CAsh::dataRandomise(vector<uint8_t> i_data, uint8_t start)
+std::vector<uint8_t> CAsh::dataRandomise(std::vector<uint8_t> i_data, uint8_t start)
 {
-    vector<uint8_t> lo_data;
+    std::vector<uint8_t> lo_data;
 
     // Randomise the data
-    uint8_t rand = 0x42;
+    uint8_t data = 0x42;
     for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
-        lo_data.push_back(i_data.at(cnt) ^ rand);
+        lo_data.push_back(i_data.at(cnt) ^ data);
 
-        if ((rand & 0x01) == 0) {
-            rand = static_cast<uint8_t>(rand >> 1);
+        if ((data & 0x01) == 0) {
+            data = static_cast<uint8_t>(data >> 1);
         } else {
-            rand = static_cast<uint8_t>((rand >> 1) ^ 0xb8);
+            data = (static_cast<uint8_t>(data >> 1) ^ static_cast<uint8_t>(0xb8));
         }
     }
 

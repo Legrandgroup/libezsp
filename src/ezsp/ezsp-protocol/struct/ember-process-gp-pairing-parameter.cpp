@@ -8,6 +8,8 @@
 
 #include "ember-process-gp-pairing-parameter.h"
 
+using NSEZSP::CProcessGpPairingParam;
+
 CProcessGpPairingParam::CProcessGpPairingParam(uint32_t i_gpd_source_id) :
         options(0, false, true, 0, 0, false, false, false),
         addr(i_gpd_source_id),
@@ -57,22 +59,22 @@ std::vector<uint8_t> CProcessGpPairingParam::get() const
     lo_out.push_back(commMode);
     // The network address of the GP Sink.
     lo_out.push_back(static_cast<uint8_t>(sinkNetworkAddress&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((sinkNetworkAddress>>8)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkNetworkAddress>>8)&0xFF));
     // The group ID of the GP Sink.
     lo_out.push_back(static_cast<uint8_t>(sinkGroupId&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((sinkGroupId>>8)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkGroupId>>8)&0xFF));
     // The alias assigned to the GPD.
     lo_out.push_back(static_cast<uint8_t>(assignedAlias&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((assignedAlias>>8)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(assignedAlias>>8)&0xFF));
     // The IEEE address of the GP Sink.
     lo_out.insert(lo_out.end(),sinkIeeeAddress.begin(),sinkIeeeAddress.end());
     // The key to use for GPD.
     lo_out.insert(lo_out.end(),gpdKey.begin(),gpdKey.end());
     // The security frame counter of the GPD.
     lo_out.push_back(static_cast<uint8_t>(gpdSecurityFrameCounter&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((gpdSecurityFrameCounter>>8)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((gpdSecurityFrameCounter>>16)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((gpdSecurityFrameCounter>>24)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>8)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>16)&0xFF));
+    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>24)&0xFF));
     // The forwarding radius.
     lo_out.push_back(forwardingRadius);
 

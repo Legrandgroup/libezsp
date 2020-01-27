@@ -7,18 +7,9 @@
 #include "ezsp/zbmessage/aps.h"
 #include "ezsp/byte-manip.h"
 
-CAPSFrame::CAPSFrame() : cluster_id(0), dest_ep(0), group_id(0), option(), profile_id(0), sequence(0), src_ep(0)
-{
-}
+using NSEZSP::CAPSFrame;
 
-CAPSFrame::CAPSFrame(const CAPSFrame& other) :
-	cluster_id(other.cluster_id),
-	dest_ep(other.dest_ep),
-	group_id(other.group_id),
-	option(other.option),
-	profile_id(other.profile_id),
-	sequence(other.sequence),
-	src_ep(other.src_ep)
+CAPSFrame::CAPSFrame() : cluster_id(0), dest_ep(0), group_id(0), option(), profile_id(0), sequence(0), src_ep(0)
 {
 }
 
@@ -93,28 +84,3 @@ void CAPSFrame::SetEmberAPS(std::vector<uint8_t> i_data )
 
   sequence = i_data.at(l_idx++);
 }
-
-/**
- * This method is a friend of CAPSFrame class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CAPSFrame& first, CAPSFrame& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.cluster_id, second.cluster_id);
-  swap(first.dest_ep, second.dest_ep);
-  swap(first.group_id, second.group_id);
-  swap(first.option, second.option);
-  swap(first.profile_id, second.profile_id);
-  swap(first.sequence, second.sequence);
-  swap(first.src_ep, second.src_ep);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CAPSFrame& CAPSFrame::operator=(CAPSFrame other)
-{
-  swap(*this, other);
-  return *this;
-}
-

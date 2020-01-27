@@ -10,13 +10,13 @@
  * @brief Macro to allow logger getter to fetch the singleton instance of this logger class
 **/
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
-#include "spi/ILogger.h"
 #include <string>
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
+#include <pp/diag.h>
+
+#include "spi/ILogger.h"
+
+namespace NSSPI {
 
 /**
  * @brief Class to implement error message logging
@@ -76,26 +76,8 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
+	virtual void logf(const char *format, ...);
 
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanErrorLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(RaritanErrorLogger& first, RaritanErrorLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	RaritanErrorLogger& operator=(RaritanErrorLogger other);
 };
 
 /**
@@ -117,26 +99,7 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
-
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanWarningLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(RaritanWarningLogger& first, RaritanWarningLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	RaritanWarningLogger& operator=(RaritanWarningLogger other);
+	virtual void logf(const char *format, ...);
 };
 
 /**
@@ -158,26 +121,7 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
-
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanInfoLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(RaritanInfoLogger& first, RaritanInfoLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	RaritanInfoLogger& operator=(RaritanInfoLogger other);
+	virtual void logf(const char *format, ...);
 };
 
 /**
@@ -199,26 +143,8 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
+	virtual void logf(const char *format, ...);
 
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type RaritanDebugLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(RaritanDebugLogger& first, RaritanDebugLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	RaritanDebugLogger& operator=(RaritanDebugLogger other);
 };
 
 /**
@@ -240,7 +166,7 @@ protected:
 
 	RaritanLogger();
 
-	~RaritanLogger();
+	virtual ~RaritanLogger() = default;
 
 public:
 	/**
@@ -251,6 +177,5 @@ public:
 	RaritanLogger& operator=(const RaritanLogger& other) = delete;
 };
 
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
+} // namespace NSSPI
+

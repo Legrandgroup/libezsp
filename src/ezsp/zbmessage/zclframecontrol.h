@@ -14,6 +14,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 typedef enum
 {
   E_DIR_CLIENT_TO_SERVER = 0,
@@ -33,7 +35,7 @@ typedef enum
 }EZCLFrameCtrlSoftwareCode;
 
 class CZCLFrameControl; /* Forward declaration */
-void swap(CZCLFrameControl& first, CZCLFrameControl& second); /* Declaration before qualifying ::swap() as friend for class CZCLFrameControl */
+void swap(CZCLFrameControl& first, CZCLFrameControl& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CZCLFrameControl */
 
 class CZCLFrameControl
 {
@@ -44,37 +46,16 @@ public:
   CZCLFrameControl();
 
   /**
+   * @brief Default destructor
+   */
+  virtual ~CZCLFrameControl() = default;
+
+  /**
    * @brief Construction from a byte
    *
    * @param i_byte The byte to construct from
    */
-  CZCLFrameControl( uint8_t i_byte );
-
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CZCLFrameControl(const CZCLFrameControl& other);
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CZCLFrameControl& operator=(CZCLFrameControl other);
-
-  /**
-   * \brief swap function to allow implementing of copy-and-swap idiom on members of type CZCLFrameControl
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void (::swap)(CZCLFrameControl& first, CZCLFrameControl& second);
+  explicit CZCLFrameControl( uint8_t i_byte );
 
   // direction
   EZCLFrameCtrlDirection GetDirection(void) const { return direction; }
@@ -111,6 +92,8 @@ private:
   /** software version indication, MSP : 0 for short frame (no deviceid and battery fields), 1 for long frame (generation 2.1) */
   EZCLFrameCtrlSoftwareCode software_code;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

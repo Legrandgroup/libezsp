@@ -7,8 +7,10 @@
 #include <vector>
 #include <string>
 
+namespace NSEZSP {
+
 class CEmberNetworkParameters; /* Forward declaration */
-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second); /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
+void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
 
 class CEmberNetworkParameters
 {
@@ -27,32 +29,6 @@ class CEmberNetworkParameters
          * @param skip The number of leading bytes to skip in buffer @p raw_message
          */
         CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip = 0);
-
-        /**
-         * @brief Copy constructor
-         *
-         * @param other The object to copy from
-         */
-        CEmberNetworkParameters(const CEmberNetworkParameters& other);
-
-        /**
-         * @brief Assignment operator
-         * @param other The object to assign to the lhs
-         *
-         * @return The object that has been assigned the value of @p other
-         */
-        CEmberNetworkParameters& operator=(CEmberNetworkParameters other);
-
-        /**
-         *  @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberNetworkParameters
-         *
-         * This function will swap all attributes of @p first and @p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void (::swap)(CEmberNetworkParameters& first, CEmberNetworkParameters& second);
 
         std::vector<uint8_t> getRaw() const;
 
@@ -139,8 +115,10 @@ class CEmberNetworkParameters
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data);
-
+        friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         uint64_t extend_pan_id;
@@ -153,3 +131,4 @@ class CEmberNetworkParameters
         uint32_t channels;
 };
 
+} // namespace NSEZSP

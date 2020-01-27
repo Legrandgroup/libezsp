@@ -11,6 +11,13 @@
 **/
 #define SINGLETON_LOGGER_CLASS_NAME ConsoleLogger
 #include "spi/ILogger.h"
+#include "spi/Logger.h"
+
+
+namespace NSSPI {
+
+class ConsoleStderrLogger;
+void swap(ConsoleStderrLogger& first, ConsoleStderrLogger& second) noexcept;
 
 /**
  * @brief Class to implement error message logging
@@ -22,45 +29,14 @@ public:
 	 *
 	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
 	 */
-	ConsoleStderrLogger(const LOG_LEVEL logLevel);
-
-	/**
-	 * @brief Copy constructor
-	 *
-	 * @param other The object instance to construct from
-	 */
-	ConsoleStderrLogger(const ConsoleStderrLogger& other);
-
-	/**
-	 * @brief Destructor
-	 */
-	virtual ~ConsoleStderrLogger();
+	explicit ConsoleStderrLogger(const LOG_LEVEL logLevel);
 
 	/**
 	 * @brief Output a log message
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
-
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStderrLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(ConsoleStderrLogger& first, ConsoleStderrLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	ConsoleStderrLogger& operator=(ConsoleStderrLogger other);
+	virtual void logf(const char *format, ...);
 
 protected:
 	/**
@@ -83,45 +59,14 @@ public:
 	 *
 	 * @param logLevel The log level handled by this logger instance. This is fixed at construction and cannot be changed afterwards
 	 */
-	ConsoleStdoutLogger(const LOG_LEVEL logLevel);
-
-	/**
-	 * @brief Copy constructor
-	 *
-	 * @param other The object instance to construct from
-	 */
-	ConsoleStdoutLogger(const ConsoleStdoutLogger& other);
-
-	/**
-	 * @brief Destructor
-	 */
-	virtual ~ConsoleStdoutLogger();
+	explicit ConsoleStdoutLogger(const LOG_LEVEL logLevel);
 
 	/**
 	 * @brief Output a log message
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...);
-
-	/**
-	 * @brief swap function to allow implementing of copy-and-swap idiom on members of type ConsoleStdoutLogger
-	 *
-	 * This function will swap all attributes of @p first and @p second
-	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	 *
-	 * @param first The first object
-	 * @param second The second object
-	 */
-	friend void (::swap)(ConsoleStdoutLogger& first, ConsoleStdoutLogger& second);
-
-	/**
-	 * @brief Assignment operator
-	 * @param other The object to assign to the lhs
-	 *
-	 * @return The object that has been assigned the value of @p other
-	 */
-	ConsoleStdoutLogger& operator=(ConsoleStdoutLogger other);
+	virtual void logf(const char *format, ...);
 
 protected:
 	/**
@@ -203,8 +148,10 @@ public:
  * @brief Class to interact with a console logger
  */
 class ConsoleLogger : public ILogger {
-	friend Logger;
-protected:
+	friend class Logger;
+	friend ILogger* Logger::getInstance();
+//protected:
+public:
 	/**
 	 * @brief Default constructor
 	 *
@@ -214,11 +161,11 @@ protected:
 	 * @param debugLogger The logger to use for debug messages
 	 * @param traceLogger The logger to use for trace messages
 	 */
-	ConsoleLogger(ILoggerStream& errorLogger, ILoggerStream& warningLogger, ILoggerStream& infoLogger, ILoggerStream& debugLogger, ILoggerStream& traceLogger);
+	ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger);
 
 	ConsoleLogger();
 
-	~ConsoleLogger();
+	~ConsoleLogger() = default;
 
 public:
 	/**
@@ -228,3 +175,5 @@ public:
 	 */
 	ConsoleLogger& operator=(const ConsoleLogger& other) = delete;
 };
+
+} // namespace NSSPI

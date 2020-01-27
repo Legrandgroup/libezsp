@@ -4,17 +4,20 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <set>
 
-#include "ezsp-protocol/ezsp-enum.h"
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
 #include "ash.h"
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
+#include "spi/IAsyncDataInputObserver.h"
+#include "spi/GenericAsyncDataInputObservable.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
     {
-        EEzspCmd i_cmd;
+        NSEZSP::EEzspCmd i_cmd;
         std::vector<uint8_t> payload;
     }SMsg;
 }
@@ -23,21 +26,22 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSEZSP {
 
-class CEzspDongle : public IAsyncDataInputObserver, public CAshCallback
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback, public CEzspDongleObserver
 {
 public:
-    CEzspDongle( TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    ~CEzspDongle();
+    virtual ~CEzspDongle() = default;
 
     CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 
     /**
      * @brief Open connetion to dongle of type ezsp
      */
-    bool open(IUartDriver *ipUart);
+    bool open(NSSPI::IUartDriver *ipUart);
 
 
     /**
@@ -63,11 +67,19 @@ public:
 	bool registerObserver(CEzspDongleObserver* observer);
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
+    /**
+     * @brief Switch dongle read/write behaviour to bootloader or EZSP/ASH mode
+     *
+     * @param dongleInBootloaderMode If true, the dongle will consider that the adapter is in bootloader prompt mode, if false, it will consider that the adapter is in EZSP/ASH command mode
+     */
+    void setBootloaderMode(bool dongleInBootloaderMode);
+
 private:
-    TimerBuilder &timer_factory;
-    IUartDriver *pUart;
-    CAsh *ash;
-    GenericAsyncDataInputObservable uartIncomingDataHandler;
+    bool bootloaderMode;    /*!< Is the adapter in bootloader prompt mode? If false, we are in applicative EZSP/ASH mode */
+    NSSPI::TimerBuilder &timer_factory;
+    NSSPI::IUartDriver *pUart;
+    CAsh ash;
+    NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
 
@@ -79,8 +91,15 @@ private:
     std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+
+	/**
+	 * CEzspDongleObserver handle functions on 'this' self
+	 */
+	void handleDongleState( EDongleState i_state );
+	void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
 };
 
+} // namespace NSEZSP
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

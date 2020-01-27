@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 class CEmberGpSinkTableEntryStruct
 {
     public:
@@ -28,7 +30,7 @@ class CEmberGpSinkTableEntryStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief constructor with specific value, others are set to default value.
@@ -58,32 +60,6 @@ class CEmberGpSinkTableEntryStruct
                         uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);
 
         /**
-         * @brief Copy constructor
-         *
-         * @param other The object instance to construct from
-         */
-        CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableEntryStruct
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void (::swap)(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second);
-
-        /**
-         * @brief Assignment operator
-         * @param other The object to assign to the lhs
-         *
-         * @return The object that has been assigned the value of @p other
-         */
-        CEmberGpSinkTableEntryStruct& operator=(CEmberGpSinkTableEntryStruct other);
-
-        /**
          * @brief return structure as a raw
          *
          * @return raw of structure
@@ -100,7 +76,7 @@ class CEmberGpSinkTableEntryStruct
         EmberKeyData getGpdKey() const { return gpd_key; }
         uint8_t getGroupcastRadius() const { return groupcast_radius; }
         uint8_t getSecurityLevel() const { return security_options&0x03; }
-        uint8_t getSecurityKeyType() const { return (security_options>>2)&0x07; }
+        uint8_t getSecurityKeyType() const { return (static_cast<uint8_t>(security_options>>2)&0x07); }
         bool isActive() const { return status==0x01; }
 
         /**
@@ -158,7 +134,10 @@ class CEmberGpSinkTableEntryStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         EmberGpSinkTableEntryStatus status; /*!< Internal status of the sink table entry */
@@ -172,6 +151,8 @@ class CEmberGpSinkTableEntryStruct
         EmberGpSecurityFrameCounter gpdSecurity_frame_counter; /*!< The security frame counter of the GPD */
         EmberKeyData gpd_key; /*!< The key to use for GPD */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

@@ -11,6 +11,8 @@
 
 #include "ezsp/byte-manip.h"
 
+using NSEZSP::CEmberGpSinkTableEntryStruct;
+
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
         status(0xFF),
         options(),
@@ -59,49 +61,6 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntry
 {
     sink_list[0].push_back(0xFF);
     sink_list[1].push_back(0xFF);
-}
-
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other):
-        status(other.status),
-        options(other.options),
-        gpd(other.gpd),
-        device_id(other.device_id),
-        sink_list(other.sink_list),
-        assigned_alias(other.assigned_alias),
-        groupcast_radius(other.groupcast_radius),
-        security_options(other.security_options),
-        gpdSecurity_frame_counter(other.gpdSecurity_frame_counter),
-        gpd_key(other.gpd_key)
-{
-
-}
-
-
-/**
- * This method is a friend of CEmberGpSinkTableEntryStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.status, second.status);
-  swap(first.options, second.options);
-  swap(first.gpd, second.gpd);
-  swap(first.device_id, second.device_id);
-  swap(first.sink_list, second.sink_list);
-  swap(first.assigned_alias, second.assigned_alias);
-  swap(first.groupcast_radius, second.groupcast_radius);
-  swap(first.security_options, second.security_options);
-  swap(first.gpdSecurity_frame_counter, second.gpdSecurity_frame_counter);
-  swap(first.gpd_key, second.gpd_key);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberGpSinkTableEntryStruct& CEmberGpSinkTableEntryStruct::operator=(CEmberGpSinkTableEntryStruct other)
-{
-  swap(*this, other);
-  return *this;
 }
 
 std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
@@ -168,9 +127,4 @@ std::string CEmberGpSinkTableEntryStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
-    out << data.String();
-    return out;
 }

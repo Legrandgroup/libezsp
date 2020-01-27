@@ -14,6 +14,9 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSSPI {
+
+class GenericAsyncDataInputObservable;
 
 /**
  * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
@@ -28,7 +31,7 @@ public:
 	/**
 	 * @brief Default destructor
 	 */
-	virtual ~IAsyncDataInputObserver() {};
+	virtual ~IAsyncDataInputObserver() = default;
 
 	/**
 	 * @brief Handler invoked for each input data
@@ -39,6 +42,7 @@ public:
 	virtual void handleInputData(const unsigned char* dataIn, const size_t dataLen) = 0;
 };
 
+} // namespace NSSPI
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

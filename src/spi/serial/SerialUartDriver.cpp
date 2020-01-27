@@ -12,7 +12,11 @@
 
 #include "spi/ILogger.h"
 
+#include "spi/GenericAsyncDataInputObservable.h"
+
 #include "SerialUartDriver.h"
+using NSSPI::SerialUartDriver;
+using NSSPI::GenericAsyncDataInputObservable;
 
 SerialUartDriver::SerialUartDriver() :
 	m_serial_port(),
@@ -70,8 +74,9 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 #ifdef SERIAL_DEBUG
 					clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
 #endif
-					if (this->m_data_input_observable)
+					if (this->m_data_input_observable) {
 						this->m_data_input_observable->notifyObservers(readData, rdcnt);
+					}
 				}
 				catch (std::exception& e) {
 					clogE << "Exception in read thread: " << e.what() << "\n";
@@ -86,14 +91,15 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	return 0;
 }
 
-int SerialUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
+int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	try {
 #ifdef SERIAL_DEBUG
 		std::stringstream msg;
 		msg << "Writing to serial port:";
-		for (size_t loop=0; loop<cnt; loop++)
+		for (size_t loop=0; loop<cnt; loop++) {
 			msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
 			    +((static_cast<const unsigned char*>(buf))[loop]);
+    }
 		msg << "\n";
 		clogE << msg.str();
 #endif

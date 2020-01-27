@@ -12,19 +12,16 @@
 #include "spi/cppthreads/CppThreadsTimer.h"
 #endif
 
-TimerBuilder::TimerBuilder() {
-
-}
-
-TimerBuilder::~TimerBuilder() {
-
-}
+using NSSPI::TimerBuilder;
+using NSSPI::ITimer;
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
-	return std::unique_ptr<ITimer>(new RaritanTimer());
+	static RaritanTimer gTimer;
 #endif
 #ifdef USE_CPPTHREADS
-	return std::unique_ptr<ITimer>(new CppThreadsTimer());
+	static CppThreadsTimer gTimer;
 #endif
+	return std::unique_ptr<ITimer>(&gTimer);
 }
+

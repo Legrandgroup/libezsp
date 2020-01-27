@@ -2,5 +2,54 @@
 
 source ../Config.sh
 
-pp_do "$@"
+pp_clean_local () {
+    pp_clean_default
+    make -C pp_scripts clean
+}
 
+pp_build_local () {
+
+    mkdir -p "build-for-target"
+    cd "build-for-target"
+
+    CFLAGS=${FW_CFLAGS_3RDPARTY} \
+    CXXFLAGS=${FW_CXXFLAGS_3RDPARTY} \
+    LDFLAGS=${FW_LDFLAGS_3RDPARTY} \
+      cmake \
+	-DCMAKE_C_COMPILER="$(type -P "$CC")" \
+	-DCMAKE_CXX_COMPILER="$(type -P "$CXX")" \
+	-DCMAKE_AR="$(type -P "$AR")" \
+	-DCMAKE_C_COMPILER_AR="$(type -P "$AR")" \
+	-DCMAKE_CXX_COMPILER_AR="$(type -P "$AR")" \
+	-DCMAKE_RANLIB="$(type -P "$RANLIB")" \
+	-DCMAKE_C_COMPILER_RANLIB="$(type -P "$RANLIB")" \
+	-DCMAKE_CXX_COMPILER_RANLIB="$(type -P "$RANLIB")" \
+	-DCMAKE_LINKER="$(type -P "${CROSS}ld")" \
+	-DCMAKE_NM="$(type -P "${CROSS}nm")" \
+	-DCMAKE_OBJDUMP="$(type -P "${CROSS}objdump")" \
+	-DCMAKE_OBJCOPY="$(type -P "${CROSS}objcopy")" \
+	-DCMAKE_STRIP="$(type -P "${CROSS}strip")" \
+	-DCMAKE_INSTALL_OLDINCLUDEDIR="/include" \
+	-DCMAKE_PREFIX_PATH="$DESTDIR" \
+	-DCMAKE_INSTALL_PREFIX=/ \
+	-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+	-DCMAKE_C_FLAGS="${FW_CFLAGS_3RDPARTY}" \
+	-DCMAKE_CXX_FLAGS="${FW_CXXFLAGS_3RDPARTY}" \
+	-DCMAKE_LD_FLAGS="${FW_LDFLAGS_3RDPARTY}" \
+	..
+    make
+    make install
+
+    cd "$OLDPWD"
+    make -C pp_scripts install
+}
+
+pp_moddeps_local () {
+    echo "${LIBC_COMPONENT}"
+}
+
+pp_test_local () {
+    :
+}
+
+pp_do "$@"

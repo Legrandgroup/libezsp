@@ -8,17 +8,12 @@
 
 #include "ember-gp-address-struct.h"
 
+using NSEZSP::CEmberGpAddressStruct;
+
 CEmberGpAddressStruct::CEmberGpAddressStruct():
 	gpdIeeeAddress({0,0,0,0,0,0,0,0}),
 	applicationId(),
 	endpoint()
-{
-}
-
-CEmberGpAddressStruct::CEmberGpAddressStruct(const CEmberGpAddressStruct& other):
-	gpdIeeeAddress(other.getGpdIeeeAddress()),
-	applicationId(other.getApplicationId()),
-	endpoint(other.getEndpoint())
 {
 }
 
@@ -28,27 +23,6 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
 {
 }
-
-/**
- * This method is a friend of CEmberGpAddressStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.gpdIeeeAddress, second.gpdIeeeAddress);
-  swap(first.applicationId, second.applicationId);
-  swap(first.endpoint, second.endpoint);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
-{
-  swap(*this, other);
-  return *this;
-}
-
 
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
 	gpdIeeeAddress(),	/* FIXME */
@@ -99,9 +73,4 @@ std::string CEmberGpAddressStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data){
-    out << data.String();
-    return out;
 }

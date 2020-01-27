@@ -15,6 +15,8 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
+
 typedef enum
 {
   E_IN_MSG_TYPE_UNICAST,
@@ -1077,6 +1079,7 @@ typedef std::vector<uint8_t> EmberGpSinkListEntry;
 // assume this value is never reach for a frame counter
 #define INVALID_FRAME_COUNTER 0xFFFFFFFF
 
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

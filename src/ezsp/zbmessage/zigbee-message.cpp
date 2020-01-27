@@ -6,23 +6,13 @@
 
 #include "ezsp/zbmessage/zigbee-message.h"
 
+using NSEZSP::CZigBeeMsg;
+
 CZigBeeMsg::CZigBeeMsg() :
 	aps(),
 	zcl_header(),
 	use_zcl_header(false),
 	payload()
-{
-}
-
-CZigBeeMsg::CZigBeeMsg(const CZigBeeMsg& i_msg) :
-	aps(i_msg.aps),
-	zcl_header(i_msg.zcl_header),
-	use_zcl_header(i_msg.use_zcl_header),
-	payload(i_msg.payload)
-{
-}
-
-CZigBeeMsg::~CZigBeeMsg()
 {
 }
 
@@ -102,25 +92,4 @@ std::vector<uint8_t> CZigBeeMsg::Get( void ) const
   lo_msg.insert(lo_msg.end(), payload.begin(), payload.end());
 
   return lo_msg;
-}
-
-/**
- * This method is a friend of CZigBeeMsg class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CZigBeeMsg& first, CZigBeeMsg& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.aps, second.aps);
-  swap(first.zcl_header, second.zcl_header);
-  swap(first.use_zcl_header, second.use_zcl_header);
-  swap(first.payload, second.payload);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CZigBeeMsg& CZigBeeMsg::operator=(CZigBeeMsg other)
-{
-  swap(*this, other);
-  return *this;
 }

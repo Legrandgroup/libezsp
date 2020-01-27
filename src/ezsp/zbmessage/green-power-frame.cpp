@@ -12,6 +12,8 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 
+using NSEZSP::CGpFrame;
+
 CGpFrame::CGpFrame():
     link_value(0),
     sequence_number(0),
@@ -88,9 +90,4 @@ std::string CGpFrame::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CGpFrame& data){
-    out << data.String();
-    return out;
 }
