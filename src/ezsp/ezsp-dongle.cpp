@@ -20,7 +20,6 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
 	wait_rsp(false),
 	observers()
 {
-	registerObserver(this);
     if( nullptr != ip_observer )
     {
         registerObserver(ip_observer);
@@ -123,7 +122,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
                 // keep only payload
                 lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);
-
+                this->handleResponse(l_cmd);
                 // notify observers
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
              }
@@ -245,10 +244,10 @@ void CEzspDongle::handleDongleState( EDongleState i_state )
 	// do nothing
 }
 
-void CEzspDongle::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 {
-    // response to a sending command
-	if( wait_rsp && !sendingMsgQueue.empty() )
+	// response to a sending command
+	if( !sendingMsgQueue.empty() )
 	{
 		sMsg l_msgQ = sendingMsgQueue.front();
 		if( l_msgQ.i_cmd == i_cmd ) // Bug
@@ -257,6 +256,10 @@ void CEzspDongle::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_ms
 			sendingMsgQueue.pop();
 			wait_rsp = false;
 			sendNextMsg();
+		}    // response to a sending command
+		else
+		{
+			clogE << "De-synchronized EZSP cmd/rsp\n";
 		}
 	}
 }
