@@ -260,7 +260,7 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
     if ((this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
         && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE)
     {
-        clogE << "Attaching bootloader parser to serial port\n";
+        clogD << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
         this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {

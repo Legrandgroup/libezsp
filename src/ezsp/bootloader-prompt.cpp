@@ -145,8 +145,14 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       }
     }
   }
+  bool lastRXByteIsNUL(false);
   while( !i_data.empty() )
   {
+    if (lastRXByteIsNUL)
+    {
+      accumulatedBytes.clear(); /* If we receive additional bytes after '\0', discard all bytes prior (and including) '\0', and start accumulating again */
+    }
+    lastRXByteIsNUL = false;  /* For now, there is a new byte after the last '\0' */
     val = i_data.front();
     i_data.erase(i_data.begin());
     if (val != 0x00)
@@ -155,8 +161,9 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     }
     else
     {
-      accumulatedBytes.clear(); /* 0x00 will reset the parser, note that most EZSP adapters tend to send '\0' right after the bootloader prompt */
-      return state;
+      /* 0x00 will reset the parser, note that most EZSP adapters tend to send '\0' right after the bootloader prompt, so we want to parse that prompt,
+         and clear the accumulatedBytes buffer only when we receive bytes next time */
+      lastRXByteIsNUL=true;
     }
   }
   /* Note: from now on, there can be no 0x00 byte inside the buffer, thus we can convert it to a string */
@@ -169,21 +176,17 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
   msg << "\n";
   clogE << msg.str();
   clogE << "Equivalent string: \"" << str << "\"\n";
-  size_t bootloaderPrompt = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_HEADER);
-  if (str.size()!=0 && str.back() == 'r')
+  size_t blh = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_HEADER);
+  if (blh != std::string::npos)
   {
-    size_t bootloaderPrompt = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_HEADER);
-    if (bootloaderPrompt != std::string::npos)
+    /* We found the Gecko bootloader header, this is good news */
+    if (EBootloaderStage::PROBE != state)
     {
-      /* We found the Gecko bootloader header, this is good news */
-      if (EBootloaderStage::PROBE != state)
-      {
-        clogW << "Got a bootloader header while not in probe mode, we will reset to TOPLEVEL_MENU_HEADER state anyway\n";
-      }
-      state=EBootloaderStage::TOPLEVEL_MENU_HEADER;
-      accumulatedBytes.clear(); /* Remove the menu header from accumulated bytes (has been parsed) */
-      return state;
+      clogW << "Got a bootloader header while not in probe mode, we will reset to TOPLEVEL_MENU_HEADER state anyway\n";
     }
+    state = EBootloaderStage::TOPLEVEL_MENU_HEADER;
+    clogD << "Got bootloader header at position \"" << static_cast<unsigned int>(blh) << "\"\n";
+    accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state)
   {
@@ -195,7 +198,6 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       clogE << "Got version \"" << version << "\"\n";
       /* FIXME: should tidy up this string (trailing \r\n, leading and trailing spaces) */
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + eolChar); /* Remove the version string from accumulated bytes (has been parsed) */
-      return state;
     }
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state ||
@@ -212,9 +214,13 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
         clogD << "Invoking promptDetectCallback\n";
         this->promptDetectCallback();
       }
-      return state;
     }
   }
+  if (lastRXByteIsNUL)
+  {
+    accumulatedBytes.clear();
+  }
+  return state;
 }
 
 const std::string CBootloaderPrompt::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
