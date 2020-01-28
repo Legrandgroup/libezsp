@@ -476,14 +476,14 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uin
 {
 	if( SINK_COM_IN_PROGRESS == sink_state )
 	{
-		clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
 		// close commissioning session
 		closeCommissioningSession();
 	}
 	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
 	{
-		clogI << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
 		gpds_to_register.pop_back();
 
@@ -526,7 +526,7 @@ void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_re
         break;
         case EZSP_GP_SINK_TABLE_INIT:
         {
-            clogI << "EZSP_GP_SINK_TABLE_INIT RSP" << std::endl;
+            clogD << "EZSP_GP_SINK_TABLE_INIT RSP" << std::endl;
         }
         break;
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
@@ -685,7 +685,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option)
     l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
 
     //
-    clogI << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option : " <<  std::hex << std::setw(2) << std::setfill('0') << i_option << std::endl;
+    clogD << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option : " <<  std::hex << std::setw(2) << std::setfill('0') << i_option << std::endl;
     zb_messaging.SendUnicast(0,l_gp_comm_msg);
 }
 
@@ -822,7 +822,7 @@ void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
     // An EmberGpAddress struct containing a copy of the gpd address to be found.
     CEmberGpAddressStruct l_gp_address(i_src_id);
 
-    clogI << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());
 }
 
@@ -833,7 +833,7 @@ void CGpSink::gpSinkGetEntry( uint8_t i_index )
     // The index of the requested sink table entry.
     l_payload.push_back(i_index);
 
-    clogI << "EZSP_GP_SINK_TABLE_GET_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY,l_payload);
 }
 
@@ -849,14 +849,14 @@ void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_e
     std::vector<uint8_t> i_struct = i_entry.getRaw();
     l_payload.insert(l_payload.end(), i_struct.begin(), i_struct.end());
 
-    clogI << "EZSP_GP_SINK_TABLE_SET_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_SET_ENTRY,l_payload);
 }
 
 
 void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 {
-    clogI << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING\n";
+    clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING\n";
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING,i_param.get());
 }
 
@@ -889,27 +889,27 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
     l_payload.push_back(static_cast<uint8_t>(i_life_time_ms&0xFF));
     l_payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(i_life_time_ms>>8)&0xFF));
 
-    clogI << "EZSP_D_GP_SEND\n";
+    clogD << "EZSP_D_GP_SEND\n";
     dongle.sendCommand(EZSP_D_GP_SEND,l_payload);
 }
 
 void CGpSink::gpSinkTableRemoveEntry( uint8_t i_index )
 {
-    clogI << "EZSP_GP_SINK_TABLE_REMOVE_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_REMOVE_ENTRY\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY,{i_index});
 }
 
 void CGpSink::gpProxyTableLookup(uint32_t i_src_id)
 {
     CEmberGpAddressStruct i_addr(i_src_id);
-    clogI << "EZSP_GP_PROXY_TABLE_LOOKUP\n";
+    clogD << "EZSP_GP_PROXY_TABLE_LOOKUP\n";
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP,i_addr.getRaw());
 }
 
 void CGpSink::gpSinkTableLookup(uint32_t i_src_id)
 {
     CEmberGpAddressStruct i_addr(i_src_id);
-    clogI << "EZSP_GP_SINK_TABLE_LOOKUP\n";
+    clogD << "EZSP_GP_SINK_TABLE_LOOKUP\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,i_addr.getRaw());
 }
 
@@ -931,7 +931,7 @@ void CGpSink::setSinkState( ESinkState i_state )
 
     auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */
     std::string error_str = it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
-    clogI << "SINK State change : " << error_str << std::endl;
+    clogD << "SINK State change : " << error_str << std::endl;
 
     if( nullptr != obsStateCallback )
     {
