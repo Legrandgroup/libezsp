@@ -315,7 +315,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<
 		else
 		{
 			// no place to record pairing : FAILED
-			clogD << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
+			clogE << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
 			setSinkState(SINK_READY);
 		}
 	}
