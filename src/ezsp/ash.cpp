@@ -101,9 +101,6 @@ std::vector<uint8_t> CAsh::AckFrame(void)
 
   lo_msg = stuffedOutputData(lo_msg);
 
-  // start timer
-  timer->start( T_RX_ACK_INIT, this);
-
   return lo_msg;
 }
 
