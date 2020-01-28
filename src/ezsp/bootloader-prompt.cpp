@@ -174,8 +174,8 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
           +(static_cast<const unsigned int>(accumulatedBytes[loop]));
   msg << "\n";
-  clogE << msg.str();
-  clogE << "Equivalent string: \"" << str << "\"\n";
+  clogD << msg.str();
+  clogD << "Equivalent string: \"" << str << "\"\n";
   size_t blh = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_HEADER);
   if (blh != std::string::npos)
   {
