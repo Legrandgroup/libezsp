@@ -40,7 +40,7 @@ bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
     {
         pUart = ipUart;
 
-        // reset ash ncp
+        // Send a ASH reset to the NCP
         l_buffer = ash.resetNCPFrame();
 
         if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
@@ -84,6 +84,12 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         {
             notifyObserversOfDongleState( DONGLE_REMOVE );
         }
+    }
+    else if ( ASH_NACK == info )
+    {
+        clogW << "Caught an ASH NACK from NCP... resending\n";
+        wait_rsp = false;
+        sendNextMsg();
     }
 }
 
@@ -189,12 +195,8 @@ void CEzspDongle::sendNextMsg( void )
         std::vector<uint8_t> l_enc_data;
         size_t l_size;
 
-        li_data.clear();
         li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
-        for( size_t loop=0; loop< l_msg.payload.size(); loop++ )
-        {
-            li_data.push_back(l_msg.payload.at(loop));
-        }
+        li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
 
         //-- clogD << "CEzspDongle::sendCommand ash.DataFrame" << std::endl;
         l_enc_data = ash.DataFrame(li_data);
