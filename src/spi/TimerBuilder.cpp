@@ -15,13 +15,14 @@
 using NSSPI::TimerBuilder;
 using NSSPI::ITimer;
 
-std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
-	static RaritanTimer gTimer;
+	typedef class NSSPI::RaritanTimer Timer;
 #endif
 #ifdef USE_CPPTHREADS
-	static CppThreadsTimer gTimer;
+	typedef class NSSPI::CppThreadsTimer Timer;
 #endif
-	return std::unique_ptr<ITimer>(&gTimer);
+
+std::unique_ptr<ITimer> TimerBuilder::create() const {
+	return std::unique_ptr<ITimer>(new Timer());
 }
 
