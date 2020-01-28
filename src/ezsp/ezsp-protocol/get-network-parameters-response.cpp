@@ -8,9 +8,9 @@
 
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"
 
-using NSEZSP::CGetNetworkParamtersResponse;
+using NSEZSP::CGetNetworkParametersResponse;
 
-CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message) :
+CGetNetworkParametersResponse::CGetNetworkParametersResponse(const std::vector<uint8_t>& raw_message) :
 	status(static_cast<EEmberStatus>(raw_message.at(0))),
 	node_type(static_cast<EmberNodeType>(raw_message.at(1))),
 	parameters(raw_message,2)
@@ -18,11 +18,11 @@ CGetNetworkParamtersResponse::CGetNetworkParamtersResponse(const std::vector<uin
 {
 }
 
-std::string CGetNetworkParamtersResponse::String() const
+std::string CGetNetworkParametersResponse::String() const
 {
     std::stringstream buf;
 
-    buf << "GetNetworkParamtersResponse : { ";
+    buf << "GetNetworkParametersResponse : { ";
     buf << "[status : "<< CEzspEnum::EEmberStatusToString(status) << "]";
     buf << "[modeType : "<< CEzspEnum::EmberNodeTypeToString(node_type) << "]";
     buf << "["<< parameters.String() << "]";
