@@ -186,7 +186,7 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     }
     state = EBootloaderStage::TOPLEVEL_MENU_HEADER;
     clogD << "Got bootloader header at position \"" << static_cast<unsigned int>(blh) << "\"\n";
-    accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
+    accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh + CBootloaderPrompt::GECKO_BOOTLOADER_HEADER.length()); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state)
   {
@@ -194,9 +194,9 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     if (eolChar != std::string::npos)
     {
       state = EBootloaderStage::TOPLEVEL_MENU_CONTENT;
-      std::string version = str;
-      clogE << "Got version \"" << version << "\"\n";
-      /* FIXME: should tidy up this string (trailing \r\n, leading and trailing spaces) */
+      std::string version(str.begin(), str.begin() + eolChar - 1);
+      clogD << "Got version \"" << version << "\"\n";
+      /* FIXME: should tidy up this string (leading and trailing spaces) */
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + eolChar); /* Remove the version string from accumulated bytes (has been parsed) */
     }
   }
