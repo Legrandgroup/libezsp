@@ -4,7 +4,7 @@
 
 #include "ezsp/lib-ezsp-main.h"
 #include "spi/ILogger.h"
-#include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParamtersResponse
+#include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParametersResponse
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
 
 #include <sstream>
@@ -429,7 +429,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
         {
-            CGetNetworkParamtersResponse l_rsp(i_msg_receive);
+            CGetNetworkParametersResponse l_rsp(i_msg_receive);
             clogI << l_rsp.String() << std::endl;
         }
         break;

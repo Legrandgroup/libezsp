@@ -177,7 +177,7 @@ void CGpSink::handleDongleState( EDongleState i_state )
 
 void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive)
 {
-	CGetNetworkParamtersResponse l_rsp(i_msg_receive);
+	CGetNetworkParametersResponse l_rsp(i_msg_receive);
 	if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() )
 	{
 		nwk_parameters = l_rsp.getParameters();
