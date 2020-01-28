@@ -39,7 +39,7 @@ enum class CEzspDongleMode {
     BOOTLOADER_EXIT_TO_EZSP_NCP,        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */
 };
 
-class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback, public CEzspDongleObserver
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
 public:
     CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
@@ -137,10 +137,7 @@ private:
      * CEzspDongleObserver handle functions on 'this' self
      */
     void handleDongleState( EDongleState i_state );
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
-
-    void handleBootloaderPrompt() {} /* FIXME: only needed if we keep inheriting from CEzspDongleObserver (subject to discussion) */
-    void handleFirmwareXModemXfr() {} /* FIXME: only needed if we keep inheriting from CEzspDongleObserver (subject to discussion) */
+    void handleResponse( EEzspCmd i_cmd );
 };
 
 } // namespace NSEZSP

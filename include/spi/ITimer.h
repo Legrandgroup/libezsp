@@ -59,7 +59,7 @@ public:
 	 */
 	virtual bool start(uint16_t timeout, ITimerVisitor *visitor) {
 		this->visitor = visitor;
-		this->start(timeout, trigg);
+		return this->start(timeout, trigg);
 	}
 
 	/**
