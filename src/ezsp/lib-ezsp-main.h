@@ -58,12 +58,12 @@ public:
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
      */
     void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 
     /**
-     * @brief Register callback to receive all incoming greenpower sourceId
+     * @brief Register callback to receive all authenticated incoming green power frames
      *
      * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
      */
