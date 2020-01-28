@@ -187,6 +187,7 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     state = EBootloaderStage::TOPLEVEL_MENU_HEADER;
     clogD << "Got bootloader header at position \"" << static_cast<unsigned int>(blh) << "\"\n";
     accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh + CBootloaderPrompt::GECKO_BOOTLOADER_HEADER.length()); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
+    str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state)
   {
@@ -198,6 +199,7 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       clogD << "Got version \"" << version << "\"\n";
       /* FIXME: should tidy up this string (leading and trailing spaces) */
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + eolChar); /* Remove the version string from accumulated bytes (has been parsed) */
+    str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
     }
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state ||
@@ -209,6 +211,10 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
       state = EBootloaderStage::TOPLEVEL_MENU_PROMPT;
       clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blPrompt); /* Remove all text up to (and including) the bootloader prompt from accumulated bytes (has been parsed) */
+      /* Note: the line below is commented-out because there is no code that continues parsing str, so even if it is now different
+         from what is inside accumulatedBytes, we'd rather not add useless processing (creation of a string that will then be destroyed).
+         If more processing on str is added below, that line should however be uncommented */
+      //str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
       if (this->promptDetectCallback)
       {
         clogD << "Invoking promptDetectCallback\n";
