@@ -249,8 +249,16 @@ void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 	// response to a sending command
 	if( !sendingMsgQueue.empty() )
 	{
+		if (!wait_rsp)
+		{
+			/* If wait_rsp is false, we are not expecting a response to a previous command.
+			   But sendingMsgQueue should always contain (at front) the last command sent without reply, so when sendingMsgQueue is not empty,
+			   wait_rsp should be true
+			*/
+			clogE << "Received a message with a non-empty queue while no response was expected\n";
+		}
 		sMsg l_msgQ = sendingMsgQueue.front();
-		if( l_msgQ.i_cmd == i_cmd ) // Bug
+		if( l_msgQ.i_cmd == i_cmd ) /* Make sure that the EZSP message is a response to the last command we sent */
 		{
 			// remove waiting message and send next
 			sendingMsgQueue.pop();
@@ -259,7 +267,7 @@ void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 		}    // response to a sending command
 		else
 		{
-			clogE << "De-synchronized EZSP cmd/rsp\n";
+			clogE << "Asynchronous received EZSP message\n";
 		}
 	}
 }
