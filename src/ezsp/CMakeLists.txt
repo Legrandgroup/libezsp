@@ -31,6 +31,7 @@ list(APPEND ezsp_SOURCES
 )
 
 add_library(ezsp ${ezsp_SOURCES})
+add_library(ezsp SHARED ${ezsp_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
