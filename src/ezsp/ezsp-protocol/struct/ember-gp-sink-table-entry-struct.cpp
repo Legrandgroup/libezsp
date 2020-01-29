@@ -29,6 +29,10 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
     sink_list[1].push_back(0xFF);
 }
 
+CEmberGpSinkTableEntryStruct::~CEmberGpSinkTableEntryStruct()
+{
+}
+
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message):
         status(raw_message.at(0)),
         options(dble_u8_to_u16(raw_message.at(2),raw_message.at(1))),

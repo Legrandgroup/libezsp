@@ -134,7 +134,7 @@ public:
                 this->removeAllGPDAtStartup = false;
                 this->gpdRemoveList = std::vector<uint32_t>();
             }
-            else if (this->currentState == MainState::INIT_PENDING && this->gpdRemoveList.size()) { /* If in REMOVE_ALL_GPD state, no need to remove specific GPs, we have already flushed all */
+            else if ((this->currentState == MainState::INIT_PENDING) && (this->gpdRemoveList.size() > 0)) { /* If in REMOVE_ALL_GPD state, no need to remove specific GPs, we have already flushed all */
                 clogI << "Removing " << this->gpdRemoveList.size() << " provided GPDs\n";
                 this->currentState = MainState::REMOVE_SPECIFIC_GPD;
                 if (!libEzsp.removeGPDevices(this->gpdRemoveList)) {
@@ -145,7 +145,7 @@ public:
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
                       this->currentState == MainState::REMOVE_SPECIFIC_GPD) &&
-                     this->gpdAddList.size()) {    /* Once init is done or optional GPD remove has been done... */
+                     (this->gpdAddList.size() > 0)) {    /* Once init is done or optional GPD remove has been done... */
                 clogI << "Adding " << this->gpdAddList.size() << " provided GPDs\n";
                 this->currentState = MainState::ADD_GPD;
                 if (!libEzsp.addGPDevices(this->gpdAddList)) {
@@ -160,14 +160,14 @@ public:
                      this->openGpCommissionningAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
                 clogI << "Opening GP commisionning session\n";
                 clogE << "Not implemented yet\n";
-                throw;
+                throw(std::string("GP commisionning: Not implemented yet"));
                 //libEzsp.getSink().openCommissioningSession();  /* FIXME: should not directly invoke methods on sink */
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
                       this->currentState == MainState::REMOVE_SPECIFIC_GPD ||
                       this->currentState == MainState::ADD_GPD) &&
-                     this->channelRequestAnswerTimeoutAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
+                     (this->channelRequestAnswerTimeoutAtStartup != 0)) {    /* Once init is done or optional GPD remove and addition has been done... */
                 clogI << "Opening GP channel request window for " << std::dec << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
                 libEzsp.setAnswerToGpfChannelRqstPolicy(true);
                 // start timer
@@ -255,8 +255,6 @@ public:
                     if (payloadSize < 6)
                     {
                         clogE << "Firmware version string is too short: " << payloadSize << " bytes\n";
-                        usedBytes = 0;
-                        return false;
                     }
                     else
                     {
@@ -276,8 +274,6 @@ public:
                 else
                 {
                     clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                    usedBytes = 0;
-                    return false;
                 }
                 break;
             case 0x000F: /* Binary input */
@@ -286,8 +282,6 @@ public:
                     if (payloadSize < 6)
                     {
                         clogE << "Binary input frame is too short: " << payloadSize << " bytes\n";
-                        usedBytes = 0;
-                        return false;
                     }
                     else
                     {
@@ -300,8 +294,6 @@ public:
                 else
                 {
                     clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                    usedBytes = 0;
-                    return false;
                 }
                 break;
             case 0x0402: /* Temperature Measurement */
@@ -324,8 +316,6 @@ public:
                 else
                 {
                     clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                    usedBytes = 0;
-                    return false;
                 }
                 break;
             case 0x0405: /* Humidity */
@@ -348,8 +338,6 @@ public:
                 else
                 {
                     clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                    usedBytes = 0;
-                    return false;
                 }
                 break;
             case 0x0001: /* Power Configuration */
@@ -358,8 +346,6 @@ public:
                     if (payloadSize < 6)
                     {
                         clogE << "Battery level frame is too short: " << payloadSize << " bytes\n";
-                        usedBytes = 0;
-                        return false;
                     }
                     else
                     {
@@ -372,14 +358,10 @@ public:
                 else
                 {
                     clogE << "Wrong type: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(type) << "\n";
-                    usedBytes = 0;
-                    return false;
                 }
                 break;
             default:
                 clogE << "Unknown cluster ID: 0x" << std::hex << std::setw(4) << std::setfill('0') << clusterId << "\n";
-                usedBytes = 0;
-                return false;
         }
         clogE << "Payload parsing error\n";
         usedBytes = 0;

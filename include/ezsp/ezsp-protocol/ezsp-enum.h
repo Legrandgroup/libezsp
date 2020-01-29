@@ -1077,7 +1077,7 @@ constexpr int EMBER_GP_SINK_LIST_ENTRY_SIZE = 11; // why ? first byte to 0xFF is
 typedef std::vector<uint8_t> EmberGpSinkListEntry;
 
 // assume this value is never reach for a frame counter
-constexpr uint32_t INVALID_FRAME_COUNTER = 0xFFFFFFFF;
+constexpr uint32_t INVALID_FRAME_COUNTER = 0xFFFFFFFFU;
 
 } // namespace NSEZSP
 
