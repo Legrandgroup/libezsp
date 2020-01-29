@@ -17,7 +17,7 @@ CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();
 }
 
-bool CppThreadsTimer::start(uint16_t timeout, TimerCallback callBackFunction) {
+bool CppThreadsTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) {
 	clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {

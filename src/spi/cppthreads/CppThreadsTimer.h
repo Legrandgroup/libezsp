@@ -34,7 +34,7 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	bool start(uint16_t timeout, TimerCallback callBackFunction) override;
+	bool start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) override;
 
 	/**
 	 * @brief Stop and reset the timer

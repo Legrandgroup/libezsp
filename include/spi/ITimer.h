@@ -26,7 +26,7 @@ protected:
 	virtual void trigger(ITimer* triggeringTimer) = 0;
 };
 
-typedef std::function<void (ITimer* triggeringTimer)> TimerCallback;
+using TimerCallback = std::function<void (ITimer* triggeringTimer)>;
 
 /**
  * @brief Abstract class to execute a callback after a given timeout

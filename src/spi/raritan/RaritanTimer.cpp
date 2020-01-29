@@ -7,6 +7,9 @@
 #include "RaritanTimer.h"
 #include "spi/Logger.h"
 
+using NSSPI::RaritanTimer;
+using NSSPI::ITimer;
+
 RaritanTimer::RaritanTimer() : started(false),
 	m_eventSelector(*pp::SelectorSingleton::getInstance()),
 	m_toutcbhandle()
@@ -17,7 +20,7 @@ RaritanTimer::~RaritanTimer() {
 	this->stop();
 }
 
-bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
+bool RaritanTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) {
 	clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {
