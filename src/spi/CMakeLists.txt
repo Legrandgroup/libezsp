@@ -55,7 +55,6 @@ list(APPEND ezspspi_SOURCES aes/custom/custom-aes.cpp)
 endif()
 
 
-add_library(ezspspi ${ezspspi_SOURCES})
 add_library(ezspspi SHARED ${ezspspi_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezspspi PRIVATE ${PROJECT_SOURCE_DIR}/src)
