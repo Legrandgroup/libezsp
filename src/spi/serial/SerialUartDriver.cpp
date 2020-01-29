@@ -49,7 +49,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	timeout.read_timeout_constant = 1;
 	timeout.write_timeout_constant = -1;
 */
-	this->m_serial_port.setTimeout(serial::Timeout::max(), -1, 0, -1, 0);
+	this->m_serial_port.setTimeout(serial::Timeout::max(), 1000, 0, -1, 0);
 	//this->m_serial_port.flush();
 
 	try {
@@ -70,11 +70,13 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 
 			while (this->m_read_thread_alive) {
 				try {
+					if (!this->m_serial_port.waitReadable())
+						continue;
 					rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
-#ifdef SERIAL_DEBUG
-					clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
-#endif
 					if (this->m_data_input_observable) {
+#ifdef SERIAL_DEBUG
+						clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
+#endif
 						this->m_data_input_observable->notifyObservers(readData, rdcnt);
 					}
 				}
