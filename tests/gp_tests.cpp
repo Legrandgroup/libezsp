@@ -170,7 +170,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	stageExpectedTransitions.push_back({0x1a, 0xc0, 0x38, 0xbc, 0x7e});
 	std::vector<CGpDevice> GPDList;
 	GPDList.push_back(CGpDevice(0x0500001U, GPD_KEY));
-	CLibEzspMain lib_main(&uartDriver, timerFactory);
+	CLibEzspMain lib_main(&uartDriver, timerFactory, 0);
 
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);
