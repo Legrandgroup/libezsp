@@ -17,7 +17,7 @@
 
 namespace NSEZSP {
 
-class CGetNetworkParamtersResponse
+class CGetNetworkParametersResponse
 {
     public:
         /**
@@ -25,28 +25,28 @@ class CGetNetworkParamtersResponse
          *
          * Construction without arguments is not allowed
          */
-        CGetNetworkParamtersResponse() = delete;
+        CGetNetworkParametersResponse() = delete;
 
         /**
          * @brief Construction from a buffer
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message);
+        explicit CGetNetworkParametersResponse(const std::vector<uint8_t>& raw_message);
 
         /**
          * @brief Copy constructor
          *
          * Copy construction is forbidden on this class
          */
-        CGetNetworkParamtersResponse(const CGetNetworkParamtersResponse& other) = delete;
+        CGetNetworkParametersResponse(const CGetNetworkParametersResponse& other) = delete;
 
         /**
          * @brief Assignment operator
          *
          * Assignment is forbidden on this class
          */
-        CGetNetworkParamtersResponse& operator=(const CGetNetworkParamtersResponse& other) = delete;
+        CGetNetworkParametersResponse& operator=(const CGetNetworkParametersResponse& other) = delete;
 
         /**
          * @brief An EmberStatus value indicating success or the reason for failure.
@@ -78,7 +78,7 @@ class CGetNetworkParamtersResponse
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data){
+        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParametersResponse& data){
           out << data.String();
           return out;
         }

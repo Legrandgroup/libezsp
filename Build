@@ -4,7 +4,6 @@ source ../Config.sh
 
 pp_clean_local () {
     pp_clean_default
-    make -C pp_scripts clean
 }
 
 pp_build_local () {
@@ -41,7 +40,6 @@ pp_build_local () {
     make install
 
     cd "$OLDPWD"
-    make -C pp_scripts install
 }
 
 pp_moddeps_local () {

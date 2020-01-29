@@ -28,7 +28,7 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 #endif // USE_RARITAN
 namespace NSEZSP {
 
-class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback, public CEzspDongleObserver
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
 public:
     CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
@@ -96,7 +96,7 @@ private:
 	 * CEzspDongleObserver handle functions on 'this' self
 	 */
 	void handleDongleState( EDongleState i_state );
-	void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+	void handleResponse( EEzspCmd i_cmd );
 };
 
 } // namespace NSEZSP

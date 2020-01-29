@@ -20,7 +20,6 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
 	wait_rsp(false),
 	observers()
 {
-	registerObserver(this);
     if( nullptr != ip_observer )
     {
         registerObserver(ip_observer);
@@ -41,7 +40,7 @@ bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
     {
         pUart = ipUart;
 
-        // reset ash ncp
+        // Send a ASH reset to the NCP
         l_buffer = ash.resetNCPFrame();
 
         if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
@@ -86,6 +85,12 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
             notifyObserversOfDongleState( DONGLE_REMOVE );
         }
     }
+    else if ( ASH_NACK == info )
+    {
+        clogW << "Caught an ASH NACK from NCP... resending\n";
+        wait_rsp = false;
+        sendNextMsg();
+    }
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
@@ -123,7 +128,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
                 // keep only payload
                 lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);
-
+                this->handleResponse(l_cmd);
                 // notify observers
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
              }
@@ -190,12 +195,8 @@ void CEzspDongle::sendNextMsg( void )
         std::vector<uint8_t> l_enc_data;
         size_t l_size;
 
-        li_data.clear();
         li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
-        for( size_t loop=0; loop< l_msg.payload.size(); loop++ )
-        {
-            li_data.push_back(l_msg.payload.at(loop));
-        }
+        li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
 
         //-- clogD << "CEzspDongle::sendCommand ash.DataFrame" << std::endl;
         l_enc_data = ash.DataFrame(li_data);
@@ -245,18 +246,30 @@ void CEzspDongle::handleDongleState( EDongleState i_state )
 	// do nothing
 }
 
-void CEzspDongle::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 {
-    // response to a sending command
-	if( wait_rsp && !sendingMsgQueue.empty() )
+	// response to a sending command
+	if( !sendingMsgQueue.empty() )
 	{
+		if (!wait_rsp)
+		{
+			/* If wait_rsp is false, we are not expecting a response to a previous command.
+			   But sendingMsgQueue should always contain (at front) the last command sent without reply, so when sendingMsgQueue is not empty,
+			   wait_rsp should be true
+			*/
+			clogE << "Received a message with a non-empty queue while no response was expected\n";
+		}
 		sMsg l_msgQ = sendingMsgQueue.front();
-		if( l_msgQ.i_cmd == i_cmd ) // Bug
+		if( l_msgQ.i_cmd == i_cmd ) /* Make sure that the EZSP message is a response to the last command we sent */
 		{
 			// remove waiting message and send next
 			sendingMsgQueue.pop();
 			wait_rsp = false;
 			sendNextMsg();
+		}    // response to a sending command
+		else
+		{
+			clogE << "Asynchronous received EZSP message\n";
 		}
 	}
 }

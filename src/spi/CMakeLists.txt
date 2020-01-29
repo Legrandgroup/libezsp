@@ -45,6 +45,7 @@ list(APPEND ezspspi_SOURCES
 	raritan/RaritanTimer.cpp
 	raritan/RaritanLogger.cpp
 )
+list(APPEND ezspspi_LIBS pp_base)
 endif()
 
 option(USE_AESCUSTOM "Use AESCUSTOM" ON)
