@@ -7,7 +7,7 @@
 #include "RaritanTimer.h"
 #include "spi/Logger.h"
 
-RaritanTimer::RaritanTimer() :
+RaritanTimer::RaritanTimer() : started(false),
 	m_eventSelector(*pp::SelectorSingleton::getInstance()),
 	m_toutcbhandle()
 {

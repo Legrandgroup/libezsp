@@ -52,6 +52,7 @@ public:
 
 
 private:
+	bool started;	/*!< Is the timer currently running */
 	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };

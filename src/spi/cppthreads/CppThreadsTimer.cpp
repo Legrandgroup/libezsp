@@ -11,7 +11,7 @@
 using NSSPI::CppThreadsTimer;
 using NSSPI::ITimer;
 
-CppThreadsTimer::CppThreadsTimer() :  waitingThread(), cv(), cv_m() { }
+CppThreadsTimer::CppThreadsTimer() :  started(false), waitingThread(), cv(), cv_m() { }
 
 CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();
@@ -49,10 +49,8 @@ bool CppThreadsTimer::stop() {
 	if (! this->started) {
 		return false;
 	}
-	if (this->started) {
-		this->started = false;
-		this->cv.notify_one();
-	}
+	this->started = false;
+	this->cv.notify_one();
 	if (this->waitingThread.joinable()) {
 		this->waitingThread.join();
 	}
