@@ -28,7 +28,7 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	IUartDriver() {	}
+	IUartDriver() = default;
 
 	/**
 	 * @brief Destructor
