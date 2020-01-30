@@ -26,7 +26,7 @@ protected:
 	virtual void trigger(ITimer* triggeringTimer) = 0;
 };
 
-typedef std::function<void (ITimer* triggeringTimer)> TimerCallback;
+using TimerCallback = std::function<void (ITimer* triggeringTimer)>;
 
 /**
  * @brief Abstract class to execute a callback after a given timeout
@@ -36,7 +36,7 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ITimer() : started(false), duration(0) { }
+	ITimer() : duration(0) { }
 
 	/**
 	 * @brief Destructor
@@ -76,16 +76,14 @@ public:
 	 */
 	virtual bool isRunning() = 0;
 
-
 protected:
-	bool started;	/*!< Is the timer currently running */
 	friend class ITimerVisitor;
-	ITimerVisitor *visitor;
 	static void trigg(ITimer* triggeringTimer) {
 		triggeringTimer->visitor->trigger(triggeringTimer);
 	}
 
 public:
+	ITimerVisitor *visitor;
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
 

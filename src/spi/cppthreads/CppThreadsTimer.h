@@ -34,7 +34,7 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	bool start(uint16_t timeout, TimerCallback callBackFunction) override;
+	bool start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) override;
 
 	/**
 	 * @brief Stop and reset the timer
@@ -56,6 +56,7 @@ public:
 	void routine();
 
 private:
+	bool started;	/*!< Is the timer currently running */
 	std::thread waitingThread;	/*!< The thread that will wait for the specified timeout and will then run the callback */
 	std::condition_variable cv;	/*!< A condition variable that allows to unlock the wait performed by waitingThread (this allows stopping that secondary thread) */
 	std::mutex cv_m;	/*!< A mutex to handle access to variable cv */

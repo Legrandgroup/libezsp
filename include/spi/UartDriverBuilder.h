@@ -13,7 +13,7 @@ class UartDriverBuilder
 public:
 	static IUartDriver *getInstance();
 private:
-	UartDriverBuilder() {}
+	UartDriverBuilder() = default;
 	static IUartDriverInstance mInstance;
 };
 

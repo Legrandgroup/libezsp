@@ -11,13 +11,13 @@
 using NSSPI::CppThreadsTimer;
 using NSSPI::ITimer;
 
-CppThreadsTimer::CppThreadsTimer() :  waitingThread(), cv(), cv_m() { }
+CppThreadsTimer::CppThreadsTimer() :  started(false), waitingThread(), cv(), cv_m() { }
 
 CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();
 }
 
-bool CppThreadsTimer::start(uint16_t timeout, TimerCallback callBackFunction) {
+bool CppThreadsTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) {
 	clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {
@@ -49,10 +49,8 @@ bool CppThreadsTimer::stop() {
 	if (! this->started) {
 		return false;
 	}
-	if (this->started) {
-		this->started = false;
-		this->cv.notify_one();
-	}
+	this->started = false;
+	this->cv.notify_one();
 	if (this->waitingThread.joinable()) {
 		this->waitingThread.join();
 	}

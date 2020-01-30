@@ -943,8 +943,8 @@ typedef enum
   EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST
 }EmberIncomingMessageType;
 
-#define EZSP_ENERGY_SCAN 0x00
-#define EZSP_ACTIVE_SCAN 0x01
+constexpr uint8_t EZSP_ENERGY_SCAN = 0x00;
+constexpr uint8_t EZSP_ACTIVE_SCAN = 0x01;
 
 typedef enum
 {
@@ -983,7 +983,7 @@ typedef enum
   EMBER_USE_NWK_COMMISSIONING = 0x03
 }EmberJoinMethod;
 
-#define INVALID_NODE_ID 0xFFFF
+constexpr uint16_t INVALID_NODE_ID = 0xFFFF;
 typedef uint16_t EmberNodeId;
 
 typedef enum
@@ -1035,10 +1035,10 @@ typedef enum
   EMBER_KEY_HAS_PARTNER_EUI64 = 0x0008
 }EmberKeyStructBitmask;
 
-#define EMBER_KEY_DATA_BYTE_SIZE  16
+constexpr int EMBER_KEY_DATA_BYTE_SIZE = 16;
 typedef std::vector<uint8_t> EmberKeyData;
 
-#define EMBER_EUI64_BYTE_SIZE  8
+constexpr int EMBER_EUI64_BYTE_SIZE = 8;
 typedef std::vector<uint8_t> EmberEUI64;
 
 typedef enum
@@ -1073,12 +1073,12 @@ typedef uint32_t EmberGpSecurityFrameCounter;
 // The sink table entry status
 typedef uint8_t EmberGpSinkTableEntryStatus;
 
-#define GP_SINK_LIST_ENTRIES    2 // hardcoded to 2 which is the spec minimum (cf. A.3.4.2.2.6 Sink group list parameter from doc-14-0563-16-batt-green-power-spec_ProxyBasic.pdf)
-#define EMBER_GP_SINK_LIST_ENTRY_SIZE  11 // why ? first byte to 0xFF is for not used !
+constexpr int GP_SINK_LIST_ENTRIES = 2; // hardcoded to 2 which is the spec minimum (cf. A.3.4.2.2.6 Sink group list parameter from doc-14-0563-16-batt-green-power-spec_ProxyBasic.pdf)
+constexpr int EMBER_GP_SINK_LIST_ENTRY_SIZE = 11; // why ? first byte to 0xFF is for not used !
 typedef std::vector<uint8_t> EmberGpSinkListEntry;
 
 // assume this value is never reach for a frame counter
-#define INVALID_FRAME_COUNTER 0xFFFFFFFF
+constexpr uint32_t INVALID_FRAME_COUNTER = 0xFFFFFFFFU;
 
 } // namespace NSEZSP
 

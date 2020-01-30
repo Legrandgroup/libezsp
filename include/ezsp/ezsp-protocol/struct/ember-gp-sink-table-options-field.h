@@ -37,7 +37,7 @@ class CEmberGpSinkTableOption
         /**
          * @brief raw constructor
          */
-        CEmberGpSinkTableOption(const uint16_t i_options);
+        explicit CEmberGpSinkTableOption(const uint16_t i_options);
 
         /**
          * @brief constructor from commissioning payload option and more

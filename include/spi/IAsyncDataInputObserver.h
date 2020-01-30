@@ -26,7 +26,7 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	IAsyncDataInputObserver() {};
+	IAsyncDataInputObserver() = default;
 
 	/**
 	 * @brief Default destructor

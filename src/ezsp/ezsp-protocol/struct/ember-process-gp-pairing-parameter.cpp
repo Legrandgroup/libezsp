@@ -9,9 +9,10 @@
 #include "ember-process-gp-pairing-parameter.h"
 
 using NSEZSP::CProcessGpPairingParam;
+using NSEZSP::CEmberGpSinkTableOption;
 
 CProcessGpPairingParam::CProcessGpPairingParam(uint32_t i_gpd_source_id) :
-        options(0, false, true, 0, 0, false, false, false),
+        options(CEmberGpSinkTableOption(0), false, true, 0, 0, false, false, false),
         addr(i_gpd_source_id),
         commMode(),
         sinkNetworkAddress(),

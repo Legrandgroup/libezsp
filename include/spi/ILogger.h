@@ -182,15 +182,16 @@ protected:
 	/**
 	 * @brief Receive one character of an output stream
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 * This method is --purely-- virtual and should be overridden by inheriting classes defining a concrete implementation
 	 *
 	 * @note This is the method allowing to implement an ostream out of this class
+	 * @note This method is implemented in streambuf and should not be purely virtual
 	 *
 	 * @param c The new character
 	 *
 	 * @return The character that has actually been printed out to the log
 	 */
-	virtual int overflow(int c) = 0;
+	virtual int overflow(int c) { return c; };
 
 protected:
 	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger, set at construction, then must not be modified anymore */
@@ -348,10 +349,6 @@ public:
  *  @{
  */
 
-/**
- * @brief Generic logger getter (uses debug level)
- */
-#define clog NSSPI::ILogger::loggerDebugStream
 /**
  * @brief Error logger getter
  */
