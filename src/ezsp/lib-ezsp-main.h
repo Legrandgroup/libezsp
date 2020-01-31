@@ -115,9 +115,19 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
     /**
-     * @brief Switch the embedded firmware to booloader prompt mode
+     * @brief Makes initialization timeout trigger a switch to firmware upgrade mode
+     *
+     * Default behaviour for initialization timeouts is to probe the bootloader prompt and if found, to run the EZSP application
+     * in the hope the adapter will move back to EZSP mode
      */
-    void jumpToBootloader();
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
+     * @brief Switch the EZSP adapter to firmware upgrade mode
+     * 
+     * Method handleFirmwareXModemXfr() should then be invoked when the adapter is ready to receive a firmware
+     */
+    void setFirmwareUpgradeMode();
 
 private:
     NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
@@ -130,9 +140,9 @@ private:
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
-	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
+    FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
-	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
+    unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 
     void setState( CLibEzspInternalState i_new_state );
     CLibEzspInternalState getState() const;
@@ -140,15 +150,24 @@ private:
     void stackInit();
 
     /**
+     * @brief Request the XNCP info by sending a EZSP_GET_XNCP_INFO command
+     */
+    void getXncpInfo();
+
+    /**
      * Oberver handlers
      */
     void handleDongleState( EDongleState i_state );
     void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleBootloaderPrompt();
+    void handleFirmwareXModemXfr();
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
 	void handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i_msg_receive );
 	void handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::vector<uint8_t> i_msg_receive );
 	void handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive );
 };
 

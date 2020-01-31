@@ -9,6 +9,7 @@
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
 #include "ash.h"
+#include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
 #include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
@@ -27,6 +28,16 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 namespace NSEZSP {
+
+/**
+ * @brief Requested state for the ezsp adapter
+ */
+enum class CEzspDongleMode {
+    UNKNOWN,                            /*<! Unknown initial run mode for the dongle */
+    EZSP_NCP,                           /*<! Dongle is in EZSP commands processor mode */
+    BOOTLOADER_FIRMWARE_UPGRADE,        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */
+    BOOTLOADER_EXIT_TO_EZSP_NCP,        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */
+};
 
 class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
@@ -68,35 +79,65 @@ public:
 	bool unregisterObserver(CEzspDongleObserver* observer);
 
     /**
-     * @brief Switch dongle read/write behaviour to bootloader or EZSP/ASH mode
+     * @brief Makes initialization timeout trigger a switch to firmware upgrade mode
      *
-     * @param dongleInBootloaderMode If true, the dongle will consider that the adapter is in bootloader prompt mode, if false, it will consider that the adapter is in EZSP/ASH command mode
+     * Default behaviour for initialization timeouts is to probe the bootloader prompt and if found, to run the EZSP application
+     * in the hope the adapter will move back to EZSP mode
      */
-    void setBootloaderMode(bool dongleInBootloaderMode);
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
+     * @brief Switch the EZSP adatper read/write behaviour to bootloader or EZSP/ASH mode
+     *
+     * @param requestedMode The new requested mode
+     */
+    void setMode(CEzspDongleMode requestedMode);
 
 private:
-    bool bootloaderMode;    /*!< Is the adapter in bootloader prompt mode? If false, we are in applicative EZSP/ASH mode */
+    bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
+    CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
+    bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     NSSPI::TimerBuilder &timer_factory;
     NSSPI::IUartDriver *pUart;
     CAsh ash;
+    CBootloaderPrompt blp;
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
+    std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
 
     void sendNextMsg( void );
 
     /**
-     * Notify Observer of this class
+     * @brief Notify all observers of this instance that the dongle state has changed
+     * 
+     * @param i_state The new dongle state
      */
-    std::set<CEzspDongleObserver*> observers;
     void notifyObserversOfDongleState( EDongleState i_state );
+
+    /**
+     * @brief Notify all observers of this instance of a newly incoming EZSP message
+     * 
+     * @param i_cmd The EZSP command received
+     * @param i_message The payload of the EZSP command
+     */
     void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
 
-	/**
-	 * CEzspDongleObserver handle functions on 'this' self
-	 */
-	void handleDongleState( EDongleState i_state );
-	void handleResponse( EEzspCmd i_cmd );
+    /**
+     * @brief Notify all observers of this instance that the dongle is running the booloader and that a bootloader prompt has been detected
+     */
+    void notifyObserversOfBootloaderPrompt();
+
+    /**
+     * @brief Notify all observers of this instance that the dongle is waiting for a firmware image transfer using X-modem for a firmware update
+     */
+    void notifyObserversOfFirmwareXModemXfrReady();
+
+    /**
+     * CEzspDongleObserver handle functions on 'this' self
+     */
+    void handleDongleState( EDongleState i_state );
+    void handleResponse( EEzspCmd i_cmd );
 };
 
 } // namespace NSEZSP

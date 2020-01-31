@@ -1,7 +1,7 @@
 /**
  * @file TimerBuilder.cpp
  *
- * @brief Concrete implementation of a ITimer factory returning RaritanTimer objects
+ * @brief Builder returning a concrete implementation of ITimer objects (matching with the architecture)
  */
 
 #include "spi/TimerBuilder.h"

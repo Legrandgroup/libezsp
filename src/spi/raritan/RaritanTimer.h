@@ -11,8 +11,8 @@
 #include "spi/ITimer.h"
 #include "spi/Logger.h"
 
-using NSSPI::ITimer;
-using NSSPI::Logger;
+namespace NSSPI {
+
 /**
  * @brief Concrete implementation of ITimer using the Raritan framework
  */
@@ -56,3 +56,5 @@ private:
 	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };
+
+} // namespace NSSPI

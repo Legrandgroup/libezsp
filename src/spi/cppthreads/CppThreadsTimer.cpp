@@ -65,7 +65,7 @@ bool CppThreadsTimer::isRunning() {
 void CppThreadsTimer::routine()
 {
 	std::unique_lock<std::mutex> lock(this->cv_m);
-	this->cv.wait_for(lock, std::chrono::milliseconds(this->duration));
+	this->cv.wait_for(lock, std::chrono::milliseconds(this->duration), [this]{return !this->started;});
 	if (this->started) {
 		this->callback(this);
 	}

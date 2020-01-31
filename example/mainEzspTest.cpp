@@ -24,10 +24,11 @@
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
     fprintf(f,"%s - sample test program for libezsp\n\n", progname);
-    fprintf(f,"Usage: %s [-d] [-u serialport] [-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]\n", progname);
+    fprintf(f,"Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]]\n", progname);
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                               : this help\n");
     fprintf(f,"-d (--debug)                              : enable debug logs\n");
+    fprintf(f,"-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
     fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
     fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
     fprintf(f,"-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds. Note: responses to MSP authenticated requests is always allowed\n");
@@ -66,6 +67,7 @@ enum MainState {
     COMMISSION_GPD,
     OPEN_ZIGBEE_NWK,
     RUN,
+    FW_UPGRADE,
 };
 
 class MainStateMachine {
@@ -75,12 +77,13 @@ public:
      *
      * @param timerBuilder An TimerBuilder used to generate ITimer objects
      * @param libEzspHandle The CLibEzspMain instance to use to communicate with the EZSP adapter
-     * @param openGpCommissionning Do we open GP commissionning at dongle initialization?
+     * @param openGpCommissionning Do we open GP commissionning at EZSP adapter initialization?
      * @param authorizeChannelRequestAnswerTimeout During how many second (after startup), we will anwser to a channel request
-     * @param openZigbeeCommissionning Do we open the Zigbee network at dongle initialization?
+     * @param openZigbeeCommissionning Do we open the Zigbee network at EZSP adapter initialization?
      * @param gpRemoveAllDevices A flag to remove all GP devices from monitoring
      * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
+     * @param switchToFirmwareUpgradeMode Do we immediately put the EZSP adapter into firmware upgrade mode
      */
     MainStateMachine(NSSPI::TimerBuilder& timerBuilder,
                      NSEZSP::CEzsp& libEzspHandle,
@@ -89,7 +92,8 @@ public:
                      bool openZigbeeCommissionning=false,
                      bool gpRemoveAllDevices=false,
                      const std::vector<NSEZSP::CGpDevice>& gpDevicesToAdd={},
-                     const std::vector<uint32_t>& gpDevicesToRemove={}) :
+                     const std::vector<uint32_t>& gpDevicesToRemove={},
+                     bool switchToFirmwareUpgradeMode=false):
         initFailures(0),
         timerBuilder(timerBuilder),
         libEzsp(libEzspHandle),
@@ -100,7 +104,16 @@ public:
         gpdAddList(gpDevicesToAdd),
         gpdRemoveList(gpDevicesToRemove),
         channelRequestAnswerTimer(this->timerBuilder.create()),
-        currentState(MainState::INIT_PENDING) { }
+        currentState(MainState::INIT_PENDING),
+        startFirmwareUpgrade(switchToFirmwareUpgradeMode) {
+            /* If the EZSP adapter's application is corrupted, we will never boot the application
+            In such cases, if we don't specifically handle that scenarion we would catch an ASH timeout but the default libezsp behaviour is to run the application, which would hang.
+            Therefore, if we have been instructed to perform a firmware upgrade, and only in that case, we will ask libezsp to select the bootloader's firmware upgrade option directly as soon as we hit the ASH timeout
+            */
+            if (this->startFirmwareUpgrade) {
+                this->libEzsp.forceFirmwareUpgradeOnInitTimeout();
+            }
+        }
 
     MainStateMachine(const MainStateMachine&) = delete; /* No copy construction allowed */
 
@@ -112,8 +125,15 @@ public:
     void ezspRun() {
         clogI << "Preparation steps finished... switching to run state\n";
         this->currentState = MainState::RUN;
-        //clogE << "Switching to bootloader mode just for tests\n";
-        //this->ezspSwitchToBootloader();
+    }
+
+    /**
+     * @brief Upgrade the firmware in the EZSP adapter
+     */
+    void ezspFirmwareUpgrade() {
+        clogI << "Switchover to bootloader for firmware upgrade\n";
+        this->currentState = MainState::FW_UPGRADE;
+        libEzsp.setFirmwareUpgradeMode();
     }
 
     /**
@@ -125,6 +145,10 @@ public:
         clogI << "EZSP library change to state " << static_cast<int>(i_state) << "\n";
         if (i_state == NSEZSP::CLibEzspState::READY) {
             clogI << "EZSP library is ready, entering main state machine with MainState " << static_cast<int>(this->currentState) << "\n";
+            if (this->currentState == MainState::INIT_PENDING && this->startFirmwareUpgrade) {
+                clogI << "Switching to firmware upgrade mode\n";
+                this->ezspFirmwareUpgrade();
+            }
             if (this->currentState == MainState::INIT_PENDING && this->removeAllGPDAtStartup) {
                 clogI << "Applying remove all GPD action\n";
                 this->currentState = MainState::REMOVE_ALL_GPD;
@@ -439,15 +463,16 @@ public:
 private:
     unsigned int initFailures;  /*!< How many failed init cycles we have done so far */
     NSSPI::TimerBuilder &timerBuilder;    /*!< A builder to create timer instances */
-    NSEZSP::CEzsp& libEzsp;  /*!< The CLibEzspMain instance to use to communicate with the EZSP adapter */
-    bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at dongle initialization? */
+    NSEZSP::CEzsp& libEzsp;  /*!< The CEzsp instance to use to communicate with the EZSP adapter */
+    bool openGpCommissionningAtStartup; /*!< Do we open GP commissionning at EZSP adapter initialization? */
     uint8_t channelRequestAnswerTimeoutAtStartup;   /*!< During how many second (after startup), we will anwser to a channel request */
-    bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at dongle initialization? */
+    bool openZigbeeCommissionningAtStartup; /*!< Do we open the Zigbee network at EZSP adapter initialization? */
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
     std::vector<NSEZSP::CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
     std::unique_ptr<NSSPI::ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
+    bool startFirmwareUpgrade; /*!< Do we immediately put the EZSP adapter into firmware upgrade mode at startup */
 };
 
 } // namespace NSMAIN
@@ -458,6 +483,7 @@ int main(int argc, char **argv) {
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
+    bool switchToFirmwareUpgradeMode = false;
     std::vector<NSEZSP::CGpDevice> gpAddedDevDataList;
     std::vector<uint32_t> gpRemovedDevDataList;
     bool removeAllGpDevs = false;
@@ -475,11 +501,12 @@ int main(int argc, char **argv) {
         {"open-zigbee", 0, nullptr, 'Z'},
         {"open-gp-commissionning", 0, nullptr, 'G'},
         {"authorize-ch-request-answer", 1, nullptr, 'C'},
+        {"firmware-upgrade", 0, nullptr, 'w'},
         {"debug", 0, nullptr, 'd'},
         {"help", 0, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhZGs:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhwZGs:r:u:c:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -569,6 +596,9 @@ int main(int argc, char **argv) {
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
                 break;
+            case 'w':
+                switchToFirmwareUpgradeMode = true;
+                break;
             case 'd':
                 debugEnabled = true;
                 break;
@@ -593,7 +623,7 @@ int main(int argc, char **argv) {
     }
 
 	NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList);
+	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);

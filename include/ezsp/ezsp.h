@@ -41,6 +41,14 @@ public:
 	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
     /**
+     * @brief Instruct the library to directly switch to firmware upgrade mode at init if we get an EZSP timeout
+     * 
+     * This allows to succeed switching to firmware upgrade mode if the adapter EZSP initialization times out (often meaning we are already in the bootloader)
+     * Do not invoke this if you are not planning to do a firmware upgrade right now, as the lib will not escape from bootloader (into EZSP mode) anymore
+     */
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
      * @brief Register callback on current library state
      *
      * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
@@ -100,9 +108,11 @@ public:
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
     /**
-     * @brief Switch the embedded firmware to booloader prompt mode
+     * @brief Switch the adapter to firmware upgrade mode
+     * 
+     * Once this is done, the adapter will wait for an X-modem transfer of a new firmware
      */
-    void jumpToBootloader();
+    void setFirmwareUpgradeMode();
 
 private:
 	CLibEzspMain *main;

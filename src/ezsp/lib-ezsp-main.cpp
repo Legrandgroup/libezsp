@@ -21,6 +21,7 @@ enum class CLibEzspInternalState {
     UNINITIALIZED,                      /*<! Initial state, before starting */
     WAIT_DONGLE_READY,
     GETTING_EZSP_VERSION,               /*<! Inside the EZSP version matching loop */
+    GETTING_XNCP_INFO,                  /*<! Inside the XNCP info check */
     STACK_INIT,                         /*<! We are starting up the Zigbee stack in the adapter */
     FORM_NWK_IN_PROGRESS,               /*<! We are currently creating a new Zigbee network */
     LEAVE_NWK_IN_PROGRESS,              /*<! We are currently leaving the Zigbee network we previously joined */
@@ -65,6 +66,11 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
     }
 }
 
+void CLibEzspMain::forceFirmwareUpgradeOnInitTimeout()
+{
+    this->dongle.forceFirmwareUpgradeOnInitTimeout();
+}
+
 void CLibEzspMain::registerLibraryStateCallback(FLibStateCallback newObsStateCallback)
 {
     this->obsStateCallback = newObsStateCallback;
@@ -91,6 +97,7 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
             case CLibEzspInternalState::UNINITIALIZED:
             case CLibEzspInternalState::WAIT_DONGLE_READY:
             case CLibEzspInternalState::GETTING_EZSP_VERSION:
+            case CLibEzspInternalState::GETTING_XNCP_INFO:
             case CLibEzspInternalState::STACK_INIT:
                 obsStateCallback(CLibEzspState::UNINITIALIZED);
                 break;
@@ -103,6 +110,11 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
             case CLibEzspInternalState::SINK_BUSY:
             case CLibEzspInternalState::FORM_NWK_IN_PROGRESS:
             case CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS:
+                obsStateCallback(CLibEzspState::SINK_BUSY);
+                break;
+            case CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE:
+            case CLibEzspInternalState::IN_BOOTLOADER_MENU:
+            case CLibEzspInternalState::IN_XMODEM_XFR:
                 obsStateCallback(CLibEzspState::SINK_BUSY);
                 break;
             default:
@@ -120,9 +132,16 @@ void CLibEzspMain::dongleInit(uint8_t ezsp_version)
 {
     /* First request stack protocol version using the related EZSP command
      * Note that we really need to send this specific command just after a reset because until we do, the dongle will refuse most other commands anyway
+    /* Response to this should be the reception of an EZSP_VERSION in the handleEzspRxMessage() handler below
      */
     setState(CLibEzspInternalState::GETTING_EZSP_VERSION);
     dongle.sendCommand(EEzspCmd::EZSP_VERSION, std::vector<uint8_t>({ezsp_version}));
+}
+
+void CLibEzspMain::getXncpInfo()
+{
+    setState(CLibEzspInternalState::GETTING_XNCP_INFO);
+    dongle.sendCommand(EEzspCmd::EZSP_GET_XNCP_INFO);
 }
 
 void CLibEzspMain::stackInit()
@@ -301,12 +320,18 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
     this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);
 }
 
-void CLibEzspMain::jumpToBootloader()
+void CLibEzspMain::setFirmwareUpgradeMode()
 {
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
-    this->setState(CLibEzspInternalState::SWITCH_TO_BOOTLOADER_IN_PROGRESS);
-    clogE << "Dongle is now in bootloader mode... note: the rest of the procedure is not yet implemented!\n";
-    /* Should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage handler below, and only then, issue a carriage return to get the bootloader prompt */
+    this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
+    /* We should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage() handler below, and only then, issue a carriage return to get the bootloader prompt */
+}
+
+void CLibEzspMain::handleFirmwareXModemXfr()
+{
+    this->setState(CLibEzspInternalState::IN_XMODEM_XFR);
+    clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
+    exit(0);
 }
 
 void CLibEzspMain::handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive )
@@ -380,14 +405,42 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receiv
 		/* Output the log message */
 		clogI << bufDump.str();
 
-		// configure stack for this application
-		setState(CLibEzspInternalState::STACK_INIT);
-		stackInit();
+		// Now request the XNCP version
+		this->getXncpInfo();
 	}
 	else
 	{
-		clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " Not supported !" << std::endl;
+		clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " is not supported !" << std::endl;
 	}
+}
+
+void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i_msg_receive )
+{
+    std::stringstream bufDump;
+    for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
+    clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
+
+    if (i_msg_receive.size() < 5)
+    {
+        clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
+    }
+    else
+    {
+        if (i_msg_receive[0] != EMBER_SUCCESS)
+        {
+            clogE << "EZSP_GET_XNCP_INFO failed\n";
+        }
+        else
+        {
+            uint16_t xncpVersionNumber = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
+            uint16_t xncpManufacturerId = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
+            clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpManufacturerId)
+                  << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpVersionNumber) << "\n";
+        }
+    }
+    // Now, configure and startup the adapter's embedded stack
+    setState(CLibEzspInternalState::STACK_INIT);
+    stackInit();
 }
 
 void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive )
@@ -413,12 +466,25 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_
 	{
 		if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit != 0))
 		{
-			clogD << "Zigbee reset requested... Leaving current network\n";
+			clogI << "Zigbee reset requested... Leaving current network\n";
 			// leave current network
 			zb_nwk.leaveNetwork();
 			this->setState(CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS);
 		}
 	}
+}
+
+void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::vector<uint8_t> i_msg_receive )
+{
+    if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
+    {
+        clogD << "Bootloader prompt mode is now going to start. Scheduling selection of the firmware upgrade option.\n";
+        this->dongle.setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
+    }
+    else
+    {
+        clogE << "Unexpected switch over to bootloader mode. Further commands will fail\n";
+    }
 }
 
 void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive )
@@ -471,7 +537,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
     {
         case EZSP_STACK_STATUS_HANDLER:
         {
-			handleEzspRxMessage_STACK_STATUS_HANDLER(i_msg_receive);
+            handleEzspRxMessage_STACK_STATUS_HANDLER(i_msg_receive);
         }
         break;
         case EZSP_GET_NETWORK_PARAMETERS:
@@ -500,7 +566,12 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         // break;
         case EEzspCmd::EZSP_VERSION:
         {
-			handleEzspRxMessage_VERSION(i_msg_receive);
+           handleEzspRxMessage_VERSION(i_msg_receive);
+        }
+        break;
+        case EZSP_GET_XNCP_INFO:
+        {
+           handleEzspRxMessage_EZSP_GET_XNCP_INFO(i_msg_receive);
         }
         break;
         case EZSP_NETWORK_STATE:
@@ -528,15 +599,7 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
 
         case EZSP_LAUNCH_STANDALONE_BOOTLOADER:
         {
-            if( this->getState() == CLibEzspInternalState::SWITCH_TO_BOOTLOADER_IN_PROGRESS )
-            {
-                clogD << "Bootloader prompt mode is going to start now\n";
-                this->dongle.setBootloaderMode(true);
-            }
-            else
-            {
-                clogE << "Unexpected switch over to bootloader mode. Further commands will fail\n";
-            }
+           handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(i_msg_receive);
         }
         break;
 
@@ -553,6 +616,11 @@ void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_m
         }
         break;
     }
+}
+
+void CLibEzspMain::handleBootloaderPrompt()
+{
+    clogI << "CLibEzspMain::handleBootloaderPrompt\n";
 }
 
 void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )

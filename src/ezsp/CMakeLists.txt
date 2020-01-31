@@ -3,6 +3,7 @@ list(APPEND ezsp_SOURCES
 	ezsp.cpp
 	lib-ezsp-main.cpp
 	ash.cpp
+	bootloader-prompt.cpp
 	ezsp-dongle.cpp
 	ezsp-protocol/ezsp-enum.cpp
 	ezsp-protocol/get-network-parameters-response.cpp

@@ -13,6 +13,11 @@ CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, 
 #endif
 }
 
+void CEzsp::forceFirmwareUpgradeOnInitTimeout()
+{
+	main->forceFirmwareUpgradeOnInitTimeout();
+}
+
 void CEzsp::registerLibraryStateCallback(FLibStateCallback newObsStateCallback)
 {
 	main->registerLibraryStateCallback(newObsStateCallback);
@@ -48,7 +53,7 @@ void CEzsp::setAnswerToGpfChannelRqstPolicy(bool allowed)
 	main->setAnswerToGpfChannelRqstPolicy(allowed);
 }
 
-void CEzsp::jumpToBootloader()
+void CEzsp::setFirmwareUpgradeMode()
 {
-	main->jumpToBootloader();
+	main->setFirmwareUpgradeMode();
 }

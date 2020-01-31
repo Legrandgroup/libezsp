@@ -22,6 +22,7 @@ using NSEZSP::CAsh;
 constexpr size_t T_RX_ACK_MIN = 400;
 constexpr size_t T_RX_ACK_INIT = 1600;
 constexpr size_t T_RX_ACK_MAX = 3200;
+constexpr size_t T_ACK_ASH_RESET = 5000;
 
 constexpr uint8_t ASH_CANCEL_BYTE     = 0x1A;
 constexpr uint8_t ASH_FLAG_BYTE       = 0x7E;
@@ -52,6 +53,10 @@ void CAsh::trigger(NSSPI::ITimer* triggeringTimer)
             pCb->ashCbInfo(ASH_RESET_FAILED);
         }
     }
+    else
+    {
+        clogE << "ASH timeout while connected\n";
+    }
 }
 
 std::vector<uint8_t> CAsh::resetNCPFrame(void)
@@ -76,7 +81,7 @@ std::vector<uint8_t> CAsh::resetNCPFrame(void)
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
     // start timer
-    timer->start( T_RX_ACK_INIT, this);
+    timer->start( T_ACK_ASH_RESET, this);
 
     return lo_msg;
 }
@@ -141,6 +146,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   lo_msg = stuffedOutputData(lo_msg);
 
   // start timer
+  timer->stop();
   timer->start( T_RX_ACK_INIT, this);
 
   return lo_msg;
@@ -250,7 +256,7 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
     lo_msg.clear();
     if( !stateConnected )
     {
-      if (resetCode == 0x0b)  /* Software reset */
+      if (resetCode == 0x0b || resetCode == 0x09)  /* Software reset or run app from bootloader */
       {
         stateConnected = true;
         timer->stop();
@@ -277,6 +283,9 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
 
 std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
 {
+  /**
+   * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
+   */
   bool inputError = false;
   //std::list<uint8_t> li_data;
   std::vector<uint8_t> lo_msg;
@@ -348,7 +357,6 @@ uint16_t CAsh::computeCRC( std::vector<uint8_t> i_msg )
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       for (uint8_t i = 0; i < 8; i++) {
-		  
           bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
           bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);

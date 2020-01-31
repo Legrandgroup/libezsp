@@ -109,7 +109,7 @@ bool CGpSink::gpClearAllTables()
 {
     if ( SINK_READY != sink_state ) {
         return false;
-	}
+    }
 
     dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);   /* Handle sink table */
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{0});  /* Handle proxy table */

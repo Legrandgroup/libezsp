@@ -1044,7 +1044,8 @@ typedef std::vector<uint8_t> EmberEUI64;
 typedef enum
 {
     DONGLE_READY,
-    DONGLE_REMOVE
+    DONGLE_REMOVE,
+    DONGLE_NOT_RESPONDING,
 }EDongleState;
 
 class CEzspEnum{
