@@ -256,7 +256,7 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
     lo_msg.clear();
     if( !stateConnected )
     {
-      if (resetCode == 0x0b)  /* Software reset */
+      if (resetCode == 0x0b || resetCode == 0x09)  /* Software reset or run app from bootloader */
       {
         stateConnected = true;
         timer->stop();
