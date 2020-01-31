@@ -91,6 +91,10 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         wait_rsp = false;
         sendNextMsg();
     }
+    else
+    {
+        clogW << "Caught an unknown ASH\n";
+    }
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
