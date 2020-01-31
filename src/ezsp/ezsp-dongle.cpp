@@ -126,8 +126,11 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 // ezsp
                 // extract ezsp command
                 EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
-                // keep only payload
-                lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);
+                // remove the EZSP header
+                lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);  /* FIXME: make sure buffer is more than 2 bytes large */
+                // remove the EZSP CRC16
+                lo_msg.erase(lo_msg.end()-2,lo_msg.end());  /* FIXME: make sure buffer is more than 2 bytes large */
+
                 this->handleResponse(l_cmd);
                 // notify observers
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );

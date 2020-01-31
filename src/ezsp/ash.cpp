@@ -5,10 +5,14 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <iomanip>
 
 #include "ash.h"
 
 #include "spi/ILogger.h"
+
+// For debug logging only
+//#include <sstream>
 
 using NSEZSP::CAsh;
 
@@ -184,18 +188,33 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
 
     lo_msg = dataRandomise(lo_msg,1);
 
-    if( 0xFF == lo_msg.at(2) )
+    if (lo_msg.size()<3)
     {
-    // WARNING for all frames except "VersionRequest" frame, add exteded header
-    lo_msg.erase(lo_msg.begin()+2);
-    lo_msg.erase(lo_msg.begin()+2);
+      clogE << "EZSP data message is too short, discarding\n";
     }
-
+    else
+    {
+      if( 0xFF == lo_msg.at(2) )  /* 0xff as frame ID means we use an extended header, where frame ID will actually be shifted 2 bytes away... so we just delete those two bytes */
+      {
+        lo_msg.erase(lo_msg.begin()+2);
+        lo_msg.erase(lo_msg.begin()+2);
+      }
+    }
+    /*
+    // For debugging
+    std::stringstream msg;
+    msg << "Received ASH message, decoded as EZSP message (seq=" << +(static_cast<unsigned char>(lo_msg[0])) << " , FC=" << +(static_cast<unsigned char>(lo_msg[1])) << " , FrameID=" << +(static_cast<unsigned char>(lo_msg[2])) << "):";
+    for (size_t loop=1; loop<lo_msg.size(); loop++) {
+      msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
+          +(static_cast<unsigned char>(lo_msg[loop]));
+    }
+    msg << "\n";
+    clogD << msg.str();
+    */
   }
   else if ((lo_msg.at(0) & 0x60) == 0x00) {
     // ACK;
     //-- clogD << "CAsh::decode ACK" << std::endl;
-    //LOGGER(logTRACE) << "<-- RX ASH ACK Frame !! ";
     lo_msg.clear();
     timer->stop();
 
@@ -213,36 +232,45 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
 
     if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
   }
-  else if (lo_msg.at(0) == 0xC0) {
-    // RST;
+  else if (lo_msg.at(0) == 0xC0) {  /* RST */
     lo_msg.clear();
-    //LOGGER(logTRACE) << "<-- RX ASH RST Frame !! ";
     clogD << "CAsh::decode RST" << std::endl;
   }
-  else if (lo_msg.at(0) == 0xC1) {
-    // RSTACK;
-    //LOGGER(logTRACE) << "<-- RX ASH RSTACK Frame !! ";
-    clogD << "CAsh::decode RSTACK" << std::endl;
+  else if (lo_msg.at(0) == 0xC1) { /* RSTACK */
+    uint8_t version = lo_msg.at(1);
+    uint8_t resetCode = lo_msg.at(2);
+    clogD << "CAsh::decode RSTACK v" << std::dec << static_cast<const unsigned int>(version) << ", resetCode=0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
+
+    if (version!=2U) {
+      clogE << "Unsupported ASH version: " << std::dec << static_cast<const unsigned int>(version) << "\n";
+      lo_msg.clear();
+      return;
+    }
 
     lo_msg.clear();
     if( !stateConnected )
     {
-    /** \todo : add some test to verify it is a software reset and ash protocol version is 2 */
-    stateConnected = true;
-    timer->stop();
-    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+      if (resetCode == 0x0b)  /* Software reset */
+      {
+        stateConnected = true;
+        timer->stop();
+        if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+      }
+      else
+      {
+        clogE << "Unexpected reset code: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
+        lo_msg.clear();
+        return;
+      }
     }
   }
   else if (lo_msg.at(0) == 0xC2) {
-    // ERROR;
-    //LOGGER(logTRACE) << "<-- RX ASH ERROR Frame !! ";
-    clogD << "CAsh::decode ERROR" << std::endl;
+    clogE << "CAsh::decode ERROR" << std::endl;
     lo_msg.clear();
   }
   else
   {
-    //LOGGER(logTRACE) << "<-- RX ASH Unknown !! ";
-    clogD << "CAsh::decode UNKNOWN" << std::endl;
+    clogE << "CAsh::decode UNKNOWN" << std::endl;
     lo_msg.clear();
   }
 }

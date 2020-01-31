@@ -121,7 +121,9 @@ public:
 
 private:
     NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
-    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
+    uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
+    uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
+    uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
     CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
     FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
