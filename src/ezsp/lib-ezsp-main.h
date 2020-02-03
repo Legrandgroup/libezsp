@@ -134,6 +134,8 @@ private:
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
     uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
     uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
+    uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
+    uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
     CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
     FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */

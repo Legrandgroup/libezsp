@@ -47,6 +47,8 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
     exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
     exp_ezsp_max_version(7),    /* Expect EZSP version 7 maximum */
     exp_stack_type(2),  /* Expect a stack type=2 (mesh) */
+    xncpManufacturerId(0),  /* 0 means unknown (yet) */
+    xncpVersionNumber(0),  /* 0 means unknown (yet) */
     lib_state(CLibEzspInternalState::UNINITIALIZED),
     obsStateCallback(nullptr),
     dongle(timerbuilder, this),
@@ -428,14 +430,14 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i
     {
         if (i_msg_receive[0] != EMBER_SUCCESS)
         {
-            clogE << "EZSP_GET_XNCP_INFO failed\n";
+            clogW << "EZSP_GET_XNCP_INFO failed\n";
         }
         else
         {
-            uint16_t xncpVersionNumber = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
-            uint16_t xncpManufacturerId = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
-            clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpManufacturerId)
-                  << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(xncpVersionNumber) << "\n";
+            this->xncpManufacturerId = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
+            this->xncpVersionNumber = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
+            clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId)
+                  << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpVersionNumber) << "\n";
         }
     }
     // Now, configure and startup the adapter's embedded stack
