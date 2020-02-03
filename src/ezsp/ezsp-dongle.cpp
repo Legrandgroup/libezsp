@@ -154,15 +154,14 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 /* Remove the trailing EZSP CRC16 from the payload */
                 lo_msg.erase(lo_msg.end()-2,lo_msg.end());  /* FIXME: make sure buffer is more than 2 bytes large */
 
-                /* Send an EZSP ACK for the message we are receiving, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should never be acknowledged */
+                /* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
                 if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER)
                 {
                     std::vector<uint8_t> l_msg = ash.AckFrame();
                     pUart->write(l_size, l_msg.data(), l_msg.size());
+                    /* Unqueue the message (and send a new one) if required */
+                    this->handleResponse(l_cmd);
                 }
-
-                /* Unqueue the message (and send a new one) if required */
-                this->handleResponse(l_cmd);
                 /* Notify the user(s) (via observers) about this incoming EZSP message */
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
             }
