@@ -231,4 +231,4 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
 
 const std::string CBootloaderPrompt::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
 const std::string CBootloaderPrompt::GECKO_BOOTLOADER_PROMPT = "BL >";
-const uint16_t CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT = 500; /* If there are more than 500ms between two RX bytes while flushing, assume RX flush is done */
+const uint16_t CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */

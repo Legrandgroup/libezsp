@@ -140,29 +140,30 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         {
             lo_msg = ash.decode(li_data);
 
-            // send incomming mesage to application
+            /* Got an incoming EZSP message... will be forwarded to the user */
             if( !lo_msg.empty() )
             {
                 size_t l_size;
 
                 //clogD << "CEzspDongle::handleInputData ash message decoded" << std::endl;
-
-                // send ack
-                std::vector<uint8_t> l_msg = ash.AckFrame();
-                pUart->write(l_size, l_msg.data(), l_msg.size());
-
-                // call handler
-
-                // ezsp
-                // extract ezsp command
+                /* Extract the EZSP command and store it into l_cmd */
                 EEzspCmd l_cmd = static_cast<EEzspCmd>(lo_msg.at(2));
-                // remove the EZSP header
+                /* Payload will remain in buffer lo_msg */
+                /* Remove the leading EZSP header from the payload */
                 lo_msg.erase(lo_msg.begin(),lo_msg.begin()+3);  /* FIXME: make sure buffer is more than 2 bytes large */
-                // remove the EZSP CRC16
+                /* Remove the trailing EZSP CRC16 from the payload */
                 lo_msg.erase(lo_msg.end()-2,lo_msg.end());  /* FIXME: make sure buffer is more than 2 bytes large */
 
+                /* Send an EZSP ACK for the message we are receiving, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should never be acknowledged */
+                if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER)
+                {
+                    std::vector<uint8_t> l_msg = ash.AckFrame();
+                    pUart->write(l_size, l_msg.data(), l_msg.size());
+                }
+
+                /* Unqueue the message (and send a new one) if required */
                 this->handleResponse(l_cmd);
-                // notify observers
+                /* Notify the user(s) (via observers) about this incoming EZSP message */
                 notifyObserversOfEzspRxMessage( l_cmd, lo_msg );
             }
         }
@@ -319,7 +320,7 @@ void CEzspDongle::handleDongleState( EDongleState i_state )
 
 void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 {
-	// response to a sending command
+	/* Response to a command previously sent */
 	if( !sendingMsgQueue.empty() )
 	{
 		if (!wait_rsp)
