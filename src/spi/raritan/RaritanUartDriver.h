@@ -25,7 +25,6 @@ public:
 	/**
 	 * @brief Constructor
 	 *
-	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
 	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
 	 */
 	RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);

@@ -26,7 +26,7 @@ public:
     /**
      * @brief Method that will be invoked on every green power frame receive on our radio channel
      *
-     * @param i_gpd_source_id The green power device id observe
+     * @param i_gpd_id The green power device ID received
      * @param i_gpd_known The green power device is known by the sink
      * @param i_gpd_key_status Status of key for this GPD
      */

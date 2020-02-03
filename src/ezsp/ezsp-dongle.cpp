@@ -18,7 +18,7 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
 	pUart(nullptr),
 	uartIncomingDataHandler(),
 	ash(static_cast<CAshCallback*>(this), timer_factory),
-	blp(nullptr, timer_factory),
+	blp(timer_factory),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers()

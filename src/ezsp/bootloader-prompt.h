@@ -26,13 +26,6 @@ enum class EBootloaderStage {
 };
 
 
-class CBootloaderPromptCallback
-{
-public:
-    virtual ~CBootloaderPromptCallback() { }
-    virtual void blpCbInfo( ) = 0;
-};
-
 class CBootloaderPrompt : protected NSSPI::ITimerVisitor
 {
 public:
@@ -45,10 +38,11 @@ public:
 
     CBootloaderPrompt() = delete; /* Construction without arguments is not allowed */
     /**
-     * ipCb : call to inform state of ash
-     * ipTimer : timer object pass to ash module to manage internal timer
+     * @brief Constructor
+     *
+     * @param i_timer_factory Timer builder object used to generate timers
      */
-    CBootloaderPrompt(CBootloaderPromptCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory);
+    CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory);
 
     CBootloaderPrompt(const CBootloaderPrompt&) = delete; /* No copy construction allowed */
 
@@ -61,10 +55,23 @@ public:
      */
     void registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc);
 
+    /**
+     * @brief Register a prompt detection callback
+     *
+     * @param newObsPromptDetectCallback A callback function of that we will invoke each time we reach a bootloader prompt (or nullptr to disable callbacks)
+     */
     void registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback);
 
+    /**
+     * @brief Reset the bootloader parser state
+     */
     void reset();
 
+    /**
+     * @brief Start probing for a bootloader prompt
+     *
+     * We will try to stroke the prompt by entering a LF character in order to get an Ember serial bootloader header+prompt
+     */
     void probe();
 
     /**
@@ -83,9 +90,17 @@ public:
      */
     bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
 
+    /**
+     * @brief Decode new incoming bytes output by the bootloader
+     * 
+     * @param i_data New bytes to add to the previously accumulated ones
+     */
     EBootloaderStage decode(std::vector<uint8_t> &i_data);
 
 protected:
+    /**
+     * @brief Internal method invoked on timeouts
+     */
     void trigger(NSSPI::ITimer* triggeringTimer);
     
     /**
@@ -97,7 +112,6 @@ protected:
 
 private:
     std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
-    CBootloaderPromptCallback *pCb; /*!< A callback to invoke when bootloader prompt has been reached */
     std::vector<uint8_t> accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
     EBootloaderStage state; /*!< The current state in which we guess the bootloader is currently on the NCP */

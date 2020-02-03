@@ -154,7 +154,7 @@ public:
  * @brief Class to interact with the logger in the Raritan framework
  */
 class RaritanLogger : public ILogger {
-	friend Logger;
+	friend class Logger;
 protected:
 	/**
 	 * @brief Constructor

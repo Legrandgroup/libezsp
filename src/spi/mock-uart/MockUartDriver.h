@@ -36,7 +36,8 @@ public:
  */
 class MockUartDriver : public IUartDriver {
 public:
-	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback;
+	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback; /*!< Callback type provided as argument to out constructor */
+
 	/**
 	 * @brief Default constructor
 	 *

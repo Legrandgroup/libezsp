@@ -14,15 +14,14 @@
 
 using NSEZSP::CBootloaderPrompt;
 
-CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory) :
+CBootloaderPrompt::CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory) :
 	timer(i_timer_factory.create()),
-  pCb(nullptr),
-  accumulatedBytes(),
-  bootloaderCLIChecked(false),
-  state(EBootloaderStage::RX_FLUSH),
-  bootloaderWriteFunc(nullptr),
-  promptDetectCallback(nullptr),
-  firmwareTransferStartFunc(nullptr)
+	accumulatedBytes(),
+	bootloaderCLIChecked(false),
+	state(EBootloaderStage::RX_FLUSH),
+	bootloaderWriteFunc(nullptr),
+	promptDetectCallback(nullptr),
+	firmwareTransferStartFunc(nullptr)
 {
 }
 
