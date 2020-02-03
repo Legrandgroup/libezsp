@@ -74,8 +74,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 
 void SerialUartDriver::threadreader()
 {
-	//std::string readData = "";
-	unsigned char readData[1];
+	unsigned char buf[64];
 	size_t rdcnt;
 
 	while (this->m_read_thread_alive) {
@@ -83,12 +82,23 @@ void SerialUartDriver::threadreader()
 			if (!this->m_serial_port.waitReadable()) {
 				continue;
 			}
-			rdcnt = this->m_serial_port.read(readData, sizeof(readData)/sizeof(unsigned char));
+			size_t nbQueuedBytes = this->m_serial_port.available();
+			if (nbQueuedBytes>sizeof(buf)) {
+				nbQueuedBytes=sizeof(buf);
+			}
+			rdcnt = this->m_serial_port.read(buf, nbQueuedBytes);
 			if (this->m_data_input_observable) {
 #ifdef SERIAL_DEBUG
-				clogD << "Reading from serial port: " << std::hex << std::setw(2) << std::setfill('0') << (static_cast<unsigned int>(*readData) & 0xff) << "\n";
+				std::stringstream msg;
+				msg << "Reading from serial port:";
+				for (size_t loop=0; loop<rdcnt; loop++) {
+					msg << " " << std::hex << std::setw(2) << std::setfill('0')
+					    << +((static_cast<const unsigned char*>(buf))[loop]);
+				}
+				msg << "\n";
+				clogD << msg.str();
 #endif
-				this->m_data_input_observable->notifyObservers(readData, rdcnt);
+				this->m_data_input_observable->notifyObservers(buf, rdcnt);
 			}
 		}
 		catch (std::exception& e) {
@@ -103,9 +113,9 @@ int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) 
 		std::stringstream msg;
 		msg << "Writing to serial port:";
 		for (size_t loop=0; loop<cnt; loop++) {
-			msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
-			    +((static_cast<const unsigned char*>(buf))[loop]);
-    }
+			msg << " " << std::hex << std::setw(2) << std::setfill('0')
+			    << +((static_cast<const unsigned char*>(buf))[loop]);
+		}
 		msg << "\n";
 		clogE << msg.str();
 #endif
