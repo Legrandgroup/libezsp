@@ -3,6 +3,8 @@
  **/
 
 #include <iostream>
+#include <string>
+#include <algorithm>
 #include <sstream>
 #include <iomanip>
 
@@ -22,6 +24,21 @@ CBootloaderPrompt::CBootloaderPrompt(CBootloaderPromptCallback *ipCb, NSSPI::Tim
   promptDetectCallback(nullptr),
   firmwareTransferStartFunc(nullptr)
 {
+}
+
+std::string CBootloaderPrompt::trim(const std::string &s)
+{
+	auto start = s.begin();
+	while (start != s.end() && std::isspace(*start)) {
+		start++;
+	}
+
+	auto end = s.end();
+	do {
+		end--;
+	} while (std::distance(start, end) > 0 && std::isspace(*end));
+
+	return std::string(start, end + 1);
 }
 
 void CBootloaderPrompt::trigger(NSSPI::ITimer* triggeringTimer)
@@ -195,11 +212,10 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     if (eolChar != std::string::npos)
     {
       state = EBootloaderStage::TOPLEVEL_MENU_CONTENT;
-      std::string version(str.begin(), str.begin() + eolChar - 1);
-      clogD << "Got version \"" << version << "\"\n";
-      /* FIXME: should tidy up this string (leading and trailing spaces) */
+      std::string version(trim(std::string(str.begin(), str.begin() + eolChar - 1)));
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + eolChar); /* Remove the version string from accumulated bytes (has been parsed) */
-    str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
+      clogD << "Got version \"" << version << "\"\n";
+      str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
     }
   }
   if (EBootloaderStage::TOPLEVEL_MENU_HEADER == state ||
@@ -209,7 +225,7 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(std::vector<uint8_t> &i_data)
     if (blPrompt != std::string::npos)
     {
       state = EBootloaderStage::TOPLEVEL_MENU_PROMPT;
-      clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
+      //clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
       accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blPrompt); /* Remove all text up to (and including) the bootloader prompt from accumulated bytes (has been parsed) */
       /* Note: the line below is commented-out because there is no code that continues parsing str, so even if it is now different
          from what is inside accumulatedBytes, we'd rather not add useless processing (creation of a string that will then be destroyed).

@@ -87,6 +87,13 @@ public:
 
 protected:
     void trigger(NSSPI::ITimer* triggeringTimer);
+    
+    /**
+     * @brief Trim a string (removing leading and trailing whitespaces)
+     * @param s The string to trim
+     * @return A copy of @p s, without leading and trailing whitespaces
+     */
+    static std::string trim(const std::string &s);
 
 private:
     std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
