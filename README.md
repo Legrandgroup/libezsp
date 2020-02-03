@@ -10,12 +10,13 @@ The code for a sample demo program is located in `src/example/mainEzspTest.cpp` 
 
 If you compile in the Raritan environment, you will just have to clone this code into a subfolder or the source code root, move into this folder, and issue the following command:
 ```
-./Build
+./Build && cp ./build-for-target/example/mainEzspTest ../install_root/bin
 ```
 
-The newly generated binary will be located in `../install_root/bin/mainEzspTest` (so, on the qemu installation, it will directly be accessible in the path to be run from a terminal on the target):
+By default, only the shared library is copied over to the target rootfs, this is why we also manually copy the example binary (mainEzspTest) to `../install_root/bin/mainEzspTest`
+This binary will be directly be accessible on the target, and in the default search path, so that it can run from a terminal on the target, by issueing:
 ```
-mainEzspTest
+mainEzspTest --help
 ```
 
 ### Using libserialcpp and C++11 threads under Linux
@@ -39,7 +40,7 @@ LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -
 make
 ```
 
-This will tell the compiler that libserialcpp.so can be found in `$HOME/serial` and headers are in `$HOME/serial/include` (this should be the default after the libserialcpp compilation steps above).
+Additional environment variables tell the compiler that libserialcpp.so can be found in `$HOME/serial` and headers are in `$HOME/serial/include` (this should be the default after the libserialcpp compilation steps above).
 
 In order to run the sample code under Linux, issue the following command in a terminal:
 ```
@@ -57,14 +58,11 @@ Note that the UART device for communication with the transceiver (eg: `/dev/ttyU
 
 We then library is run, it will first try to communicate with the dongle over the serial link provided above.
 
-Once this is done, and when launched for the first time, the library will instruct the dongle to first create a Zigbee network.
-Each time the sample binary process is subsequently run, it will open its network for any device to join for a limited period of time. You can thus enter a sensor in the network at this moment by pressing the button on the sensor device.
+Once this is done, and when launched for the first time, the library will instruct the dongle to first create a network on the specified channel.
+Each time the sample binary process is subsequently run, it will listen to sensor reports on that channel.
+When the sensor sends periodically updated values of temperature/humidty via Green Power radio frames, the dongle will receive these, the library will handle this incoming traffic and values will displayed in real time on the output stream of the sample binary.
 
-Once the network is created, the sample application provided will then automatically discover sensors and bind to temperature and humidity, then it will configure reporting to be sent to the dongle by the sensor (each time this configuration will be redone).
-
-Finally, when the sensor sends periodically updated values of temperature/humidty, the dongle will receive these, the library will handle this incoming traffic and values will displayed in real time on the output stream of the sample process.
-
-In order to force the sensor to send a report, you can also press 4 times on the button.
+In order to force the sensor to send a report, you can also press on the button.
 
 ## For developpers
 
