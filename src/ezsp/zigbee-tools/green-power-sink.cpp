@@ -170,11 +170,6 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
     return true;
 }
 
-void CGpSink::handleDongleState( EDongleState i_state )
-{
-	// do nothing
-}
-
 void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive)
 {
 	CGetNetworkParametersResponse l_rsp(i_msg_receive);
