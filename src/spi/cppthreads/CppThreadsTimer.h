@@ -40,6 +40,8 @@ public:
 	/**
 	 * @brief Stop and reset the timer
 	 *
+	 * @note When invoking stop(), the callback associated with this timer will not be run
+	 *
 	 * @return true if we actually could stop a running timer
 	 */
 	bool stop() final;
@@ -51,8 +53,9 @@ public:
 	 */
 	bool isRunning();
 
+protected:
 	/**
-	 * @brief the thread routine
+	 * @brief The routine that will run in a secondary thread
 	 */
 	void routine();
 
@@ -61,7 +64,7 @@ private:
 	std::thread waitingThread;	/*!< The thread that will wait for the specified timeout and will then run the callback */
 	std::condition_variable cv;	/*!< A condition variable that allows to unlock the wait performed by waitingThread (this allows stopping that secondary thread) */
 	std::mutex cv_m;	/*!< A mutex to handle access to variable cv */
-  TimerCallback callback;
+	TimerCallback callback;	/*!< The callback to invoke when the timer elapses */
 };
 
 } // namespace NSSPI

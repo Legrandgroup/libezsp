@@ -26,7 +26,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~RaritanTimer();
+	virtual ~RaritanTimer();
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -38,6 +38,8 @@ public:
 
 	/**
 	 * @brief Stop and reset the timer
+	 *
+	 * @note When invoking stop(), the callback associated with this timer will not be run
 	 *
 	 * @return true if we actually could stop a running timer
 	 */
