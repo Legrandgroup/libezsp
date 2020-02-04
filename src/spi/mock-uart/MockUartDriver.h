@@ -6,14 +6,15 @@
 
 #pragma once
 
-
-#include "spi/IUartDriver.h"
-#include <vector>
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <chrono>
 #include <functional>
+
+#include "spi/IUartDriver.h"
+#include "spi/ByteBuffer.h"
+
 namespace NSSPI {
 
 /**
@@ -24,11 +25,11 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer=std::vector<unsigned char>(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
+	MockUartScheduledByteDelivery(const NSSPI:ByteBuffer& scheduledBuffer=NSSPI:ByteBuffer(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
 
 	/* Member variables */
 	std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
-	std::vector<unsigned char> byteBuffer;	/*!< The content of the emulated bytes */
+	NSSPI:ByteBuffer byteBuffer;	/*!< The content of the emulated bytes */
 };
 
 /**

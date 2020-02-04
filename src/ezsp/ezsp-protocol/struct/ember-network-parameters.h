@@ -1,9 +1,11 @@
 /**
- * Network parameters.
+ * @file ember-network-parameters.h
+ *
+ * @brief Ember network parameters.
  */
+
 #pragma once
 
-#include <vector>
 #include <string>
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "spi/ByteBuffer.h"

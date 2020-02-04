@@ -15,7 +15,7 @@ CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, NSSPI::TimerBuilder &
     dongle.registerObserver(this);
 }
 
-void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive )
 {
     switch( i_cmd )
     {

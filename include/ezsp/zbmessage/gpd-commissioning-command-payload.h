@@ -6,7 +6,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "spi/ByteBuffer.h"

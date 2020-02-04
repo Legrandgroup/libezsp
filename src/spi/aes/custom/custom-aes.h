@@ -53,7 +53,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "spi/aes/IAes.h"
 

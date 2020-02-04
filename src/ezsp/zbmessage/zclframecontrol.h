@@ -7,7 +7,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/

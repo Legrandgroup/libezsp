@@ -7,7 +7,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "zclframecontrol.h"
 #include "spi/ByteBuffer.h"

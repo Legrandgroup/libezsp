@@ -1,5 +1,7 @@
 /**
  * @file ash.cpp
+ *
+ * @brief ASH protocol decoder/encoder
  **/
 
 #include <iostream>
@@ -59,13 +61,13 @@ void CAsh::trigger(NSSPI::ITimer* triggeringTimer)
     }
 }
 
-std::vector<uint8_t> CAsh::resetNCPFrame(void)
+NSSPI::ByteBuffer CAsh::resetNCPFrame(void)
 {
     ackNum = 0;
     frmNum = 0;
     seq_num = 0;
     stateConnected = false;
-    std::vector<uint8_t> lo_msg;
+    NSSPI::ByteBuffer lo_msg;
 
     timer->stop();
     if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
@@ -98,9 +100,9 @@ std::string CAsh::EAshInfoToString( EAshInfo in )
     return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;      
 }
 
-std::vector<uint8_t> CAsh::AckFrame(void)
+NSSPI::ByteBuffer CAsh::AckFrame(void)
 {
-  std::vector<uint8_t> lo_msg;
+  NSSPI::ByteBuffer lo_msg;
 
   lo_msg.push_back(static_cast<uint8_t>(0x80+ackNum));
 
@@ -113,9 +115,9 @@ std::vector<uint8_t> CAsh::AckFrame(void)
   return lo_msg;
 }
 
-std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
+NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 {
-  std::vector<uint8_t> lo_msg;
+  NSSPI::ByteBuffer lo_msg;
 
   lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
   frmNum = (static_cast<uint8_t>(frmNum + 1)) & 0x07;
@@ -152,7 +154,7 @@ std::vector<uint8_t> CAsh::DataFrame(std::vector<uint8_t> i_data)
   return lo_msg;
 }
 
-void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
+void CAsh::clean_flag(NSSPI::ByteBuffer& lo_msg)
 {
   // Remove byte stuffing
   bool escape = false;
@@ -174,7 +176,7 @@ void CAsh::clean_flag(std::vector<uint8_t> &lo_msg)
   }
 }
 
-void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
+void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
 {
   clean_flag(lo_msg);
   // Check CRC
@@ -281,14 +283,14 @@ void CAsh::decode_flag(std::vector<uint8_t> &lo_msg)
   }
 }
 
-std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
+NSSPI::ByteBuffer CAsh::decode(NSSPI::ByteBuffer& i_data)
 {
   /**
    * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
    */
   bool inputError = false;
   //std::list<uint8_t> li_data;
-  std::vector<uint8_t> lo_msg;
+  NSSPI::ByteBuffer lo_msg;
   uint8_t val;
 
   while( !i_data.empty() && lo_msg.empty() )
@@ -350,7 +352,7 @@ std::vector<uint8_t> CAsh::decode(std::vector<uint8_t> &i_data)
  * PRIVATE FUNCTION
  */
 
-uint16_t CAsh::computeCRC( std::vector<uint8_t> i_msg )
+uint16_t CAsh::computeCRC( NSSPI::ByteBuffer i_msg )
 {
   uint16_t lo_crc = 0xFFFF; // initial value
   uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
@@ -371,9 +373,9 @@ uint16_t CAsh::computeCRC( std::vector<uint8_t> i_msg )
   return lo_crc;
 }
 
-std::vector<uint8_t> CAsh::stuffedOutputData(std::vector<uint8_t> i_msg)
+NSSPI::ByteBuffer CAsh::stuffedOutputData(NSSPI::ByteBuffer i_msg)
 {
-  std::vector<uint8_t> lo_msg;
+  NSSPI::ByteBuffer lo_msg;
 
   for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
       switch (i_msg.at(cnt)) {
@@ -412,9 +414,9 @@ std::vector<uint8_t> CAsh::stuffedOutputData(std::vector<uint8_t> i_msg)
   return lo_msg;
 }
 
-std::vector<uint8_t> CAsh::dataRandomise(std::vector<uint8_t> i_data, uint8_t start)
+NSSPI::ByteBuffer CAsh::dataRandomise(NSSPI::ByteBuffer i_data, uint8_t start)
 {
-    std::vector<uint8_t> lo_data;
+    NSSPI::ByteBuffer lo_data;
 
     // Randomise the data
     uint8_t data = 0x42;

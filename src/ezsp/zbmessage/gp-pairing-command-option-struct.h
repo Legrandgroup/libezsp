@@ -1,12 +1,12 @@
 /**
  * @file gp-pairing-command-option-struct.h
  *
- * @brief option field of gp pairing command according to A.3.3.5.2 GP Pairing command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
+ * @brief Option field of gp pairing command according to A.3.3.5.2 GP Pairing command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
+ 
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
 

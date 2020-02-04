@@ -27,7 +27,7 @@ CZCLHeader::CZCLHeader() :
  *
  * Total of bytes expected: 5 (if manufacturer code is present) or 3 otherwise
  */
-CZCLHeader::CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx) :
+CZCLHeader::CZCLHeader(const NSSPI::ByteBuffer& i_data, uint8_t& o_idx) :
 	frm_ctrl(i_data.at(0)),
 	manufacturer_code(frm_ctrl.IsManufacturerCodePresent()?dble_u8_to_u16(i_data.at(2), i_data.at(1)):0),
 	transaction_number(frm_ctrl.IsManufacturerCodePresent()?i_data.at(3):i_data.at(1)),
@@ -109,9 +109,9 @@ void CZCLHeader::SetPublicGeneral( const uint16_t i_manufacturer_id, const uint8
   manufacturer_code = i_manufacturer_id;
 }
 
-std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
+NSSPI::ByteBuffer CZCLHeader::GetZCLHeader(void) const
 {
-  std::vector<uint8_t> lo_data;
+  NSSPI::ByteBuffer lo_data;
 
   lo_data.push_back(frm_ctrl.GetFrmCtrlByte());
   if( frm_ctrl.IsManufacturerCodePresent() )

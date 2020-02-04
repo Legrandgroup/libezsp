@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <memory>	// For std::unique_ptr
 #include <functional>   // For std::function
 
@@ -96,7 +95,7 @@ public:
      * 
      * @param i_data New bytes to add to the previously accumulated ones
      */
-    EBootloaderStage decode(NSSPI::ByteBuffer &i_data);
+    EBootloaderStage decode(NSSPI::ByteBuffer& i_data);
 
 protected:
     /**

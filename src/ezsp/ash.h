@@ -1,7 +1,12 @@
+/**
+ * @file ash.h
+ *
+ * @brief ASH protocol decoder/encoder
+ **/
+
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <memory>	// For std::unique_ptr
 
 #include "spi/TimerBuilder.h"

@@ -31,9 +31,9 @@ void CAPSFrame::SetDefaultAPS( uint16_t i_profile_id, uint16_t i_cluster_id, uin
 
 }
 
-std::vector<uint8_t> CAPSFrame::GetEmberAPS(void)
+NSSPI::ByteBuffer CAPSFrame::GetEmberAPS(void)
 {
-  std::vector<uint8_t> lo_aps;
+  NSSPI::ByteBuffer lo_aps;
   uint16_t l_option;
 
   lo_aps.push_back( u16_get_lo_u8(profile_id) );
@@ -58,7 +58,7 @@ std::vector<uint8_t> CAPSFrame::GetEmberAPS(void)
   return lo_aps;
 }
 
-void CAPSFrame::SetEmberAPS(std::vector<uint8_t> i_data )
+void CAPSFrame::SetEmberAPS(NSSPI::ByteBuffer i_data)
 {
   uint8_t l_idx = 0;
 

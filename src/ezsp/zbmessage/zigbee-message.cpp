@@ -17,7 +17,7 @@ CZigBeeMsg::CZigBeeMsg() :
 }
 
 void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-                              const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload,
+                              const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
                               const uint64_t i_src_ieee, const uint8_t i_transaction_number, const uint16_t i_grp_id )
 {
   aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
@@ -30,7 +30,7 @@ void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manu
 }
 
 void CZigBeeMsg::SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-                 const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                 const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload , const uint64_t i_src_ieee,
                  const uint8_t i_transaction_number, const uint16_t i_grp_id)
 {
   aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
@@ -42,7 +42,7 @@ void CZigBeeMsg::SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufa
   payload = i_payload;
 }
 
-void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number)
+void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number)
 {
   aps.SetDefaultAPS( 0x0000, i_cmd_id, 0x00 );
 
@@ -53,7 +53,7 @@ void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_p
   payload.insert( payload.begin(), i_transaction_number );
 }
 
-void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_t>& i_msg )
+void CZigBeeMsg::Set(const NSSPI::ByteBuffer& i_aps, const NSSPI::ByteBuffer& i_msg )
 {
   uint8_t l_idx = 0;
 
@@ -79,13 +79,13 @@ void CZigBeeMsg::Set(const std::vector<uint8_t>& i_aps, const std::vector<uint8_
   }
 }
 
-std::vector<uint8_t> CZigBeeMsg::Get( void ) const
+NSSPI::ByteBuffer CZigBeeMsg::Get( void ) const
 {
-  std::vector<uint8_t> lo_msg;
+  NSSPI::ByteBuffer lo_msg;
 
   if( use_zcl_header )
   {
-    std::vector<uint8_t> v_tmp = zcl_header.GetZCLHeader();
+    NSSPI::ByteBuffer v_tmp = zcl_header.GetZCLHeader();
     lo_msg.insert(lo_msg.end(), v_tmp.begin(), v_tmp.end());
   }
 

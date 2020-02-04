@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <vector>
 #include <cstdlib>	// For size_t
 
 #ifdef USE_RARITAN

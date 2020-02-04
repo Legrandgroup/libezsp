@@ -1,6 +1,9 @@
 /**
+ * @file ember-network-parameters.cpp
  *
+ * @brief Ember network parameters.
  */
+
 #include <sstream>
 #include <iomanip>
 
@@ -22,7 +25,7 @@ CEmberNetworkParameters::CEmberNetworkParameters() :
 {
 }
 
-CEmberNetworkParameters::CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip) :
+CEmberNetworkParameters::CEmberNetworkParameters(const NSSPI::ByteBuffer& raw_message, const std::string::size_type skip) :
 	extend_pan_id(
 		static_cast<uint64_t>(raw_message.at(0+skip)) |
 		static_cast<uint64_t>(raw_message.at(1+skip))<<8 |
@@ -46,9 +49,9 @@ CEmberNetworkParameters::CEmberNetworkParameters(const std::vector<uint8_t>& raw
 {
 }
 
-std::vector<uint8_t> CEmberNetworkParameters::getRaw() const
+NSSPI::ByteBuffer CEmberNetworkParameters::getRaw() const
 {
-    std::vector<uint8_t> raw_message;
+    NSSPI::ByteBuffer raw_message;
 
     // extend_pan_id
     raw_message.push_back(static_cast<uint8_t>(extend_pan_id&0xFF));

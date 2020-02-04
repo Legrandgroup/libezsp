@@ -6,7 +6,6 @@
 
 #include "apsoption.h"
 
-
 using NSEZSP::CAPSOption;
 
 CAPSOption::CAPSOption() :

@@ -5,8 +5,6 @@
  */
 #pragma once
 
-#include <vector>
-
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zbmessage/zigbee-message.h"

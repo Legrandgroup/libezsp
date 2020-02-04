@@ -32,7 +32,7 @@ CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObser
 bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
 {
     bool lo_success = true;
-    std::vector<uint8_t> l_buffer;
+    NSSPI::ByteBuffer l_buffer;
     size_t l_size;
 
     if( nullptr == ipUart )
@@ -125,8 +125,8 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
 {
-    std::vector<uint8_t> li_data;
-    std::vector<uint8_t> lo_msg;
+    NSSPI::ByteBuffer li_data;
+    NSSPI::ByteBuffer lo_msg;
 
     li_data.clear();
     for( size_t loop=0; loop< dataLen; loop++ )
@@ -157,7 +157,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 /* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
                 if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER)
                 {
-                    std::vector<uint8_t> l_msg = ash.AckFrame();
+                    NSSPI::ByteBuffer l_msg = ash.AckFrame();
                     pUart->write(l_size, l_msg.data(), l_msg.size());
                     /* Unqueue the message (and send a new one) if required */
                     this->handleResponse(l_cmd);
@@ -175,7 +175,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
     }
 }
 
-void CEzspDongle::sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload )
+void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )
 {
     sMsg l_msg;
 
@@ -206,8 +206,8 @@ void CEzspDongle::sendNextMsg( void )
         sMsg l_msg = sendingMsgQueue.front();
 
         // encode command using ash and write to uart
-        std::vector<uint8_t> li_data;
-        std::vector<uint8_t> l_enc_data;
+        NSSPI::ByteBuffer li_data;
+        NSSPI::ByteBuffer l_enc_data;
         size_t l_size;
 
         li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
@@ -294,7 +294,7 @@ void CEzspDongle::notifyObserversOfDongleState( EDongleState i_state ) {
 	}
 }
 
-void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message ) {
+void CEzspDongle::notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_message ) {
 	for(auto observer : this->observers) {
 		observer->handleEzspRxMessage(i_cmd, i_message);
 	}

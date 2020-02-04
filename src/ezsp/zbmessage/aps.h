@@ -6,9 +6,7 @@
 
 #pragma once
 
-
 #include <cstdint>
-#include <vector>
 
 #include "ezsp/zbmessage/apsoption.h"
 #include "spi/ByteBuffer.h"

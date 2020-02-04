@@ -7,7 +7,6 @@
 #pragma once
 
 #include <set>
-#include <vector>
 #include <cstdlib>	// For size_t
 #include "spi/IAsyncDataInputObserver.h"
 
