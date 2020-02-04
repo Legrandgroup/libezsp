@@ -7,6 +7,7 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/byte-manip.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -23,7 +24,7 @@ class CEmberGpAddressStruct
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpAddressStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Construct from sourceId
@@ -57,7 +58,7 @@ class CEmberGpAddressStruct
          *
          * @return raw buffer
          */
-        std::vector<uint8_t> getRaw() const;
+        NSSPI::ByteBuffer getRaw() const;
 
         /**
          * @brief Dump this instance as a string

@@ -13,6 +13,7 @@
 
 #include "ezsp/zbmessage/aps.h"
 #include "ezsp/zbmessage/zclheader.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -42,7 +43,7 @@ public:
    * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
    */
   void SetSpecific(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-                    const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                    const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload , const uint64_t i_src_ieee,
                     const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0);
 
   /**
@@ -57,7 +58,7 @@ public:
    * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
    */
   void SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-                   const EZCLFrameCtrlDirection i_direction, const std::vector<uint8_t>& i_payload , const uint64_t i_src_ieee,
+                   const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload , const uint64_t i_src_ieee,
                    const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0 );
 
   /**
@@ -66,7 +67,7 @@ public:
    * @param i_payload : payload for command
    * @param i_transaction_number : transaction sequence number
    */
-  void SetZdo(const uint16_t i_cmd_id, const std::vector<uint8_t>& i_payload, const uint8_t i_transaction_number = 0);
+  void SetZdo(const uint16_t i_cmd_id, const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number = 0);
 
   /**
    * @brief Getter for the enclosed APS frame
@@ -87,27 +88,27 @@ public:
    *
    * @return The enclosed payload
    */
-  std::vector<uint8_t> GetPayload() const { return payload; }
+  NSSPI::ByteBuffer GetPayload() const { return payload; }
 
   /**
    * @brief Parse an incomming raw EZSP message
    * @param i_aps : aps data
    * @param i_msg : message data included header (ZCL and/or MSP)
    */
-  void Set( const std::vector<uint8_t>& i_aps, const std::vector<uint8_t>& i_msg );
+  void Set( const NSSPI::ByteBuffer& i_aps, const NSSPI::ByteBuffer& i_msg );
 
   /**
    * @brief Get : format zigbee message frame with header
    * @return Zigbee message with header
    */
-  std::vector<uint8_t> Get() const;
+  NSSPI::ByteBuffer Get() const;
 
   /* FIXME: make the atribute below private as create getter/setter methods */
   CAPSFrame aps;        /*!< Enclosed APS frame */
 private:
   CZCLHeader zcl_header;        /*!< Enclosed ZCL header */
   bool use_zcl_header;  /*!< Do we have a valid content in attribute zcl_header? */
-  std::vector<uint8_t> payload; /*!< Enclosed payload */
+  NSSPI::ByteBuffer payload; /*!< Enclosed payload */
 };
 
 } // namespace NSEZSP

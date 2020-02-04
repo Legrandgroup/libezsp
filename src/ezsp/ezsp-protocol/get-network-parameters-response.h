@@ -9,6 +9,7 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -32,7 +33,7 @@ class CGetNetworkParametersResponse
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CGetNetworkParametersResponse(const std::vector<uint8_t>& raw_message);
+        explicit CGetNetworkParametersResponse(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Copy constructor

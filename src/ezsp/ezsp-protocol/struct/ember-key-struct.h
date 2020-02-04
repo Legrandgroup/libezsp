@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -30,7 +31,7 @@ class CEmberKeyStruct
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CEmberKeyStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberKeyStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Copy constructor

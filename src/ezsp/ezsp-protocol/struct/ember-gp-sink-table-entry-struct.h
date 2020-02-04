@@ -9,6 +9,7 @@
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -35,7 +36,7 @@ class CEmberGpSinkTableEntryStruct
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpSinkTableEntryStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief constructor with specific value, others are set to default value.
@@ -69,7 +70,7 @@ class CEmberGpSinkTableEntryStruct
          *
          * @return raw of structure
          */
-        std::vector<uint8_t> getRaw() const;
+        NSSPI::ByteBuffer getRaw() const;
 
         /**
          * @brief getters

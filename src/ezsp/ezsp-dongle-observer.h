@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -29,7 +30,7 @@ public:
      * @param i_cmd The EZSP command
      * @param i_msg_receive The payload of the message
      */
-    virtual void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive ) { }
+    virtual void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive ) { }
 
     /**
      * @brief Method that will be invoked when bootloader prompt is caught

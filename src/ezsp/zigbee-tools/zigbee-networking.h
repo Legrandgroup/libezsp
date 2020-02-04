@@ -11,6 +11,7 @@
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zbmessage/zigbee-message.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -62,7 +63,7 @@ public:
     /**
      * Observer
      */
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
 
 private:
     std::default_random_engine random_generator;

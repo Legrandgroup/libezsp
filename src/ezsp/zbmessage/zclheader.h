@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "zclframecontrol.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -47,7 +48,7 @@ public:
    * @param[in] i_data The buffer to parse in order to construct this instance
    * @param[out] o_idx The number of bytes used (in buffer i_data) to construct the ZCL header
    */
-  CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx);
+  CZCLHeader(const NSSPI::ByteBuffer& i_data, uint8_t& o_idx);
 
   // high level
 
@@ -104,7 +105,7 @@ public:
   void SetCmdId( const uint8_t i_cmd_id ) { cmd_id = i_cmd_id; }
 
   // concatenate
-  std::vector<uint8_t> GetZCLHeader(void) const;
+  NSSPI::ByteBuffer GetZCLHeader(void) const;
 
 private:
   /** */

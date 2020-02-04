@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -25,7 +26,7 @@ class CEmberChildDataStruct
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CEmberChildDataStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberChildDataStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Assignment operator

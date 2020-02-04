@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <ezsp/zbmessage/zcl.h>
+#include <spi/ByteBuffer.h>
 
 namespace NSEZSP {
 
@@ -51,7 +52,7 @@ class CGpFrame
          *
          * @param raw_message The buffer to construct from
          */
-        explicit CGpFrame(const std::vector<uint8_t>& raw_message);
+        explicit CGpFrame(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Dump this instance as a string
@@ -85,7 +86,7 @@ class CGpFrame
         uint8_t getCommandId() const {return command_id;}
         uint32_t getMic() const {return mic;}
         uint8_t getProxyTableEntry() const {return proxy_table_entry;}
-        std::vector<uint8_t> getPayload() const {return payload;}
+        NSSPI::ByteBuffer getPayload() const {return payload;}
 
     private:
         uint8_t link_value;
@@ -99,7 +100,7 @@ class CGpFrame
         uint8_t command_id;
         uint32_t mic;
         uint8_t proxy_table_entry;
-        std::vector<uint8_t> payload;
+        NSSPI::ByteBuffer payload;
 };
 
 } // namespace NSEZSP

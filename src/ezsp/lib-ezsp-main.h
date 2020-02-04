@@ -15,7 +15,8 @@
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
-#include <ezsp/zbmessage/green-power-device.h>
+#include "ezsp/zbmessage/green-power-device.h"
+#include "spi/ByteBuffer.h"
 
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/green-power-observer.h"
@@ -160,17 +161,17 @@ private:
      * Oberver handlers
      */
     void handleDongleState( EDongleState i_state );
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
     void handleBootloaderPrompt();
     void handleFirmwareXModemXfr();
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
-	void handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive );
-	void handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i_msg_receive );
-	void handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive );
-	void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::vector<uint8_t> i_msg_receive );
-	void handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive );
+	void handleEzspRxMessage_VERSION(NSSPI::ByteBuffer i_msg_receive );
+	void handleEzspRxMessage_EZSP_GET_XNCP_INFO(NSSPI::ByteBuffer i_msg_receive );
+	void handleEzspRxMessage_NETWORK_STATE(NSSPI::ByteBuffer i_msg_receive );
+	void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(NSSPI::ByteBuffer i_msg_receive );
+	void handleEzspRxMessage_STACK_STATUS_HANDLER(NSSPI::ByteBuffer i_msg_receive );
 };
 
 } // namespace NSEZSP

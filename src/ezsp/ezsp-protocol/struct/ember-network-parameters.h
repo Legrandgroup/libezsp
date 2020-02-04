@@ -3,9 +3,10 @@
  */
 #pragma once
 
-#include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include <vector>
 #include <string>
+#include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -28,9 +29,9 @@ class CEmberNetworkParameters
          * @param raw_message The buffer to construct from
          * @param skip The number of leading bytes to skip in buffer @p raw_message
          */
-        CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip = 0);
+        CEmberNetworkParameters(const NSSPI::ByteBuffer& raw_message, const std::string::size_type skip = 0);
 
-        std::vector<uint8_t> getRaw() const;
+        NSSPI::ByteBuffer getRaw() const;
 
         /**
          * @brief The network's extended PAN identifier.

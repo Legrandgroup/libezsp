@@ -188,7 +188,7 @@ public:
             //     // we retrieve network information and key and eui64 of dongle (can be done before)
             //     dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
             //     dongle.sendCommand(EZSP_GET_EUI64);
-            //     std::vector<uint8_t> l_payload;
+            //     NSSPI::ByteBuffer l_payload;
             //     l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
             //     dongle.sendCommand(EZSP_GET_KEY, l_payload);
 
@@ -207,7 +207,7 @@ public:
             //             clogI << "YES !! Retrieve information for binding" << std::endl;
 
             //             // retrieve information about device, starting by discover list of active endpoint
-            //             std::vector<uint8_t> payload;
+            //             NSSPI::ByteBuffer payload;
             //             payload.push_back(u16_get_lo_u8(i_id));
             //             payload.push_back(u16_get_hi_u8(i_id));
 
@@ -232,7 +232,7 @@ public:
      *
      * @return true If a cluster report could be parsed, in such case @p usedBytes will contain the number of bytes decoded to generate the cluster report
      */
-    static bool extractClusterReport( const std::vector<uint8_t >& payload, uint8_t& usedBytes )
+    static bool extractClusterReport( const NSSPI::ByteBuffer& payload, uint8_t& usedBytes )
     {
         size_t payloadSize = payload.size();
 
@@ -377,7 +377,7 @@ public:
      *
      * @return true If the buffer only contains 0, 1 or more concatenated cluster report(s) that were succesfully parsed, false otherwise (also returned when there are undecoded trailing bytes)
      */
-    static bool extractMultiClusterReport( std::vector<uint8_t > payload )
+    static bool extractMultiClusterReport( NSSPI::ByteBuffer payload )
     {
         uint8_t usedBytes = 0;
         bool validBuffer = true;

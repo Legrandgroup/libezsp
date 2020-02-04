@@ -14,12 +14,13 @@
 #include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
 #include "spi/GenericAsyncDataInputObservable.h"
+#include "spi/ByteBuffer.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct sMsg
     {
         NSEZSP::EEzspCmd i_cmd;
-        std::vector<uint8_t> payload;
+        NSSPI::ByteBuffer payload;
     }SMsg;
 }
 
@@ -58,7 +59,7 @@ public:
     /**
      * @brief Send Ezsp Command
      */
-    void sendCommand(EEzspCmd i_cmd, std::vector<uint8_t> i_cmd_payload = std::vector<uint8_t>() );
+    void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
 
 
 
@@ -121,7 +122,7 @@ private:
      * @param i_cmd The EZSP command received
      * @param i_message The payload of the EZSP command
      */
-    void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_message );
+    void notifyObserversOfEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_message );
 
     /**
      * @brief Notify all observers of this instance that the dongle is running the booloader and that a bootloader prompt has been detected

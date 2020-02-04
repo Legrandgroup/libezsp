@@ -16,6 +16,7 @@
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "ezsp/ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -100,7 +101,7 @@ public:
      * @param i_cmd The EZSP command
      * @param i_msg_receive The payload of the message
      */
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
 
     /**
      * @brief Register one observer to the sink events
@@ -192,7 +193,7 @@ private:
      *
      */
     void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
-                    uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
+                    uint8_t i_gpd_command_id, NSSPI::ByteBuffer i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
 
     /**
      * @brief Remove an entry in sink table
@@ -216,7 +217,7 @@ private:
      * @brief Handle an incoming GET_NETWORK_PARAMETERS EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_GET_NETWORK_PARAMETERS(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming EZSP message related to the Green Power endpoint with no GPD security
@@ -236,49 +237,49 @@ private:
      *
      * @note This method will then dispatch to either handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY() or handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY()
      */
-    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_FIND_OR_ALLOCATE_ENTRY EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_LOOKUP EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_LOOKUP(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_GET_ENTRY EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_GET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_SET_ENTRY EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_SET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_LOOKUP EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_LOOKUP(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_GET_ENTRY EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_PROCESS_GP_PAIRING EZSP message
      * @param i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uint8_t> i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(NSSPI::ByteBuffer i_msg_receive);
 
 private:
     CEzspDongle &dongle; /*!< The EZSP adapter used to send/receive EZSP commands */

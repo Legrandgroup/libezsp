@@ -5,6 +5,7 @@
 #include <memory>	// For std::unique_ptr
 
 #include "spi/TimerBuilder.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -36,13 +37,13 @@ public:
 
     CAsh& operator=(CAsh) = delete; /* No assignment allowed */
 
-    std::vector<uint8_t> resetNCPFrame(void);
+    NSSPI::ByteBuffer resetNCPFrame(void);
 
-    std::vector<uint8_t> AckFrame(void);
+    NSSPI::ByteBuffer AckFrame(void);
 
-    std::vector<uint8_t> DataFrame(std::vector<uint8_t> i_data);
+    NSSPI::ByteBuffer DataFrame(NSSPI::ByteBuffer i_data);
 
-    std::vector<uint8_t> decode(std::vector<uint8_t> &i_data);
+    NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
 
     bool isConnected(void){ return stateConnected; }
 
@@ -58,12 +59,12 @@ private:
     std::unique_ptr<NSSPI::ITimer> timer;
     CAshCallback *pCb;
 
-    std::vector<uint8_t> in_msg;
+    NSSPI::ByteBuffer in_msg;
 
-    uint16_t computeCRC( std::vector<uint8_t> i_msg );
-    void decode_flag(std::vector<uint8_t> &lo_msg);
-    void clean_flag(std::vector<uint8_t> &lo_msg);
-    std::vector<uint8_t> stuffedOutputData(std::vector<uint8_t> i_msg);
-    std::vector<uint8_t> dataRandomise(std::vector<uint8_t> i_data, uint8_t start);
+    uint16_t computeCRC( NSSPI::ByteBuffer i_msg );
+    void decode_flag(NSSPI::ByteBuffer &lo_msg);
+    void clean_flag(NSSPI::ByteBuffer &lo_msg);
+    NSSPI::ByteBuffer stuffedOutputData(NSSPI::ByteBuffer i_msg);
+    NSSPI::ByteBuffer dataRandomise(NSSPI::ByteBuffer i_data, uint8_t start);
 };
 }

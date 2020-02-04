@@ -6,6 +6,7 @@
 #include <functional>   // For std::function
 
 #include "spi/TimerBuilder.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -95,7 +96,7 @@ public:
      * 
      * @param i_data New bytes to add to the previously accumulated ones
      */
-    EBootloaderStage decode(std::vector<uint8_t> &i_data);
+    EBootloaderStage decode(NSSPI::ByteBuffer &i_data);
 
 protected:
     /**
@@ -112,7 +113,7 @@ protected:
 
 private:
     std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
-    std::vector<uint8_t> accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
+    NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
     EBootloaderStage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
     FBootloaderWriteFunc bootloaderWriteFunc;   /*!< A function to write bytes to the serial port */

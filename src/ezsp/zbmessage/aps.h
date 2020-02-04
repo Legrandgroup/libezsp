@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ezsp/zbmessage/apsoption.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -40,8 +41,8 @@ public:
   void SetDefaultAPS( uint16_t i_profile_id, uint16_t i_cluster_id, uint8_t i_dest_ep, uint16_t i_grp_id = 0 );
 
   // concatenate
-  std::vector<uint8_t> GetEmberAPS(void);
-  void SetEmberAPS( std::vector<uint8_t> i_data );
+  NSSPI::ByteBuffer GetEmberAPS(void);
+  void SetEmberAPS( NSSPI::ByteBuffer i_data );
 
   // usefull
   /**

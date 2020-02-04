@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
 
@@ -58,7 +59,7 @@ class CGpdCommissioningPayload
          * @param raw_message The buffer to construct from
          * @param i_src_id source id of gpd frame, used to decrypt key
          */
-        CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id);
+        CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_message, uint32_t i_src_id);
 
         /**
          * @brief Getter for the enclosed encryption/authentication key

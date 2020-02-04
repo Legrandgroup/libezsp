@@ -10,6 +10,7 @@
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zbmessage/zigbee-message.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
@@ -33,12 +34,12 @@ public:
      * @param payload       : payload of command
      * @return true if message can be send
      */
-    void SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, std::vector<uint8_t> payload );
+    void SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, NSSPI::ByteBuffer payload );
 
     /**
      * Observer
      */
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
 
 private:
     CEzspDongle &dongle;
