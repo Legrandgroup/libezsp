@@ -1,7 +1,7 @@
 /**
  * @file ember-network-parameters.h
  *
- * @brief Ember network parameters.
+ * @brief Ember network parameters encoder as used as payload for EZSP command 0x1E (formNetwork)
  */
 
 #pragma once

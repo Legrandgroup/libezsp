@@ -62,3 +62,7 @@ bool CEzsp::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t dura
 {
 	return main->startEnergyScan(energyScanCallback, duration);
 }
+
+bool CEzsp::setChannel(uint8_t channel) {
+	return main->setChannel(channel);
+}

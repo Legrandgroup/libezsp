@@ -128,6 +128,15 @@ public:
      */
     bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
 
+    /**
+     * @brief Select the 802.15.4 channel on which the EZSP adapter works
+     * 
+     * @param channel The 802.15.4 channel (valid values are 11 to 26, inclusive)
+     * 
+     * @return true If the channel could be set
+     */
+    bool setChannel(uint8_t channel);
+
 private:
 	CLibEzspMain *main;
 };

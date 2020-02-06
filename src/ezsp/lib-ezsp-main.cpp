@@ -351,6 +351,13 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
     return true;
 }
 
+bool CLibEzspMain::setChannel(uint8_t channel) {
+    if (this->getState() != CLibEzspInternalState::READY || this->scanInProgress) {
+        return false;
+    }
+    this->dongle.sendCommand(EZSP_SET_RADIO_CHANNEL, { channel });
+}
+
 void CLibEzspMain::handleFirmwareXModemXfr()
 {
     this->setState(CLibEzspInternalState::IN_XMODEM_XFR);

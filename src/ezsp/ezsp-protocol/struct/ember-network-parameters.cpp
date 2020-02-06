@@ -1,7 +1,7 @@
 /**
  * @file ember-network-parameters.cpp
  *
- * @brief Ember network parameters.
+ * @brief Ember network parameters encoder as used as payload for EZSP command 0x1E (formNetwork)
  */
 
 #include <sstream>
