@@ -5,12 +5,13 @@
  */
 
 #include <iostream>
-
-#include "spi/TimerBuilder.h"
-#include "spi/Logger.h"
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <map>
+
+#include "spi/TimerBuilder.h"
+#include "spi/Logger.h"
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
@@ -43,7 +44,7 @@ enum MainState {
     REMOVE_SPECIFIC_GPD,
     ADD_GPD,
     COMMISSION_GPD,
-    OPEN_ZIGBEE_NWK,
+    SCAN_CHANNELS,
     RUN,
     FW_UPGRADE,
 };
@@ -179,7 +180,24 @@ public:
                                  this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
                              }
                             );
-                this->ezspRun();
+                this->currentState = MainState::SCAN_CHANNELS;
+
+                auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
+                    std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, -127};
+                    for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {
+                        int8_t rssi = scannedChannel.second;
+                        if (rssi > electedChannelRssi.second) {
+                            electedChannelRssi = scannedChannel;
+                        }
+                    }
+                    clogI << "Selecting channel " << static_cast<unsigned int>(electedChannelRssi.first) << " with rssi: " << static_cast<int>(electedChannelRssi.second) << " dBm\n";
+                    //this->setChannel(electedChannelRssi.first);
+                    /* No other startup operations required... move to run state */
+                    this->ezspRun();
+                };
+
+                libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+                /* Switching to run state will be performed once scanning is done, in the processEnergyScanResults() callback above */
             }
             // else if (this->openZigbeeCommissionningAtStartup) {
             //     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
@@ -213,9 +231,6 @@ public:
             //         }
             //     });
             // }
-            else {  /* No preparation step remains... we can swich to normal run state */
-                this->ezspRun();
-            }
             clogI << "Moving to MainState " << static_cast<int>(this->currentState) << "\n";
         }
     }

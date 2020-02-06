@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <map>
+
 #include "spi/IUartDriver.h"
 #include "spi/TimerBuilder.h"
 
@@ -39,10 +41,6 @@ enum class CLibEzspInternalState;
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
-    typedef std::function<void (CLibEzspState i_state)> FStateCallback;    /*!< Callback type for method registerLibraryStateCallback() */
-    typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
-    typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback; /*!< Callback type for method registerGPSourceIdCallback() */
-
     /**
      * @brief Default constructor with minimal args to initialize library
      *
@@ -59,21 +57,21 @@ public:
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
      */
     void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 
     /**
      * @brief Register callback to receive all authenticated incoming green power frames
      *
-     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
      */
     void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
     /**
      * @brief Register callback to receive all incoming green power sourceId
      *
-     * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
+     * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable this callback)
      */
     void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
 
@@ -130,6 +128,19 @@ public:
      */
     void setFirmwareUpgradeMode();
 
+    /**
+     * @brief Start an energy scan on the EZSP adapter
+     * 
+     * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+     * 
+     * @param newObsEnergyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>)> that will be invoked when the energy scan is finished
+     *                                 The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
+     * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+     *
+     * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+     */
+    bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+
 private:
     NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
@@ -144,8 +155,11 @@ private:
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
     FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
-    FGpdSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FEnergyScanCallback obsEnergyScanCallback;  /*!< Optional user callback invoked by us each time an energy scan is finished */
     unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
+    bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
+    std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
 
     void setState( CLibEzspInternalState i_new_state );
     CLibEzspInternalState getState() const;

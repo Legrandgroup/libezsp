@@ -26,6 +26,7 @@ enum class CLibEzspInternalState {
     FORM_NWK_IN_PROGRESS,               /*<! We are currently creating a new Zigbee network */
     LEAVE_NWK_IN_PROGRESS,              /*<! We are currently leaving the Zigbee network we previously joined */
     READY,                              /*<! Library is ready to work and process new command */
+    SCANNING,                           /*<! An network scan in currently being run */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
     SWITCHING_TO_BOOTLOADER_MODE,       /*<! Switch to bootloader is pending */
@@ -57,7 +58,9 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
     gp_sink(dongle, zb_messaging),
     obsGPFrameRecvCallback(nullptr),
     obsGPSourceIdCallback(nullptr),
-    resetDot154ChannelAtInit(requestZbNetworkResetToChannel)
+    resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
+    scanInProgress(false),
+    lastChannelToEnergyScan()
 {
     // uart
     if( dongle.open(uartDriver) ) {
@@ -83,11 +86,10 @@ void CLibEzspMain::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFram
     this->obsGPFrameRecvCallback = newObsGPFrameRecvCallback;
 }
 
-void CLibEzspMain::registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback)
+void CLibEzspMain::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback)
 {
     this->obsGPSourceIdCallback = newObsGPSourceIdCallback;
 }
-
 
 void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
 {
@@ -104,6 +106,7 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
                 obsStateCallback(CLibEzspState::UNINITIALIZED);
                 break;
             case CLibEzspInternalState::READY:
+            case CLibEzspInternalState::SCANNING:
                 obsStateCallback(CLibEzspState::READY);
                 break;
             case CLibEzspInternalState::INIT_FAILED:
@@ -327,6 +330,25 @@ void CLibEzspMain::setFirmwareUpgradeMode()
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
     this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
     /* We should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage() handler below, and only then, issue a carriage return to get the bootloader prompt */
+}
+
+bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration)
+{
+    if (this->getState() != CLibEzspInternalState::READY || this->scanInProgress) {
+        clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
+        return false;
+    }
+    NSSPI::ByteBuffer l_payload = { EZSP_ENERGY_SCAN };
+    uint32_t channelMask = 0x07FFF800; // Range from channel 11 to 26 (inclusive)
+    l_payload.push_back(u32_get_byte0(channelMask));
+    l_payload.push_back(u32_get_byte1(channelMask));
+    l_payload.push_back(u32_get_byte2(channelMask));
+    l_payload.push_back(u32_get_byte3(channelMask));
+    l_payload.push_back(duration);
+    this->setState(CLibEzspInternalState::SCANNING);
+    this->obsEnergyScanCallback = energyScanCallback;
+    this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
+    return true;
 }
 
 void CLibEzspMain::handleFirmwareXModemXfr()
@@ -602,6 +624,55 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
         case EZSP_LAUNCH_STANDALONE_BOOTLOADER:
         {
            handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(i_msg_receive);
+        }
+        break;
+
+        case EZSP_START_SCAN:
+        {
+            if (this->getState() != CLibEzspInternalState::SCANNING)
+            {
+                clogW << "Got a EZSP_START_SCAN message while not in SCANNING state\n";
+            }
+            this->scanInProgress = (EMBER_SUCCESS == i_msg_receive.at(0));
+            if (this->scanInProgress) {
+                clogD << "Scan started\n";
+                this->lastChannelToEnergyScan.clear(); // clean previous energy scan result
+            }
+        }
+        break;
+
+        case EZSP_ENERGY_SCAN_RESULT_HANDLER:
+        {
+            if (this->getState() != CLibEzspInternalState::SCANNING)
+            {
+                clogW << "Got a EZSP_ENERGY_SCAN_RESULT_HANDLER message while not in SCANNING state\n";
+            }
+            uint8_t channel = i_msg_receive.at(0);
+            int8_t rssi = static_cast<int8_t>(i_msg_receive.at(1));
+            this->lastChannelToEnergyScan.emplace(channel, rssi);
+            clogD << "EZSP_ENERGY_SCAN_RESULT_HANDLER: channel: " << std::dec << static_cast<unsigned int>(channel) << " rssi: " << static_cast<int>(rssi) << " dBm\n";
+        }
+        break;
+
+        case EZSP_SCAN_COMPLETE_HANDLER:
+        {
+            if (this->getState() != CLibEzspInternalState::SCANNING)
+            {
+                clogW << "Got a EZSP_SCAN_COMPLETE_HANDLER message while not in SCANNING state\n";
+            }
+            else
+            {
+                clogD << "Scan finished\n";
+            }
+            this->scanInProgress = false;
+            if (this->getState() == CLibEzspInternalState::SCANNING) {
+                this->setState(CLibEzspInternalState::READY);
+                if (this->obsEnergyScanCallback)
+                {
+                    this->obsEnergyScanCallback(this->lastChannelToEnergyScan);
+                    this->obsEnergyScanCallback = nullptr;  /* Disable callback */
+                }
+            }
         }
         break;
 

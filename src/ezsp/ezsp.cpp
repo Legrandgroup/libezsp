@@ -28,7 +28,7 @@ void CEzsp::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsStateCallback
 	main->registerGPFrameRecvCallback(newObsStateCallback);
 }
 
-void CEzsp::registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback)
+void CEzsp::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback)
 {
 	main->registerGPSourceIdCallback(newObsGPSourceIdCallback);
 }
@@ -56,4 +56,9 @@ void CEzsp::setAnswerToGpfChannelRqstPolicy(bool allowed)
 void CEzsp::setFirmwareUpgradeMode()
 {
 	main->setFirmwareUpgradeMode();
+}
+
+bool CEzsp::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration)
+{
+	return main->startEnergyScan(energyScanCallback, duration);
 }

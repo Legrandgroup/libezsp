@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <map>
 
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
@@ -25,9 +26,10 @@ enum class CLibEzspState {
 
 class CLibEzspMain;
 
-typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;
-typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpdSourceIdCallback;
-typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback;
+typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
+typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
+typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
+typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
 
 class CEzsp{
 public:
@@ -67,7 +69,7 @@ public:
      *
      * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
      */
-    void registerGPSourceIdCallback(FGpdSourceIdCallback newObsGPSourceIdCallback);
+    void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
 
     /**
      * @brief Remove GP all devices from sink
@@ -113,6 +115,18 @@ public:
      * Once this is done, the adapter will wait for an X-modem transfer of a new firmware
      */
     void setFirmwareUpgradeMode();
+
+    /**
+     * @brief Start an energy scan on the EZSP adapter
+     * 
+     * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+     * 
+     * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+     *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
+     *
+     * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+     */
+    bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
 
 private:
 	CLibEzspMain *main;
