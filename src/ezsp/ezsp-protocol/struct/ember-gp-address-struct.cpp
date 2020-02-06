@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "ezsp/byte-manip.h"
 #include "ember-gp-address-struct.h"
 
 using NSEZSP::CEmberGpAddressStruct;
@@ -25,19 +26,18 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_mes
 }
 
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
-	gpdIeeeAddress(),	/* FIXME */
+	// IEEE address will contain the source ID duplicated twice
+	gpdIeeeAddress({ u32_get_byte0(i_srcId),
+	                 u32_get_byte1(i_srcId),
+	                 u32_get_byte2(i_srcId),
+	                 u32_get_byte3(i_srcId),
+	                 u32_get_byte0(i_srcId),
+	                 u32_get_byte1(i_srcId),
+	                 u32_get_byte2(i_srcId),
+	                 u32_get_byte3(i_srcId) }),
 	applicationId(0),
 	endpoint(0)
 {
-    // update Ieee with twice SourceId
-    gpdIeeeAddress.push_back(static_cast<uint8_t>(i_srcId&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>8)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>16)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>24)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>(i_srcId&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>8)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>16)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>24)&0xFF));
 }
 
 std::vector<uint8_t> CEmberGpAddressStruct::getRaw() const

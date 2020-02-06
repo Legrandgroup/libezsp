@@ -200,8 +200,8 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
 
     NSSPI::ByteBuffer payload;
     // security bitmask
-    payload.push_back(static_cast<uint8_t>(l_security_bitmak&0xFF));
-    payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(l_security_bitmak>>8)&0xFF));
+    payload.push_back(u16_get_lo_u8(l_security_bitmak));
+    payload.push_back(u16_get_hi_u8(l_security_bitmak));
     // tc key : HA Key
     payload.push_back(0x5A);
     payload.push_back(0x69);

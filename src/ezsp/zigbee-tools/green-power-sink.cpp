@@ -690,8 +690,8 @@ void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_se
     std::vector<uint8_t> l_proxy_br_payload;
 
     // The source from which to send the broadcast
-    l_proxy_br_payload.push_back(static_cast<uint8_t>(i_gpd_src_id&0xFF));
-    l_proxy_br_payload.push_back(static_cast<uint8_t>((i_gpd_src_id>>8)&0xFF));
+    l_proxy_br_payload.push_back(u16_get_lo_u8(i_gpd_src_id));
+    l_proxy_br_payload.push_back(u16_get_hi_u8(i_gpd_src_id));
 
     // The destination to which to send the broadcast. This must be one of the three ZigBee broadcast addresses.
     l_proxy_br_payload.push_back(0xFD);
@@ -780,10 +780,10 @@ void CAppDemo::ezspGetExtendedValue( uint8_t i_value_id, uint32_t i_characterist
     l_payload.push_back(i_value_id);
 
     // Identifies which characteristics of the extended value ID to read. These are specific to the value being read.
-    l_payload.push_back((uint8_t)(i_characteristic&0xFF));
-    l_payload.push_back((uint8_t)((i_characteristic>>8)&0xFF));
-    l_payload.push_back((uint8_t)((i_characteristic>>16)&0xFF));
-    l_payload.push_back((uint8_t)((i_characteristic>>24)&0xFF));
+    l_payload.push_back(u32_get_byte0(i_characteristic));
+    l_payload.push_back(u32_get_byte1(i_characteristic));
+    l_payload.push_back(u32_get_byte2(i_characteristic));
+    l_payload.push_back(u32_get_byte3(i_characteristic));
 
     clogI << "EZSP_GET_EXTENDED_VALUE\n";
     dongle.sendCommand(EZSP_GET_EXTENDED_VALUE, l_payload);
@@ -797,14 +797,14 @@ void CAppDemo::gpSinkTableLookup( uint32_t i_src_id )
 
     // EmberGpAddress addr The address to search for.
     l_payload.push_back(0x00);
-    l_payload.push_back((uint8_t)(i_src_id&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>8)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>16)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>24)&0xFF));
-    l_payload.push_back((uint8_t)(i_src_id&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>8)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>16)&0xFF));
-    l_payload.push_back((uint8_t)((i_src_id>>24)&0xFF));
+    l_payload.push_back(u32_get_byte0(i_src_id));
+    l_payload.push_back(u32_get_byte1(i_src_id));
+    l_payload.push_back(u32_get_byte2(i_src_id));
+    l_payload.push_back(u32_get_byte3(i_src_id));
+    l_payload.push_back(u32_get_byte0(i_src_id));
+    l_payload.push_back(u32_get_byte1(i_src_id));
+    l_payload.push_back(u32_get_byte2(i_src_id));
+    l_payload.push_back(u32_get_byte3(i_src_id));
     l_payload.push_back(0x00);
 
     clogI << "EZSP_GP_SINK_TABLE_LOOKUP\n";

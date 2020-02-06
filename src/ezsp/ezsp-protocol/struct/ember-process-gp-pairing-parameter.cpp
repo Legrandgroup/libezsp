@@ -6,6 +6,7 @@
  * Reference: docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 
+#include "ezsp/byte-manip.h"
 #include "ember-process-gp-pairing-parameter.h"
 
 using NSEZSP::CProcessGpPairingParam;
@@ -49,33 +50,33 @@ std::vector<uint8_t> CProcessGpPairingParam::get() const
 
     // The options field of the GP Pairing command
     uint32_t l_option = options.get();
-    lo_out.push_back(static_cast<uint8_t>(l_option&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((l_option>>8)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((l_option>>16)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>((l_option>>24)&0xFF));
+    lo_out.push_back(u32_get_byte0(l_option));
+    lo_out.push_back(u32_get_byte1(l_option));
+    lo_out.push_back(u32_get_byte2(l_option));
+    lo_out.push_back(u32_get_byte3(l_option));
     // The addressing info of the target GPD.
     std::vector<uint8_t> l_gpd_addr = addr.getRaw();
     lo_out.insert(lo_out.end(),l_gpd_addr.begin(),l_gpd_addr.end());
     // The communication mode of the GP Sink.
     lo_out.push_back(commMode);
     // The network address of the GP Sink.
-    lo_out.push_back(static_cast<uint8_t>(sinkNetworkAddress&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkNetworkAddress>>8)&0xFF));
+    lo_out.push_back(u16_get_lo_u8(sinkNetworkAddress));
+    lo_out.push_back(u16_get_hi_u8(sinkNetworkAddress));
     // The group ID of the GP Sink.
-    lo_out.push_back(static_cast<uint8_t>(sinkGroupId&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(sinkGroupId>>8)&0xFF));
+    lo_out.push_back(u16_get_lo_u8(sinkGroupId));
+    lo_out.push_back(u16_get_hi_u8(sinkGroupId));
     // The alias assigned to the GPD.
-    lo_out.push_back(static_cast<uint8_t>(assignedAlias&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(assignedAlias>>8)&0xFF));
+    lo_out.push_back(u16_get_lo_u8(assignedAlias));
+    lo_out.push_back(u16_get_hi_u8(assignedAlias));
     // The IEEE address of the GP Sink.
     lo_out.insert(lo_out.end(),sinkIeeeAddress.begin(),sinkIeeeAddress.end());
     // The key to use for GPD.
     lo_out.insert(lo_out.end(),gpdKey.begin(),gpdKey.end());
     // The security frame counter of the GPD.
-    lo_out.push_back(static_cast<uint8_t>(gpdSecurityFrameCounter&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>8)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>16)&0xFF));
-    lo_out.push_back(static_cast<uint8_t>(static_cast<uint8_t>(gpdSecurityFrameCounter>>24)&0xFF));
+    lo_out.push_back(u32_get_byte0(gpdSecurityFrameCounter));
+    lo_out.push_back(u32_get_byte1(gpdSecurityFrameCounter));
+    lo_out.push_back(u32_get_byte2(gpdSecurityFrameCounter));
+    lo_out.push_back(u32_get_byte3(gpdSecurityFrameCounter));
     // The forwarding radius.
     lo_out.push_back(forwardingRadius);
 

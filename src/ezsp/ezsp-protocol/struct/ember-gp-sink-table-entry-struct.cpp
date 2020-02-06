@@ -8,7 +8,6 @@
 #include <iomanip>
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
-
 #include "ezsp/byte-manip.h"
 
 using NSEZSP::CEmberGpSinkTableEntryStruct;
@@ -36,7 +35,7 @@ CEmberGpSinkTableEntryStruct::~CEmberGpSinkTableEntryStruct()
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message):
         status(raw_message.at(0)),
         options(dble_u8_to_u16(raw_message.at(2),raw_message.at(1))),
-        gpd(std::vector<uint8_t>(raw_message.begin()+3,raw_message.end())),
+        gpd(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end())),
         device_id(raw_message.at(13)),
         sink_list(),
         assigned_alias(dble_u8_to_u16(raw_message.at(37),raw_message.at(36))),
@@ -94,10 +93,10 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
     // The security options field.
     l_struct.push_back(security_options);
     // The security frame counter of the GPD.
-    l_struct.push_back(static_cast<uint8_t>(gpdSecurity_frame_counter&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>8)&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>16)&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>24)&0xFF));
+    l_struct.push_back(u32_get_byte0(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte1(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte2(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte3(gpdSecurity_frame_counter));
 
     // The key to use for GPD.
     l_struct.insert(l_struct.end(), gpd_key.begin(), gpd_key.end());

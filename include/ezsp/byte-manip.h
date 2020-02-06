@@ -30,4 +30,40 @@ inline uint8_t u16_get_lo_u8(const uint16_t word) {
 	return static_cast<uint8_t>(word & 0xFF);
 }
 
+/**
+ * @brief Get bits 7 to 0 of a 32-bit value
+ *
+ * @return The result as a byte (uint8_t)
+**/
+inline uint8_t u32_get_byte0(const uint32_t word32) {
+	return static_cast<uint8_t>(word32 & 0xFF);
+}
+
+/**
+ * @brief Get bits 15 to 8 of a 32-bit value
+ *
+ * @return The result as a byte (uint8_t)
+**/
+inline uint8_t u32_get_byte1(const uint16_t word32) {
+	return static_cast<uint8_t>((word32>>8) & 0xFF);
+}
+
+/**
+ * @brief Get bits 23 to 16 of a 32-bit value
+ *
+ * @return The result as a byte (uint8_t)
+**/
+inline uint8_t u32_get_byte2(const uint16_t word32) {
+	return static_cast<uint8_t>((word32>>16) & 0xFF);
+}
+
+/**
+ * @brief Get bits 31 to 24 of a 32-bit value
+ *
+ * @return The result as a byte (uint8_t)
+**/
+inline uint8_t u32_get_byte3(const uint16_t word32) {
+	return static_cast<uint8_t>((word32>>24) & 0xFF);
+}
+
 } // namespace NSEZSP

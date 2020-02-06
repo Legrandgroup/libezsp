@@ -8,7 +8,6 @@
 #include <iomanip>
 
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
-
 #include "ezsp/byte-manip.h"
 
 using NSEZSP::CEmberNetworkParameters;
@@ -41,11 +40,7 @@ CEmberNetworkParameters::CEmberNetworkParameters(const NSSPI::ByteBuffer& raw_me
 	join_method(static_cast<EmberJoinMethod>(raw_message.at(12+skip))),
 	nwk_manager_id(static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(14+skip), raw_message.at(13+skip)))),
 	nwk_update_id(raw_message.at(15+skip)),
-	channels(
-		static_cast<uint32_t>(raw_message.at(16)) |
-		static_cast<uint32_t>(raw_message.at(17))<<8 |
-		static_cast<uint32_t>(raw_message.at(18))<<16 |
-		static_cast<uint32_t>(raw_message.at(19))<<24)
+	channels(quad_u8_to_u32(raw_message.at(19), raw_message.at(18), raw_message.at(17), raw_message.at(16)))
 {
 }
 
@@ -78,17 +73,17 @@ NSSPI::ByteBuffer CEmberNetworkParameters::getRaw() const
     raw_message.push_back(static_cast<uint8_t>(join_method));
 
     // nwk_manager_id
-    raw_message.push_back(static_cast<uint8_t>(nwk_manager_id&0xFF));
-    raw_message.push_back(static_cast<uint8_t>(static_cast<uint8_t>(nwk_manager_id>>8)&0xFF));
+    raw_message.push_back(u16_get_lo_u8(static_cast<uint16_t>(nwk_manager_id)));
+    raw_message.push_back(u16_get_hi_u8(static_cast<uint16_t>(nwk_manager_id)));
 
     // nwk_update_id
     raw_message.push_back(static_cast<uint8_t>(nwk_update_id));
 
     // channels
-    raw_message.push_back(static_cast<uint8_t>(channels&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>8)&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>16)&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>24)&0xFF));
+    raw_message.push_back(u32_get_byte0(channels));
+    raw_message.push_back(u32_get_byte1(channels));
+    raw_message.push_back(u32_get_byte2(channels));
+    raw_message.push_back(u32_get_byte3(channels));
 
     return raw_message;
 }
