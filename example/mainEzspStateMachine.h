@@ -188,9 +188,7 @@ public:
             //     // we retrieve network information and key and eui64 of dongle (can be done before)
             //     dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
             //     dongle.sendCommand(EZSP_GET_EUI64);
-            //     NSSPI::ByteBuffer l_payload;
-            //     l_payload.push_back(EMBER_CURRENT_NETWORK_KEY);
-            //     dongle.sendCommand(EZSP_GET_KEY, l_payload);
+            //     dongle.sendCommand(EZSP_GET_KEY, { EMBER_CURRENT_NETWORK_KEY });
 
             //     // start discover of existing product inside network
             //     zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){

@@ -62,10 +62,8 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
                 }
 
                 // lire l'entrée suivante
-                std::vector<uint8_t> l_param;
-                child_idx++;
-                l_param.push_back(child_idx);
-                dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
+                this->child_idx++;
+                dongle.sendCommand(EZSP_GET_CHILD_DATA, { this->child_idx });
             }
         }
         break;
@@ -126,91 +124,81 @@ void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t
 
 void CZigbeeNetworking::stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy)
 {
-  std::vector<uint8_t> l_payload;
-
   // set config
   for(auto it : l_config)
   {
-    l_payload.clear();
-    l_payload.push_back(it.id);
-    l_payload.push_back(u16_get_lo_u8(it.value));
-    l_payload.push_back(u16_get_hi_u8(it.value));
     //clogD << "EZSP_SET_CONFIGURATION_VALUE : " << unsigned(l_config[loop].id) << std::endl;
-    dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, l_payload);
+    dongle.sendCommand(EZSP_SET_CONFIGURATION_VALUE, { it.id, u16_get_lo_u8(it.value), u16_get_hi_u8(it.value) } );
   }
 
   // set policy
   for(auto it : l_policy)
   {
-    l_payload.clear();
-    l_payload.push_back(it.id);
-    l_payload.push_back(it.decision);
     //clogD << "EZSP_SET_POLICY : " << unsigned(l_policy[loop].id) << std::endl;
-    dongle.sendCommand(EZSP_SET_POLICY, l_payload);
+    dongle.sendCommand(EZSP_SET_POLICY, { it.id, it.decision });
   }
 
-  // add endpoint 1 : gateway device
-  l_payload.clear();
-  l_payload.push_back(1); // ep number
-  l_payload.push_back(0x04U); // profile id
-  l_payload.push_back(0x01U);
-  l_payload.push_back(0x07U); // device id
-  l_payload.push_back(0x00U);
-  l_payload.push_back(0); // flags
-  l_payload.push_back(1); // in cluster count
-  l_payload.push_back(1); // out cluster count
-  l_payload.push_back(0); // in cluster
-  l_payload.push_back(0);
-  l_payload.push_back(0); // out cluster
-  l_payload.push_back(0);
-  dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
+  {
+    NSSPI::ByteBuffer l_payload;
+    // add endpoint 1 : gateway device
+    l_payload.push_back(1); // ep number
+    l_payload.push_back(0x04U); // profile id
+    l_payload.push_back(0x01U);
+    l_payload.push_back(0x07U); // device id
+    l_payload.push_back(0x00U);
+    l_payload.push_back(0); // flags
+    l_payload.push_back(1); // in cluster count
+    l_payload.push_back(1); // out cluster count
+    l_payload.push_back(0); // in cluster
+    l_payload.push_back(0);
+    l_payload.push_back(0); // out cluster
+    l_payload.push_back(0);
+    dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
+  }
 
-  // add endpoint 242 : green power
-  l_payload.clear();
-  l_payload.push_back(242); // ep number
-  l_payload.push_back(0x0EU); // profile id
-  l_payload.push_back(0xA1U);
-  l_payload.push_back(0x64U); // device id
-  l_payload.push_back(0x00U);
-  l_payload.push_back(0); // flags
-  l_payload.push_back(1); // in cluster count
-  l_payload.push_back(1); // out cluster count
-  l_payload.push_back(0x21); // in cluster
-  l_payload.push_back(0);
-  l_payload.push_back(0x21); // out cluster
-  l_payload.push_back(0);
-  dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
+  {
+    NSSPI::ByteBuffer l_payload;
+    // add endpoint 242 : green power
+    l_payload.clear();
+    l_payload.push_back(242); // ep number
+    l_payload.push_back(0x0EU); // profile id
+    l_payload.push_back(0xA1U);
+    l_payload.push_back(0x64U); // device id
+    l_payload.push_back(0x00U);
+    l_payload.push_back(0); // flags
+    l_payload.push_back(1); // in cluster count
+    l_payload.push_back(1); // out cluster count
+    l_payload.push_back(0x21); // in cluster
+    l_payload.push_back(0);
+    l_payload.push_back(0x21); // out cluster
+    l_payload.push_back(0);
+    dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
+  }
 }
 
 void CZigbeeNetworking::formHaNetwork(uint8_t channel)
 {
     // set HA policy
-    std::vector<uint8_t> payload;
+    dongle.sendCommand( EZSP_SET_POLICY, { EZSP_TRUST_CENTER_POLICY, 0x01U });
+
+    dongle.sendCommand( EZSP_SET_POLICY, { EZSP_TC_KEY_REQUEST_POLICY, 0x50U /* EZSP_DENY_TC_KEY_REQUESTS */});
+
     uint16_t l_security_bitmak = 0;
-
-    payload.push_back(EZSP_TRUST_CENTER_POLICY); // EZSP_TRUST_CENTER_POLICY
-    payload.push_back(0x01); // EZSP_ALLOW_PRECONFIGURED_KEY_JOINS
-    dongle.sendCommand( EZSP_SET_POLICY, payload );
-
-    payload.clear();
-    payload.push_back(EZSP_TC_KEY_REQUEST_POLICY); // EZSP_TC_KEY_REQUEST_POLICY
-    payload.push_back(0x50); // EZSP_DENY_TC_KEY_REQUESTS
-    dongle.sendCommand( EZSP_SET_POLICY, payload );
 
     // set initial security state
     // EMBER_HAVE_PRECONFIGURED_KEY
-    l_security_bitmak |= 0x0100;
+    l_security_bitmak |= 0x0100U;
 
     // EMBER_HAVE_NETWORK_KEY
-    l_security_bitmak |= 0x0200;
+    l_security_bitmak |= 0x0200U;
 
     // EMBER_REQUIRE_ENCRYPTED_KEY
-    l_security_bitmak |= 0x0800;
+    l_security_bitmak |= 0x0800U;
 
     // EMBER_TRUST_CENTER_GLOBAL_LINK_KEY
-    l_security_bitmak |= 0x0004;
+    l_security_bitmak |= 0x0004U;
 
-    payload.clear();
+    NSSPI::ByteBuffer payload;
     // security bitmask
     payload.push_back(static_cast<uint8_t>(l_security_bitmak&0xFF));
     payload.push_back(static_cast<uint8_t>(static_cast<uint8_t>(l_security_bitmak>>8)&0xFF));
@@ -233,11 +221,15 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
     payload.push_back(0x39);
     //  network key : random
     std::uniform_int_distribution<uint8_t> dis(0, 255);
-    for( uint8_t loop=0; loop<16; loop++ ){ payload.push_back( dis(this->random_generator)&0xFF); }
+    for( uint8_t loop=0; loop<16; loop++ ) {
+      payload.push_back( dis(this->random_generator)&0xFF);
+    }
     // key sequence number
     payload.push_back(0U);
     // eui trust center : not used
-    for( uint8_t loop=0; loop<8; loop++ ){ payload.push_back( 0U ); }
+    for( uint8_t loop=0; loop<8; loop++ ) {
+      payload.push_back( 0U );
+    }
 
     // call
     dongle.sendCommand(EZSP_SET_INITIAL_SECURITY_STATE, payload);
@@ -248,39 +240,25 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel)
 
 void CZigbeeNetworking::openNetwork(uint8_t i_timeout)
 {
-    std::vector<uint8_t> i_payload;
-
-    i_payload.push_back(i_timeout);
-    dongle.sendCommand(EZSP_PERMIT_JOINING, i_payload);
+    dongle.sendCommand(EZSP_PERMIT_JOINING, { i_timeout });
 
     // use zdp frame
     CZigBeeMsg l_msg;
-    std::vector<uint8_t> l_payload;
 
-    l_payload.push_back(i_timeout);
-    l_payload.push_back(1);
-
-    l_msg.SetZdo( 0x0036, l_payload );
+    l_msg.SetZdo( 0x0036, { i_timeout, 1 });
 
     zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
 }
 
 void CZigbeeNetworking::closeNetwork()
 {
-    std::vector<uint8_t> i_payload;
-
-    i_payload.push_back(0);
-    dongle.sendCommand(EZSP_PERMIT_JOINING,i_payload);
+    dongle.sendCommand(EZSP_PERMIT_JOINING, { 0x00U });
 
     // use zdp frame
     CZigBeeMsg l_msg;
-    std::vector<uint8_t> l_payload;
 
-    l_payload.push_back(0);
-    l_payload.push_back(1);
-
-    l_msg.SetZdo( 0x0036, l_payload );
-
+    l_msg.SetZdo( 0x0036, { 0x00U, 0x01U });
+  
     zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
 }
 
@@ -293,10 +271,8 @@ void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i
 {
     // pour l'exemple on ne lit que la table enfant du dongle, on assume qu'il n'y a pas d'autre routeur dans le réseau
     // lire table enfant du dongle
-    std::vector<uint8_t> l_param;
-    child_idx = 0;
-    l_param.push_back(child_idx);
-    dongle.sendCommand(EZSP_GET_CHILD_DATA, l_param);
+    this->child_idx = 0;
+    dongle.sendCommand(EZSP_GET_CHILD_DATA, { this->child_idx });
 
     discoverCallbackFct = i_discoverCallbackFct;
 }

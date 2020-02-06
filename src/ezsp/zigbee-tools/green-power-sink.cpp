@@ -497,7 +497,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uin
 	{
 		// retrieve next entry
 		proxy_table_index++;
-		dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{proxy_table_index});
+		dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY, { proxy_table_index });
 	}
 	else
 	{
@@ -768,7 +768,7 @@ void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_se
     l_proxy_br_payload.push_back(0xdc);
 
     clogI << "EZSP_PROXY_BROADCAST\n";
-    dongle.sendCommand(EZSP_PROXY_BROADCAST,l_proxy_br_payload);
+    dongle.sendCommand(EZSP_PROXY_BROADCAST, l_proxy_br_payload);
 }
 */
 /*
@@ -786,7 +786,7 @@ void CAppDemo::ezspGetExtendedValue( uint8_t i_value_id, uint32_t i_characterist
     l_payload.push_back((uint8_t)((i_characteristic>>24)&0xFF));
 
     clogI << "EZSP_GET_EXTENDED_VALUE\n";
-    dongle.sendCommand(EZSP_GET_EXTENDED_VALUE,l_payload);
+    dongle.sendCommand(EZSP_GET_EXTENDED_VALUE, l_payload);
 }
 */
 
@@ -818,30 +818,25 @@ void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
     CEmberGpAddressStruct l_gp_address(i_src_id);
 
     clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY,l_gp_address.getRaw());
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY, l_gp_address.getRaw());
 }
 
 void CGpSink::gpSinkGetEntry( uint8_t i_index )
 {
-    std::vector<uint8_t> l_payload;
-
-    // The index of the requested sink table entry.
-    l_payload.push_back(i_index);
-
     clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY,l_payload);
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY, { i_index });
 }
 
 
 void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_entry )
 {
-    std::vector<uint8_t> l_payload;
+    NSSPI::ByteBuffer l_payload;
 
     // The index of the requested sink table entry.
     l_payload.push_back(i_index);
 
     // struct
-    std::vector<uint8_t> i_struct = i_entry.getRaw();
+    NSSPI::ByteBuffer i_struct = i_entry.getRaw();
     l_payload.insert(l_payload.end(), i_struct.begin(), i_struct.end());
 
     clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY\n";
@@ -858,14 +853,14 @@ void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
                 uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle )
 {
-    std::vector<uint8_t> l_payload;
+    NSSPI::ByteBuffer l_payload;
 
     // The action to perform on the GP TX queue (true to add, false to remove).
     l_payload.push_back(i_action);
     // Whether to use ClearChannelAssessment when transmitting the GPDF.
     l_payload.push_back(i_use_cca);
     // The Address of the destination GPD.
-    std::vector<uint8_t> i_addr = i_gp_addr.getRaw();
+    NSSPI::ByteBuffer i_addr = i_gp_addr.getRaw();
     l_payload.insert(l_payload.end(), i_addr.begin(), i_addr.end());
     // The GPD command ID to send.
     l_payload.push_back(i_gpd_command_id);
@@ -891,21 +886,21 @@ void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_a
 void CGpSink::gpSinkTableRemoveEntry( uint8_t i_index )
 {
     clogD << "EZSP_GP_SINK_TABLE_REMOVE_ENTRY\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY,{i_index});
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_REMOVE_ENTRY, { i_index });
 }
 
 void CGpSink::gpProxyTableLookup(uint32_t i_src_id)
 {
     CEmberGpAddressStruct i_addr(i_src_id);
     clogD << "EZSP_GP_PROXY_TABLE_LOOKUP\n";
-    dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP,i_addr.getRaw());
+    dongle.sendCommand(EZSP_GP_PROXY_TABLE_LOOKUP, i_addr.getRaw());
 }
 
 void CGpSink::gpSinkTableLookup(uint32_t i_src_id)
 {
     CEmberGpAddressStruct i_addr(i_src_id);
     clogD << "EZSP_GP_SINK_TABLE_LOOKUP\n";
-    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP,i_addr.getRaw());
+    dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP, i_addr.getRaw());
 }
 
 void CGpSink::setSinkState( ESinkState i_state )

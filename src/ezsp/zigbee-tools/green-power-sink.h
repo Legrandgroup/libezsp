@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "ezsp/zbmessage/green-power-frame.h"
 #include "ezsp/zbmessage/green-power-device.h"
