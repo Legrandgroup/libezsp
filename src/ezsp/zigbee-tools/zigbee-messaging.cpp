@@ -41,15 +41,15 @@ void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_
  */
 void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg)
 {
-    std::vector<uint8_t> l_payload;
-    std::vector<uint8_t> l_zb_msg = i_msg.Get();
+    NSSPI::ByteBuffer l_payload;
+    NSSPI::ByteBuffer l_zb_msg = i_msg.Get();
 
     // destination
     l_payload.push_back( static_cast<uint8_t>(i_destination&0xFF) );
     l_payload.push_back( static_cast<uint8_t>(static_cast<uint8_t>(i_destination>>8)&0xFF) );
 
     // aps frame
-    std::vector<uint8_t> v_tmp = i_msg.GetAps().GetEmberAPS();
+    NSSPI::ByteBuffer v_tmp = i_msg.GetAps().GetEmberAPS();
     l_payload.insert(l_payload.end(), v_tmp.begin(), v_tmp.end());
 
     // radius
@@ -75,8 +75,8 @@ void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, ui
  */
 void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg )
 {
-    std::vector<uint8_t> l_payload;
-    std::vector<uint8_t> l_zb_msg = i_msg.Get();
+    NSSPI::ByteBuffer l_payload;
+    NSSPI::ByteBuffer l_zb_msg = i_msg.Get();
 
     // only direct unicast is supported for now
     l_payload.push_back( EMBER_OUTGOING_DIRECT );
@@ -86,7 +86,7 @@ void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg )
     l_payload.push_back( static_cast<uint8_t>(static_cast<uint8_t>(i_node_id>>8)&0xFF) );
 
     // aps frame
-    std::vector<uint8_t> v_tmp = i_msg.GetAps().GetEmberAPS();
+    NSSPI::ByteBuffer v_tmp = i_msg.GetAps().GetEmberAPS();
     l_payload.insert(l_payload.end(), v_tmp.begin(), v_tmp.end());
 
     // message tag : not used for this simplier demo
@@ -109,7 +109,7 @@ void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg )
  * @param payload       : payload of command
  * @return true if message can be send
  */
-void CZigbeeMessaging::SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, std::vector<uint8_t> payload )
+void CZigbeeMessaging::SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload)
 {
     CZigBeeMsg l_msg;
 

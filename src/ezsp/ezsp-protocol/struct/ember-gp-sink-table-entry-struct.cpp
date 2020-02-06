@@ -32,7 +32,7 @@ CEmberGpSinkTableEntryStruct::~CEmberGpSinkTableEntryStruct()
 {
 }
 
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message):
+CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const NSSPI::ByteBuffer& raw_message):
         status(raw_message.at(0)),
         options(dble_u8_to_u16(raw_message.at(2),raw_message.at(1))),
         gpd(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end())),
@@ -66,9 +66,9 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntry
     sink_list[1].push_back(0xFF);
 }
 
-std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
+NSSPI::ByteBuffer CEmberGpSinkTableEntryStruct::getRaw() const
 {
-    std::vector<uint8_t> l_struct;
+    NSSPI::ByteBuffer l_struct;
 
     // Internal status of the sink table entry.
     l_struct.push_back(status); // 0x01 : active, 0xff : disable
@@ -76,7 +76,7 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
     l_struct.push_back(u16_get_lo_u8(options.get()));
     l_struct.push_back(u16_get_hi_u8(options.get()));
     // The addressing info of the GPD.
-    std::vector<uint8_t> l_addr = gpd.getRaw();
+    NSSPI::ByteBuffer l_addr = gpd.getRaw();
     l_struct.insert(l_struct.end(), l_addr.begin(), l_addr.end());
     // The device id for the GPD.
     l_struct.push_back(device_id);

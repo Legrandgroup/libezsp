@@ -137,7 +137,7 @@ void CLibEzspMain::dongleInit(uint8_t ezsp_version)
     /* Response to this should be the reception of an EZSP_VERSION in the handleEzspRxMessage() handler below
      */
     setState(CLibEzspInternalState::GETTING_EZSP_VERSION);
-    dongle.sendCommand(EEzspCmd::EZSP_VERSION, std::vector<uint8_t>({ezsp_version}));
+    dongle.sendCommand(EEzspCmd::EZSP_VERSION, NSSPI::ByteBuffer({ ezsp_version }));
 }
 
 void CLibEzspMain::getXncpInfo()
@@ -336,7 +336,7 @@ void CLibEzspMain::handleFirmwareXModemXfr()
     exit(0);
 }
 
-void CLibEzspMain::handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	uint8_t ezspProtocolVersion;
 	uint8_t ezspStackType;
@@ -416,7 +416,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(std::vector<uint8_t> i_msg_receiv
 	}
 }
 
-void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive)
 {
     std::stringstream bufDump;
     for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
@@ -445,7 +445,7 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(std::vector<uint8_t> i
     stackInit();
 }
 
-void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if (this->getState() != CLibEzspInternalState::STACK_INIT)
 	{
@@ -476,7 +476,7 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(std::vector<uint8_t> i_msg_
 	}
 }
 
-void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(const NSSPI::ByteBuffer& i_msg_receive)
 {
     if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
     {
@@ -489,7 +489,7 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(std::ve
     }
 }
 
-void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	EEmberStatus status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 	/* We handle EZSP_STACK_STATUS_HANDLER only if we are not currently leaving network.
@@ -531,7 +531,7 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(std::vector<uint8_t>
 	}
 }
 
-void CLibEzspMain::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive)
 {
     clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 

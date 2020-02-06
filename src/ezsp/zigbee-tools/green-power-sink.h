@@ -188,13 +188,13 @@ private:
      * @param i_use_cca Whether to use ClearChannelAssessment when transmitting the GPDF.
      * @param i_gp_addr The Address of the destination GPD.
      * @param i_gpd_command_id The GPD command ID to send.
-     * @param i_gpd_command_payload The GP command payload.
+     * @param[in] i_gpd_command_payload The GP command payload.
      * @param i_life_time_ms How long to keep the GPDF in the TX Queue.
      * @param i_handle An handle value for this frame, use to identify in sent callback.
      *
      */
     void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
-                    uint8_t i_gpd_command_id, NSSPI::ByteBuffer i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
+                    uint8_t i_gpd_command_id, const NSSPI::ByteBuffer& i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
 
     /**
      * @brief Remove an entry in sink table
@@ -216,71 +216,71 @@ private:
 
     /**
      * @brief Handle an incoming GET_NETWORK_PARAMETERS EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_GET_NETWORK_PARAMETERS(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_GET_NETWORK_PARAMETERS(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming EZSP message related to the Green Power endpoint with no GPD security
-     * @param gpf The Green Power frame
+     * @param[in] gpf The Green Power frame
      */
-    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame& gpf);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGpFrame& gpf);
 
     /**
      * @brief Handle an incoming EZSP message related to the Green Power endpoint with GPD security
-     * @param gpf The Green Power frame
+     * @param[in] gpf The Green Power frame
      */
-    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gpf);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFrame& gpf);
 
     /**
      * @brief Handle an incoming EZSP message related to the Green Power endpoint
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      *
      * @note This method will then dispatch to either handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY() or handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY()
      */
-    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_FIND_OR_ALLOCATE_ENTRY EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_LOOKUP EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_LOOKUP(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_GET_ENTRY EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_GET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming SINK_TABLE_SET_ENTRY EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_SINK_TABLE_SET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_LOOKUP EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_LOOKUP(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_GET_ENTRY EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive);
 
     /**
      * @brief Handle an incoming PROXY_TABLE_PROCESS_GP_PAIRING EZSP message
-     * @param i_msg_receive The incoming EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
      */
-    void handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(NSSPI::ByteBuffer i_msg_receive);
+    void handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(const NSSPI::ByteBuffer& i_msg_receive);
 
 private:
     CEzspDongle &dongle; /*!< The EZSP adapter used to send/receive EZSP commands */

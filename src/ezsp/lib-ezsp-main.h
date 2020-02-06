@@ -167,11 +167,35 @@ private:
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
-	void handleEzspRxMessage_VERSION(NSSPI::ByteBuffer i_msg_receive );
-	void handleEzspRxMessage_EZSP_GET_XNCP_INFO(NSSPI::ByteBuffer i_msg_receive );
-	void handleEzspRxMessage_NETWORK_STATE(NSSPI::ByteBuffer i_msg_receive );
-	void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(NSSPI::ByteBuffer i_msg_receive );
-	void handleEzspRxMessage_STACK_STATUS_HANDLER(NSSPI::ByteBuffer i_msg_receive );
+    /**
+     * @brief Handle an incoming VERSION EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming EZSP_GET_XNCP_INFO EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming NETWORK_STATE EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming EZSP_LAUNCH_STANDALONE_BOOTLOADER EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming STACK_STATUS_HANDLER EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuffer& i_msg_receive);
 };
 
 } // namespace NSEZSP

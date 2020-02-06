@@ -26,13 +26,13 @@ public:
     void SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg );
 
     /**
-     * @brief SendSpecificCommand : Permit to send a ZDO unicast command
-     * @param i_node_id     : short address of destination
-     * @param i_cmd_id      : command
-     * @param payload       : payload of command
+     * @brief Send a ZDO unicast command
+     * @param i_node_id Short address of destination
+     * @param i_cmd_id Command
+     * @param[in] payload Payload for the ZDO unicast
      * @return true if message can be send
      */
-    void SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, NSSPI::ByteBuffer payload );
+    void SendZDOCommand( EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload );
 
     /**
      * Observer

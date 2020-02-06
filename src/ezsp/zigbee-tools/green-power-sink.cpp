@@ -135,7 +135,7 @@ void CGpSink::closeCommissioningSession()
     setSinkState(SINK_READY);
 }
 
-bool CGpSink::registerGpds( const std::vector<CGpDevice> &gpd )
+bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
 {
     if( SINK_READY != sink_state ) {
         return false;
@@ -170,7 +170,7 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
     return true;
 }
 
-void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	CGetNetworkParametersResponse l_rsp(i_msg_receive);
 	if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() )
@@ -179,7 +179,7 @@ void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(std::vector<uint8_t> i_
 	}
 }
 
-void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame& gpf)
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGpFrame& gpf)
 {
 	// do action only if we are in commissioning mode
 	if( SINK_COM_OPEN == sink_state )
@@ -202,18 +202,16 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(CGpFrame&
 		uint8_t l_next_channel_attempt = static_cast<uint8_t>(gpf.getPayload().at(0)&0x0F);
 		if( l_next_channel_attempt == (nwk_parameters.getRadioChannel()-11U) )
 		{
-			// send hannel configuration with timeout of 500ms
+			// send channel configuration with timeout of 500ms
 			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-			std::vector<uint8_t> l_payload;
-			l_payload.push_back(0x10|l_next_channel_attempt);
-			gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 2000 );
+			gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10|l_next_channel_attempt) }, 2000);
 
 			// \todo is it necessary to let SINK open for commissioning ?
 		}
 	}
 }
 
-void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gpf)
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFrame& gpf)
 {
 	// manage channel request
 	if( (GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId()) && (gpf.getPayload().size() > 6) )
@@ -241,12 +239,11 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gp
 			// response on same channel, attribute contain device_id of gpd
 			// \todo use to update sink table entry
 
-			// send hannel configuration with timeout of 1000ms
+			// send channel configuration with timeout of 1000ms
 			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-			std::vector<uint8_t> l_payload;
-			l_payload.push_back(static_cast<uint8_t>(0x10|((nwk_parameters.getRadioChannel()-11U)&0x0F)));
-			gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION,l_payload, 1000, l_handle_counter );
-			gpd_send_list.insert({l_handle_counter++,gpf.getSourceId()});
+			uint8_t channelSpec = nwk_parameters.getRadioChannel() - 11U;
+			gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelSpec) }, 1000, l_handle_counter );
+			gpd_send_list.insert({ l_handle_counter++, gpf.getSourceId() });
 		}
 	}
 
@@ -254,7 +251,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(CGpFrame& gp
 	notifyObserversOfRxGpFrame( gpf );
 }
 
-void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
@@ -297,7 +294,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(std::vector<uint8_t> 
 	}
 }
 
-void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if( SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
 	{
@@ -320,7 +317,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(std::vector<
 	}
 }
 
-void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
 	{
@@ -335,7 +332,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(std::vector<uint8_t> i_msg_r
 	}
 }
 
-void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 	CEmberGpSinkTableEntryStruct l_entry({i_msg_receive.begin()+1,i_msg_receive.end()});
@@ -394,7 +391,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(std::vector<uint8_t> i_ms
 	sink_table_entry = l_entry;
 }
 
-void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if( (SINK_COM_IN_PROGRESS == sink_state) || (SINK_COM_OFFLINE_IN_PROGRESS == sink_state) )
 	{
@@ -420,7 +417,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(std::vector<uint8_t> i_ms
 	}
 }
 
-void CGpSink::handleEzspRxMessage_PROXY_TABLE_LOOKUP(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
 	{
@@ -445,7 +442,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_LOOKUP(std::vector<uint8_t> i_msg_
 	}
 }
 
-void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if( SINK_CLEAR_ALL == sink_state )
 	{
@@ -453,7 +450,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_m
 		if( EMBER_SUCCESS == l_status )
 		{
 			// do remove action
-			CEmberGpProxyTableEntryStruct l_entry(std::vector<uint8_t>(i_msg_receive.begin()+1,i_msg_receive.end()));
+			CEmberGpProxyTableEntryStruct l_entry(NSSPI::ByteBuffer(i_msg_receive.begin()+1,i_msg_receive.end()));
 			CProcessGpPairingParam l_param(l_entry.getGpdAddress().getSourceId());
 			gpProxyTableProcessGpPairing(l_param);
 		}
@@ -467,7 +464,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(std::vector<uint8_t> i_m
 	}
 }
 
-void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uint8_t> i_msg_receive)
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(const NSSPI::ByteBuffer& i_msg_receive)
 {
 	if( SINK_COM_IN_PROGRESS == sink_state )
 	{
@@ -505,7 +502,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(std::vector<uin
 	}
 }
 
-void CGpSink::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive)
 {
     switch( i_cmd )
     {
@@ -654,7 +651,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option)
     // assume we are coordinator of network and our nodeId is 0
 
     CZigBeeMsg l_gp_comm_msg;
-    std::vector<uint8_t> l_gp_comm_payload;
+    NSSPI::ByteBuffer l_gp_comm_payload;
 
     // options:
     // bit0 (Action) : 0b1 / request to enter commissioning mode
@@ -687,7 +684,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option)
 /*
 void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_seq_number )
 {
-    std::vector<uint8_t> l_proxy_br_payload;
+    NSSPI::ByteBuffer l_proxy_br_payload;
 
     // The source from which to send the broadcast
     l_proxy_br_payload.push_back(u16_get_lo_u8(i_gpd_src_id));
@@ -704,7 +701,7 @@ void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_se
     CAPSFrame l_aps;
     l_aps.SetDefaultAPS(GP_PROFILE_ID,GP_CLUSTER_ID,GP_ENDPOINT);
     l_aps.src_ep = GP_ENDPOINT;
-    std::vector<uint8_t> l_ember_aps = l_aps.GetEmberAPS();
+    NSSPI::ByteBuffer l_ember_aps = l_aps.GetEmberAPS();
     l_proxy_br_payload.insert(l_proxy_br_payload.end(), l_ember_aps.begin(), l_ember_aps.end());
 
     // The message will be delivered to all nodes within radius hops of the sender. A radius of zero is converted to EMBER_MAX_HOPS.
@@ -774,7 +771,7 @@ void CGpSink::gpBrCommissioningNotification( uint32_t i_gpd_src_id, uint8_t i_se
 /*
 void CAppDemo::ezspGetExtendedValue( uint8_t i_value_id, uint32_t i_characteristic )
 {
-    std::vector<uint8_t> l_payload;
+    NSSPI::ByteBuffer l_payload;
 
     // Identifies which extended value ID to read.
     l_payload.push_back(i_value_id);
@@ -793,7 +790,7 @@ void CAppDemo::ezspGetExtendedValue( uint8_t i_value_id, uint32_t i_characterist
 /*
 void CAppDemo::gpSinkTableLookup( uint32_t i_src_id )
 {
-    std::vector<uint8_t> l_payload;
+    NSSPI::ByteBuffer l_payload;
 
     // EmberGpAddress addr The address to search for.
     l_payload.push_back(0x00);
@@ -851,7 +848,7 @@ void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param )
 }
 
 void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
-                uint8_t i_gpd_command_id, std::vector<uint8_t> i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle )
+                uint8_t i_gpd_command_id, const NSSPI::ByteBuffer& i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle )
 {
     NSSPI::ByteBuffer l_payload;
 

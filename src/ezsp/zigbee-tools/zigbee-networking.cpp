@@ -29,7 +29,7 @@ CZigbeeNetworking::CZigbeeNetworking( CEzspDongle &i_dongle, CZigbeeMessaging &i
     dongle.registerObserver(this);
 }
 
-void CZigbeeNetworking::handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive )
+void CZigbeeNetworking::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive)
 {
     // clogD << "CZigbeeNetworking::handleEzspRxMessage : " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
 

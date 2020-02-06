@@ -13,7 +13,7 @@
 
 using NSEZSP::CEmberChildDataStruct;
 
-CEmberChildDataStruct::CEmberChildDataStruct(const std::vector<uint8_t>& raw_message) :
+CEmberChildDataStruct::CEmberChildDataStruct(const NSSPI::ByteBuffer& raw_message) :
 	eui64(),
 	type(static_cast<EmberNodeType>(raw_message.at(EMBER_EUI64_BYTE_SIZE))),
 	id(static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(EMBER_EUI64_BYTE_SIZE+2), raw_message.at(EMBER_EUI64_BYTE_SIZE+1)))),

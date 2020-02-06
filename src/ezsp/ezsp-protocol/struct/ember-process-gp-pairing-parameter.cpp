@@ -44,9 +44,9 @@ CProcessGpPairingParam::CProcessGpPairingParam(CEmberGpSinkTableEntryStruct i_si
 }
 
 
-std::vector<uint8_t> CProcessGpPairingParam::get() const
+NSSPI::ByteBuffer CProcessGpPairingParam::get() const
 {
-    std::vector<uint8_t> lo_out;
+    NSSPI::ByteBuffer lo_out;
 
     // The options field of the GP Pairing command
     uint32_t l_option = options.get();
@@ -55,7 +55,7 @@ std::vector<uint8_t> CProcessGpPairingParam::get() const
     lo_out.push_back(u32_get_byte2(l_option));
     lo_out.push_back(u32_get_byte3(l_option));
     // The addressing info of the target GPD.
-    std::vector<uint8_t> l_gpd_addr = addr.getRaw();
+    NSSPI::ByteBuffer l_gpd_addr = addr.getRaw();
     lo_out.insert(lo_out.end(),l_gpd_addr.begin(),l_gpd_addr.end());
     // The communication mode of the GP Sink.
     lo_out.push_back(commMode);

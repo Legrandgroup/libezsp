@@ -10,7 +10,7 @@
 
 using NSEZSP::CGetNetworkParametersResponse;
 
-CGetNetworkParametersResponse::CGetNetworkParametersResponse(const std::vector<uint8_t>& raw_message) :
+CGetNetworkParametersResponse::CGetNetworkParametersResponse(const NSSPI::ByteBuffer& raw_message) :
 	status(static_cast<EEmberStatus>(raw_message.at(0))),
 	node_type(static_cast<EmberNodeType>(raw_message.at(1))),
 	parameters(raw_message,2)

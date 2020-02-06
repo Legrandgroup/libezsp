@@ -18,7 +18,7 @@ CEmberGpAddressStruct::CEmberGpAddressStruct():
 {
 }
 
-CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message):
+CEmberGpAddressStruct::CEmberGpAddressStruct(const NSSPI::ByteBuffer& raw_message):
 	gpdIeeeAddress(raw_message.begin()+1,raw_message.begin()+1+EMBER_EUI64_BYTE_SIZE),
 	applicationId(raw_message.at(0)),
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
@@ -40,9 +40,9 @@ CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
 {
 }
 
-std::vector<uint8_t> CEmberGpAddressStruct::getRaw() const
+NSSPI::ByteBuffer CEmberGpAddressStruct::getRaw() const
 {
-    std::vector<uint8_t> lo_raw;
+    NSSPI::ByteBuffer lo_raw;
 
     // application Id
     lo_raw.push_back(applicationId);
