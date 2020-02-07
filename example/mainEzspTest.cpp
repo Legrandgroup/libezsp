@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
                 break;
             case 'h':
                 writeUsage(argv[0], stdout);
-                return 1;
+                return 0;
             case '?':
             default:
                 std::cerr << "Unsupported command-line option. Exitting\n";

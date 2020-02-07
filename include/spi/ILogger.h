@@ -182,7 +182,7 @@ protected:
 	/**
 	 * @brief Receive one character of an output stream
 	 *
-	 * This method is --purely-- virtual and should be overridden by inheriting classes defining a concrete implementation
+	 * This method should be overridden by inheriting classes defining a concrete implementation
 	 *
 	 * @note This is the method allowing to implement an ostream out of this class
 	 * @note This method is implemented in streambuf and should not be purely virtual
