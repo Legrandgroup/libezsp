@@ -292,7 +292,7 @@ bool CLibEzspMain::clearAllGPDevices()
     return true;
 }
 
-bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
+bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 {
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
