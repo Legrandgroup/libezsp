@@ -17,7 +17,7 @@ using NSSPI::MockUartDriver;
 using NSSPI::MockUartScheduledByteDelivery;
 using NSSPI::GenericAsyncDataInputObservable;
 
-MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const NSSPI:ByteBuffer& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
+MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const NSSPI::ByteBuffer& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
 delay(scheduleDelay),
 byteBuffer(scheduledBuffer) { }
 
@@ -128,7 +128,7 @@ std::string MockUartDriver::scheduledIncomingChunksToString() {
 		if (result.str().length() != 0 )	/* result string is not empty (discarding the leading '[') */
 			result << ", ";	/* Add a separator */
 		nextChunk = scheduledReadQueueCopy.front();
-		NSSPI:ByteBuffer bytes(nextChunk.byteBuffer);
+		NSSPI::ByteBuffer bytes(nextChunk.byteBuffer);
 		for(auto it = bytes.begin(); it!=bytes.end(); ++it) {
 			if (it != bytes.begin())
 				result << " ";
