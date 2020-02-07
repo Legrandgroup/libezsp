@@ -107,6 +107,24 @@ public:
     bool addGPDevices(const std::vector<CGpDevice> &gpDevicesList);
 
     /**
+     * @brief Open a Green Power commissionning session
+     * 
+     * After invoking this method, we will accept new Green Power Devices to become bound to us
+     *
+     * @return true if the action is going to be run in the background, false if the sink is busy
+     */
+    bool openCommissioningSession();
+
+    /**
+     * @brief Close a Green Power commissionning session
+     * 
+     * If the commissionning session was previously opened openCommissioningSession(), ater invoking this method, we will not accept new Green Power Devices anymore
+     *
+     * @return true if the action is accepted, false if the sink is busy
+     */
+    bool closeCommissioningSession();
+
+    /**
      * @brief Controls the answer to request channel messages sent by GP devices
      *
      * @param allowed Set to true if answers to request channel is allowed

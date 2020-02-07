@@ -320,6 +320,24 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
     return true;
 }
 
+bool CLibEzspMain::openCommissioningSession()
+{
+    if (this->getState() != CLibEzspInternalState::READY) {
+        return false;
+    }
+    this->gp_sink.openCommissioningSession();
+    return true;
+}
+
+bool CLibEzspMain::closeCommissioningSession()
+{
+    if (this->getState() != CLibEzspInternalState::READY) {
+        return false;
+    }
+    gp_sink.closeCommissioningSession();
+    return true;
+}
+
 void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
 {
     this->gp_sink.authorizeAnswerToGpfChannelRqst(allowed);

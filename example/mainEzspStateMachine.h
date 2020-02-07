@@ -160,26 +160,24 @@ public:
                       this->currentState == MainState::REMOVE_ALL_GPD ||
                       this->currentState == MainState::REMOVE_SPECIFIC_GPD ||
                       this->currentState == MainState::ADD_GPD) &&
-                     this->openGpCommissionningAtStartup) {    /* Once init is done or optional GPD remove and addition has been done... */
-                clogI << "Opening GP commisionning session\n";
-                clogE << "Not implemented yet\n";
-                throw(std::string("GP commisionning: Not implemented yet"));
-                //libEzsp.getSink().openCommissioningSession();  /* FIXME: should not directly invoke methods on sink */
-            }
-            else if ((this->currentState == MainState::INIT_PENDING ||
-                      this->currentState == MainState::REMOVE_ALL_GPD ||
-                      this->currentState == MainState::REMOVE_SPECIFIC_GPD ||
-                      this->currentState == MainState::ADD_GPD) &&
-                     (this->channelRequestAnswerTimeoutAtStartup != 0)) {    /* Once init is done or optional GPD remove and addition has been done... */
-                clogI << "Opening GP channel request window for " << std::dec << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
-                libEzsp.setAnswerToGpfChannelRqstPolicy(true);
-                // start timer
-                this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
-                             [this](NSSPI::ITimer *timer) {
-                                 clogI << "Closing GP channel request window\n";
-                                 this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
-                             }
-                            );
+                     (this->channelRequestAnswerTimeoutAtStartup != 0 ||
+                      this->openGpCommissionningAtStartup)) {    /* Once init is done or optional GPD remove and addition has been done... */
+                if (this->openGpCommissionningAtStartup) {
+                    clogI << "Opening GP commisionning session\n";
+                    libEzsp.openCommissioningSession();
+                }
+                if (this->channelRequestAnswerTimeoutAtStartup != 0) {
+                    clogI << "Opening GP channel request window for " << std::dec << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
+                    libEzsp.setAnswerToGpfChannelRqstPolicy(true);
+                    // start timer
+                    this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
+                                [this](NSSPI::ITimer *timer) {
+                                    clogI << "Closing GP channel request window\n";
+                                    this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
+                                }
+                                );
+                }
+
                 this->currentState = MainState::SCAN_CHANNELS;
 
                 auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {

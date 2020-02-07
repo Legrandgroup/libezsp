@@ -48,6 +48,16 @@ bool CEzsp::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 	return main->addGPDevices(gpDevicesList);
 }
 
+bool CEzsp::openCommissioningSession()
+{
+	return main->openCommissioningSession();
+}
+
+bool CEzsp::closeCommissioningSession()
+{
+	return main->closeCommissioningSession();
+}
+
 void CEzsp::setAnswerToGpfChannelRqstPolicy(bool allowed)
 {
 	main->setAnswerToGpfChannelRqstPolicy(allowed);
