@@ -66,9 +66,9 @@ class CEmberGpSinkTableEntryStruct
                         uint8_t i_security_option, EmberGpSecurityFrameCounter i_frm_counter, EmberKeyData i_gpd_key);
 
         /**
-         * @brief return structure as a raw
+         * @brief Return the representation of this structure as a raw byte bffer
          *
-         * @return raw of structure
+         * @return A byte buffer
          */
         NSSPI::ByteBuffer getRaw() const;
 
