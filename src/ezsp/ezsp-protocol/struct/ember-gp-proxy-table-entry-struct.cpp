@@ -11,12 +11,14 @@
 
 #include "ezsp/byte-manip.h"
 
+using NSEZSP::CEmberGpProxyTableEntryStruct;
+
 /** \todo Verify value !!! */
-CEmberGpProxyTableEntryStruct::CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message) :
+CEmberGpProxyTableEntryStruct::CEmberGpProxyTableEntryStruct(const NSSPI::ByteBuffer& raw_message) :
         /*security_link_key(raw_message.begin(),raw_message.begin()+EMBER_KEY_DATA_BYTE_SIZE),*/
         status(raw_message.at(0)),
         options(quad_u8_to_u32(raw_message.at(4),raw_message.at(3),raw_message.at(2),raw_message.at(1))),
-        gpd(std::vector<uint8_t>(raw_message.begin()+5,raw_message.end())),
+        gpd(NSSPI::ByteBuffer(raw_message.begin()+5,raw_message.end())),
         assigned_alias(dble_u8_to_u16(raw_message.at(16),raw_message.at(15))),
         security_options(raw_message.at(17)),
         gpdSecurityFrameCounter(static_cast<EmberGpSecurityFrameCounter>(quad_u8_to_u32(raw_message.at(21),raw_message.at(20),raw_message.at(19),raw_message.at(18)))),

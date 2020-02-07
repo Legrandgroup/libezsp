@@ -6,6 +6,8 @@
 
 #include "green-power-sink-table-entry.h"
 
+using NSEZSP::CGpSinkTableEntry;
+
 CGpSinkTableEntry::CGpSinkTableEntry(uint32_t i_source_id) :
     application_id(E_GPD_APPLICATION_SOURCE_ID),
     source_id(i_source_id)

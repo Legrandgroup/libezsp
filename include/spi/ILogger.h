@@ -32,23 +32,23 @@
 /**
  * @brief Generic logger getter (uses debug level)
  */
-#define plog Logger::getInstance().debugLogger.log
+#define plog Logger::getInstance()->debugLogger.logf
 /**
  * @brief Error logger getter
  */
-#define plogE Logger::getInstance().errorLogger.log
+#define plogE Logger::getInstance()->errorLogger.logf
 /**
  * @brief Warning logger getter
  */
-#define plogW Logger::getInstance().warningLogger.log
+#define plogW Logger::getInstance()->warningLogger.logf
 /**
  * @brief Info logger getter
  */
-#define plogI Logger::getInstance().infoLogger.log
+#define plogI Logger::getInstance()->infoLogger.logf
 /**
  * @brief Debug logger getter
  */
-#define plogD Logger::getInstance().debugLogger.log
+#define plogD Logger::getInstance()->debugLogger.logf
 /** @} */
 
 /* Note: we are not using pragma once here because we want the defines above to be applied even if include is done multiple times
@@ -67,6 +67,10 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+#include "spi/Logger.h"
+
+namespace NSSPI {
 
 /**
  * @brief Log level description
@@ -131,7 +135,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ILoggerStream() { }
+	virtual ~ILoggerStream() = default;
 
 	/**
 	 * @brief Mute this logger output (whatever max log level has been setup)
@@ -172,21 +176,22 @@ public:
 	 *
 	 * @param format The format to use
 	 */
-	virtual void log(const char *format, ...) = 0;
+	virtual void logf(const char *format, ...) = 0;
 
 protected:
 	/**
 	 * @brief Receive one character of an output stream
 	 *
-	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
+	 * This method should be overridden by inheriting classes defining a concrete implementation
 	 *
 	 * @note This is the method allowing to implement an ostream out of this class
+	 * @note This method is implemented in streambuf and should not be purely virtual
 	 *
 	 * @param c The new character
 	 *
 	 * @return The character that has actually been printed out to the log
 	 */
-	virtual int overflow(int c) = 0;
+	virtual int overflow(int c) { return c; };
 
 protected:
 	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger, set at construction, then must not be modified anymore */
@@ -229,7 +234,8 @@ protected:
  * @endcode
  */
 class ILogger {
-protected:
+public:
+
 	/**
 	 * @brief Constructor
 	 *
@@ -251,7 +257,7 @@ protected:
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ILogger() { }
+	virtual ~ILogger() = default;
 
 	/**
 	 * @brief Copy constructor
@@ -260,7 +266,6 @@ protected:
 	 */
 	ILogger(const ILogger& other) = delete;
 
-public:
 	/**
 	 * @brief Set logging level
 	 *
@@ -289,19 +294,19 @@ public:
 		va_start(args, format);
 		switch (logLevel) {
 		case LOG_LEVEL::ERROR:
-			this->errorLogger.log(format, args);
+			this->errorLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::WARNING:
-			this->warningLogger.log(format, args);
+			this->warningLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::INFO:
-			this->infoLogger.log(format, args);
+			this->infoLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::DEBUG:
-			this->debugLogger.log(format, args);
+			this->debugLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::TRACE:
-			this->traceLogger.log(format, args);
+			this->traceLogger.logf(format, args);
 			break;
 		}
 		va_end(args);
@@ -318,6 +323,8 @@ public:
 	static std::ostream loggerDebugStream;	/*!< A global debug ostream */
 	static std::ostream loggerTraceStream;	/*!< A global trace ostream */
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
@@ -343,25 +350,21 @@ public:
  */
 
 /**
- * @brief Generic logger getter (uses debug level)
- */
-#define clog ILogger::loggerDebugStream
-/**
  * @brief Error logger getter
  */
-#define clogE ILogger::loggerErrorStream
+#define clogE NSSPI::ILogger::loggerErrorStream
 /**
  * @brief Warning logger getter
  */
-#define clogW ILogger::loggerWarningStream
+#define clogW NSSPI::ILogger::loggerWarningStream
 /**
  * @brief Info logger getter
  */
-#define clogI ILogger::loggerInfoStream
+#define clogI NSSPI::ILogger::loggerInfoStream
 /**
  * @brief Debug logger getter
  */
-#define clogD ILogger::loggerDebugStream
+#define clogD NSSPI::ILogger::loggerDebugStream
 /** @} */
 
 #endif // __ILOGGER_H__

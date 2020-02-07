@@ -24,6 +24,7 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+namespace NSEZSP {
 
 class CEmberGpSinkTableOption
 {
@@ -34,34 +35,9 @@ class CEmberGpSinkTableOption
         CEmberGpSinkTableOption();
 
         /**
-         * @brief Copy constructor
-         *
-         * @param other The object to copy from
-         */
-        CEmberGpSinkTableOption(const CEmberGpSinkTableOption& other);
-
-        /**
-         * @brief Assignment operator
-         *
-         * @param other The object to assign from
-         */
-        CEmberGpSinkTableOption& operator=( CEmberGpSinkTableOption other);
-
-        /**
-         * @brief swap function to allow implementing of copy-and-swap idiom on members of type CEmberGpSinkTableOption
-         *
-         * This function will swap all attributes of \p first and \p second
-         * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-         *
-         * @param first The first object
-         * @param second The second object
-         */
-        friend void (::swap)(CEmberGpSinkTableOption& first, CEmberGpSinkTableOption& second);
-
-        /**
          * @brief raw constructor
          */
-        CEmberGpSinkTableOption(const uint16_t i_options);
+        explicit CEmberGpSinkTableOption(const uint16_t i_options);
 
         /**
          * @brief constructor from commissioning payload option and more
@@ -149,7 +125,10 @@ class CEmberGpSinkTableOption
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
+			out << data.String();
+			return out;
+		}
 
     private:
         uint8_t application_id; /*!< The application ID contained in this sink table entry options bit field */
@@ -160,6 +139,8 @@ class CEmberGpSinkTableOption
         bool assigned_alias; /*!< The assigned alias toggle contained in this sink table entry options bit field */
         bool security_use; /*!< The security use toggle contained in this sink table entry options bit field */
 };
+
+} //namespace NSEZSP 
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

@@ -9,6 +9,8 @@
 #include <memory>
 #include "spi/ITimer.h"
 
+namespace NSSPI {
+
 /**
  * @brief Factory class to generate RaritanTimer objects
  */
@@ -16,15 +18,13 @@ class TimerBuilder {
 public:
 	/**
 	 * @brief Constructor
-	 *
-	 * @param eventLoop The current process' Raritan mainloop
 	 */
-	TimerBuilder();
+	TimerBuilder() = default;
 
 	/**
 	 * @brief Destructor
 	 */
-	~TimerBuilder();
+	~TimerBuilder() = default;
 
 	/**
 	 * @brief Create a new timer
@@ -34,5 +34,7 @@ public:
 	std::unique_ptr<ITimer> create() const;
 private:
 };
+
+} // namespace NSSPI
 
 #endif

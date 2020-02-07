@@ -12,12 +12,14 @@
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "ezsp/zbmessage/gp-pairing-command-option-struct.h"
-
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+namespace NSEZSP {
 
 class CProcessGpPairingParam
 {
@@ -26,7 +28,7 @@ class CProcessGpPairingParam
          * @brief Default constructor, to remove a gpd from proxy table
          *
          */
-        CProcessGpPairingParam(uint32_t i_gpd_source_id);
+        explicit CProcessGpPairingParam(uint32_t i_gpd_source_id);
 
         /**
          * @brief Copy constructor
@@ -53,7 +55,7 @@ class CProcessGpPairingParam
          *
          * @return This object represented as a raw byte-buffer
          */
-        std::vector<uint8_t> get() const;
+        NSSPI::ByteBuffer get() const;
 
 
     private:
@@ -68,6 +70,8 @@ class CProcessGpPairingParam
         uint32_t gpdSecurityFrameCounter;       /*!< The gpd security frame counter */
         uint8_t forwardingRadius;       /*!< The forwarding radius */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

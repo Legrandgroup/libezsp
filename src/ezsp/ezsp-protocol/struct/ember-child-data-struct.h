@@ -7,6 +7,9 @@
 #pragma once
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
+
+namespace NSEZSP {
 
 class CEmberChildDataStruct
 {
@@ -23,7 +26,7 @@ class CEmberChildDataStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberChildDataStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberChildDataStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Assignment operator
@@ -97,7 +100,10 @@ class CEmberChildDataStruct
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data);
+        friend std::ostream& operator<< (std::ostream& out, const CEmberChildDataStruct& data){
+            out << data.String();
+            return out;
+        }
 
     private:
         EmberEUI64 eui64; // The EUI64 of the child
@@ -111,3 +117,5 @@ class CEmberChildDataStruct
         uint8_t applicationId; // The GPD Application ID.
         uint8_t endpoint; // The GPD endpoint.
 };
+
+} // namespace NSEZSP

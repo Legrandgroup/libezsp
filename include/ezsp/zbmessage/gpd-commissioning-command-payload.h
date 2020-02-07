@@ -6,31 +6,33 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "spi/ByteBuffer.h"
+
+namespace NSEZSP {
 
 // option bitfield
-#define COM_OPTION_MAC_SEQ_CAPABILITY_BIT       0
-#define COM_OPTION_RX_ON_CAPABILITY_BIT         1
-#define COM_OPTION_APPLICATION_INFORMATION_BIT  2
-#define COM_OPTION_PAN_ID_REQUEST_BIT           4
-#define COM_OPTION_GP_SECURITY_KEY_REQUEST_BIT  5
-#define COM_OPTION_FIXED_LOCATION_BIT           6
-#define COM_OPTION_EXTENDED_OPTION_FIELD_BIT    7
+constexpr int COM_OPTION_MAC_SEQ_CAPABILITY_BIT      = 0;
+constexpr int COM_OPTION_RX_ON_CAPABILITY_BIT        = 1;
+constexpr int COM_OPTION_APPLICATION_INFORMATION_BIT = 2;
+constexpr int COM_OPTION_PAN_ID_REQUEST_BIT          = 4;
+constexpr int COM_OPTION_GP_SECURITY_KEY_REQUEST_BIT = 5;
+constexpr int COM_OPTION_FIXED_LOCATION_BIT          = 6;
+constexpr int COM_OPTION_EXTENDED_OPTION_FIELD_BIT   = 7;
 
 // extend option bitfield
-#define COM_EXT_OPTION_SECURITY_LVL_CAPABILITY_BIT  0
-#define COM_EXT_OPTION_KEY_TYPE_BIT                 2
-#define COM_EXT_OPTION_GPD_KEY_PRESENT_BIT          5
-#define COM_EXT_OPTION_GPD_KEY_ENCRYPTION_BIT       6
-#define COM_EXT_OPTION_GPD_OUT_COUNTER_PRESENT_BIT  7
+constexpr int COM_EXT_OPTION_SECURITY_LVL_CAPABILITY_BIT = 0;
+constexpr int COM_EXT_OPTION_KEY_TYPE_BIT                = 2;
+constexpr int COM_EXT_OPTION_GPD_KEY_PRESENT_BIT         = 5;
+constexpr int COM_EXT_OPTION_GPD_KEY_ENCRYPTION_BIT      = 6;
+constexpr int COM_EXT_OPTION_GPD_OUT_COUNTER_PRESENT_BIT = 7;
 
 // application information bitfield
-#define COM_APP_INFO_MANUFACTURER_ID_PRESENT_BIT    0
-#define COM_APP_INFO_MODEL_ID_PRESENT_BIT           1
-#define COM_APP_INFO_GPD_COMMANDS_PRESENT_BIT       2
-#define COM_APP_INFO_CLUSTER_LIST_PRESENT_BIT       3
+constexpr int COM_APP_INFO_MANUFACTURER_ID_PRESENT_BIT   = 0;
+constexpr int COM_APP_INFO_MODEL_ID_PRESENT_BIT          = 1;
+constexpr int COM_APP_INFO_GPD_COMMANDS_PRESENT_BIT      = 2;
+constexpr int COM_APP_INFO_CLUSTER_LIST_PRESENT_BIT      = 3;
 
 class CGpdCommissioningPayload
 {
@@ -56,7 +58,7 @@ class CGpdCommissioningPayload
          * @param raw_message The buffer to construct from
          * @param i_src_id source id of gpd frame, used to decrypt key
          */
-        CGpdCommissioningPayload(const std::vector<uint8_t>& raw_message, uint32_t i_src_id);
+        CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_message, uint32_t i_src_id);
 
         /**
          * @brief Getter for the enclosed encryption/authentication key
@@ -122,7 +124,10 @@ class CGpdCommissioningPayload
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpdCommissioningPayload& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGpdCommissioningPayload& data){
+            out << data.String();
+            return out;
+        }
 
     private:
         // define in ZigBee document 13-0166, Master List of Green Power Device Definitions, revision 00 or later
@@ -167,3 +172,5 @@ class CGpdCommissioningPayload
         std::vector<uint8_t> gpd_command_list; /*!< The GPD command list contained in this GPD commissioning command */
         std::vector<uint8_t> gpd_cluster_list; /*!< The GPD cluster list contained in this GPD commissioning command */
 };
+
+} //namespace NSEZSP

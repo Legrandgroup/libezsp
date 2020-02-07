@@ -9,13 +9,16 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
-class CGetNetworkParamtersResponse
+namespace NSEZSP {
+
+class CGetNetworkParametersResponse
 {
     public:
         /**
@@ -23,28 +26,28 @@ class CGetNetworkParamtersResponse
          *
          * Construction without arguments is not allowed
          */
-        CGetNetworkParamtersResponse() = delete;
+        CGetNetworkParametersResponse() = delete;
 
         /**
          * @brief Construction from a buffer
          *
          * @param raw_message The buffer to construct from
          */
-        CGetNetworkParamtersResponse(const std::vector<uint8_t>& raw_message);
+        explicit CGetNetworkParametersResponse(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Copy constructor
          *
          * Copy construction is forbidden on this class
          */
-        CGetNetworkParamtersResponse(const CGetNetworkParamtersResponse& other) = delete;
+        CGetNetworkParametersResponse(const CGetNetworkParametersResponse& other) = delete;
 
         /**
          * @brief Assignment operator
          *
          * Assignment is forbidden on this class
          */
-        CGetNetworkParamtersResponse& operator=(const CGetNetworkParamtersResponse& other) = delete;
+        CGetNetworkParametersResponse& operator=(const CGetNetworkParametersResponse& other) = delete;
 
         /**
          * @brief An EmberStatus value indicating success or the reason for failure.
@@ -76,13 +79,19 @@ class CGetNetworkParamtersResponse
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParamtersResponse& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParametersResponse& data){
+          out << data.String();
+          return out;
+        }
+
 
     private:
         EEmberStatus status;
         EmberNodeType node_type;
         CEmberNetworkParameters parameters;
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

@@ -8,8 +8,9 @@
 #include <iomanip>
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
-
 #include "ezsp/byte-manip.h"
+
+using NSEZSP::CEmberGpSinkTableEntryStruct;
 
 CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
         status(0xFF),
@@ -27,10 +28,14 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct():
     sink_list[1].push_back(0xFF);
 }
 
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const std::vector<uint8_t>& raw_message):
+CEmberGpSinkTableEntryStruct::~CEmberGpSinkTableEntryStruct()
+{
+}
+
+CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const NSSPI::ByteBuffer& raw_message):
         status(raw_message.at(0)),
         options(dble_u8_to_u16(raw_message.at(2),raw_message.at(1))),
-        gpd(std::vector<uint8_t>(raw_message.begin()+3,raw_message.end())),
+        gpd(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end())),
         device_id(raw_message.at(13)),
         sink_list(),
         assigned_alias(dble_u8_to_u16(raw_message.at(37),raw_message.at(36))),
@@ -61,52 +66,9 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(EmberGpSinkTableEntry
     sink_list[1].push_back(0xFF);
 }
 
-CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const CEmberGpSinkTableEntryStruct& other):
-        status(other.status),
-        options(other.options),
-        gpd(other.gpd),
-        device_id(other.device_id),
-        sink_list(other.sink_list),
-        assigned_alias(other.assigned_alias),
-        groupcast_radius(other.groupcast_radius),
-        security_options(other.security_options),
-        gpdSecurity_frame_counter(other.gpdSecurity_frame_counter),
-        gpd_key(other.gpd_key)
+NSSPI::ByteBuffer CEmberGpSinkTableEntryStruct::getRaw() const
 {
-
-}
-
-
-/**
- * This method is a friend of CEmberGpSinkTableEntryStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpSinkTableEntryStruct& first, CEmberGpSinkTableEntryStruct& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.status, second.status);
-  swap(first.options, second.options);
-  swap(first.gpd, second.gpd);
-  swap(first.device_id, second.device_id);
-  swap(first.sink_list, second.sink_list);
-  swap(first.assigned_alias, second.assigned_alias);
-  swap(first.groupcast_radius, second.groupcast_radius);
-  swap(first.security_options, second.security_options);
-  swap(first.gpdSecurity_frame_counter, second.gpdSecurity_frame_counter);
-  swap(first.gpd_key, second.gpd_key);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberGpSinkTableEntryStruct& CEmberGpSinkTableEntryStruct::operator=(CEmberGpSinkTableEntryStruct other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
-{
-    std::vector<uint8_t> l_struct;
+    NSSPI::ByteBuffer l_struct;
 
     // Internal status of the sink table entry.
     l_struct.push_back(status); // 0x01 : active, 0xff : disable
@@ -114,7 +76,7 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
     l_struct.push_back(u16_get_lo_u8(options.get()));
     l_struct.push_back(u16_get_hi_u8(options.get()));
     // The addressing info of the GPD.
-    std::vector<uint8_t> l_addr = gpd.getRaw();
+    NSSPI::ByteBuffer l_addr = gpd.getRaw();
     l_struct.insert(l_struct.end(), l_addr.begin(), l_addr.end());
     // The device id for the GPD.
     l_struct.push_back(device_id);
@@ -131,10 +93,10 @@ std::vector<uint8_t> CEmberGpSinkTableEntryStruct::getRaw() const
     // The security options field.
     l_struct.push_back(security_options);
     // The security frame counter of the GPD.
-    l_struct.push_back(static_cast<uint8_t>(gpdSecurity_frame_counter&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>8)&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>16)&0xFF));
-    l_struct.push_back(static_cast<uint8_t>((gpdSecurity_frame_counter>>24)&0xFF));
+    l_struct.push_back(u32_get_byte0(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte1(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte2(gpdSecurity_frame_counter));
+    l_struct.push_back(u32_get_byte3(gpdSecurity_frame_counter));
 
     // The key to use for GPD.
     l_struct.insert(l_struct.end(), gpd_key.begin(), gpd_key.end());
@@ -168,9 +130,4 @@ std::string CEmberGpSinkTableEntryStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableEntryStruct& data){
-    out << data.String();
-    return out;
 }

@@ -1,12 +1,16 @@
 /**
+ * @file ember-network-parameters.cpp
  *
+ * @brief Ember network parameters encoder as used as payload for EZSP command 0x1E (formNetwork)
  */
+
 #include <sstream>
 #include <iomanip>
 
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
-
 #include "ezsp/byte-manip.h"
+
+using NSEZSP::CEmberNetworkParameters;
 
 CEmberNetworkParameters::CEmberNetworkParameters() :
 	extend_pan_id(0),
@@ -20,19 +24,7 @@ CEmberNetworkParameters::CEmberNetworkParameters() :
 {
 }
 
-CEmberNetworkParameters::CEmberNetworkParameters(const CEmberNetworkParameters& other) :
-	extend_pan_id(other.extend_pan_id),
-	pan_id(other.pan_id),
-	radio_tx_power(other.radio_tx_power),
-	radio_channel(other.radio_channel),
-	join_method(other.join_method),
-	nwk_manager_id(other.nwk_manager_id),
-	nwk_update_id(other.nwk_update_id),
-	channels(other.channels)
-{
-}
-
-CEmberNetworkParameters::CEmberNetworkParameters(const std::vector<uint8_t>& raw_message, const std::string::size_type skip) :
+CEmberNetworkParameters::CEmberNetworkParameters(const NSSPI::ByteBuffer& raw_message, const std::string::size_type skip) :
 	extend_pan_id(
 		static_cast<uint64_t>(raw_message.at(0+skip)) |
 		static_cast<uint64_t>(raw_message.at(1+skip))<<8 |
@@ -48,17 +40,13 @@ CEmberNetworkParameters::CEmberNetworkParameters(const std::vector<uint8_t>& raw
 	join_method(static_cast<EmberJoinMethod>(raw_message.at(12+skip))),
 	nwk_manager_id(static_cast<EmberNodeId>(dble_u8_to_u16(raw_message.at(14+skip), raw_message.at(13+skip)))),
 	nwk_update_id(raw_message.at(15+skip)),
-	channels(
-		static_cast<uint32_t>(raw_message.at(16)) |
-		static_cast<uint32_t>(raw_message.at(17))<<8 |
-		static_cast<uint32_t>(raw_message.at(18))<<16 |
-		static_cast<uint32_t>(raw_message.at(19))<<24)
+	channels(quad_u8_to_u32(raw_message.at(19), raw_message.at(18), raw_message.at(17), raw_message.at(16)))
 {
 }
 
-std::vector<uint8_t> CEmberNetworkParameters::getRaw() const
+NSSPI::ByteBuffer CEmberNetworkParameters::getRaw() const
 {
-    std::vector<uint8_t> raw_message;
+    NSSPI::ByteBuffer raw_message;
 
     // extend_pan_id
     raw_message.push_back(static_cast<uint8_t>(extend_pan_id&0xFF));
@@ -85,17 +73,17 @@ std::vector<uint8_t> CEmberNetworkParameters::getRaw() const
     raw_message.push_back(static_cast<uint8_t>(join_method));
 
     // nwk_manager_id
-    raw_message.push_back(static_cast<uint8_t>(nwk_manager_id&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((nwk_manager_id>>8)&0xFF));
+    raw_message.push_back(u16_get_lo_u8(static_cast<uint16_t>(nwk_manager_id)));
+    raw_message.push_back(u16_get_hi_u8(static_cast<uint16_t>(nwk_manager_id)));
 
     // nwk_update_id
     raw_message.push_back(static_cast<uint8_t>(nwk_update_id));
 
     // channels
-    raw_message.push_back(static_cast<uint8_t>(channels&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>8)&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>16)&0xFF));
-    raw_message.push_back(static_cast<uint8_t>((channels>>24)&0xFF));
+    raw_message.push_back(u32_get_byte0(channels));
+    raw_message.push_back(u32_get_byte1(channels));
+    raw_message.push_back(u32_get_byte2(channels));
+    raw_message.push_back(u32_get_byte3(channels));
 
     return raw_message;
 }
@@ -116,33 +104,4 @@ std::string CEmberNetworkParameters::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data){
-    out << data.String();
-    return out;
-}
-
-/**
- * This method is a friend of CEmberNetworkParameters class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) /* nothrow */
-{
-    using std::swap;	// Enable ADL
-
-    swap(first.extend_pan_id, second.extend_pan_id);
-    swap(first.pan_id, second.pan_id);
-    swap(first.radio_tx_power, second.radio_tx_power);
-    swap(first.radio_channel, second.radio_channel);
-    swap(first.join_method, second.join_method);
-    swap(first.nwk_manager_id, second.nwk_manager_id);
-    swap(first.nwk_update_id, second.nwk_update_id);
-    swap(first.channels, second.channels);
-    /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberNetworkParameters& CEmberNetworkParameters::operator=(CEmberNetworkParameters other) {
-    swap(*this, other);
-    return *this;
 }

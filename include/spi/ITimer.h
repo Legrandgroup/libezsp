@@ -16,6 +16,18 @@
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSSPI {
+
+class ITimer;
+
+class ITimerVisitor {
+protected:
+	friend class ITimer;
+	virtual void trigger(ITimer* triggeringTimer) = 0;
+};
+
+using TimerCallback = std::function<void (ITimer* triggeringTimer)>;
+
 /**
  * @brief Abstract class to execute a callback after a given timeout
  */
@@ -24,12 +36,12 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ITimer() : started(false), duration(0) { }
+	ITimer() : duration(0) { }
 
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~ITimer() { }
+	virtual ~ITimer() = default;
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -37,7 +49,18 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	virtual bool start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) = 0;
+	virtual bool start(uint16_t timeout, TimerCallback callBackFunction) = 0;
+
+	/**
+	 * @brief Start a timer, run a callback after expiration of the configured time
+	 *
+	 * @param timeout The timeout (in ms)
+	 * @param visitor The object to call at expiration.
+	 */
+	virtual bool start(uint16_t timeout, ITimerVisitor *visitor) {
+		this->visitor = visitor;
+		return this->start(timeout, trigg);
+	}
 
 	/**
 	 * @brief Stop and reset the timer
@@ -53,12 +76,18 @@ public:
 	 */
 	virtual bool isRunning() = 0;
 
-
 protected:
-	bool started;	/*!< Is the timer currently running */
+	friend class ITimerVisitor;
+	static void trigg(ITimer* triggeringTimer) {
+		triggeringTimer->visitor->trigger(triggeringTimer);
+	}
+
 public:
+	ITimerVisitor *visitor;
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

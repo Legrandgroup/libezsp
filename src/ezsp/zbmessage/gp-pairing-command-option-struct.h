@@ -1,12 +1,12 @@
 /**
  * @file gp-pairing-command-option-struct.h
  *
- * @brief option field of gp pairing command according to A.3.3.5.2 GP Pairing command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
+ * @brief Option field of gp pairing command according to A.3.3.5.2 GP Pairing command from docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
+ 
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h"
 
@@ -14,6 +14,8 @@
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+namespace NSEZSP {
 
 class CGpPairingCommandOption
 {
@@ -130,6 +132,7 @@ class CGpPairingCommandOption
          */
 };
 
+} // namespace NSEZSP
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>
 #endif // USE_RARITAN

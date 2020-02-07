@@ -5,9 +5,21 @@ project(ezsp VERSION 1.0)
 
 configure_file(version.h.in version.h)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -O0 -ggdb")
+
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+
+#add_gcc_compiler_flags("-fvisibility=hidden")
+#add_gcc_compiler_cxxflags("-fvisibility-inlines-hidden")
+
+option(USE_GCOV "Use GCOV coverage profiler" OFF)
+if(USE_GCOV)
+	add_definitions(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
+	link_libraries(--coverage -lgcov -fprofile-arcs)
+endif()
 
 #add_subdirectory(src)
 add_subdirectory(src/ezsp)

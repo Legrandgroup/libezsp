@@ -6,7 +6,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include "ezsp/byte-manip.h"
 #include "ember-gp-address-struct.h"
+
+using NSEZSP::CEmberGpAddressStruct;
 
 CEmberGpAddressStruct::CEmberGpAddressStruct():
 	gpdIeeeAddress({0,0,0,0,0,0,0,0}),
@@ -15,60 +18,31 @@ CEmberGpAddressStruct::CEmberGpAddressStruct():
 {
 }
 
-CEmberGpAddressStruct::CEmberGpAddressStruct(const CEmberGpAddressStruct& other):
-	gpdIeeeAddress(other.getGpdIeeeAddress()),
-	applicationId(other.getApplicationId()),
-	endpoint(other.getEndpoint())
-{
-}
-
-CEmberGpAddressStruct::CEmberGpAddressStruct(const std::vector<uint8_t>& raw_message):
+CEmberGpAddressStruct::CEmberGpAddressStruct(const NSSPI::ByteBuffer& raw_message):
 	gpdIeeeAddress(raw_message.begin()+1,raw_message.begin()+1+EMBER_EUI64_BYTE_SIZE),
 	applicationId(raw_message.at(0)),
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
 {
 }
 
-/**
- * This method is a friend of CEmberGpAddressStruct class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CEmberGpAddressStruct& first, CEmberGpAddressStruct& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.gpdIeeeAddress, second.gpdIeeeAddress);
-  swap(first.applicationId, second.applicationId);
-  swap(first.endpoint, second.endpoint);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CEmberGpAddressStruct& CEmberGpAddressStruct::operator=(CEmberGpAddressStruct other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
-	gpdIeeeAddress(),	/* FIXME */
+	// IEEE address will contain the source ID duplicated twice
+	gpdIeeeAddress({ u32_get_byte0(i_srcId),
+	                 u32_get_byte1(i_srcId),
+	                 u32_get_byte2(i_srcId),
+	                 u32_get_byte3(i_srcId),
+	                 u32_get_byte0(i_srcId),
+	                 u32_get_byte1(i_srcId),
+	                 u32_get_byte2(i_srcId),
+	                 u32_get_byte3(i_srcId) }),
 	applicationId(0),
 	endpoint(0)
 {
-    // update Ieee with twice SourceId
-    gpdIeeeAddress.push_back(static_cast<uint8_t>(i_srcId&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>8)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>16)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>24)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>(i_srcId&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>8)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>16)&0xFF));
-    gpdIeeeAddress.push_back(static_cast<uint8_t>((i_srcId>>24)&0xFF));
 }
 
-std::vector<uint8_t> CEmberGpAddressStruct::getRaw() const
+NSSPI::ByteBuffer CEmberGpAddressStruct::getRaw() const
 {
-    std::vector<uint8_t> lo_raw;
+    NSSPI::ByteBuffer lo_raw;
 
     // application Id
     lo_raw.push_back(applicationId);
@@ -99,9 +73,4 @@ std::string CEmberGpAddressStruct::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CEmberGpAddressStruct& data){
-    out << data.String();
-    return out;
 }

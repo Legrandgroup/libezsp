@@ -8,13 +8,16 @@
 
 #pragma once
 
-#include "GenericAsyncDataInputObservable.h"
 #include <string>
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
+
+namespace NSSPI {
+
+class GenericAsyncDataInputObservable;
 
 /**
  * @brief Abstract class that manipulate UARTs
@@ -25,12 +28,12 @@ public:
 	/**
 	 * @brief Constructor
 	 */
-	IUartDriver() {	}
+	IUartDriver() = default;
 
 	/**
 	 * @brief Destructor
 	 */
-	virtual ~IUartDriver() { }
+	virtual ~IUartDriver() = default;
 
 	/**
 	 * @brief Set the incoming data handler (a derived class of GenericAsyncDataInputObservable) that will notify observers when new bytes are available on the UART
@@ -66,7 +69,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	virtual int write(size_t& writtenCnt, const void* buf, size_t cnt) = 0;
+	virtual int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) = 0;
 
 	/**
 	 * @brief Callback to close the serial port
@@ -75,6 +78,8 @@ public:
 	 */
 	virtual void close() = 0;
 };
+
+} // namespace NSSPI
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

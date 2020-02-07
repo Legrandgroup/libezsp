@@ -8,6 +8,8 @@
 
 #include "ezsp/byte-manip.h"
 
+using NSEZSP::CZCLHeader;
+
 CZCLHeader::CZCLHeader() :
 	frm_ctrl(),
 	manufacturer_code(LG_MAN_CODE),
@@ -25,7 +27,7 @@ CZCLHeader::CZCLHeader() :
  *
  * Total of bytes expected: 5 (if manufacturer code is present) or 3 otherwise
  */
-CZCLHeader::CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx) :
+CZCLHeader::CZCLHeader(const NSSPI::ByteBuffer& i_data, uint8_t& o_idx) :
 	frm_ctrl(i_data.at(0)),
 	manufacturer_code(frm_ctrl.IsManufacturerCodePresent()?dble_u8_to_u16(i_data.at(2), i_data.at(1)):0),
 	transaction_number(frm_ctrl.IsManufacturerCodePresent()?i_data.at(3):i_data.at(1)),
@@ -39,14 +41,6 @@ CZCLHeader::CZCLHeader(const std::vector<uint8_t>& i_data, uint8_t& o_idx) :
   {
     o_idx=3;	/* otherwise, it is 3-bytes long */
   }
-}
-
-CZCLHeader::CZCLHeader(const CZCLHeader& other) :
-	frm_ctrl(other.frm_ctrl),
-	manufacturer_code(other.manufacturer_code),
-	transaction_number(other.transaction_number),
-	cmd_id(other.cmd_id)
-{
 }
 
 /**
@@ -115,9 +109,9 @@ void CZCLHeader::SetPublicGeneral( const uint16_t i_manufacturer_id, const uint8
   manufacturer_code = i_manufacturer_id;
 }
 
-std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
+NSSPI::ByteBuffer CZCLHeader::GetZCLHeader(void) const
 {
-  std::vector<uint8_t> lo_data;
+  NSSPI::ByteBuffer lo_data;
 
   lo_data.push_back(frm_ctrl.GetFrmCtrlByte());
   if( frm_ctrl.IsManufacturerCodePresent() )
@@ -129,25 +123,4 @@ std::vector<uint8_t> CZCLHeader::GetZCLHeader(void) const
   lo_data.push_back(cmd_id);
 
   return lo_data;
-}
-
-/**
- * This method is a friend of CZigBeeMsg class
- * swap() is needed within operator=() to implement to copy and swap paradigm
-**/
-void swap(CZCLHeader& first, CZCLHeader& second) /* nothrow */
-{
-  using std::swap;	// Enable ADL
-
-  swap(first.frm_ctrl, second.frm_ctrl);
-  swap(first.manufacturer_code, second.manufacturer_code);
-  swap(first.transaction_number, second.transaction_number);
-  swap(first.cmd_id, second.cmd_id);
-  /* Once we have swapped the members of the two instances... the two instances have actually been swapped */
-}
-
-CZCLHeader& CZCLHeader::operator=(CZCLHeader other)
-{
-  swap(*this, other);
-  return *this;
 }

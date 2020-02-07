@@ -6,14 +6,16 @@
 
 #pragma once
 
-
-#include "spi/IUartDriver.h"
-#include <vector>
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <chrono>
 #include <functional>
+
+#include "spi/IUartDriver.h"
+#include "spi/ByteBuffer.h"
+
+namespace NSSPI {
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
@@ -23,11 +25,11 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer=std::vector<unsigned char>(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
+	MockUartScheduledByteDelivery(const NSSPI:ByteBuffer& scheduledBuffer=NSSPI:ByteBuffer(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
 
 	/* Member variables */
 	std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
-	std::vector<unsigned char> byteBuffer;	/*!< The content of the emulated bytes */
+	NSSPI:ByteBuffer byteBuffer;	/*!< The content of the emulated bytes */
 };
 
 /**
@@ -35,7 +37,8 @@ public:
  */
 class MockUartDriver : public IUartDriver {
 public:
-	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback;
+	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback; /*!< Callback type provided as argument to out constructor */
+
 	/**
 	 * @brief Default constructor
 	 *
@@ -91,7 +94,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 115200);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -102,7 +105,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Schedule a byte sequence to be ready for read on emulated serial port
@@ -176,3 +179,5 @@ private:
 	size_t deliveredReadBytesCount;	/*!< The cumulative number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer since the instanciation of this object. Grab scheduledReadQueueMutex before accessing this */
 	size_t writtenBytesCount;	/*!< The number of bytes written, as a total sum of the onWriteCallback function's successive writtenCnt returned values */
 };
+
+} // namespace NSSPI

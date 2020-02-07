@@ -8,12 +8,14 @@
 
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
+#include "spi/ByteBuffer.h"
 
 #ifdef USE_RARITAN
 /**** Start of the official API; no includes below this point! ***************/
 #include <pp/official_api_start.h>
 #endif // USE_RARITAN
 
+namespace NSEZSP {
 
 class CEmberGpProxyTableEntryStruct
 {
@@ -30,7 +32,7 @@ class CEmberGpProxyTableEntryStruct
          *
          * @param raw_message The buffer to construct from
          */
-        CEmberGpProxyTableEntryStruct(const std::vector<uint8_t>& raw_message);
+        explicit CEmberGpProxyTableEntryStruct(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Copy constructor
@@ -67,6 +69,8 @@ class CEmberGpProxyTableEntryStruct
         uint8_t groupcast_radius; /*!< The groupcast radius. */
         uint8_t search_counter; /*!< The search counter. */
 };
+
+} // namespace NSEZSP
 
 #ifdef USE_RARITAN
 #include <pp/official_api_end.h>

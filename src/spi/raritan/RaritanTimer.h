@@ -6,9 +6,12 @@
 
 #pragma once
 
-#include "spi/ITimer.h"
-#include "RaritanEventLoop.h"
 #include <pp/Selector.h>
+
+#include "spi/ITimer.h"
+#include "spi/Logger.h"
+
+namespace NSSPI {
 
 /**
  * @brief Concrete implementation of ITimer using the Raritan framework
@@ -23,7 +26,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~RaritanTimer();
+	virtual ~RaritanTimer();
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -36,9 +39,11 @@ public:
 	/**
 	 * @brief Stop and reset the timer
 	 *
+	 * @note When invoking stop(), the callback associated with this timer will not be run
+	 *
 	 * @return true if we actually could stop a running timer
 	 */
-	bool stop();
+	bool stop() final;
 
 	/**
 	 * @brief Is the timer currently running?
@@ -49,6 +54,9 @@ public:
 
 
 private:
+	bool started;	/*!< Is the timer currently running */
 	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };
+
+} // namespace NSSPI

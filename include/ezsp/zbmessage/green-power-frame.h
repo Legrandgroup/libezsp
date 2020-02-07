@@ -6,7 +6,11 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
+
+#include <ezsp/zbmessage/zcl.h>
+#include <spi/ByteBuffer.h>
+
+namespace NSEZSP {
 
 typedef enum
 {
@@ -47,7 +51,7 @@ class CGpFrame
          *
          * @param raw_message The buffer to construct from
          */
-        CGpFrame(const std::vector<uint8_t>& raw_message);
+        explicit CGpFrame(const NSSPI::ByteBuffer& raw_message);
 
         /**
          * @brief Dump this instance as a string
@@ -64,7 +68,10 @@ class CGpFrame
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data);
+        friend std::ostream& operator<< (std::ostream& out, const CGpFrame& data){
+            out << data.String();
+            return out;
+        }
 
         // getter
         uint8_t getLinkValue() const {return link_value;}
@@ -78,7 +85,7 @@ class CGpFrame
         uint8_t getCommandId() const {return command_id;}
         uint32_t getMic() const {return mic;}
         uint8_t getProxyTableEntry() const {return proxy_table_entry;}
-        std::vector<uint8_t> getPayload() const {return payload;}
+        NSSPI::ByteBuffer getPayload() const {return payload;}
 
     private:
         uint8_t link_value;
@@ -92,5 +99,7 @@ class CGpFrame
         uint8_t command_id;
         uint32_t mic;
         uint8_t proxy_table_entry;
-        std::vector<uint8_t> payload;
+        NSSPI::ByteBuffer payload;
 };
+
+} // namespace NSEZSP

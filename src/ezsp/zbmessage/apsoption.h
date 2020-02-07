@@ -7,42 +7,19 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
+namespace NSEZSP {
 
 class CAPSOption; /* Forward declaration */
-void swap(CAPSOption& first, CAPSOption& second); /* Declaration before qualifying ::swap() as friend for class CAPSOption */
+void swap(CAPSOption& first, CAPSOption& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CAPSOption */
 
 class CAPSOption
 {
 public:
+  /**
+   * @brief Default constructor
+   */
   CAPSOption();
-
-  /**
-   * @brief Copy constructor
-   *
-   * @param other The object to copy from
-   */
-  CAPSOption(const CAPSOption& other);
-
-  /**
-   * @brief Assignment operator
-   * @param other The object to assign to the lhs
-   *
-   * @return The object that has been assigned the value of \p other
-   */
-  CAPSOption& operator=(CAPSOption other);
-
-  /**
-   * @brief swap function to allow implementing of copy-and-swap idiom on members of type CAPSOption
-   *
-   * This function will swap all attributes of \p first and \p second
-   * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-   *
-   * @param first The first object
-   * @param second The second object
-   */
-  friend void (::swap)(CAPSOption& first, CAPSOption& second);
 
   // concatenate ember
   uint16_t GetEmberApsOption(void) const;
@@ -81,3 +58,5 @@ public:
   */
   bool zdo_rsp_requiered;
 };
+
+} // namespace NSEZSP

@@ -12,6 +12,8 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 
+using NSEZSP::CGpFrame;
+
 CGpFrame::CGpFrame():
     link_value(0),
     sequence_number(0),
@@ -28,7 +30,7 @@ CGpFrame::CGpFrame():
 {
 }
 
-CGpFrame::CGpFrame(const std::vector<uint8_t>& raw_message):
+CGpFrame::CGpFrame(const NSSPI::ByteBuffer& raw_message):
     link_value(0),
     sequence_number(0),
     source_id(0),
@@ -42,9 +44,8 @@ CGpFrame::CGpFrame(const std::vector<uint8_t>& raw_message):
     proxy_table_entry(0xFF),
     payload()
 {
-    std::vector<uint8_t> l_gp_addr(raw_message.begin()+3,raw_message.end());
 
-    CEmberGpAddressStruct gp_address = CEmberGpAddressStruct(l_gp_addr);
+    CEmberGpAddressStruct gp_address = CEmberGpAddressStruct(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end()));
     /* only sourceId addressing mode is supported */
     if( 0 == gp_address.getApplicationId() )
     {
@@ -88,9 +89,4 @@ std::string CGpFrame::String() const
     buf << " }";
 
     return buf.str();
-}
-
-std::ostream& operator<< (std::ostream& out, const CGpFrame& data){
-    out << data.String();
-    return out;
 }

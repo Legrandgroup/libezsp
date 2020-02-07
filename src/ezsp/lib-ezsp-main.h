@@ -3,32 +3,32 @@
  *
  * @brief Main entry point for drive lib ezsp
  */
- 
+
 #pragma once
+
+#include <map>
 
 #include "spi/IUartDriver.h"
 #include "spi/TimerBuilder.h"
 
+#include <ezsp/ezsp.h>
+#include "ezsp/lib-ezsp-main.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
 #include "ezsp/zbmessage/green-power-device.h"
+#include "spi/ByteBuffer.h"
 
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/green-power-observer.h"
 
 
+namespace NSEZSP {
 /**
- * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
+ * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
  */
-enum class CLibEzspState { 
-    UNINITIALIZED,                      /*<! Initial state, before starting. */
-    READY,                              /*<! Library is ready to work and process new command */
-    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    FW_UPGRADE,                         /*<! Firmware upgrade is in progress */
-};
+enum class CLibEzspInternalState;
 
 /**
  * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
@@ -41,10 +41,6 @@ enum class CLibEzspInternalState;
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
 {
 public:
-    typedef std::function<void (CLibEzspState i_state)> FStateCallback;    /*!< Callback type for method registerLibraryStateCallback() */
-    typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
-    typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback; /*!< Callback type for method registerGPSourceIdCallback() */
-
     /**
      * @brief Default constructor with minimal args to initialize library
      *
@@ -52,30 +48,30 @@ public:
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain(IUartDriver* uartDriver, TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
-    CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */    
+    CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */
 
     /**
      * @brief Register callback on current library state
      *
-     * @param newObsStateCallback A callback function of type void func(CLibEzspState i_state), that will be invoked each time our internal state will change (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
      */
-    void registerLibraryStateCallback(FStateCallback newObsStateCallback);
+    void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 
     /**
      * @brief Register callback to receive all authenticated incoming green power frames
      *
-     * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
+     * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
      */
     void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
     /**
      * @brief Register callback to receive all incoming green power sourceId
      *
-     * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
+     * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable this callback)
      */
     void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
 
@@ -111,24 +107,86 @@ public:
     bool addGPDevices(const std::vector<CGpDevice> &gpDevicesList);
 
     /**
+     * @brief Open a Green Power commissionning session
+     * 
+     * After invoking this method, we will accept new Green Power Devices to become bound to us
+     *
+     * @return true if the action is going to be run in the background, false if the sink is busy
+     */
+    bool openCommissioningSession();
+
+    /**
+     * @brief Close a Green Power commissionning session
+     * 
+     * If the commissionning session was previously opened openCommissioningSession(), ater invoking this method, we will not accept new Green Power Devices anymore
+     *
+     * @return true if the action is accepted, false if the sink is busy
+     */
+    bool closeCommissioningSession();
+
+    /**
      * @brief Controls the answer to request channel messages sent by GP devices
      *
      * @param allowed Set to true if answers to request channel is allowed
      */
     void setAnswerToGpfChannelRqstPolicy(bool allowed);
 
+    /**
+     * @brief Makes initialization timeout trigger a switch to firmware upgrade mode
+     *
+     * Default behaviour for initialization timeouts is to probe the bootloader prompt and if found, to run the EZSP application
+     * in the hope the adapter will move back to EZSP mode
+     */
+    void forceFirmwareUpgradeOnInitTimeout();
+
+    /**
+     * @brief Switch the EZSP adapter to firmware upgrade mode
+     * 
+     * Method handleFirmwareXModemXfr() should then be invoked when the adapter is ready to receive a firmware
+     */
+    void setFirmwareUpgradeMode();
+
+    /**
+     * @brief Start an energy scan on the EZSP adapter
+     * 
+     * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+     * 
+     * @param newObsEnergyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>)> that will be invoked when the energy scan is finished
+     *                                 The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
+     * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+     *
+     * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+     */
+    bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+
+    /**
+     * @brief Select the 802.15.4 channel on which the EZSP adapter works
+     * 
+     * @param channel The 802.15.4 channel (valid values are 11 to 26, inclusive)
+     * 
+     * @return true If the channel could be set
+     */
+    bool setChannel(uint8_t channel);
+
 private:
-    TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
-    uint8_t exp_ezsp_version;   /*!< Expected EZSP version from dongle, at initial state then current version of dongle */
+    NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
+    uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
+    uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
+    uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
+    uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
+    uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
     CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
-    FStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
+    FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEzspDongle dongle; /*!< Dongle manipulation handler */
     CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
     CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
     CGpSink gp_sink;    /*!< Internal Green Power sink utility */
     FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
     FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+    FEnergyScanCallback obsEnergyScanCallback;  /*!< Optional user callback invoked by us each time an energy scan is finished */
     unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
+    bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
+    std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
 
     void setState( CLibEzspInternalState i_new_state );
     CLibEzspInternalState getState() const;
@@ -136,10 +194,49 @@ private:
     void stackInit();
 
     /**
+     * @brief Request the XNCP info by sending a EZSP_GET_XNCP_INFO command
+     */
+    void getXncpInfo();
+
+    /**
      * Oberver handlers
      */
     void handleDongleState( EDongleState i_state );
-    void handleEzspRxMessage( EEzspCmd i_cmd, std::vector<uint8_t> i_msg_receive );
+    void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
+    void handleBootloaderPrompt();
+    void handleFirmwareXModemXfr();
     void handleRxGpFrame( CGpFrame &i_gpf );
     void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
+
+    /**
+     * @brief Handle an incoming VERSION EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming EZSP_GET_XNCP_INFO EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming NETWORK_STATE EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming EZSP_LAUNCH_STANDALONE_BOOTLOADER EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(const NSSPI::ByteBuffer& i_msg_receive);
+
+    /**
+     * @brief Handle an incoming STACK_STATUS_HANDLER EZSP message
+     * @param[in] i_msg_receive The incoming EZSP message
+     */
+    void handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuffer& i_msg_receive);
 };
+
+} // namespace NSEZSP
