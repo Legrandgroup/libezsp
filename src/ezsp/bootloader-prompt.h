@@ -42,7 +42,7 @@ public:
      *
      * @param i_timer_factory Timer builder object used to generate timers
      */
-    CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory);
+    explicit CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory);
 
     CBootloaderPrompt(const CBootloaderPrompt&) = delete; /* No copy construction allowed */
 
