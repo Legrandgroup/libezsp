@@ -306,6 +306,7 @@ public:
 			this->debugLogger.logf(format, args);
 			break;
 		case LOG_LEVEL::TRACE:
+		default:	/* Unknown debug levels are considered trace level */
 			this->traceLogger.logf(format, args);
 			break;
 		}
