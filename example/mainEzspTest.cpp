@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
                         std::string gpDevKeyStr;
                         gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
                         //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
-                        if (gpDevKeyStr.length() != 32) {
+                        if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
                             clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
                             return 1;
                         }
@@ -93,22 +93,19 @@ int main(int argc, char **argv) {
                             NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
                             if (gpDevKeyStr != "") {
                                 std::vector<uint8_t> argAsBytes;
-                                for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
+                                for (unsigned int i = 0; i<16; i++) {
                                     uint8_t hiNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i], hiNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i] << "' at position " << i+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
                                         return 1;
                                     }
                                     uint8_t loNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i+1], loNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
                                         return 1;
                                     }
-                                    argAsBytes.push_back(static_cast<uint8_t>(hiNibble << 4) | loNibble);
+                                    keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
                                 }
-                                //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
-                                //std::cerr << "\n";
-                                keyValue = NSEZSP::EmberKeyData(argAsBytes);
                             }
                             gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
                         }

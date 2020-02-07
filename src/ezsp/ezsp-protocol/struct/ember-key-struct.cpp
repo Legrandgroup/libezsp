@@ -30,13 +30,11 @@ CEmberKeyStruct::CEmberKeyStruct(const NSSPI::ByteBuffer& raw_message) :
 	sequenceNumber(static_cast<EmberKeyType>(raw_message.at(27))),
 	partnerEUI64()
 {
-    for(uint8_t loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++)
-    {
-        key.push_back( raw_message.at(3U+loop) );
+    for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+        key.at(loop) = raw_message.at(3U+loop);
     }
-    for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
-    {
-        partnerEUI64.push_back(raw_message.at(28U+loop));
+    for(unsigned int loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++) {
+        partnerEUI64.at(loop) = raw_message.at(28U+loop);
     }
 }
 
@@ -48,13 +46,17 @@ std::string CEmberKeyStruct::String() const
     buf << "[bitmask : "<< std::hex << std::setw(4) << std::setfill('0') << bitmask << "]";
     buf << "[type : "<< CEzspEnum::EmberKeyTypeToString(type) << "]";
     buf << "[key :";
-    for(uint8_t loop=0; loop<key.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(key.at(loop)); }
+    for (unsigned int loop=0; loop<key.size(); loop++) {
+        buf << " " << std::hex << std::setw(2) << std::setfill('0') << +static_cast<unsigned char>(key.at(loop));
+    }
     buf << "]";
     buf << "[outgoingFrameCounter : "<< std::hex << std::setw(8) << std::setfill('0') << outgoingFrameCounter << "]";
     buf << "[incomingFrameCounter : "<< std::hex << std::setw(8) << std::setfill('0') << incomingFrameCounter << "]";
     buf << "[sequenceNumber : "<< std::hex << std::setw(2) << std::setfill('0') << sequenceNumber << "]";
     buf << "[partnerEUI64 :";
-    for(uint8_t loop=0; loop<partnerEUI64.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(partnerEUI64[loop]); }
+    for (unsigned int loop=0; loop<partnerEUI64.size(); loop++) {
+        buf << " " << std::hex << std::setw(2) << std::setfill('0') << +static_cast<unsigned char>(partnerEUI64[loop]);
+    }
     buf << "]";
     buf << " }";
 

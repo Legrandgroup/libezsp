@@ -25,9 +25,8 @@ CEmberChildDataStruct::CEmberChildDataStruct(const NSSPI::ByteBuffer& raw_messag
 	applicationId(), /* FIXME */
 	endpoint() /* FIXME */
 {
-    for(uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++)
-    {
-        eui64.push_back(raw_message.at(loop));
+    for (unsigned int loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++) {
+        eui64.at(loop) = raw_message.at(loop);
     }
     //    if( raw_message.size() > 17 ) // todo associate to node type
     //    {

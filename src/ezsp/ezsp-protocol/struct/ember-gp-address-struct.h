@@ -81,8 +81,8 @@ class CEmberGpAddressStruct
 		}
 
     private:
-        EmberEUI64 gpdIeeeAddress; /*!< The GPD's EUI64 */
         uint8_t applicationId; /*!< The GPD Application ID */
+        EmberEUI64 gpdIeeeAddress; /*!< The GPD's EUI64 */
         uint8_t endpoint; /*!< The GPD endpoint */
 
 };

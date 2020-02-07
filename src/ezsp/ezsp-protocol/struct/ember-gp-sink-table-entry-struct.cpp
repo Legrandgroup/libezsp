@@ -41,9 +41,11 @@ CEmberGpSinkTableEntryStruct::CEmberGpSinkTableEntryStruct(const NSSPI::ByteBuff
         assigned_alias(dble_u8_to_u16(raw_message.at(37),raw_message.at(36))),
         groupcast_radius(raw_message.at(38)),
         security_options(raw_message.at(39)),
-        gpdSecurity_frame_counter(static_cast<EmberGpSecurityFrameCounter>(quad_u8_to_u32(raw_message.at(43),raw_message.at(42),raw_message.at(41),raw_message.at(40)))),
-        gpd_key(raw_message.begin()+44,raw_message.begin()+60)
+        gpdSecurity_frame_counter(static_cast<EmberGpSecurityFrameCounter>(quad_u8_to_u32(raw_message.at(43),raw_message.at(42),raw_message.at(41),raw_message.at(40))))
 {
+    for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+        gpd_key.at(loop) = raw_message.at(44U+loop);
+    }
     sink_list[0].push_back(0xFF);
     sink_list[1].push_back(0xFF);
 }

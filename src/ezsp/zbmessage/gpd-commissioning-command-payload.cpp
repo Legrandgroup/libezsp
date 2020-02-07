@@ -40,7 +40,9 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_
     // gpd key
     if( extended_options & (1<<COM_EXT_OPTION_GPD_KEY_PRESENT_BIT) )
     {
-        key.insert(key.begin(),raw_message.begin()+static_cast<int>(l_idx),raw_message.begin()+static_cast<int>(l_idx)+EMBER_KEY_DATA_BYTE_SIZE);
+        for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+                key.at(loop) = raw_message.at(l_idx+loop);
+        }
         l_idx += EMBER_KEY_DATA_BYTE_SIZE;
         // gpd key MIC and encryption
         if( extended_options & (1<<COM_EXT_OPTION_GPD_KEY_ENCRYPTION_BIT) )
@@ -75,8 +77,9 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_
             aes->xor_block(out_key, in_key);
 
             // fill key with uncrypt value
-            key.clear();
-            for(int loop=0; loop<16; loop++){ key.push_back(out_key[loop]);}
+            for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+                key.at(loop) = out_key[loop];
+            }
 
             // verify MIC
             // \todo

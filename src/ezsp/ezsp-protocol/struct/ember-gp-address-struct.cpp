@@ -19,10 +19,13 @@ CEmberGpAddressStruct::CEmberGpAddressStruct():
 }
 
 CEmberGpAddressStruct::CEmberGpAddressStruct(const NSSPI::ByteBuffer& raw_message):
-	gpdIeeeAddress(raw_message.begin()+1,raw_message.begin()+1+EMBER_EUI64_BYTE_SIZE),
 	applicationId(raw_message.at(0)),
+	gpdIeeeAddress(),
 	endpoint(raw_message.at(EMBER_EUI64_BYTE_SIZE+1))
 {
+    for (unsigned int loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++) {
+        gpdIeeeAddress.at(loop) = raw_message.at(1+loop);
+    }
 }
 
 CEmberGpAddressStruct::CEmberGpAddressStruct(const uint32_t i_srcId):
