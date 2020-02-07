@@ -1,3 +1,11 @@
+/**
+ * @file ByteBuffer.h
+ *
+ * @brief Byte buffer manipulation class
+ *
+ * @warning This class derives from std::vector, which has many dangerous implications, mainly that no dynamically allocated member should be allowed, because std::vector's destructor is not virtual.
+ */
+
 #ifndef __BYTEBUFFER_H__
 #define __BYTEBUFFER_H__
 
@@ -5,6 +13,10 @@
 
 namespace NSSPI {
 
+/*
+ * FIXME: This class would be better rewritten as encapsulating std::vector
+ * Although this can be tedious, in this library, we don't use the full std::vector interface on ByteBuffer.
+ */
 class ByteBuffer : public std::vector<uint8_t>
 {
     typedef std::vector<uint8_t> _Base;
