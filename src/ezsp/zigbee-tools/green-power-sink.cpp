@@ -814,13 +814,13 @@ void CGpSink::gpSinkTableFindOrAllocateEntry( uint32_t i_src_id )
     // An EmberGpAddress struct containing a copy of the gpd address to be found.
     CEmberGpAddressStruct l_gp_address(i_src_id);
 
-    clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY on source ID: " << std::hex << std::setfill('0') << std::setw(4) << i_src_id << "\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY, l_gp_address.getRaw());
 }
 
 void CGpSink::gpSinkGetEntry( uint8_t i_index )
 {
-    clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY\n";
+    clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY at index 0x" << std::hex << std::setfill('0') << std::setw(2) << +i_index << "\n";
     dongle.sendCommand(EZSP_GP_SINK_TABLE_GET_ENTRY, { i_index });
 }
 
