@@ -38,7 +38,7 @@ bool CEzsp::clearAllGPDevices()
 	return main->clearAllGPDevices();
 }
 
-bool CEzsp::removeGPDevices(std::vector<uint32_t>& sourceIdList)
+bool CEzsp::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 {
 	return main->removeGPDevices(sourceIdList);
 }
