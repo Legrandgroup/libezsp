@@ -256,16 +256,16 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
     }
 
     lo_msg.clear();
-    if( !stateConnected )
-    {
-      if (resetCode == 0x0b || resetCode == 0x09)  /* Software reset or run app from bootloader */
-      {
+    if( !stateConnected ) {
+      if (resetCode == 0x0b /* Software reset */
+          || resetCode == 0x09 /* Run app from bootloader */
+          || resetCode == 0x02 /* Power on */
+         ) {
         stateConnected = true;
         timer->stop();
-        if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+        if (nullptr != pCb) { pCb->ashCbInfo(ASH_STATE_CHANGE); }
       }
-      else
-      {
+      else {
         clogE << "Unexpected reset code: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
         lo_msg.clear();
         return;
