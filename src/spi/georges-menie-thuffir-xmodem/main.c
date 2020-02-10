@@ -143,10 +143,10 @@ int main(void)
 		return -1;
 	}
 
-	set_interface_attribs (sp, B57600, 0);  // set speed to 57600 bps, 8n1 (no parity)
+	set_interface_attribs (sp, B115200, 0);  // set speed to 115200 bps, 8n1 (no parity)
 	set_blocking (sp, 0);                // set no blocking
 
-	char filename[] = "/home/lionel/xncp-led-EFR32MG13P632F512GM32-usb-dongle-stack-6.6.4.0-BLEUE.gbl";
+	char filename[] = "./firmware.gbl";
 	fp = fopen(filename,"rb");
 	fseek(fp, 0L, SEEK_END);
 	long sz = ftell(fp);
