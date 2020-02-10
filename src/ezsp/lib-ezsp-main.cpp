@@ -1,5 +1,7 @@
 /**
  * @file lib-ezsp-main.cpp
+ * 
+ * @brief Main API methods for libezsp
  */
 
 #include "ezsp/lib-ezsp-main.h"
@@ -292,7 +294,7 @@ bool CLibEzspMain::clearAllGPDevices()
     return true;
 }
 
-bool CLibEzspMain::removeGPDevices(std::vector<uint32_t>& sourceIdList)
+bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 {
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
@@ -420,7 +422,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 		}
 		if (ezspProtocolVersion > this->exp_ezsp_min_version || ezspProtocolVersion <= this->exp_ezsp_max_version)
 		{
-			clogW << "Current EZSP version supported by dongle (" << static_cast<int>(ezspProtocolVersion) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_min_version) << "). Re-initializing dongle\n";
+			clogD << "Current EZSP version supported by dongle (" << static_cast<int>(ezspProtocolVersion) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_min_version) << "). Re-initializing dongle\n";
 			this->exp_ezsp_min_version = ezspProtocolVersion;
 			acceptableVersion = false;
 			dongleInit(this->exp_ezsp_min_version);
@@ -467,7 +469,7 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
 {
     std::stringstream bufDump;
     for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
-    clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
+    //clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
 
     if (i_msg_receive.size() < 5)
     {
@@ -483,8 +485,19 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
         {
             this->xncpManufacturerId = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
             this->xncpVersionNumber = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
-            clogI << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId)
-                  << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpVersionNumber) << "\n";
+            //clogD << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId)
+            //      << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpVersionNumber) << "\n";
+            if (this->xncpManufacturerId != 0x1021) {
+                clogW << "EZSP adapter is not from Legrand (manufacturer 0x1021 expected)\n";
+            }
+            else {
+                unsigned int xncpAdapterHardwareVersion = u16_get_hi_u8(this->xncpVersionNumber) >> 4;  /* High nibble of MSB */
+                unsigned int xncpAdapterMajorVersion = u16_get_hi_u8(this->xncpVersionNumber) & 0x0f;  /* Low nibble of MSB */
+                unsigned int xncpAdapterMinorVersion = u16_get_lo_u8(this->xncpVersionNumber) >> 4;  /* High nibble of LSB */
+                unsigned int xncpAdapterRevisionVersion = u16_get_lo_u8(this->xncpVersionNumber) & 0x0f;  /* Low nibble of LSB */
+                clogI << "Legrand EZSP adapter found with hardware version " << std::dec << xncpAdapterHardwareVersion
+                      << " and firmware v" << xncpAdapterMajorVersion << "." << xncpAdapterMinorVersion << "." << xncpAdapterRevisionVersion << "\n";
+            }
         }
     }
     // Now, configure and startup the adapter's embedded stack
@@ -556,7 +569,7 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 			/* When the sink becomes ready, then libezsp will also switch to ready state */
 			auto clibobs = [this](ESinkState& i_state) -> bool
 			{
-				clogD << "Underneath sink changed to state: " << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
+				clogD << "Underneath sink changed to state: " << std::dec << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
 				if ((ESinkState::SINK_READY == i_state) &&
 					(this->getState() == CLibEzspInternalState::SINK_BUSY)) {
 				   this->setState(CLibEzspInternalState::READY);

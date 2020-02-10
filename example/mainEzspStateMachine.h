@@ -116,6 +116,69 @@ public:
     }
 
     /**
+     * @brief Remove all recorded GPD from the EZSP adapter
+     */
+    void clearAllGPDevices() {
+        clogI << "Applying remove all GPD action\n";
+        this->currentState = MainState::REMOVE_ALL_GPD;
+        if (!libEzsp.clearAllGPDevices()) {
+            clogE << "Failed clearing GP device list\n";
+        }
+        this->removeAllGPDAtStartup = false;
+        this->gpdRemoveList = std::vector<uint32_t>();
+    }
+
+    /**
+     * @brief Remove a selected list of GPD from the EZSP adapter
+     * 
+     * @param[in] gpdToRemove The list of source IDs of the GPD to remove
+     */
+    void removeGPDevices(const std::vector<uint32_t>& gpdToRemove) {
+        clogI << "Removing " << gpdToRemove.size() << " provided GPDs\n";
+        this->currentState = MainState::REMOVE_SPECIFIC_GPD;
+        if (!libEzsp.removeGPDevices(gpdToRemove)) {
+            clogE << "Failed removing GPDs\n";
+        }
+    }
+
+    /**
+     * @brief Add a selected list of GPD from the EZSP adapter
+     * 
+     * @param[in] gpdToAdd The list of source IDs of the GPD to add
+     */
+    void addGPDevices(const std::vector<NSEZSP::CGpDevice>& gpdToAdd) {
+        clogI << "Adding " << gpdToAdd.size() << " provided GPDs\n";
+        this->currentState = MainState::ADD_GPD;
+        if (!libEzsp.addGPDevices(gpdToAdd)) {
+            clogE << "Failed adding GPDs\n";
+        }
+    }
+
+    /**
+     * @brief Scan channels, displaying a result of channel occupation, then switch to run state (wait for sensor reports)
+     */
+    void scanChannelsThenRun() {
+        this->currentState = MainState::SCAN_CHANNELS;
+
+        auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
+            std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, 20};
+            for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {
+                int8_t rssi = scannedChannel.second;
+                if (rssi < electedChannelRssi.second) {
+                    electedChannelRssi = scannedChannel;
+                }
+            }
+            clogI << "Selecting channel " << static_cast<unsigned int>(electedChannelRssi.first) << " with rssi: " << static_cast<int>(electedChannelRssi.second) << " dBm\n";
+            //this->setChannel(electedChannelRssi.first);
+            /* No other startup operations required... move to run state */
+            this->ezspRun();
+        };
+
+        libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+        /* Switching to run state will be performed once scanning is done, in the processEnergyScanResults() callback above */
+    }
+
+    /**
      * @brief Callback invoked when the underlying EZSP library changes state
      *
      * @param i_state The new state of the EZSP library
@@ -129,32 +192,20 @@ public:
                 this->ezspFirmwareUpgrade();
             }
             if (this->currentState == MainState::INIT_PENDING && this->removeAllGPDAtStartup) {
-                clogI << "Applying remove all GPD action\n";
-                this->currentState = MainState::REMOVE_ALL_GPD;
-                if (!libEzsp.clearAllGPDevices()) {
-                    clogE << "Failed clearing GP device list\n";
-                }
-                this->removeAllGPDAtStartup = false;
-                this->gpdRemoveList = std::vector<uint32_t>();
+                this->clearAllGPDevices();
             }
             else if ((this->currentState == MainState::INIT_PENDING) && (this->gpdRemoveList.size() > 0)) { /* If in REMOVE_ALL_GPD state, no need to remove specific GPs, we have already flushed all */
-                clogI << "Removing " << this->gpdRemoveList.size() << " provided GPDs\n";
-                this->currentState = MainState::REMOVE_SPECIFIC_GPD;
-                if (!libEzsp.removeGPDevices(this->gpdRemoveList)) {
-                    clogE << "Failed removing GPDs\n";
-                }
-                this->gpdRemoveList = std::vector<uint32_t>();
+                std::vector<uint32_t> copyGpdRemoveList;
+                std::swap(copyGpdRemoveList, this->gpdRemoveList);
+                this->removeGPDevices(copyGpdRemoveList);
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
                       this->currentState == MainState::REMOVE_SPECIFIC_GPD) &&
                      (this->gpdAddList.size() > 0)) {    /* Once init is done or optional GPD remove has been done... */
-                clogI << "Adding " << this->gpdAddList.size() << " provided GPDs\n";
-                this->currentState = MainState::ADD_GPD;
-                if (!libEzsp.addGPDevices(this->gpdAddList)) {
-                    clogE << "Failed adding GPDs\n";
-                }
-                this->gpdAddList = std::vector<NSEZSP::CGpDevice>();
+                std::vector<NSEZSP::CGpDevice> copyGpdAddList;
+                std::swap(copyGpdAddList, this->gpdAddList);
+                this->addGPDevices(copyGpdAddList);
             }
             else if ((this->currentState == MainState::INIT_PENDING ||
                       this->currentState == MainState::REMOVE_ALL_GPD ||
@@ -178,24 +229,7 @@ public:
                                 );
                 }
 
-                this->currentState = MainState::SCAN_CHANNELS;
-
-                auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
-                    std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, -127};
-                    for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {
-                        int8_t rssi = scannedChannel.second;
-                        if (rssi > electedChannelRssi.second) {
-                            electedChannelRssi = scannedChannel;
-                        }
-                    }
-                    clogI << "Selecting channel " << static_cast<unsigned int>(electedChannelRssi.first) << " with rssi: " << static_cast<int>(electedChannelRssi.second) << " dBm\n";
-                    //this->setChannel(electedChannelRssi.first);
-                    /* No other startup operations required... move to run state */
-                    this->ezspRun();
-                };
-
-                libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
-                /* Switching to run state will be performed once scanning is done, in the processEnergyScanResults() callback above */
+                this->scanChannelsThenRun();
             }
             // else if (this->openZigbeeCommissionningAtStartup) {
             //     // If requested to do so, open the zigbee network for a specific duration, so new devices can join

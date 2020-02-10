@@ -1,3 +1,9 @@
+/**
+ * @file Logger.h
+ * 
+ * @brief Singleton logger
+ */
+
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 

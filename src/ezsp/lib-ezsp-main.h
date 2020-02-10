@@ -1,7 +1,7 @@
 /**
  * @file lib-ezsp-main.h
  *
- * @brief Main entry point for drive lib ezsp
+ * @brief Main API methods for libezsp
  */
 
 #pragma once
@@ -93,7 +93,7 @@ public:
      *
      * @return true if the action is going to be run in the background, false if the sink is busy
      */
-    bool removeGPDevices(std::vector<uint32_t>& sourceIdList);
+    bool removeGPDevices(const std::vector<uint32_t>& sourceIdList);
 
     /**
      * @brief Add a specific set of GP devices from sink (identified by their source ID value+key)

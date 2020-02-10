@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
                 break;
             case 'h':
                 writeUsage(argv[0], stdout);
-                return 1;
+                return 0;
             case '?':
             default:
                 std::cerr << "Unsupported command-line option. Exitting\n";
@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver->open(serialPort, 57600) != 0) {
+    if (uartDriver->open(serialPort, 115200) != 0) {
         clogE << "Failed opening serial port. Aborting\n";
         return 1;
     }

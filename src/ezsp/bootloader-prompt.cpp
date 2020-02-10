@@ -154,7 +154,7 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data)
       clogD << "Got the X-modem ready character from adapter\n";
       if (this->firmwareTransferStartFunc)
       {
-        this->state == EBootloaderStage::XMODEM_XFR;
+        this->state = EBootloaderStage::XMODEM_XFR;
         this->firmwareTransferStartFunc();  /* Invoke the firmware transfer ready function that has been set in selectModeUpgradeFw() */
         this->firmwareTransferStartFunc = nullptr;  /* Remove the callback */
         this->probe();  /* Restart probing to find out if we are back in the bootloader prompt */
