@@ -100,9 +100,15 @@ public:
 			}
 		}
 		if (!transitionMatch) {
-			std::cerr << "Warning: Got an unexpected command written to serial port while at stage " << std::dec << this->stage << ":";
+			std::cerr << "Warning: Got an unexpected command written to serial port while at stage " << std::dec << this->stage << ":\n";
+			std::cerr << "Received: ";
 			for (uint8_t loop=0; loop<cnt; loop++) {
 				std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const unsigned char*>(buf))[loop]);
+			}
+			std::cerr << "\nExpecting: ";
+			const std::vector<uint8_t>& expectedBuffer = (*this->stageExpectedTransitions)[this->stage];
+			for (uint8_t loop=0; loop<expectedBuffer.size(); loop++) {
+				std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(expectedBuffer[loop]);
 			}
 			std::cerr << "\n";
 			FAILF("Unexpected command written to serial port");
