@@ -74,7 +74,7 @@ inline uint8_t u32_get_byte0(const uint32_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte1(const uint16_t word32) {
+inline uint8_t u32_get_byte1(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>8) & 0xFF);
 }
 
@@ -84,7 +84,7 @@ inline uint8_t u32_get_byte1(const uint16_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte2(const uint16_t word32) {
+inline uint8_t u32_get_byte2(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>16) & 0xFF);
 }
 
@@ -94,7 +94,7 @@ inline uint8_t u32_get_byte2(const uint16_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte3(const uint16_t word32) {
+inline uint8_t u32_get_byte3(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>24) & 0xFF);
 }
 
