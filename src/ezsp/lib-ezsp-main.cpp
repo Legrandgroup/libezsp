@@ -1,5 +1,7 @@
 /**
  * @file lib-ezsp-main.cpp
+ * 
+ * @brief Main API methods for libezsp
  */
 
 #include "ezsp/lib-ezsp-main.h"

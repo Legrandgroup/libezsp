@@ -1,7 +1,7 @@
 /**
  * @file lib-ezsp-main.h
  *
- * @brief Main entry point for drive lib ezsp
+ * @brief Main API methods for libezsp
  */
 
 #pragma once
