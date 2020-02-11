@@ -80,7 +80,7 @@
 #define gfm_e(x)     gfmul_e[(x)]
 
 #define block_copy_nn(d, s, l)    memcpy((d), (s), (l))
-#define block_copy(d, s)          memcpy((d), (s), N_BLOCK)
+#define block_copy(d, s)          memcpy((d), (s), IAes::AES_BLOCK_SIZE)
 
 #define sb_data(w) {    /* S Box data values */                            \
     w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), w(0xc5),\
@@ -221,12 +221,12 @@ void CAes::copy_and_key( void *d, const void *s, const void *k )
     (static_cast<uint32_t *>(d))[ 3] = (static_cast<const uint32_t *>(s))[ 3] ^ (static_cast<const uint32_t *>(k))[ 3];
 }
 
-void CAes::add_round_key( uint8_t d[N_BLOCK], const uint8_t k[N_BLOCK] )
+void CAes::add_round_key( uint8_t d[IAes::AES_BLOCK_SIZE], const uint8_t k[IAes::AES_BLOCK_SIZE] )
 {
     xor_block(d, k);
 }
 
-void CAes::shift_sub_rows( uint8_t st[N_BLOCK] )
+void CAes::shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] )
 {
     uint8_t tt;
 
@@ -243,7 +243,7 @@ void CAes::shift_sub_rows( uint8_t st[N_BLOCK] )
     st[ 7] = s_box(st[ 3]); st[ 3] = s_box( tt );
 }
 
-void CAes::inv_shift_sub_rows( uint8_t st[N_BLOCK] )
+void CAes::inv_shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] )
 {
     uint8_t tt;
 
@@ -260,9 +260,9 @@ void CAes::inv_shift_sub_rows( uint8_t st[N_BLOCK] )
     st[11] = is_box(st[15]); st[15] = is_box( tt );
 }
 
-void CAes::mix_sub_columns( uint8_t dt[N_BLOCK] )
+void CAes::mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] )
 {
-    uint8_t st[N_BLOCK];
+    uint8_t st[IAes::AES_BLOCK_SIZE];
     block_copy(st, dt);
 
     dt[ 0] = gfm2_sb(st[0]) ^ gfm3_sb(st[5]) ^ s_box(st[10]) ^ s_box(st[15]);
@@ -286,9 +286,9 @@ void CAes::mix_sub_columns( uint8_t dt[N_BLOCK] )
     dt[15] = gfm3_sb(st[12]) ^ s_box(st[1]) ^ s_box(st[6]) ^ gfm2_sb(st[11]);
   }
 
-void CAes::inv_mix_sub_columns( uint8_t dt[N_BLOCK] )
+void CAes::inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] )
 {
-    uint8_t st[N_BLOCK];
+    uint8_t st[IAes::AES_BLOCK_SIZE];
     block_copy(st, dt);
 
     dt[ 0] = is_box(gfm_e(st[ 0]) ^ gfm_b(st[ 1]) ^ gfm_d(st[ 2]) ^ gfm_9(st[ 3]));
@@ -355,20 +355,20 @@ void CAes::set_key( const uint8_t key[AES_KEY_SIZE] )
 }
 
 // Encrypt a single block of 16 bytes
-bool CAes::encrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK] )
+bool CAes::encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] )
 {
     if( context.rnd )
     {
-        uint8_t s1[N_BLOCK], r;
+        uint8_t s1[IAes::AES_BLOCK_SIZE], r;
         copy_and_key( s1, in, context.ksch );
 
         for( r = 1 ; r < context.rnd ; ++r )
         {
             mix_sub_columns( s1 );
-            add_round_key( s1, context.ksch + r * N_BLOCK);
+            add_round_key( s1, context.ksch + r * IAes::AES_BLOCK_SIZE);
         }
         shift_sub_rows( s1 );
-        copy_and_key( out, s1, context.ksch + r * N_BLOCK );
+        copy_and_key( out, s1, context.ksch + r * IAes::AES_BLOCK_SIZE );
     }
     else
         return false;
@@ -377,38 +377,38 @@ bool CAes::encrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK] 
 
 // CBC encrypt a number of blocks (input and return an IV)
 /*
-bool CAes::cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] )
+bool CAes::cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] )
 {
     if (size % 16 != 0)
         return EXIT_FAILURE;
 
-    unsigned long n_block = size / 16;
+    unsigned long IAes::AES_BLOCK_SIZE = size / 16;
 
-    while(n_block--)
+    while(IAes::AES_BLOCK_SIZE--)
     {
         xor_block(iv, in);
         if(aes_encrypt(iv, iv, ctx) != EXIT_SUCCESS)
             return EXIT_FAILURE;
-        memcpy(out, iv, N_BLOCK);
-        in += N_BLOCK;
-        out += N_BLOCK;
+        memcpy(out, iv, IAes::AES_BLOCK_SIZE);
+        in += IAes::AES_BLOCK_SIZE;
+        out += IAes::AES_BLOCK_SIZE;
     }
     return EXIT_SUCCESS;
 }
 */
 // Decrypt a single block of 16 bytes
 /*
-bool CAes::decrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK], const aes_context ctx[1] )
+bool CAes::decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] )
 {
     if( ctx->rnd )
     {
-        uint8_t s1[N_BLOCK], r;
-        copy_and_key( s1, in, ctx->ksch + ctx->rnd * N_BLOCK );
+        uint8_t s1[IAes::AES_BLOCK_SIZE], r;
+        copy_and_key( s1, in, ctx->ksch + ctx->rnd * IAes::AES_BLOCK_SIZE );
         inv_shift_sub_rows( s1 );
 
         for( r = ctx->rnd ; --r ; )
         {
-            add_round_key( s1, ctx->ksch + r * N_BLOCK );
+            add_round_key( s1, ctx->ksch + r * IAes::AES_BLOCK_SIZE );
             inv_mix_sub_columns( s1 );
         }
         copy_and_key( out, s1, ctx->ksch );
@@ -421,24 +421,24 @@ bool CAes::decrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK],
 
 // CBC decrypt a number of blocks (input and return an IV)
 /*
-bool CAes::cbc_decrypt( const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] )
+bool CAes::cbc_decrypt( const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] )
 {
     if (size % 16 != 0)
         return EXIT_FAILURE;
 
-    unsigned long n_block = size / 16;
+    unsigned long IAes::AES_BLOCK_SIZE = size / 16;
 
-    while (n_block--)
+    while (IAes::AES_BLOCK_SIZE--)
     {
-        uint8_t tmp[N_BLOCK];
+        uint8_t tmp[IAes::AES_BLOCK_SIZE];
 
-        memcpy(tmp, in, N_BLOCK);
+        memcpy(tmp, in, IAes::AES_BLOCK_SIZE);
         if(aes_decrypt(in, out, ctx) != EXIT_SUCCESS)
             return EXIT_FAILURE;
         xor_block(out, iv);
-        memcpy(iv, tmp, N_BLOCK);
-        in += N_BLOCK;
-        out += N_BLOCK;
+        memcpy(iv, tmp, IAes::AES_BLOCK_SIZE);
+        in += IAes::AES_BLOCK_SIZE;
+        out += IAes::AES_BLOCK_SIZE;
     }
     return EXIT_SUCCESS;
 }
