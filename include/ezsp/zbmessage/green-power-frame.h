@@ -7,10 +7,13 @@
 
 #include <cstdint>
 
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include <ezsp/zbmessage/zcl.h>
 #include <spi/ByteBuffer.h>
 
 namespace NSEZSP {
+
+typedef std::array<uint8_t, 13> GPNonce;
 
 typedef enum
 {
@@ -74,6 +77,7 @@ class CGpFrame
         }
 
         // getter
+        uint8_t getApplicationId() const {return application_id;}
         uint8_t getLinkValue() const {return link_value;}
         uint8_t getSequenceNumber() const {return sequence_number;}
         uint32_t getSourceId() const {return source_id;}
@@ -86,8 +90,14 @@ class CGpFrame
         uint32_t getMic() const {return mic;}
         uint8_t getProxyTableEntry() const {return proxy_table_entry;}
         NSSPI::ByteBuffer getPayload() const {return payload;}
+        uint8_t toNwkFCByteField() const;
+        uint8_t toExtNwkFCByteField() const;
+        bool validateMIC(const NSEZSP::EmberKeyData& i_gpd_key) const;
 
     private:
+        NSEZSP::GPNonce computeNonce(uint32_t sourceId, uint32_t frameCounter) const;
+
+        uint8_t application_id;
         uint8_t link_value;
         uint8_t sequence_number;
         uint32_t source_id;
