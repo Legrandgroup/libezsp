@@ -1,4 +1,10 @@
-#include <memory>
+/**
+ * @file Logger.cpp
+ * 
+ * @brief Singleton logger
+ */
+
+#include <ezsp/byte-manip.h>
 
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
@@ -13,7 +19,6 @@ namespace NSSPI {
 typedef ConsoleLogger LoggerInstance;
 }
 #endif
-
 
 using NSSPI::Logger;
 using NSSPI::ILogger;
@@ -32,3 +37,51 @@ ILogger *Logger::getInstance()
 	}();
 	return mInstance.get();
 }
+
+std::string Logger::byteToHexString(uint8_t byte)
+{
+	std::string result("00");
+	uint8_t nibble = NSEZSP::u8_get_hi_nibble(byte);
+	if (nibble>=0 && nibble<=9) {
+		result[0] = nibble + '0';
+	}
+	else {
+		result[0] = nibble - 0x0a + 'A';
+	}
+	nibble = NSEZSP::u8_get_lo_nibble(byte);
+	if (nibble>=0 && nibble<=9) {
+		result[1] = nibble + '0';
+	}
+	else {
+		result[1] = nibble - 0x0a + 'A';
+	}
+	return result;
+}
+
+std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
+{
+	std::ostringstream result;
+
+	for(auto it=std::begin(input); it<std::end(input); it++) {
+		if (result.tellp()>0) {
+			result << " ";
+		}
+		result << Logger::byteToHexString(*it);
+	}
+	return result.str();
+}
+/*
+// This method is commented-out because NSSPI::ByteBuffer is currently inheriting from std::vector<uint8_t> that is handled above
+std::string Logger::byteSequenceToString(const NSSPI::ByteBuffer& input)
+{
+	std::ostringstream result;
+
+	for(auto it=std::begin(input); it<std::end(input); it++) {
+		if (result.tellp()>0) {
+			result << " ";
+		}
+		result << Logger::byteToHexString(*it);
+	}
+	return result.str();
+}
+*/
