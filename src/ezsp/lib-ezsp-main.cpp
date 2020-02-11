@@ -376,6 +376,7 @@ bool CLibEzspMain::setChannel(uint8_t channel) {
         return false;
     }
     this->dongle.sendCommand(EZSP_SET_RADIO_CHANNEL, { channel });
+    return true;
 }
 
 void CLibEzspMain::handleFirmwareXModemXfr()
