@@ -9,6 +9,7 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "ezsp/byte-manip.h"
+#include "spi/ILogger.h"
 
 using NSEZSP::CEmberGpSinkTableEntryStruct;
 
@@ -111,24 +112,18 @@ std::string CEmberGpSinkTableEntryStruct::String() const
 {
     std::stringstream buf;
 
-    buf << "CEmberGpSinkTableEntryStruct : { ";
-    buf << "[status : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]";
-    buf << "[options : "<< options << "]";
-    buf << "[gpd : "<< gpd << "]";
-    buf << "[device_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(device_id) << "]";
-    buf << "[sink_list[0] :";
-    for(uint8_t loop=0; loop<sink_list[0].size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(sink_list[0][loop]); }
-    buf << "]";
-    buf << "[sink_list[1] :";
-    for(uint8_t loop=0; loop<sink_list[1].size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(sink_list[1][loop]); }
-    buf << "]";
-    buf << "[assigned_alias : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(assigned_alias) << "]";
-    buf << "[groupcast_radius : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(groupcast_radius) << "]";
-    buf << "[security_options : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security_options) << "]";
-    buf << "[gpdSecurity_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << unsigned(gpdSecurity_frame_counter) << "]";
-    buf << "[gpd_key :";
-    for(uint8_t loop=0; loop<gpd_key.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(gpd_key[loop]); }
-    buf << "]";
+    buf << "CEmberGpSinkTableEntryStruct: { ";
+    buf << "[status: 0x" << std::hex << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(status) << "]";
+    buf << "[options: " << options << "]";
+    buf << "[gpd: " << gpd << "]";
+    buf << "[device_id: 0x" << std::hex << std::setw(2) << std::setfill('0') << +device_id << "]";
+    buf << "[sink_list[0]: " << NSSPI::Logger::byteSequenceToString(sink_list[0]) << "]";
+    buf << "[sink_list[1]: " << NSSPI::Logger::byteSequenceToString(sink_list[1]) << "]";
+    buf << "[assigned_alias: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(assigned_alias) << "]";
+    buf << "[groupcast_radius: 0x" << std::hex << std::setw(2) << std::setfill('0') << +groupcast_radius << "]";
+    buf << "[security_options: 0x" << std::hex << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(security_options) << "]";
+    buf << "[gpdSecurity_frame_counter: 0x" << std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(gpdSecurity_frame_counter) << "]";
+    buf << "[gpd_key: " << NSSPI::Logger::byteSequenceToString(gpd_key) << "]";
     buf << " }";
 
     return buf.str();

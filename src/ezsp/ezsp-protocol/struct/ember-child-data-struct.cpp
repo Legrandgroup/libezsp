@@ -9,6 +9,7 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-child-data-struct.h"
 
+#include "spi/Logger.h"
 #include "ezsp/byte-manip.h"
 
 using NSEZSP::CEmberChildDataStruct;
@@ -53,22 +54,18 @@ std::string CEmberChildDataStruct::String() const
 {
     std::stringstream buf;
 
-    buf << "EmberChildDataStruct : { ";
-    buf << "[eui64 :";
-    for(uint8_t loop=0; loop<eui64.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(eui64[loop]); }
-    buf << "]";
-    buf << "[type : "<< CEzspEnum::EmberNodeTypeToString(type) << "]";
-    buf << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(id) << "]";
-    buf << "[phy : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(phy) << "]";
-    buf << "[power : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(power) << "]";
-    buf << "[timeout : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(timeout) << "]";
+    buf << "EmberChildDataStruct: { ";
+    buf << "[eui64: " << NSSPI::Logger::byteSequenceToString(eui64) << "]";
+    buf << "[type: " << CEzspEnum::EmberNodeTypeToString(type) << "]";
+    buf << "[id: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(id) << "]";
+    buf << "[phy: 0x" << std::dec << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(phy) << "]";
+    buf << "[power: 0x" << std::dec << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(power) << "]";
+    buf << "[timeout: 0x" << std::dec << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(timeout) << "]";
 /* // todo associate to node type
-    buf << "[gpdIeeeAddress :";
-    for(uint8_t loop=0; loop<gpdIeeeAddress.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(gpdIeeeAddress[loop]); }
-    buf << "]";
-    buf << "[sourceId : "<< std::hex << std::setw(8) << std::setfill('0') << sourceId << "]";
-    buf << "[applicationId : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(applicationId) << "]";
-    buf << "[endpoint : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(endpoint) << "]";
+    buf << "[gpdIeeeAddress:" << NSSPI::Logger::byteSequenceToString(gpdIeeeAddress) << "]";
+    buf << "[sourceId: "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(sourceId) << "]";
+    buf << "[applicationId: "<< std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(applicationId) << "]";
+    buf << "[endpoint: "<< std::dec << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(endpoint) << "]";
 */
     buf << " }";
 
