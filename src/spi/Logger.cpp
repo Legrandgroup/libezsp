@@ -46,14 +46,14 @@ std::string Logger::byteToHexString(uint8_t byte)
 		result[0] = nibble + '0';
 	}
 	else {
-		result[0] = nibble - 0x0a + 'A';
+		result[0] = nibble - 0x0a + 'a';
 	}
 	nibble = NSEZSP::u8_get_lo_nibble(byte);
 	if (nibble>=0 && nibble<=9) {
 		result[1] = nibble + '0';
 	}
 	else {
-		result[1] = nibble - 0x0a + 'A';
+		result[1] = nibble - 0x0a + 'a';
 	}
 	return result;
 }
