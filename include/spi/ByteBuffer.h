@@ -43,6 +43,16 @@ public:
         return static_cast<ByteBuffer&>(_Base::operator=(list));
     }
 #endif
+    void append(const ByteBuffer& other) {
+        for (auto it=other.begin(); it<other.end(); it++) {
+            this->push_back(*it);
+        }
+    }
+    void append(ByteBuffer&& other) {
+        for (auto it=other.begin(); it<other.end(); it++) {
+            this->push_back(std::move(*it));
+        }
+    }
 };
 } // namespace NSSPI
 
