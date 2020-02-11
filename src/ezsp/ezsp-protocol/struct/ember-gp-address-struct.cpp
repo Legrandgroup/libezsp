@@ -9,6 +9,8 @@
 #include "ezsp/byte-manip.h"
 #include "ember-gp-address-struct.h"
 
+#include "spi/ILogger.h"
+
 using NSEZSP::CEmberGpAddressStruct;
 
 CEmberGpAddressStruct::CEmberGpAddressStruct():
@@ -66,13 +68,12 @@ std::string CEmberGpAddressStruct::String() const
 {
     std::stringstream buf;
 
-    buf << "CEmberGpAddressStruct : { ";
-    buf << "[applicationId : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(applicationId) << "]";
-    buf << "[sourceId : "<< std::hex << std::setw(8) << std::setfill('0') << quad_u8_to_u32(gpdIeeeAddress.at(3), gpdIeeeAddress.at(2), gpdIeeeAddress.at(1), gpdIeeeAddress.at(0)) << "]";
-    buf << "[gpdIeeeAddress :";
-    for(uint8_t loop=0; loop<gpdIeeeAddress.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(gpdIeeeAddress[loop]); }
-    buf << "]";
-    buf << "[endpoint : "<< std::dec << std::setw(2) << std::setfill('0') << unsigned(endpoint) << "]";
+    buf << "CEmberGpAddressStruct: { ";
+    buf << "[applicationId: 0x" << std::hex << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(applicationId) << "]";
+    /* Source ID is duplicated twice in the gpdIeeeAddress, so let's extract the first occurrence to display it */
+    buf << "[sourceId: " << std::hex << std::setw(8) << std::setfill('0') << quad_u8_to_u32(gpdIeeeAddress.at(3), gpdIeeeAddress.at(2), gpdIeeeAddress.at(1), gpdIeeeAddress.at(0)) << "]";
+    buf << "[gpdIeeeAddress: " << NSSPI::Logger::byteSequenceToString(gpdIeeeAddress) << "]";
+    buf << "[endpoint: "<< std::dec << +endpoint << "]";
     buf << " }";
 
     return buf.str();
