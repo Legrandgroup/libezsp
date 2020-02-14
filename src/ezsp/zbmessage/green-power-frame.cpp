@@ -17,146 +17,6 @@
 
 using NSEZSP::CGpFrame;
 
-NSSPI::IAes *globalAes = NSSPI::AesBuilder::create();
-
-#include <string.h> // Temp
-#define SECURITY_BLOCK_SIZE 16
-#define NONCE_FLAG 0x49
-#define NONCE_SECURITY_CONTROL 0x05
-#define MIC_SIZE_MAX 4
-#define SRC_ID_BYTE_SIZE 4
-#define MAX_PAYLOAD_LENGTH   70
-
-void emLoadKeyIntoCore(const uint8_t* key) {
-    globalAes->set_key(key);
-}
-void emStandAloneEncryptBlock(uint8_t *block) {
-    uint8_t in[NSSPI::IAes::AES_BLOCK_SIZE];
-    memcpy(in, block, NSSPI::IAes::AES_BLOCK_SIZE);    /* Make a local copy */
-    globalAes->encrypt(static_cast<const unsigned char*>(in), static_cast<unsigned char*>(block)); /* Encrypt and output directly to the buffer provided as argument */
-
-}
-void xor128(const uint8_t *x, const uint8_t *y, uint8_t *out);
-
-/**
- * compute MIC to incomming buffer (size i the first byte) and add it to the end (update size too)
- * if key is NULL OOB token key is used
- */
-void addMIC(uint8_t *key, const uint32_t *ip_src_id, const uint32_t *ip_frm_counter,
-			uint8_t i_header_idx, uint8_t i_payload_idx, uint8_t i_payload_size,
-			uint8_t *iop_buffer)
-{
-	uint8_t l_b0[SECURITY_BLOCK_SIZE];
-	uint8_t l_a[SECURITY_BLOCK_SIZE];
-	uint8_t l_out[SECURITY_BLOCK_SIZE];
-	uint8_t l_s0[SECURITY_BLOCK_SIZE];
-	uint8_t l_iv[SECURITY_BLOCK_SIZE];
-	uint8_t payload[MAX_PAYLOAD_LENGTH];
-	uint8_t payload_size;
-	uint8_t l_mic_tmp[SECURITY_BLOCK_SIZE];
-
-	//-- initialize b0
-	memset(l_b0, 0, SECURITY_BLOCK_SIZE);
-	l_b0[0] = NONCE_FLAG;
-	// ScrId
-	memcpy(&l_b0[1], (uint8_t *)ip_src_id, SRC_ID_BYTE_SIZE);
-	memcpy(&l_b0[5], (uint8_t *)ip_src_id, SRC_ID_BYTE_SIZE);
-	// Frame counter.
-	memcpy(&l_b0[9], (uint8_t *)ip_frm_counter, sizeof(uint32_t));
-	//Security control
-	l_b0[13] = NONCE_SECURITY_CONTROL;
-
-    clogD << "l_b0=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(l_b0, sizeof(l_b0))) << "\n";
-
-	//-- initialize a
-	memset(l_a,0,SECURITY_BLOCK_SIZE);
-	l_a[0] = 0x01;
-	// ScrId
-	memcpy(&l_a[1], (uint8_t *)ip_src_id, SRC_ID_BYTE_SIZE);
-	memcpy(&l_a[5], (uint8_t *)ip_src_id, SRC_ID_BYTE_SIZE);
-	// Frame counter.
-	memcpy(&l_a[9], (uint8_t *)ip_frm_counter, sizeof(uint32_t));
-	//Security control
-	l_a[13] = NONCE_SECURITY_CONTROL;
-    clogD << "l_a=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(l_a, sizeof(l_a))) << "\n";
-
-
-	//-- initialize payload -- AuthData
-	memset(payload, 0, MAX_PAYLOAD_LENGTH);
-	payload_size = 0;
-	payload[payload_size++] = 0x00;
-	payload[payload_size++] = 0x0A + i_payload_size;
-
-	// header
-	payload[payload_size++] = iop_buffer[i_header_idx];
-	payload[payload_size++] = iop_buffer[i_header_idx+1];
-
-	memcpy(&payload[payload_size], (uint8_t *)ip_src_id, SRC_ID_BYTE_SIZE);
-	payload_size += SRC_ID_BYTE_SIZE;
-
-	memcpy(&payload[payload_size], (uint8_t *)ip_frm_counter, 4);
-	payload_size += 4;
-
-	// payload
-	memcpy(&payload[payload_size], &iop_buffer[i_payload_idx], i_payload_size);
-	payload_size += i_payload_size;
-
-    clogD << "payload=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(payload, payload_size)) << "\n";
-
-	//-- check key
-	if( NULL == key )
-	{
-        exit(1);    /* Fetching OOB from memory is not supported */
-		//key = getOOBKey(NULL,NULL);
-	}
-
-    clogD << "key=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(key, 16)) << "\n";
-
-	memset(l_mic_tmp,0,SECURITY_BLOCK_SIZE);
-	memset(l_out, 0, SECURITY_BLOCK_SIZE);
-	memset(l_s0, 0, SECURITY_BLOCK_SIZE);
-	memset(l_iv, 0, SECURITY_BLOCK_SIZE);
-
-	emLoadKeyIntoCore(key);
-
-	// l_out
-	// b0
-	xor128(l_b0,l_iv,l_out);
-	emStandAloneEncryptBlock(l_out);
-	//auth
-	for(uint8_t loop=0; loop<payload_size; loop+=SECURITY_BLOCK_SIZE)
-	{
-		xor128(&payload[loop],l_out,l_out);
-		emStandAloneEncryptBlock(l_out);
-	}
-    clogD << "l_out=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(l_out, SECURITY_BLOCK_SIZE)) << "\n";
-
-	// l_s0
-	xor128(l_a,l_iv,l_s0);
-	emStandAloneEncryptBlock(l_s0);
-    clogD << "l_s0=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(l_s0, SECURITY_BLOCK_SIZE)) << "\n";
-
-	// mic
-	xor128(l_out,l_s0,l_mic_tmp);
-    clogD << "l_mic_tmp=" << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(l_mic_tmp, SECURITY_BLOCK_SIZE)) << "\n";
-
-	// add to iop_buffer
-	memcpy(&iop_buffer[i_payload_idx+i_payload_size], l_mic_tmp, MIC_SIZE_MAX);
-	//iop_buffer[0] += MIC_SIZE_MAX;
-}
-
-// Exclusive-Or operation. For two equal length strings, x and y, x XOR y is
-// their bit-wise exclusive-OR.
-void xor128(const uint8_t *x, const uint8_t *y, uint8_t *out)
-{
-  uint8_t i;
-
-  for (i = 0; i < 16; i++) {
-    out[i] = x[i] ^ y[i];
-  }
-}
-
-
 CGpFrame::CGpFrame():
     link_value(0),
     sequence_number(0),
@@ -189,7 +49,7 @@ CGpFrame::CGpFrame(const NSSPI::ByteBuffer& raw_message):
     payload()
 {
 
-    clogD << "Lionel: constructing CGPFrame from buffer " << NSSPI::Logger::byteSequenceToString(raw_message) << "\n";
+    //clogD << "Lionel: constructing CGPFrame from buffer " << NSSPI::Logger::byteSequenceToString(raw_message) << "\n";
     CEmberGpAddressStruct gp_address = CEmberGpAddressStruct(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end()));
 
     this->application_id = gp_address.getApplicationId();
@@ -316,32 +176,6 @@ NSSPI::ByteBuffer CGpFrame::getLastXiAESCBC(const EmberKeyData& i_gpd_key, const
     }
 
     return NSSPI::ByteBuffer(Xibuf, NSSPI::IAes::AES_BLOCK_SIZE);
-}
-
-bool CGpFrame::validateMIC_Seb(const EmberKeyData& i_gpd_key) const
-{
-    uint8_t iop_buffer[1024];
-    iop_buffer[0] = this->toNwkFCByteField();
-    iop_buffer[1] = this->toExtNwkFCByteField();
-    iop_buffer[2] = u32_get_byte0(this->source_id);
-    iop_buffer[3] = u32_get_byte1(this->source_id);
-    iop_buffer[4] = u32_get_byte2(this->source_id);
-    iop_buffer[5] = u32_get_byte3(this->source_id);
-    iop_buffer[6] = u32_get_byte0(this->security_frame_counter);
-    iop_buffer[7] = u32_get_byte1(this->security_frame_counter);
-    iop_buffer[8] = u32_get_byte2(this->security_frame_counter);
-    iop_buffer[9] = u32_get_byte3(this->security_frame_counter);
-    iop_buffer[10] = this->command_id;
-    this->payload.toMemory(&(iop_buffer[11]));
-    uint8_t key[16];
-    NSSPI::ByteBuffer(static_cast<std::array<uint8_t, 16>>(i_gpd_key)).toMemory(key);
-    addMIC(key, &(this->source_id), &(this->security_frame_counter),
-			0/*i_header_idx*/, 11/*i_payload_idx*/, this->payload.size()/*i_payload_size*/,
-			iop_buffer);
-    size_t ofs = 11/*i_payload_idx*/+this->payload.size()/*i_payload_size*/;
-    uint32_t resultMIC = quad_u8_to_u32(iop_buffer[ofs+3], iop_buffer[ofs+2], iop_buffer[ofs+1], iop_buffer[ofs]);
-    clogD << "Re-calculated MIC using Seb's algo: 0x" << std::hex << std::setw(8) << std::setfill('0') << resultMIC << "\n";
-    clogD << "Full iop_buffer is " << NSSPI::Logger::byteSequenceToString(NSSPI::ByteBuffer(iop_buffer, ofs+4)) << "\n";
 }
 
 bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const

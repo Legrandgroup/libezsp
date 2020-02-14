@@ -91,12 +91,43 @@ class LIBEXPORT CGpFrame
         uint32_t getMic() const {return mic;}
         uint8_t getProxyTableEntry() const {return proxy_table_entry;}
         NSSPI::ByteBuffer getPayload() const {return payload;}
+
+        /**
+         * @brief Generate the network FC byte corresponding to this frame
+         * 
+         * This byte should be equivalent to the FC byte in the transmitted packet that lead to the EZSP message used as the base to construct this CGpFrame
+         * 
+         * @return The network FC byte
+         */
         uint8_t toNwkFCByteField() const;
+
+        /**
+         * @brief Generate the extended network FC byte corresponding to this frame
+         * 
+         * This byte should be equivalent to the FC byte in the transmitted packet that lead to the EZSP message used as the base to construct this CGpFrame
+         * 
+         * @return The extended network FC byte
+         */
         uint8_t toExtNwkFCByteField() const;
-        bool validateMIC_Seb(const NSEZSP::EmberKeyData& i_gpd_key) const;
+
+        /**
+         * @brief Validate the MIC in this frame against the provided key
+         * 
+         * @param[in] i_gpd_key The key to authenticate the message
+         * 
+         * @return true if the MIC in this frame validates the full GP frame using @p i_gpd_key as an authentication key
+         */
         bool validateMIC(const NSEZSP::EmberKeyData& i_gpd_key) const;
 
     private:
+        /**
+         * @brief Computes a nonce according to the GP specs
+         * 
+         * @param sourceId The source ID used as input to compute the nonce
+         * @param frameCounter The security frame counter used as input to compute the nonce
+         * 
+         * @return A GPNonce object
+         */
         static NSEZSP::GPNonce computeNonce(uint32_t sourceId, uint32_t frameCounter);
 
         /**
