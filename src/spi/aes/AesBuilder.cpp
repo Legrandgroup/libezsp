@@ -15,6 +15,6 @@ IAes *AesBuilder::create()
 
 	return &instance;
 #else //DYNAMIC_ALLOCATION
-  return new Aes();
+  return new Aes();	/* When dynamic, how do we delete the newly created object: there is a memory leak here */
 #endif
 }

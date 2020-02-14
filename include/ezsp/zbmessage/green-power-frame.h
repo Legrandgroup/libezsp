@@ -93,10 +93,26 @@ class LIBEXPORT CGpFrame
         NSSPI::ByteBuffer getPayload() const {return payload;}
         uint8_t toNwkFCByteField() const;
         uint8_t toExtNwkFCByteField() const;
+        bool validateMIC_Seb(const NSEZSP::EmberKeyData& i_gpd_key) const;
         bool validateMIC(const NSEZSP::EmberKeyData& i_gpd_key) const;
 
     private:
-        NSEZSP::GPNonce computeNonce(uint32_t sourceId, uint32_t frameCounter) const;
+        static NSEZSP::GPNonce computeNonce(uint32_t sourceId, uint32_t frameCounter);
+
+        /**
+         * @brief Run the EAS CBC multiple times on a group of AES blocks
+         * @param[in] i_gpd_key is the 128-bit AES key
+         * @param[in] X0 is the initial input of AES-CBC
+         * @param[in] B0 is the very first block
+         * @param[in] B The input buffer on which to run AES CBC
+         * @param[out] lastIndex An indicative value of how many times the AES-CBC cipher was run (this is the index i of the Xi returned)
+         * 
+         * @return Xi, the last result of AES-CBC
+         * 
+         * B is split in multiple AES block size long buffers that will be sequentially used as input to the AES-CBC cipher
+         * @note B should be a multiple of AES block size (16 bytes) or an error will occur and an empty buffer will be returned
+         */
+        static NSSPI::ByteBuffer getLastXiAESCBC(const EmberKeyData& i_gpd_key, const NSSPI::ByteBuffer& X0, const NSSPI::ByteBuffer& B0, const NSSPI::ByteBuffer& B, unsigned int& lastIndex);
 
         uint8_t application_id;
         uint8_t link_value;
