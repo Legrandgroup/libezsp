@@ -161,10 +161,10 @@ public:
         this->currentState = MainState::SCAN_CHANNELS;
 
         auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
-            std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, -127};
+            std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, 20};
             for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {
                 int8_t rssi = scannedChannel.second;
-                if (rssi > electedChannelRssi.second) {
+                if (rssi < electedChannelRssi.second) {
                     electedChannelRssi = scannedChannel;
                 }
             }

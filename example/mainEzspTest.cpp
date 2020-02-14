@@ -17,11 +17,22 @@
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
+#ifdef USE_CPPTHREADS
+#include <thread>
+#include <condition_variable>
+#include <csignal>
+#endif
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
 
 #include "mainEzspStateMachine.h"
+
+#ifdef USE_CPPTHREADS
+static bool stop = false;
+static std::condition_variable cv;
+static std::mutex m;
+#endif
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -55,10 +66,12 @@ int main(int argc, char **argv) {
     bool openGpCommissionningAtStartup = false;
     bool openZigbeeNetworkAtStartup = false;
     uint8_t authorizeChRqstAnswerTimeout = 0U;
+    int baudrate = 115200;
 
     static struct option longOptions[] = {
         {"reset-to-channel", 1, nullptr, 'c'},
         {"source-id", 1, nullptr, 's'},
+        {"baudrate", 1, nullptr, 'b'},
         {"remove-source-id", 1, nullptr, 'r'},
         {"serial-port", 1, nullptr, 'u'},
         {"open-zigbee", 0, nullptr, 'Z'},
@@ -69,7 +82,7 @@ int main(int argc, char **argv) {
         {"help", 0, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhwZGs:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhwZGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -85,7 +98,7 @@ int main(int argc, char **argv) {
                         std::string gpDevKeyStr;
                         gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
                         //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
-                        if (gpDevKeyStr.length() != 32) {
+                        if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
                             clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
                             return 1;
                         }
@@ -93,22 +106,19 @@ int main(int argc, char **argv) {
                             NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
                             if (gpDevKeyStr != "") {
                                 std::vector<uint8_t> argAsBytes;
-                                for (unsigned int i = 0; i < gpDevKeyStr.length(); i += 2) {
+                                for (unsigned int i = 0; i<16; i++) {
                                     uint8_t hiNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i], hiNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i] << "' at position " << i+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
                                         return 1;
                                     }
                                     uint8_t loNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i+1], loNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i+1] << "' at position " << i+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 for readability */
+                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
+                                        clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
                                         return 1;
                                     }
-                                    argAsBytes.push_back(static_cast<uint8_t>(hiNibble << 4) | loNibble);
+                                    keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
                                 }
-                                //for (uint8_t loop=0; loop<argAsBytes.size(); loop++) { std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(argAsBytes[loop]); }
-                                //std::cerr << "\n";
-                                keyValue = NSEZSP::EmberKeyData(argAsBytes);
                             }
                             gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
                         }
@@ -144,6 +154,9 @@ int main(int argc, char **argv) {
                 }
             }
             break;
+            case 'b':
+                baudrate = strtol(optarg, NULL, 10);
+                break;
             case 'u':
                 serialPort = optarg;
                 break;
@@ -180,18 +193,32 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver->open(serialPort, 57600) != 0) {
+    if (uartDriver->open(serialPort, baudrate) != 0) {
         clogE << "Failed opening serial port. Aborting\n";
         return 1;
     }
 
+#ifdef USE_CPPTHREADS
+    auto sighandler = [](int signal) {
+      stop = true;
+      cv.notify_one();
+    };
+    std::signal(SIGINT, sighandler);
+#endif
 	NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
 		} catch (const std::exception& e) {
+			clogE << "Aborting\n";
+#ifdef USE_RARITAN
 			exit(1);
+#endif
+#ifdef USE_CPPTHREADS
+			stop = true;
+			cv.notify_one();
+#endif
 		}
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
@@ -210,14 +237,14 @@ int main(int argc, char **argv) {
 	// lib_main.registerGPSourceIdCallback(cgpidobs);
 
 
-#ifdef USE_CPPTHREADS
-	std::string line;
-	std::getline(std::cin, line);
-#endif
 #ifdef USE_RARITAN
-	pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-	eventSelector.run();
+  pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+  eventSelector.run();
 #endif
-	clogI << "goodbye" << std::endl;
-    return 0;
+#ifdef USE_CPPTHREADS
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait(lk, []{return stop;});
+#endif
+  clogI << "goodbye" << std::endl;
+  return 0;
 }

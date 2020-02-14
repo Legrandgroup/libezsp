@@ -63,7 +63,7 @@ namespace NSSPI {
 
 typedef struct
 {
-    uint8_t ksch[(N_MAX_ROUNDS + 1) * N_BLOCK];
+    uint8_t ksch[(N_MAX_ROUNDS + 1) * IAes::AES_BLOCK_SIZE];
     uint8_t rnd;
 }aes_context;
 
@@ -73,8 +73,10 @@ class CAes : public IAes
 
         CAes();
 
-        void set_key( const uint8_t key[AES_KEY_SIZE] );
-        bool encrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK] );
+        void set_key( const uint8_t key[IAes::AES_KEY_SIZE] );
+        void set_key( const NSEZSP::EmberKeyData& key );
+
+        bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] );
 
         // encryption functions
         // \todo rewrite with class context
@@ -94,11 +96,11 @@ class CAes : public IAes
 
         // helper functions
         void copy_and_key( void *d, const void *s, const void *k );
-        void add_round_key( uint8_t d[N_BLOCK], const uint8_t k[N_BLOCK] );
-        void shift_sub_rows( uint8_t st[N_BLOCK] );
-        void inv_shift_sub_rows( uint8_t st[N_BLOCK] );
-        void mix_sub_columns( uint8_t dt[N_BLOCK] );
-        void inv_mix_sub_columns( uint8_t dt[N_BLOCK] );        
+        void add_round_key( uint8_t d[IAes::AES_BLOCK_SIZE], const uint8_t k[IAes::AES_BLOCK_SIZE] );
+        void shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
+        void inv_shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
+        void mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
+        void inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );        
 };
 
 } // namespace NSSPI

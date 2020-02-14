@@ -25,11 +25,11 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	MockUartScheduledByteDelivery(const NSSPI:ByteBuffer& scheduledBuffer=NSSPI:ByteBuffer(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
+	MockUartScheduledByteDelivery(const NSSPI::ByteBuffer& scheduledBuffer=NSSPI::ByteBuffer(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
 
 	/* Member variables */
 	std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
-	NSSPI:ByteBuffer byteBuffer;	/*!< The content of the emulated bytes */
+	NSSPI::ByteBuffer byteBuffer;	/*!< The content of the emulated bytes */
 };
 
 /**

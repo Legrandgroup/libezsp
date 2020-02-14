@@ -12,6 +12,8 @@
 
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 
+#include "spi/ILogger.h"
+
 using NSEZSP::CGpFrame;
 
 CGpFrame::CGpFrame():
@@ -71,21 +73,19 @@ std::string CGpFrame::String() const
 {
     std::stringstream buf;
 
-    buf << "CGpFrame : { ";
-    buf << "[link_value : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(link_value) << "]";
-    buf << "[sequence_number : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sequence_number) << "]";
-    buf << "[source_id : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(source_id) << "]";
-    buf << "[security : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(security) << "]";
-    buf << "[key_type : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(key_type) << "]";
-    buf << "[auto_commissioning : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(auto_commissioning) << "]";
-    buf << "[rx_after_tx : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(rx_after_tx) << "]";
-    buf << "[security_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(security_frame_counter) << "]";
-    buf << "[command_id : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(command_id) << "]";
-    buf << "[mic : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(mic) << "]";
-    buf << "[proxy_table_entry : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(proxy_table_entry) << "]";
-    buf << "[payload :";
-    for(uint8_t loop=0; loop<payload.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(payload[loop]); }
-    buf << "]";
+    buf << "CGpFrame: { ";
+    buf << "[link_value: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(link_value) << "]";
+    buf << "[sequence_number: 0x"<< std::hex << std::setw(2) << std::setfill('0') << +(sequence_number) << "]";
+    buf << "[source_id: " << std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(source_id) << "]";
+    buf << "[security: " << std::dec << static_cast<unsigned int>(this->security) << "]";
+    buf << "[key_type: " << std::dec << static_cast<unsigned int>(this->key_type) << "]";
+    buf << "[auto_commissioning: " << std::string(this->auto_commissioning?"Y":"N") << "]";
+    buf << "[rx_after_tx: " << std::string(this->rx_after_tx?"Y":"N") << "]";
+    buf << "[security_frame_counter: " << std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(security_frame_counter) << "]";
+    buf << "[command_id: " << std::hex << std::setw(2) << std::setfill('0') << +(command_id) << "]";
+    buf << "[mic: "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(mic) << "]";
+    buf << "[proxy_table_entry: 0x"<< std::hex << std::setw(2) << std::setfill('0') << +(proxy_table_entry) << "]";
+    buf << "[payload:" << NSSPI::Logger::byteSequenceToString(payload) << "]";
     buf << " }";
 
     return buf.str();

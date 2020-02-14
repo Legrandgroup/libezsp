@@ -39,6 +39,26 @@ inline uint32_t quad_u8_to_u32(const uint8_t highestByte3, const uint8_t byte2, 
 }
 
 /**
+ * @brief Get bits 7 to 4 of a 8-bit value (the high nibble)
+ *
+ * @param byte The 8-bit input value
+ * @return Bits 7 to 4 extracted and shifted to buts 3 to 0 as a byte (uint8_t)
+ */
+inline uint8_t u8_get_hi_nibble(const uint8_t byte) {
+	return static_cast<uint8_t>(byte >> 4);
+}
+
+/**
+ * @brief Get bits 3 to 0 of a 8-bit value (the low nibble)
+ *
+ * @param byte The 8-bit input value
+ * @return Bits 3 to 0 extracted as a byte (uint8_t)
+ */
+inline uint8_t u8_get_lo_nibble(const uint8_t byte) {
+	return static_cast<uint8_t>(byte & 0x0f);
+}
+
+/**
  * @brief Get bits 15 to 8 of a 16-bit value
  *
  * @param word The 16-bit input value
@@ -74,7 +94,7 @@ inline uint8_t u32_get_byte0(const uint32_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte1(const uint16_t word32) {
+inline uint8_t u32_get_byte1(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>8) & 0xFF);
 }
 
@@ -84,7 +104,7 @@ inline uint8_t u32_get_byte1(const uint16_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte2(const uint16_t word32) {
+inline uint8_t u32_get_byte2(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>16) & 0xFF);
 }
 
@@ -94,7 +114,7 @@ inline uint8_t u32_get_byte2(const uint16_t word32) {
  * @param word32 The 32-bit input value
  * @return The result as a byte (uint8_t)
 **/
-inline uint8_t u32_get_byte3(const uint16_t word32) {
+inline uint8_t u32_get_byte3(const uint32_t word32) {
 	return static_cast<uint8_t>((word32>>24) & 0xFF);
 }
 

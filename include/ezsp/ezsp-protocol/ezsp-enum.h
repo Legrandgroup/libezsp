@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <array>
 #include <string>
 
 #ifdef USE_RARITAN
@@ -37,7 +38,7 @@ typedef struct
 
 typedef struct
 {
-  std::vector<uint8_t> ext_pan_id;
+  std::vector<uint8_t> ext_pan_id; //  std::array<uint8_t, > ext_pan_id;
   uint16_t pan_id;
   uint8_t channel;
   bool open;
@@ -1036,10 +1037,10 @@ typedef enum
 }EmberKeyStructBitmask;
 
 constexpr int EMBER_KEY_DATA_BYTE_SIZE = 16;
-typedef std::vector<uint8_t> EmberKeyData;
+typedef std::array<uint8_t, EMBER_KEY_DATA_BYTE_SIZE> EmberKeyData;
 
 constexpr int EMBER_EUI64_BYTE_SIZE = 8;
-typedef std::vector<uint8_t> EmberEUI64;
+typedef std::array<uint8_t, EMBER_EUI64_BYTE_SIZE> EmberEUI64;
 
 typedef enum
 {
@@ -1075,7 +1076,7 @@ typedef uint8_t EmberGpSinkTableEntryStatus;
 
 constexpr int GP_SINK_LIST_ENTRIES = 2; // hardcoded to 2 which is the spec minimum (cf. A.3.4.2.2.6 Sink group list parameter from doc-14-0563-16-batt-green-power-spec_ProxyBasic.pdf)
 constexpr int EMBER_GP_SINK_LIST_ENTRY_SIZE = 11; // why ? first byte to 0xFF is for not used !
-typedef std::vector<uint8_t> EmberGpSinkListEntry;
+typedef std::vector<uint8_t> EmberGpSinkListEntry; // FIXME: sould change to typedef std::array<uint8_t, EMBER_GP_SINK_LIST_ENTRY_SIZE> EmberGpSinkListEntry;
 
 // assume this value is never reach for a frame counter
 constexpr uint32_t INVALID_FRAME_COUNTER = 0xFFFFFFFFU;
