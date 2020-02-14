@@ -2,11 +2,12 @@
  * @file IAes.h
  *
  * @brief Abstract interface to encrypt/decrypt AES block
- *
  */
 
 #ifndef __IAES_H__
 #define __IAES_H__
+
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 
 namespace NSSPI {
 
@@ -21,6 +22,7 @@ class IAes
         IAes() = default;
 
         virtual void set_key( const uint8_t key[IAes::AES_KEY_SIZE] ) = 0;
+        virtual void set_key( const NSEZSP::EmberKeyData& key ) = 0;
         virtual bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] ) = 0;
 
         // encryption functions

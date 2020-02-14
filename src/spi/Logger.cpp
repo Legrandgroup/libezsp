@@ -70,6 +70,21 @@ std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
 	}
 	return result.str();
 }
+
+std::string Logger::byteSequenceToString(const uint8_t* input, size_t size)
+{
+
+	std::ostringstream result;
+
+	for (unsigned int i = 0; i<size; i++) {
+		if (i != 0) {
+			result << " ";
+		}
+		result << Logger::byteToHexString(input[i]);
+	}
+	return result.str();
+}
+
 /*
 // This method is commented-out because NSSPI::ByteBuffer is currently inheriting from std::vector<uint8_t> that is handled above
 std::string Logger::byteSequenceToString(const NSSPI::ByteBuffer& input)
