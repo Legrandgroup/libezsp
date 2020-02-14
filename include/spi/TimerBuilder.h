@@ -7,14 +7,16 @@
 #define __TIMERBUILDER_H__
 
 #include <memory>
-#include "spi/ITimer.h"
+
+#include <ezsp/export.h>
+#include <spi/ITimer.h>
 
 namespace NSSPI {
 
 /**
  * @brief Factory class to generate RaritanTimer objects
  */
-class TimerBuilder {
+class LIBEXPORT TimerBuilder {
 public:
 	/**
 	 * @brief Constructor

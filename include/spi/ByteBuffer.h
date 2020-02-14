@@ -13,13 +13,15 @@
 #include <array>
 #include <stddef.h> // For size_t
 
+#include <ezsp/export.h>
+
 namespace NSSPI {
 
 /*
  * FIXME: This class would be better rewritten as encapsulating std::vector
  * Although this can be tedious, in this library, we don't use the full std::vector interface on ByteBuffer.
  */
-class ByteBuffer : public std::vector<uint8_t>
+class LIBEXPORT ByteBuffer : public std::vector<uint8_t>
 {
     typedef std::vector<uint8_t> _Base;
 

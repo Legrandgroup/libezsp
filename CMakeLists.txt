@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 
-#add_gcc_compiler_flags("-fvisibility=hidden")
-#add_gcc_compiler_cxxflags("-fvisibility-inlines-hidden")
+add_definitions("-fvisibility=hidden")
+add_definitions("-fvisibility-inlines-hidden")
 
 option(USE_GCOV "Use GCOV coverage profiler" OFF)
 if(USE_GCOV)

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <ezsp/export.h>
 #include <cstdint>
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include <ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h>
@@ -14,7 +15,7 @@ namespace NSEZSP {
 /**
  * @brief Class to encapsulate data representing a green power device
  */
-class CGpDevice
+class LIBEXPORT CGpDevice
 {
     public:
 		static const EmberKeyData UNKNOWN_KEY;

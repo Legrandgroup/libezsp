@@ -6,7 +6,6 @@
 
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
-#include "spi/GenericAsyncDataInputObservable.h"
 
 using NSEZSP::CEzspDongle;
 

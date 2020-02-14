@@ -10,9 +10,9 @@
 #include "ash.h"
 #include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
+#include <spi/GenericAsyncDataInputObservable.h>
 #include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
-#include "spi/GenericAsyncDataInputObservable.h"
 #include "spi/ByteBuffer.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
@@ -23,10 +23,6 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
     }SMsg;
 }
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
 namespace NSEZSP {
 
 /**
@@ -141,6 +137,3 @@ private:
 };
 
 } // namespace NSEZSP
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
