@@ -32,6 +32,6 @@ int main(int argc, char* argv[]) {
 #else
 	return CommandLineTestRunner::RunAllTests(argc, argv);
 #endif	// USE_CPPUTEST
-	
+
 	return 0;
 }
