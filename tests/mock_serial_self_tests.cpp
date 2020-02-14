@@ -125,7 +125,7 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
 	MockUartDriver uartDriver(wcb);
-	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+	if (uartDriver.open("/dev/ttyUSB0", 115200) != 0) {
 		FAILF("Failed opening mock serial port");
 	}
 
