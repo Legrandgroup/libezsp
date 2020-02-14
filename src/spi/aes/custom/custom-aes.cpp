@@ -354,6 +354,23 @@ void CAes::set_key( const uint8_t key[AES_KEY_SIZE] )
     }
 }
 
+void CAes::set_key( const NSEZSP::EmberKeyData& key )
+{
+    uint8_t key_buf[AES_KEY_SIZE];
+
+    if (AES_KEY_SIZE != key.size())
+    {
+        throw std::out_of_range("Wrong AES key size");
+    }
+
+    for (unsigned int i = 0; i<AES_KEY_SIZE; i++)
+    {
+        key_buf[i] = key[i];
+    }
+    this->set_key(key_buf);
+}
+
+
 // Encrypt a single block of 16 bytes
 bool CAes::encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] )
 {

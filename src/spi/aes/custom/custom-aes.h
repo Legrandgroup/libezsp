@@ -74,6 +74,8 @@ class CAes : public IAes
         CAes();
 
         void set_key( const uint8_t key[IAes::AES_KEY_SIZE] );
+        void set_key( const NSEZSP::EmberKeyData& key );
+
         bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] );
 
         //bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context

@@ -17,11 +17,22 @@
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
+#ifdef USE_CPPTHREADS
+#include <thread>
+#include <condition_variable>
+#include <csignal>
+#endif
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
 
 #include "mainEzspStateMachine.h"
+
+#ifdef USE_CPPTHREADS
+static bool stop = false;
+static std::condition_variable cv;
+static std::mutex m;
+#endif
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -55,10 +66,12 @@ int main(int argc, char **argv) {
     bool openGpCommissionningAtStartup = false;
     bool openZigbeeNetworkAtStartup = false;
     uint8_t authorizeChRqstAnswerTimeout = 0U;
+    int baudrate = 115200;
 
     static struct option longOptions[] = {
         {"reset-to-channel", 1, nullptr, 'c'},
         {"source-id", 1, nullptr, 's'},
+        {"baudrate", 1, nullptr, 'b'},
         {"remove-source-id", 1, nullptr, 'r'},
         {"serial-port", 1, nullptr, 'u'},
         {"open-zigbee", 0, nullptr, 'Z'},
@@ -69,7 +82,7 @@ int main(int argc, char **argv) {
         {"help", 0, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhwZGs:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhwZGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -141,6 +154,9 @@ int main(int argc, char **argv) {
                 }
             }
             break;
+            case 'b':
+                baudrate = strtol(optarg, NULL, 10);
+                break;
             case 'u':
                 serialPort = optarg;
                 break;
@@ -177,18 +193,32 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver->open(serialPort, 115200) != 0) {
+    if (uartDriver->open(serialPort, baudrate) != 0) {
         clogE << "Failed opening serial port. Aborting\n";
         return 1;
     }
 
+#ifdef USE_CPPTHREADS
+    auto sighandler = [](int signal) {
+      stop = true;
+      cv.notify_one();
+    };
+    std::signal(SIGINT, sighandler);
+#endif
 	NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
 		} catch (const std::exception& e) {
+			clogE << "Aborting\n";
+#ifdef USE_RARITAN
 			exit(1);
+#endif
+#ifdef USE_CPPTHREADS
+			stop = true;
+			cv.notify_one();
+#endif
 		}
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
@@ -207,14 +237,14 @@ int main(int argc, char **argv) {
 	// lib_main.registerGPSourceIdCallback(cgpidobs);
 
 
-#ifdef USE_CPPTHREADS
-	std::string line;
-	std::getline(std::cin, line);
-#endif
 #ifdef USE_RARITAN
-	pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-	eventSelector.run();
+  pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+  eventSelector.run();
 #endif
-	clogI << "goodbye" << std::endl;
-    return 0;
+#ifdef USE_CPPTHREADS
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait(lk, []{return stop;});
+#endif
+  clogI << "goodbye" << std::endl;
+  return 0;
 }
