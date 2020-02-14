@@ -8,18 +8,15 @@
 
 #include <set>
 #include <cstdlib>	// For size_t
-#include "spi/IAsyncDataInputObserver.h"
+#include <ezsp/export.h>
+#include <spi/IAsyncDataInputObserver.h>
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
 namespace NSSPI {
 
 /**
  * @brief An observable class that will invoke method handleInputData() on all its observers when new async data is received
  */
-class GenericAsyncDataInputObservable {
+class LIBEXPORT GenericAsyncDataInputObservable {
 public:
 	GenericAsyncDataInputObservable();
 	virtual ~GenericAsyncDataInputObservable() = default;
@@ -31,7 +28,7 @@ public:
 	 * @return true if the observer was successfully added
 	 */
 
-	bool registerObserver(IAsyncDataInputObserver* observer);
+	bool registerObserver(NSSPI::IAsyncDataInputObserver* observer);
 
 	/**
 	 * @brief Register a new observer
@@ -39,7 +36,7 @@ public:
 	 * @param observer The new observer to remove from the notification list
 	 * @return true if the observer was successfully removed
 	 */
-	bool unregisterObserver(IAsyncDataInputObserver* observer);
+	bool unregisterObserver(NSSPI::IAsyncDataInputObserver* observer);
 
 	/**
 	 * @brief Trigger a new notification to all registerd observers
@@ -50,11 +47,7 @@ public:
 	void notifyObservers(const unsigned char* inputData, const size_t inputDataLen);
 
 private:
-	std::set<IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
+	std::set<NSSPI::IAsyncDataInputObserver*> observers;	/*!< The list of registered observers */
 };
 
-} // namespace NSSPI
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
+} // namespace NSEZSP

@@ -17,16 +17,13 @@
 #pragma once
 
 #include <cstdint>
-#include "ezsp/ezsp-protocol/ezsp-enum.h"
-#include "ezsp/zbmessage/gpd-commissioning-command-payload.h" // BAD DEPENDANCY NEED TO BE INPROVE
+#include <ezsp/export.h>
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
+#include <ezsp/zbmessage/gpd-commissioning-command-payload.h> // BAD DEPENDANCY NEED TO BE INPROVE
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
 namespace NSEZSP {
 
-class CEmberGpSinkTableOption
+class LIBEXPORT CEmberGpSinkTableOption
 {
     public:
         /**
@@ -141,7 +138,3 @@ class CEmberGpSinkTableOption
 };
 
 } //namespace NSEZSP 
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
