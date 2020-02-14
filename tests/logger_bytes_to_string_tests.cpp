@@ -18,7 +18,7 @@ TEST(logger_bytes_to_string_tests, std_vector_to_string) {
 	vec.push_back(0x00);
 	
 	std::string result = NSSPI::Logger::byteSequenceToString(vec);
-	if (result != "55 0F 3A E0 00") {
+	if (result != "55 0f 3a e0 00") {
 		FAILF("Failed converting a vector to string: \"%s\"", result.c_str());
 	}
 	NOTIFYPASS();
@@ -42,7 +42,7 @@ TEST(logger_bytes_to_string_tests, std_array_to_string) {
 	arr.at(4) = 0x00;
 	
 	std::string result = NSSPI::Logger::byteSequenceToString(arr);
-	if (result != "55 0F 3A E0 00") {
+	if (result != "55 0f 3a e0 00") {
 		FAILF("Failed converting an array to string: \"%s\"", result.c_str());
 	}
 	NOTIFYPASS();
@@ -52,7 +52,7 @@ TEST(logger_bytes_to_string_tests, bytebuffer_to_string) {
 	NSSPI::ByteBuffer buf({ 0x55, 0x0f, 0x3a, 0xe0, 0x00 });
 	
 	std::string result = NSSPI::Logger::byteSequenceToString(buf);
-	if (result != "55 0F 3A E0 00") {
+	if (result != "55 0f 3a e0 00") {
 		FAILF("Failed converting an array to string: \"%s\"", result.c_str());
 	}
 	NOTIFYPASS();
