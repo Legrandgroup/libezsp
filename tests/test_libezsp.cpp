@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
 #ifndef USE_CPPUTEST
 	printf("*** Self test on mock serial ***\n");
-	unit_tests_mock_serial();
+	//unit_tests_mock_serial();
 	printf("*** Testing bytes container to string converter ***\n");
 	unit_tests_logger_bytes_to_string();
 	printf("*** Testing GP frames processing ***\n");
