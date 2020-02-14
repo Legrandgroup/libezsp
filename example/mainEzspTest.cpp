@@ -17,11 +17,22 @@
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
+#ifdef USE_CPPTHREADS
+#include <thread>
+#include <condition_variable>
+#include <csignal>
+#endif
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
 
 #include "mainEzspStateMachine.h"
+
+#ifdef USE_CPPTHREADS
+static bool stop = false;
+static std::condition_variable cv;
+static std::mutex m;
+#endif
 
 static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"\n");
@@ -182,13 +193,27 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+#ifdef USE_CPPTHREADS
+    auto sighandler = [](int signal) {
+      stop = true;
+      cv.notify_one();
+    };
+    std::signal(SIGINT, sighandler);
+#endif
 	NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
 		} catch (const std::exception& e) {
+			clogE << "Aborting\n";
+#ifdef USE_RARITAN
 			exit(1);
+#endif
+#ifdef USE_CPPTHREADS
+			stop = true;
+			cv.notify_one();
+#endif
 		}
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
@@ -207,14 +232,14 @@ int main(int argc, char **argv) {
 	// lib_main.registerGPSourceIdCallback(cgpidobs);
 
 
-#ifdef USE_CPPTHREADS
-	std::string line;
-	std::getline(std::cin, line);
-#endif
 #ifdef USE_RARITAN
-	pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-	eventSelector.run();
+  pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+  eventSelector.run();
 #endif
-	clogI << "goodbye" << std::endl;
-    return 0;
+#ifdef USE_CPPTHREADS
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait(lk, []{return stop;});
+#endif
+  clogI << "goodbye" << std::endl;
+  return 0;
 }
