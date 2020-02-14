@@ -33,14 +33,22 @@ public:
 	/**
 	 * @brief Utility function to dump a byte vector to a string
 	 * 
-	 * @param[in] The vector container to dump
+	 * @param[in] input The vector container to dump
 	 */
 	static std::string byteSequenceToString(const std::vector<uint8_t>& input);
 
 	/**
+	 * @brief Utility function to dump bytes from a memory area to a string
+	 * 
+	 * @param[in] input The memory area to dump
+	 * @param size The number of bytes to dump from the @p input buffer
+	 */
+	static std::string byteSequenceToString(const uint8_t* input, size_t size);
+
+	/**
 	 * @brief Utility function to dump a byte array to a string
 	 * 
-	 * @param[in] The array container to dump
+	 * @param[in] input The array container to dump
 	 */
 	template <std::size_t N>
 	static std::string byteSequenceToString(const std::array<uint8_t, N>& input)
