@@ -11,10 +11,6 @@
 #include <pp/Tty.h>
 #include "spi/IUartDriver.h"
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
 namespace NSSPI {
 
 /**
@@ -91,7 +87,3 @@ private:
 };
 
 } // namespace NSSPI
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN

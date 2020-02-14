@@ -13,11 +13,6 @@
 #include "ezsp/zbmessage/zigbee-message.h"
 #include "spi/ByteBuffer.h"
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
-
 namespace NSEZSP {
 
 constexpr uint8_t DEFAULT_RADIO_CHANNEL = 11;
@@ -75,7 +70,3 @@ private:
 };
 
 } // namespace NSEZSP
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN

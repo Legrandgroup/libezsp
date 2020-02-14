@@ -11,11 +11,6 @@
 #include <array>
 #include <string>
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
-
 namespace NSEZSP {
 
 typedef enum
@@ -1082,7 +1077,3 @@ typedef std::vector<uint8_t> EmberGpSinkListEntry; // FIXME: sould change to typ
 constexpr uint32_t INVALID_FRAME_COUNTER = 0xFFFFFFFFU;
 
 } // namespace NSEZSP
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
