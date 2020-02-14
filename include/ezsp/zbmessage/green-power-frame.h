@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include <ezsp/export.h>
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include <ezsp/zbmessage/zcl.h>
 #include <spi/ByteBuffer.h>
@@ -32,7 +33,7 @@ typedef enum
     GPD_KEY_TYPE_DERIVED_INDIVIDUAL_KEY         =       0x7,
 }EGpSecurityKeyType;
 
-class CGpFrame
+class LIBEXPORT CGpFrame
 {
     public:
         /**

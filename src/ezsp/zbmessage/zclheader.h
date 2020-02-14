@@ -11,11 +11,6 @@
 #include "zclframecontrol.h"
 #include "spi/ByteBuffer.h"
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
-
 // manufacturer code
 constexpr uint16_t PUBLIC_CODE = 0xFFFF;
 constexpr uint16_t LG_MAN_CODE = 0x1021;
@@ -118,7 +113,3 @@ private:
 };
 
 } // namespace NSEZSP
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN

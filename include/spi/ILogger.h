@@ -63,12 +63,8 @@
 #include <ostream>
 #include <iostream>
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
-
-#include "spi/Logger.h"
+#include <ezsp/export.h>
+#include <spi/Logger.h>
 
 namespace NSSPI {
 
@@ -111,7 +107,7 @@ typedef enum {
  * @endcode
  *
  */
-class ILoggerStream : public std::streambuf {
+class LIBEXPORT ILoggerStream : public std::streambuf {
 public:
 	/**
 	 * @brief Default constructor
@@ -233,7 +229,7 @@ protected:
  * #include "ILogger.h"
  * @endcode
  */
-class ILogger {
+class LIBEXPORT ILogger {
 public:
 
 	/**
@@ -326,10 +322,6 @@ public:
 };
 
 } // namespace NSSPI
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
 
 /**
  * @defgroup ostream_compat_logger_macros ostream-style logging functions

@@ -125,7 +125,7 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
 	MockUartDriver uartDriver(wcb);
-	if (uartDriver.open("/dev/ttyUSB0", 57600) != 0) {
+	if (uartDriver.open("/dev/ttyUSB0", 115200) != 0) {
 		FAILF("Failed opening mock serial port");
 	}
 
@@ -141,12 +141,14 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
 	uartDriver.scheduleIncomingChunk(rBuf1);
-	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
-		FAILF("Expected 1 scheduled incoming chunk");
-	}
-	if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
-		FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
-	}
+	/* We cannot do the check below because the scheduler thread could already have popped the incoming chunk (delay has been set to 0 above) */
+	//~ if (uartDriver.getScheduledIncomingChunksCount() != 1) {
+		//~ FAILF("Expected 1 scheduled incoming chunk");
+	//~ }
+	/* Same as above, the scheduler thread could already have decremented scheduledReadBytesCount before we reach this test */
+	//~ if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		//~ FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
+	//~ }
 	std::cerr << "Waiting for scheduled read bytes...\n";
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));	/* 0.1s to make sure the secondary thread delivers the bytes in the background */
 	if (uartDriver.getScheduledIncomingChunksCount() != 0) {

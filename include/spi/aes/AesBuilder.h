@@ -3,11 +3,12 @@
 
 #include <cstdint>
 
-#include "spi/aes/IAes.h"
+#include <ezsp/export.h>
+#include <spi/aes/IAes.h>
 
 namespace NSSPI {
 
-class AesBuilder
+class LIBEXPORT AesBuilder
 {
 public:
   static IAes *create();

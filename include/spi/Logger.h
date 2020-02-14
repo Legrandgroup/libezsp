@@ -13,14 +13,15 @@
 #include <vector>
 #include <functional>
 
-#include "spi/ByteBuffer.h"
+#include <ezsp/export.h>
+#include <spi/ByteBuffer.h>
 
 namespace NSSPI {
 class ILogger;
 
 typedef std::unique_ptr<ILogger, std::function<void(ILogger*)>> ILoggerInstance;
 
-class Logger
+class LIBEXPORT Logger
 {
 public:
 	/**

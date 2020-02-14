@@ -3,12 +3,14 @@
 
 #include <memory>
 #include <functional>
-#include "spi/IUartDriver.h"
+
+#include <ezsp/export.h>
+#include <spi/IUartDriver.h>
 
 namespace NSSPI {
 
 typedef std::unique_ptr<IUartDriver, std::function<void(IUartDriver*)>> IUartDriverInstance;
-class UartDriverBuilder
+class LIBEXPORT UartDriverBuilder
 {
 public:
 	static IUartDriver *getInstance();

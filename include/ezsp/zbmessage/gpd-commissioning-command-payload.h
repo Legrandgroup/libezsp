@@ -7,8 +7,9 @@
 
 #include <cstdint>
 
-#include "ezsp/ezsp-protocol/ezsp-enum.h"
-#include "spi/ByteBuffer.h"
+#include <ezsp/export.h>
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
+#include <spi/ByteBuffer.h>
 
 namespace NSEZSP {
 
@@ -34,7 +35,7 @@ constexpr int COM_APP_INFO_MODEL_ID_PRESENT_BIT          = 1;
 constexpr int COM_APP_INFO_GPD_COMMANDS_PRESENT_BIT      = 2;
 constexpr int COM_APP_INFO_CLUSTER_LIST_PRESENT_BIT      = 3;
 
-class CGpdCommissioningPayload
+class LIBEXPORT CGpdCommissioningPayload
 {
     public:
 

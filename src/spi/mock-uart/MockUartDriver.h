@@ -12,15 +12,16 @@
 #include <chrono>
 #include <functional>
 
-#include "spi/IUartDriver.h"
-#include "spi/ByteBuffer.h"
+#include <ezsp/export.h>
+#include <spi/IUartDriver.h>
+#include <spi/ByteBuffer.h>
 
 namespace NSSPI {
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
  */
-class MockUartScheduledByteDelivery {
+class LIBEXPORT MockUartScheduledByteDelivery {
 public:
 	/**
 	 * @brief Default constructor
@@ -35,7 +36,7 @@ public:
 /**
  * @brief Class to implement an emulated (robotised) UART for unit testing
  */
-class MockUartDriver : public IUartDriver {
+class LIBEXPORT MockUartDriver : public IUartDriver {
 public:
 	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback; /*!< Callback type provided as argument to out constructor */
 

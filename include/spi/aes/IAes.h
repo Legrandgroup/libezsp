@@ -8,10 +8,11 @@
 #define __IAES_H__
 
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
+#include <ezsp/export.h>
 
 namespace NSSPI {
 
-class IAes
+class LIBEXPORT IAes
 {
     public:
         static constexpr uint8_t  AES_KEY_SIZE   = 16;

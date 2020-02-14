@@ -11,16 +11,13 @@
 #include <cstdint>
 #include <functional> // For std::function
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
+#include <ezsp/export.h>
 
 namespace NSSPI {
 
 class ITimer;
 
-class ITimerVisitor {
+class LIBEXPORT ITimerVisitor {
 protected:
 	friend class ITimer;
 	virtual void trigger(ITimer* triggeringTimer) = 0;
@@ -31,7 +28,7 @@ using TimerCallback = std::function<void (ITimer* triggeringTimer)>;
 /**
  * @brief Abstract class to execute a callback after a given timeout
  */
-class ITimer {
+class LIBEXPORT ITimer {
 public:
 	/**
 	 * @brief Default constructor
@@ -88,7 +85,3 @@ public:
 };
 
 } // namespace NSSPI
-
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
