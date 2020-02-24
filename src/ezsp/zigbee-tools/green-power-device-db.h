@@ -18,6 +18,11 @@ public:
     CGPDeviceDb();
 
     /**
+     * @brief Clear all entries in the database
+     */
+    void clear();
+
+    /**
      * @brief Add/overwrite a device entry in the database
      * 
      * @note If an element with the same source ID already exist, it will be overwritten

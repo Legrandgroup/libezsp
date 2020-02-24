@@ -258,14 +258,21 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 	// build gpf frame from ezsp rx message
 	CGpFrame gpf = CGpFrame(i_msg_receive);
 
+	CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
+#define BUILTIN_MIC_PROCESSING
+#ifdef BUILTIN_MIC_PROCESSING
 	// FIXME: temporary hardcoded key for tests only
 	if (gpf.validateMIC({0xAC, 0xF2, 0x03, 0x6F, 0x55, 0x82, 0x72, 0x08, 0x5A, 0x30, 0xB0, 0x6D, 0x60, 0x36, 0x83, 0x5F})) {
-		clogD << "MIC is correct!!!\n";
+		l_key_status = CGpdKeyStatus::Valid;
 	}
-	CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
+	else {
+		l_key_status = CGpdKeyStatus::Invalid;
+	}
+#else
 	if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
 	else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
 	else{ l_key_status = CGpdKeyStatus::Undefined; }
+#endif
 	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
 
 	clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<

@@ -3,6 +3,7 @@
  *
  * @brief Main API methods for libezsp
  */
+#define BUILTIN_MIC_PROCESSING
 
 #pragma once
 
@@ -19,6 +20,9 @@
 #include "ezsp/zigbee-tools/green-power-sink.h"
 #include "ezsp/zbmessage/green-power-device.h"
 #include "spi/ByteBuffer.h"
+#ifdef BUILTIN_MIC_PROCESSING
+#include "ezsp/zigbee-tools/green-power-device-db.h"
+#endif
 
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/green-power-observer.h"
@@ -187,6 +191,9 @@ private:
     unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
     bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
     std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
+#ifdef BUILTIN_MIC_PROCESSING
+    NSEZSP::CGPDeviceDb gp_dev_db;    /*!< A database of known Green Power devices */
+#endif
 
     void setState( CLibEzspInternalState i_new_state );
     CLibEzspInternalState getState() const;
