@@ -282,27 +282,20 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
 bool CLibEzspMain::clearAllGPDevices()
 {
-#ifdef BUILTIN_MIC_PROCESSING
-    this->gp_dev_db.clear();
-#else
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
-    if (!this->gp_sink.gpClearAllTables())
+    if (!this->gp_sink.clearAllGpds());
     {
         return false; /* Probably sink is not ready */
     }
-#endif
+
     this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 
 bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 {
-#ifdef BUILTIN_MIC_PROCESSING
-    clogE << "Not implemented\n";
-    exit(128);
-#else
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
@@ -310,7 +303,6 @@ bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
     {
         return false; /* Probably sink is not ready */
     }
-#endif
 
     this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
@@ -318,9 +310,6 @@ bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 
 bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
-#ifdef BUILTIN_MIC_PROCESSING
-    this->gp_dev_db.setDb(gpDevicesList);
-#else
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
@@ -328,7 +317,6 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
     {
         return false; /* Probably sink is not ready */
     }
-#endif
 
     this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;

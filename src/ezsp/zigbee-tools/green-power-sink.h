@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define BUILTIN_MIC_PROCESSING
+
 #include <map>
 #include <vector>
 
@@ -14,6 +16,9 @@
 #include "ezsp/green-power-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
+#ifdef BUILTIN_MIC_PROCESSING
+#include "ezsp/zigbee-tools/green-power-device-db.h"
+#endif
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
 #include "ezsp/ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
@@ -65,6 +70,13 @@ public:
      * @brief Force to close commissioning session
      */
     void closeCommissioningSession();
+
+    /**
+     * @brief Remove all previously configured green power device to this sink
+     *
+     * @return true if action can be done
+     */
+    bool clearAllGpds();
 
     /**
      * @brief Add a green power device to this sink
@@ -294,7 +306,9 @@ private:
     // gpdf send list
     std::map<uint8_t, uint32_t> gpd_send_list;
     std::set<CGpObserver*> observers;   /*!< List of observers of this class */
-
+#ifdef BUILTIN_MIC_PROCESSING
+    NSEZSP::CGPDeviceDb gp_dev_db;    /*!< A database of known Green Power devices */
+#endif
 };
 
 } // namespace NSEZSP

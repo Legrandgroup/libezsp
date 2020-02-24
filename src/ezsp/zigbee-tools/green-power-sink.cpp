@@ -141,6 +141,9 @@ bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
         return false;
     }
 
+#ifdef BUILTIN_MIC_PROCESSING
+    this->gp_dev_db.setDb(gpd);
+#else
     // Save GPD list in attributes for background processing
     gpds_to_register = gpd;
 
@@ -151,6 +154,21 @@ bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
     setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
 
     return true;
+#endif
+}
+
+bool CGpSink::clearAllGpds()
+{
+    if ( SINK_READY != sink_state ) {
+        return false;
+    }
+
+#ifdef BUILTIN_MIC_PROCESSING
+    this->gp_dev_db.clear();
+    return true;
+#else
+    return this->gpClearAllTables();
+#endif
 }
 
 bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
@@ -158,7 +176,10 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
     if( SINK_READY != sink_state ) {
         return false;
     }
-
+#ifdef BUILTIN_MIC_PROCESSING
+    clogE << "Not implemented\n";
+    exit(128);
+#else
     // Save GPD list in attributes for background processing
     gpds_to_remove = gpd;
 
@@ -168,6 +189,7 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
     // set state
     setSinkState(SINK_REMOVE_IN_PROGRESS);
     return true;
+#endif
 }
 
 void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(const NSSPI::ByteBuffer& i_msg_receive)
