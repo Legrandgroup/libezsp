@@ -37,6 +37,15 @@ public:
     void insertDevice(const NSEZSP::CGpDevice& i_gp_device);
 
     /**
+     * @brief Set the database with the exact content provided as specific device list
+     * 
+     * @note The database will contain exactly this device list, any previous content will be destroyed
+     * 
+     * @param[in] i_gp_devices_list A vector of CGpDevice objects containing the source ID and the key of all devices to store in the database
+     */
+    void setDb(const std::vector<NSEZSP::CGpDevice>& i_gp_devices_list);
+
+    /**
      * @brief Retrieve the key for a specific source ID
      * 
      * @param[in] i_source_id The source ID we are searching
