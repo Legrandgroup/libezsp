@@ -29,6 +29,7 @@ list(APPEND ezsp_SOURCES
 	zigbee-tools/green-power-sink.cpp
 	zigbee-tools/zigbee-messaging.cpp
 	zigbee-tools/zigbee-networking.cpp
+	zigbee-tools/green-power-device-db.cpp
 )
 
 add_library(ezsp SHARED ${ezsp_SOURCES})
