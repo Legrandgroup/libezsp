@@ -284,11 +284,17 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 #define BUILTIN_MIC_PROCESSING
 #ifdef BUILTIN_MIC_PROCESSING
 	// FIXME: temporary hardcoded key for tests only
-	if (gpf.validateMIC({0xAC, 0xF2, 0x03, 0x6F, 0x55, 0x82, 0x72, 0x08, 0x5A, 0x30, 0xB0, 0x6D, 0x60, 0x36, 0x83, 0x5F})) {
-		l_key_status = CGpdKeyStatus::Valid;
+	NSEZSP::EmberKeyData l_gpd_key;    /* Local storage for getKeyForSourceId()'s output key */
+	if (!this->gp_dev_db.getKeyForSourceId(gpf.getSourceId(), l_gpd_key)) {
+		l_key_status = CGpdKeyStatus::Undefined;    /* Unknown source ID... no key */
 	}
 	else {
-		l_key_status = CGpdKeyStatus::Invalid;
+		if (gpf.validateMIC(l_gpd_key)) {
+			l_key_status = CGpdKeyStatus::Valid;
+		}
+		else {
+			l_key_status = CGpdKeyStatus::Invalid;
+		}
 	}
 #else
 	if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
