@@ -18,7 +18,7 @@ RaritanTimer::RaritanTimer(pp::Selector& selector) :
 }
 
 RaritanTimer::RaritanTimer() :
-	RaritanTimer(*pp::SelectorSingleton::getInstance()
+	RaritanTimer(*pp::SelectorSingleton::getInstance())
 {
 }
 
