@@ -24,6 +24,13 @@ public:
 	RaritanTimer();
 
 	/**
+	 * @brief Constructor using a user-specified selector
+	 * 
+	 * @param selector The selector instance to use to run timers
+	 */
+	RaritanTimer(pp::Selector& selector);
+
+	/**
 	 * @brief Destructor
 	 */
 	virtual ~RaritanTimer();
