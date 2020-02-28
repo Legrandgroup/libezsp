@@ -8,6 +8,10 @@
 
 #include <memory>
 
+#ifdef USE_RARITAN
+#include <pp/Selector.h>
+#endif
+
 #include <ezsp/export.h>
 #include <spi/ITimer.h>
 
@@ -21,7 +25,16 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	TimerBuilder() = default;
+	TimerBuilder();
+
+#ifdef USE_RARITAN
+	/**
+	 * @brief Constructor using a specified selector
+	 * 
+	 * @param[in] selector The selector to use in the timer
+	 */
+	TimerBuilder(const pp::Selector& selector);
+#endif
 
 	/**
 	 * @brief Destructor
@@ -35,6 +48,9 @@ public:
 	 */
 	std::unique_ptr<ITimer> create() const;
 private:
+#ifdef USE_RARITAN
+	pp::Selector& eventSelector;	/*!< The raritan event selector */
+#endif
 };
 
 } // namespace NSSPI

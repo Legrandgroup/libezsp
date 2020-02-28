@@ -16,13 +16,24 @@ using NSSPI::TimerBuilder;
 using NSSPI::ITimer;
 
 #ifdef USE_RARITAN
-	typedef class NSSPI::RaritanTimer Timer;
-#endif
+TimerBuilder::TimerBuilder(const pp::Selector& selector) : eventSelector(selector) {
+}
+
+TimerBuilder::TimerBuilder() : TimerBuilder(*pp::SelectorSingleton::getInstance()) {
+}
+#endif	// USE_RARITAN
+
 #ifdef USE_CPPTHREADS
-	typedef class NSSPI::CppThreadsTimer Timer;
+TimerBuilder::TimerBuilder() {
+}
 #endif
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
-	return std::unique_ptr<ITimer>(new Timer());
+#ifdef USE_RARITAN
+	return std::unique_ptr<ITimer>(new NSSPI::RaritanTimer(selector));
+#endif
+#ifdef USE_CPPTHREADS
+	return std::unique_ptr<ITimer>(new NSSPI::CppThreadsTimer());
+#endif
 }
 
