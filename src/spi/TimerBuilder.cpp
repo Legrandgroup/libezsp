@@ -40,7 +40,7 @@ TimerBuilder::TimerBuilder() {
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
-	return std::unique_ptr<ITimer>(new NSSPI::RaritanTimer(selector));
+	return std::unique_ptr<ITimer>(new NSSPI::RaritanTimer(this->eventSelector));
 #endif
 #ifdef USE_CPPTHREADS
 	return std::unique_ptr<ITimer>(new NSSPI::CppThreadsTimer());
