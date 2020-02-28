@@ -49,7 +49,7 @@ public:
 	std::unique_ptr<ITimer> create() const;
 private:
 #ifdef USE_RARITAN
-	pp::Selector& eventSelector;	/*!< The raritan event selector */
+	const pp::Selector& eventSelector;	/*!< The raritan event selector */
 #endif
 };
 
