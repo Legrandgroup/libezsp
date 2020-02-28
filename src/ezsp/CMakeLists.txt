@@ -31,8 +31,21 @@ list(APPEND ezsp_SOURCES
 	zigbee-tools/zigbee-networking.cpp
 )
 
+set(ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/gpd.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/gpd.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/zcl.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/gpd-commissioning-command-payload.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/green-power-frame.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/green-power-device.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/byte-manip.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/export.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/ezsp-enum.h)
+
 add_library(ezsp SHARED ${ezsp_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-install(TARGETS ezsp DESTINATION lib)
+set_target_properties(ezsp PROPERTIES PUBLIC_HEADER "${ezsp_PUBLIC_HEADERS}")
+install(TARGETS ezsp LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/ezsp)
