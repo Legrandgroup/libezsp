@@ -48,7 +48,7 @@ public:
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel);
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -169,7 +169,7 @@ public:
     bool setChannel(uint8_t channel);
 
 private:
-    NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
+    const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
     uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
     uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */

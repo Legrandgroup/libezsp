@@ -38,7 +38,7 @@ enum class CEzspDongleMode {
 class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
 public:
-    CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer = nullptr );
+    CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
     virtual ~CEzspDongle() = default;
@@ -50,13 +50,10 @@ public:
      */
     bool open(NSSPI::IUartDriver *ipUart);
 
-
     /**
      * @brief Send Ezsp Command
      */
     void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
-
-
 
     /**
      * @brief Callback invoked on UART received bytes
@@ -93,10 +90,10 @@ private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
     CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
-    NSSPI::TimerBuilder &timer_factory;
-    NSSPI::IUartDriver *pUart;
-    CAsh ash;
-    CBootloaderPrompt blp;
+    const NSSPI::TimerBuilder& timerBuilder;
+    NSSPI::IUartDriver* pUart;
+    CAsh ash;   /*!< An ASH decoder instance */
+    CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;

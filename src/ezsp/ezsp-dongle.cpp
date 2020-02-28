@@ -9,15 +9,15 @@
 
 using NSEZSP::CEzspDongle;
 
-CEzspDongle::CEzspDongle( NSSPI::TimerBuilder &i_timer_factory, CEzspDongleObserver* ip_observer ) :
+CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer) :
 	firstStartup(true),
 	lastKnownMode(CEzspDongleMode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
-	timer_factory(i_timer_factory),
+	timerBuilder(i_timer_builder),
 	pUart(nullptr),
 	uartIncomingDataHandler(),
-	ash(static_cast<CAshCallback*>(this), timer_factory),
-	blp(timer_factory),
+	ash(static_cast<CAshCallback*>(this), timerBuilder),
+	blp(timerBuilder),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers()

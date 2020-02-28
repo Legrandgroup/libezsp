@@ -149,8 +149,7 @@ TEST_GROUP(gp_tests) {
 
 #define GPD_KEY { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa }
 TEST(gp_tests, gp_recv_sensor_measurement) {
-	TimerBuilder timerFactory;
-	GenericAsyncDataInputObservable uartIncomingDataHandler;
+	TimerBuilder timerBuilder;
 	Logger::getInstance()->setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
 	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
@@ -166,8 +165,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	std::vector<CGpDevice> GPDList;
 
 	//GPDList.push_back(CGpDevice(0x01510037U, GPD_KEY));
-	NSEZSP::CEzsp lib_main(&uartDriver, timerFactory, 26);
-	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, false, 0, false, false, GPDList, std::vector<uint32_t>(), false);
+	NSEZSP::CEzsp lib_main(&uartDriver, timerBuilder, 26);
+	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, false, 0, false, false, GPDList, std::vector<uint32_t>(), false);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);

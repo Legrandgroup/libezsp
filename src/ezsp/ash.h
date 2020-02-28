@@ -33,10 +33,10 @@ class CAsh : protected NSSPI::ITimerVisitor
 public:
     CAsh() = delete; /* Construction without arguments is not allowed */
     /**
-     * ipCb : call to inform state of ash
-     * ipTimer : timer object pass to ash module to manage internal timer
+     * @param ipCb Callback invoked on ASH state change
+     * @param i_timer_builder Timer builder object used to generate timers
      */
-    CAsh(CAshCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory);
+    CAsh(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
 
     CAsh(const CAsh&) = delete; /* No copy construction allowed */
 

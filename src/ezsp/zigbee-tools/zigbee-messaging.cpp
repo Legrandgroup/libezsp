@@ -10,7 +10,9 @@
 
 using NSEZSP::CZigbeeMessaging;
 
-CZigbeeMessaging::CZigbeeMessaging( CEzspDongle &i_dongle, NSSPI::TimerBuilder &i_timer_factory ): dongle(i_dongle), timer_factory(i_timer_factory)
+CZigbeeMessaging::CZigbeeMessaging(CEzspDongle& i_dongle, const NSSPI::TimerBuilder& i_timer_builder) :
+	dongle(i_dongle),
+	timerBuilder(i_timer_builder)
 {
     dongle.registerObserver(this);
 }

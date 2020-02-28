@@ -38,10 +38,10 @@ public:
      * @brief Default constructor with minimal args to initialize library
      *
      * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
-     * @param timerbuilder An ITimerFactory used to generate ITimer objects
+     * @param timerbuilder A timer builder object used to generate timers
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-	CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
+	CEzsp(NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
     /**
      * @brief Instruct the library to directly switch to firmware upgrade mode at init if we get an EZSP timeout

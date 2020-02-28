@@ -14,8 +14,8 @@
 
 using NSEZSP::CBootloaderPrompt;
 
-CBootloaderPrompt::CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory) :
-	timer(i_timer_factory.create()),
+CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder) :
+	timer(i_timer_builder.create()),
 	accumulatedBytes(),
 	bootloaderCLIChecked(false),
 	state(EBootloaderStage::RX_FLUSH),

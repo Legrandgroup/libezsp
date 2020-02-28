@@ -1,7 +1,7 @@
 /**
  * @file TimerBuilder.h
  *
- * @brief Concrete implementation of a ITimer factory
+ * @brief Builder returning a concrete implementation of ITimer objects (matching with the architecture)
  */
 #ifndef __TIMERBUILDER_H__
 #define __TIMERBUILDER_H__
@@ -14,12 +14,12 @@
 namespace NSSPI {
 
 /**
- * @brief Factory class to generate RaritanTimer objects
+ * @brief Utility class to generate ITimer objects
  */
 class LIBEXPORT TimerBuilder {
 public:
 	/**
-	 * @brief Constructor
+	 * @brief Default constructor
 	 */
 	TimerBuilder() = default;
 
@@ -39,4 +39,4 @@ private:
 
 } // namespace NSSPI
 
-#endif
+#endif	// __TIMERBUILDER_H__

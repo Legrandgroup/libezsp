@@ -43,8 +43,8 @@ using NSEZSP::CLibEzspMain;
 using NSEZSP::CLibEzspState;
 using NSEZSP::CLibEzspInternalState;
 
-CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
-        NSSPI::TimerBuilder &timerbuilder,
+CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver* uartDriver,
+        const NSSPI::TimerBuilder& timerbuilder,
         unsigned int requestZbNetworkResetToChannel) :
     timerbuilder(timerbuilder),
     exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
