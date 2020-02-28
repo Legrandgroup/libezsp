@@ -1,7 +1,9 @@
 /**
  * @file IAes.h
  *
- * @brief Abstract interface to encrypt/decrypt AES block
+ * @brief Abstract interface to which must conforms implementations of classes that encrypt/decrypt AES blocks
+ *
+ * Used as a dependency inversion paradigm
  */
 
 #ifndef __IAES_H__
