@@ -33,7 +33,7 @@ public:
 	 * 
 	 * @param[in] selector The selector to use in the timer
 	 */
-	TimerBuilder(const pp::Selector& selector);
+	TimerBuilder(pp::Selector& selector);
 #endif
 
 	/**
@@ -49,7 +49,7 @@ public:
 	std::unique_ptr<ITimer> create() const;
 private:
 #ifdef USE_RARITAN
-	const pp::Selector& eventSelector;	/*!< The raritan event selector */
+	pp::Selector& eventSelector;	/*!< The raritan event selector */
 #endif
 };
 

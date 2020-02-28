@@ -26,7 +26,7 @@ using NSSPI::TimerBuilder;
 using NSSPI::ITimer;
 
 #ifdef USE_RARITAN
-TimerBuilder::TimerBuilder(const pp::Selector& selector) : eventSelector(selector) {
+TimerBuilder::TimerBuilder(pp::Selector& selector) : eventSelector(selector) {
 }
 
 TimerBuilder::TimerBuilder() : TimerBuilder(*pp::SelectorSingleton::getInstance()) {
