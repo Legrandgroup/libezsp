@@ -7,6 +7,7 @@
 #include <map>
 
 #include <ezsp/export.h>
+#include <ezsp/config.h>
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <ezsp/zbmessage/green-power-frame.h>
