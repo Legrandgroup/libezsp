@@ -47,5 +47,10 @@ add_library(ezsp SHARED ${ezsp_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-set_target_properties(ezsp PROPERTIES PUBLIC_HEADER "${ezsp_PUBLIC_HEADERS}")
-install(TARGETS ezsp LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/ezsp)
+# The lines below are commented-out because preserving the directory structure for includes is not yet handlede properly by cmake
+# See for example: https://github.com/robotology/how-to-export-cpp-library/issues/8
+#set_target_properties(ezsp PROPERTIES PUBLIC_HEADER "${ezsp_PUBLIC_HEADERS}")
+#install(TARGETS ezsp LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/ezsp)
+install(TARGETS ezsp LIBRARY DESTINATION lib)
+# Instead we grab all include/ directory
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ezsp DESTINATION include)

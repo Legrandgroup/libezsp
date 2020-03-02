@@ -79,5 +79,15 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezspspi PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(ezspspi PUBLIC ${ezspspi_LIBS})
 
-set_target_properties(ezspspi PROPERTIES PUBLIC_HEADER "${ezspspi_PUBLIC_HEADERS}")
-install(TARGETS ezspspi LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/spi)
+# The lines below are commented-out because preserving the directory structure for includes is not yet handlede properly by cmake
+# See for example: https://github.com/robotology/how-to-export-cpp-library/issues/8
+#set_target_properties(ezspspi PROPERTIES PUBLIC_HEADER "${ezspspi_PUBLIC_HEADERS}")
+#install(TARGETS ezspspi LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/spi)
+install(TARGETS ezspspi LIBRARY DESTINATION lib)
+# Instead we grab all include/ directory
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/spi DESTINATION include)
+# And we manually list all subdirs (please remember to update this list below if you create a new subdir with exported headers)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/aes DESTINATION include/spi/aes FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/console DESTINATION include/spi/console FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/cppthreads DESTINATION include/spi/cppthreads FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/serial DESTINATION include/spi/serial FILES_MATCHING PATTERN "*.h")
