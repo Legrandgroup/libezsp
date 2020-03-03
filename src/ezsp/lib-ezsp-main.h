@@ -55,6 +55,13 @@ public:
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */
 
     /**
+     * @brief Startup the EZSP adapter
+     * 
+     * @note Calling this method is required after instanciation and before any data is sent to/received from the EZSP adatper
+     */
+    void start();
+
+    /**
      * @brief Register callback on current library state
      *
      * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
@@ -169,6 +176,7 @@ public:
     bool setChannel(uint8_t channel);
 
 private:
+    NSSPI::IUartDriver* uartDriver; /*!< A handle to the UART driver */
     const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
     uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */

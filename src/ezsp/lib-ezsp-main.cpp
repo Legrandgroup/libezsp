@@ -46,6 +46,7 @@ using NSEZSP::CLibEzspInternalState;
 CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver* uartDriver,
         const NSSPI::TimerBuilder& timerbuilder,
         unsigned int requestZbNetworkResetToChannel) :
+    uartDriver(uartDriver),
     timerbuilder(timerbuilder),
     exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
     exp_ezsp_max_version(7),    /* Expect EZSP version 7 maximum */
@@ -64,9 +65,18 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver* uartDriver,
     scanInProgress(false),
     lastChannelToEnergyScan()
 {
-    // uart
-    if( dongle.open(uartDriver) ) {
-        clogI << "CLibEzspMain open success !" << std::endl;
+}
+
+void CLibEzspMain::start()
+{
+    if (this->lib_state != CLibEzspInternalState::UNINITIALIZED) {
+        clogW << "Start invoked while already initialized\n";
+    }
+    if (this->uartDriver == nullptr) {
+        clogW << "Start invoked without an effective UART driver\n";
+    }
+    if( dongle.open(this->uartDriver) ) {
+        clogI << "EZSP serial port opened\n";
         dongle.registerObserver(this);
         gp_sink.registerObserver(this);
         setState(CLibEzspInternalState::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */

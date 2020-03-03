@@ -228,14 +228,14 @@ int main(int argc, char **argv) {
 	};
 	lib_main.registerGPFrameRecvCallback(gprecvobs);
 
-	// lib incomming greenpower sourceId callback
+	// Sample incoming greenpower sourceId callback
 	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
 	//     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
 	//              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
 	//              "\n";
 	// };
 	// lib_main.registerGPSourceIdCallback(cgpidobs);
-
+    lib_main.start();
 
 #ifdef USE_RARITAN
   pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());

@@ -1,3 +1,9 @@
+/**
+ * @file ezsp.h
+ * 
+ * @brief Facade for NSEZSP::CLibEzspMain, hiding its internals in the published headers
+ */
+
 #ifndef __EZSP_H__
 #define __EZSP_H__
 
@@ -43,6 +49,13 @@ public:
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
 	CEzsp(NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
+
+    /**
+     * @brief Startup the EZSP adapter
+     * 
+     * @note Calling this method is required after instanciation and before any data is sent to/received from the EZSP adatper
+     */
+    void start();
 
     /**
      * @brief Instruct the library to directly switch to firmware upgrade mode at init if we get an EZSP timeout
