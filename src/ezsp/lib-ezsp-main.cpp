@@ -75,11 +75,16 @@ void CLibEzspMain::start()
     if (this->uartDriver == nullptr) {
         clogW << "Start invoked without an effective UART driver\n";
     }
-    if( dongle.open(this->uartDriver) ) {
+    this->dongle.registerObserver(this);
+    this->gp_sink.registerObserver(this);
+    if (this->dongle.open(this->uartDriver) ) {
         clogI << "EZSP serial port opened\n";
-        dongle.registerObserver(this);
-        gp_sink.registerObserver(this);
         setState(CLibEzspInternalState::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */
+    }
+    else {
+        clogE << "EZSP failed opening serial port\n";
+        this->dongle.unregisterObserver(this);
+        this->gp_sink.registerObserver(this);
     }
 }
 
