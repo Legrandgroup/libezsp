@@ -233,28 +233,28 @@ int main(int argc, char **argv) {
     };
     lib_main.registerLibraryStateCallback(clibobs);
 
-	auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
-		fsm.onReceivedGPFrame(i_gpf);
-	};
-	lib_main.registerGPFrameRecvCallback(gprecvobs);
+    auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
+            fsm.onReceivedGPFrame(i_gpf);
+    };
+    lib_main.registerGPFrameRecvCallback(gprecvobs);
 
-	// Sample incoming greenpower sourceId callback
-	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
-	//     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
-	//              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
-	//              "\n";
-	// };
-	// lib_main.registerGPSourceIdCallback(cgpidobs);
+    // Sample incoming greenpower sourceId callback
+    // auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
+    //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
+    //              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
+    //              "\n";
+    // };
+    // lib_main.registerGPSourceIdCallback(cgpidobs);
     lib_main.start();
 
 #ifdef USE_RARITAN
-  pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-  eventSelector.run();
+    pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+    eventSelector.run();
 #endif
 #ifdef USE_CPPTHREADS
-  std::unique_lock<std::mutex> lk(m);
-  cv.wait(lk, []{return stop;});
+    std::unique_lock<std::mutex> lk(m);
+    cv.wait(lk, []{return stop;});
 #endif
-  clogI << "goodbye" << std::endl;
-  return 0;
+    clogI << "goodbye" << std::endl;
+    return 0;
 }
