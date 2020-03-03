@@ -29,7 +29,7 @@ enum class CLibEzspState {
     READY,                              /*<! Library is ready to work and process new command */
     INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
     SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    FW_UPGRADE,                         /*<! Firmware upgrade is in progress */
+    IN_XMODEM_XFR,                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */
 };
 
 class CLibEzspMain;

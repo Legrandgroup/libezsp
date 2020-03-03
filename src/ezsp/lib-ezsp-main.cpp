@@ -35,7 +35,8 @@ enum class CLibEzspInternalState {
     IN_BOOTLOADER_MENU,                 /*<! We are on the bootloader menu prompt */
     IN_XMODEM_XFR,                      /*<! We are currently doing X-Modem transfer */
     SWITCHING_TO_EZSP_MODE,             /*<! Switch to EZSP mode (normal mode) is pending */
-    SWITCH_TO_BOOTLOADER_IN_PROGRESS,
+    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! We are currently starting bootloader more */
+    TERMINATING,                        /*<! We are shutting down the library */
 };
 } // namespace NSEZSP
 
@@ -136,8 +137,10 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
                 break;
             case CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE:
             case CLibEzspInternalState::IN_BOOTLOADER_MENU:
-            case CLibEzspInternalState::IN_XMODEM_XFR:
                 obsStateCallback(CLibEzspState::SINK_BUSY);
+                break;
+            case CLibEzspInternalState::IN_XMODEM_XFR:
+                obsStateCallback(CLibEzspState::IN_XMODEM_XFR);
                 break;
             default:
                 clogE << "Internal state can not be translated to public state\n";
@@ -398,7 +401,6 @@ void CLibEzspMain::handleFirmwareXModemXfr()
 {
     this->setState(CLibEzspInternalState::IN_XMODEM_XFR);
     clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
-    exit(0);
 }
 
 void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive)

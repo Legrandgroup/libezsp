@@ -205,23 +205,33 @@ int main(int argc, char **argv) {
     };
     std::signal(SIGINT, sighandler);
 #endif
-	NSEZSP::CEzsp lib_main(uartDriver, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
-	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
-		try {
-			fsm.ezspStateChangeCallback(i_state);
-		} catch (const std::exception& e) {
-			clogE << "Aborting\n";
-#ifdef USE_RARITAN
-			exit(1);
-#endif
-#ifdef USE_CPPTHREADS
-			stop = true;
-			cv.notify_one();
-#endif
-		}
-	};
-	lib_main.registerLibraryStateCallback(clibobs);
+    NSEZSP::CEzsp lib_main(uartDriver, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
+    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
+        bool terminate = false; /* Shall we terminate the current process? */
+        bool failure = false;   /* Shall we exit with a failure? */
+        if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR) {
+            terminate = true;
+            failure = false;
+        }
+        try {
+                fsm.ezspStateChangeCallback(i_state);
+        } catch (const std::exception& e) {
+            clogE << "Aborting\n";
+            terminate = true;
+            failure = true;
+        }
+        if (terminate) {
+    #ifdef USE_RARITAN
+            exit(failure?1:0);
+    #endif
+    #ifdef USE_CPPTHREADS
+            stop = true;
+            cv.notify_one();
+    #endif
+        }
+    };
+    lib_main.registerLibraryStateCallback(clibobs);
 
 	auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
 		fsm.onReceivedGPFrame(i_gpf);

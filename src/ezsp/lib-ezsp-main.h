@@ -12,7 +12,6 @@
 #include "spi/TimerBuilder.h"
 
 #include <ezsp/ezsp.h>
-#include "ezsp/lib-ezsp-main.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
@@ -25,11 +24,6 @@
 
 
 namespace NSEZSP {
-/**
- * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
- */
-enum class CLibEzspInternalState;
-
 /**
  * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
  */
