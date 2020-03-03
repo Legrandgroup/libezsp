@@ -41,6 +41,7 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                               : this help\n");
     fprintf(f,"-d (--debug)                              : enable debug logs\n");
+    fprintf(f,"-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
     fprintf(f,"-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
     fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
     fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
