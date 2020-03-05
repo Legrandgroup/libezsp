@@ -260,13 +260,13 @@ int main(int argc, char **argv) {
             failure = true;
         }
         if (terminate) {
-    #ifdef USE_RARITAN
+#ifdef USE_RARITAN
             exit(failure?1:0);
-    #endif
-    #ifdef USE_CPPTHREADS
+#endif
+#ifdef USE_CPPTHREADS
             stop = true;
             cv.notify_one();
-    #endif
+#endif
         }
     };
     lib_main.registerLibraryStateCallback(clibobs);
