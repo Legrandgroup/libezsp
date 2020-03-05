@@ -87,6 +87,7 @@ class CAes : public IAes
         */
 
         // helper functions
+    private:
         void xor_block( void *d, const void *s );
 
 

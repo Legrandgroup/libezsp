@@ -35,10 +35,6 @@ class LIBEXPORT IAes
         bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
         bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
         */
-
-        // helper functions
-        virtual void xor_block( void *d, const void *s ) = 0;
-
 };
 
 } // namespace NSSPI

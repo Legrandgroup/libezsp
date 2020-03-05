@@ -50,11 +50,11 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_
             // MIC
             key_mic = quad_u8_to_u32(raw_message.at(l_idx+3),raw_message.at(l_idx+2),raw_message.at(l_idx+1),raw_message.at(l_idx));
             l_idx += 4;
-            // uncrypt key using default TC-LK (A.3.3.3.3 gpLinkKey:‘ZigBeeAlliance09’) with method A.3.7.1.2.3 Over- the-air protection of GPD key with TC-LK
-            uint8_t TC_LK[16] = {0x5A, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6C, 0x6C, 0x69, 0x61, 0x6E, 0x63, 0x65, 0x30, 0x39};
-            uint8_t nonce[16];
-            uint8_t in_key[16];
-            uint8_t out_key[16];
+            // Encrypt key using default TC-LK (A.3.3.3.3 gpLinkKey:"ZigBeeAlliance09") with method A.3.7.1.2.3 Over-the-air protection of GPD key with TC-LK
+            constexpr uint8_t TC_LK[EMBER_KEY_DATA_BYTE_SIZE] = {0x5A, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6C, 0x6C, 0x69, 0x61, 0x6E, 0x63, 0x65, 0x30, 0x39};
+            uint8_t nonce[EMBER_KEY_DATA_BYTE_SIZE];
+            uint8_t in_key[EMBER_KEY_DATA_BYTE_SIZE];
+            uint8_t out_key[EMBER_KEY_DATA_BYTE_SIZE];
             NSSPI::IAes *aes = NSSPI::AesBuilder::create();
             // fill in_key
             memcpy(in_key,key.data(),16);
@@ -67,22 +67,25 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_
             memcpy(&nonce[5], static_cast<const void *>(&i_src_id), 4);
             memcpy(&nonce[9], static_cast<const void *>(&i_src_id), 4);
             nonce[13] = 0x05;
-            nonce[14]=0x00;
-            nonce[15]=0x01;
+            nonce[14] = 0x00;
+            nonce[15] = 0x01;
 
             // decrypt
             aes->set_key(TC_LK);
-            aes->xor_block(out_key, nonce);
+            for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+                out_key[loop] ^= nonce[loop];
+            } // Was: aes->xor_block(out_key, nonce);
             aes->encrypt(out_key, out_key);
-            aes->xor_block(out_key, in_key);
+            for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
+                out_key[loop] ^= in_key[loop];
+            } // Was: aes->xor_block(out_key, in_key);
 
-            // fill key with uncrypt value
+            // Fill key with encrypted value
             for (unsigned int loop=0; loop<EMBER_KEY_DATA_BYTE_SIZE; loop++) {
                 key.at(loop) = out_key[loop];
             }
 
-            // verify MIC
-            // \todo
+            // TODO: FIXME: verify MIC before taking this key as granted...
         }
     }
 
