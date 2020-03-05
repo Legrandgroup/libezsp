@@ -180,6 +180,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		fsm.onReceivedGPFrame(i_gpf);
 	};
 	lib_main.registerGPFrameRecvCallback(gprecvobs);
+	
+	lib_main.start();
 
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);
