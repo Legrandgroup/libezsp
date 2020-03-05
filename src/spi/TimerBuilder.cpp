@@ -5,22 +5,23 @@
  */
 
 #include "spi/TimerBuilder.h"
-#undef __TIMER_BUILDER_SPI_FOUND__
+
+#undef __TIMER_SPI_FOUND__
 #ifdef USE_RARITAN
-#define __TIMER_BUILDER_SPI_FOUND__
+#define __TIMER_SPI_FOUND__
 #include "spi/raritan/RaritanTimer.h"
 #endif
 #ifdef USE_CPPTHREADS
-# ifdef __TIMER_BUILDER_SPI_FOUND__
-#  error Duplicate timer builder SPI in use
+# ifdef __TIMER_SPI_FOUND__
+#  error Duplicate timer SPI in use
 # endif
-#define __TIMER_BUILDER_SPI_FOUND__
+#define __TIMER_SPI_FOUND__
 #include "spi/cppthreads/CppThreadsTimer.h"
 #endif
-#ifndef __TIMER_BUILDER_SPI_FOUND__
-# error At least one timer builder SPI should be selected
+#ifndef __TIMER_SPI_FOUND__
+# error At least one timer SPI should be selected
 #endif
-#undef __TIMER_BUILDER_SPI_FOUND__
+#undef __TIMER_SPI_FOUND__
 
 using NSSPI::TimerBuilder;
 using NSSPI::ITimer;
