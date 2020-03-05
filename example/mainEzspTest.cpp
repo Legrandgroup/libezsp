@@ -1,7 +1,7 @@
 /**
  * @file mainEzspTest.cpp
  *
- * @brief Sample code for driving a dongle in the Raritan framework or using libserialcpp
+ * @brief Sample code for driving an EZSP adapter for GP reports
  */
 
 #include <iostream>
