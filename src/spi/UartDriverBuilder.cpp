@@ -6,26 +6,40 @@ using NSSPI::UartDriverBuilder;
 using NSSPI::IUartDriver;
 using NSSPI::IUartDriverInstance;
 
+#undef __UARTDRIVER_BUILDER_SPI_FOUND__
 #ifdef USE_RARITAN
+#define __UARTDRIVER_BUILDER_SPI_FOUND__
 #include "spi/raritan/RaritanUartDriver.h"
 namespace NSSPI {
 typedef RaritanUartDriver UartDriver;
 }
 #endif
 #ifdef USE_SERIALCPP
+# ifdef __UARTDRIVER_BUILDER_SPI_FOUND__
+#  error Duplicate timer builder SPI in use
+# endif
+#define __TIMER_BUILDER_SPI_FOUND__
 #include "spi/serial/SerialUartDriver.h"
 namespace NSSPI {
 typedef SerialUartDriver UartDriver;
 }
 #endif
 #ifdef USE_MOCKSERIAL
+# ifdef __UARTDRIVER_BUILDER_SPI_FOUND__
+#  error Duplicate timer builder SPI in use
+# endif
+#define __TIMER_BUILDER_SPI_FOUND__
 #include "spi/mock-uart/MockUartDriver.h"
 namespace NSSPI {
 typedef MockUartDriver UartDriver;
 }
 #endif
-using NSSPI::UartDriver;
+#ifndef __TIMER_BUILDER_SPI_FOUND__
+# error At least one timer builder SPI should be selected
+#endif
+#undef __TIMER_BUILDER_SPI_FOUND__
 
+using NSSPI::UartDriver;
 
 IUartDriverInstance UartDriverBuilder::mInstance;
 
