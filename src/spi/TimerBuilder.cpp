@@ -35,8 +35,7 @@ TimerBuilder::TimerBuilder() : TimerBuilder(*pp::SelectorSingleton::getInstance(
 #endif	// USE_RARITAN
 
 #ifdef USE_CPPTHREADS
-TimerBuilder::TimerBuilder() {
-}
+TimerBuilder::TimerBuilder() = default;
 #endif
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
