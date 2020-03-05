@@ -52,6 +52,97 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
 }
 
+/**
+ * @brief Parses an argument string containing source ID and key specifications and appends it to the list of added green power devices list
+ *
+ * @param[in] devSpecs A string containing the details of the GP device to add (source ID+key)
+ * @param[in,out] addedDevList The list of green power devices to which we should append the device to add
+ *
+ * @return 0 if devSpecs could be parsed, !=0 otherwise
+ */
+int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDevice>& addedDevList) {
+	std::istringstream gpDevDataStream(devSpecs);
+	std::string gpDevSourceIdstr;
+	if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
+		std::stringstream gpDevSourceIdStream;
+		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+		unsigned int sourceIdValue;
+		gpDevSourceIdStream >> sourceIdValue;
+		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+			std::string gpDevKeyStr;
+			gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
+			//std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
+			if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
+				clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+				return 1;
+			}
+			else {
+				NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
+				if (gpDevKeyStr != "") {
+					std::vector<uint8_t> argAsBytes;
+					for (unsigned int i = 0; i<16; i++) {
+						uint8_t hiNibble;
+						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
+							clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
+							return 1;
+						}
+						uint8_t loNibble;
+						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
+							clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
+							return 1;
+						}
+						keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
+					}
+				}
+				addedDevList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
+			}
+		}
+		else {
+			clogE << "Invalid source ID: " << optarg << "\n";
+		}
+	}
+	return 0;
+}
+
+/**
+ * @brief Parses an argument string containing source ID and key specifications and appends it to the list of added green power devices list
+ *
+ * @param[in] devSpecs A string containing the details of the GP device to remove (source ID)
+ * @param[in,out] removedDevList The list of green power devices to which we should append the device to remove
+ * @param[in,out] removeAllDevs A reference to a boolean variable that will be set to true if devSpecs is the string "*" (meaning remove all devices)
+ *
+ * @return 0 if devSpecs could be parsed, !=0 otherwise
+ */
+int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
+	std::string gpDevSourceIdstr(devSpecs);
+	if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
+		if (removedDevList.size()) {
+			std::cerr << "-r * option cannot be used if another -r was used\n";
+			return 1;
+		}
+		removeAllDevs = true;
+	}
+	else {
+		if (removeAllDevs) {
+			std::cerr << "-r option cannot be used if -r * was used\n";
+			return 1;
+		}
+		std::stringstream gpDevSourceIdStream;
+		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+		unsigned int sourceIdValue;
+		gpDevSourceIdStream >> sourceIdValue;
+		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+			removedDevList.push_back(sourceIdValue);
+		}
+		else {
+			clogE << "Invalid source ID: " << optarg << "\n";
+		}
+	}
+	return 0;
+}
+
 int main(int argc, char **argv) {
     NSSPI::IUartDriver *uartDriver = NSSPI::UartDriverBuilder::getInstance();
     NSSPI::TimerBuilder timerBuilder;
@@ -87,71 +178,17 @@ int main(int argc, char **argv) {
         switch (c) {
             case 's':
             {
-                std::istringstream gpDevDataStream(optarg);
-                std::string gpDevSourceIdstr;
-                if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
-                    std::stringstream gpDevSourceIdStream;
-                    gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
-                    unsigned int sourceIdValue;
-                    gpDevSourceIdStream >> sourceIdValue;
-                    if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                        //std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-                        std::string gpDevKeyStr;
-                        gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
-                        //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
-                        if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
-                            clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
-                            return 1;
-                        }
-                        else {
-                            NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
-                            if (gpDevKeyStr != "") {
-                                std::vector<uint8_t> argAsBytes;
-                                for (unsigned int i = 0; i<16; i++) {
-                                    uint8_t hiNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-                                        return 1;
-                                    }
-                                    uint8_t loNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-                                        return 1;
-                                    }
-                                    keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
-                                }
-                            }
-                            gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
-                        }
-                    }
-                    else {
-                        clogE << "Invalid source ID: " << optarg << "\n";
-                    }
+                int result = appendSourceIdToAddedDevList(optarg, gpAddedDevDataList);
+                if (result != 0) {
+                    return result;
                 }
             }
             break;
             case 'r':
             {
-                std::string gpDevSourceIdstr(optarg);
-                if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
-                    if (gpRemovedDevDataList.size()) {
-                        std::cerr << "-r * option cannot be used if another -r was used\n";
-                        return 1;
-                    }
-                    removeAllGpDevs = true;
-                }
-                else {
-                    std::stringstream gpDevSourceIdStream;
-                    gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
-                    unsigned int sourceIdValue;
-                    gpDevSourceIdStream >> sourceIdValue;
-                    if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                        //std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-                        gpRemovedDevDataList.push_back(sourceIdValue);
-                    }
-                    else {
-                        clogE << "Invalid source ID: " << optarg << "\n";
-                    }
+                int result = appendSourceIdToAddedDevList(optarg, gpRemovedDevDataList, removeAllGpDevs);
+                if (result != 0) {
+                    return result;
                 }
             }
             break;
