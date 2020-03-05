@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
             }
             break;
             case 'b':
-                baudrate = strtol(optarg, NULL, 10);
+                baudrate = strtol(optarg, nullptr, 10);
                 break;
             case 'u':
                 serialPort = optarg;
