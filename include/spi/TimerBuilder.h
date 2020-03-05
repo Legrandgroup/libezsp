@@ -8,11 +8,12 @@
 
 #include <memory>
 
+#include <ezsp/export.h>
+
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
 
-#include <ezsp/export.h>
 #include <spi/ITimer.h>
 
 namespace NSSPI {

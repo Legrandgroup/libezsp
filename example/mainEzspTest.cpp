@@ -14,6 +14,9 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+
+#include <ezsp/ezsp.h>
+
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
@@ -23,7 +26,6 @@
 #include <csignal>
 #endif
 
-#include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
 
 #include "mainEzspStateMachine.h"
