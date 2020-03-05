@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <array>
-#include <stddef.h> // For size_t
+#include <cstddef> // For size_t
 
 #include <ezsp/export.h>
 
