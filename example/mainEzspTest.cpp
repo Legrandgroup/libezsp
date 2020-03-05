@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
     }
 
 #ifdef USE_CPPTHREADS
-    auto sighandler = [](int signal) {
+    auto sighandler = [](int signalCaught) {
       stop = true;
       cv.notify_one();
     };
