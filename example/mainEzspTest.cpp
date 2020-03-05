@@ -37,21 +37,27 @@ static std::mutex m;
 #endif
 
 static void writeUsage(const std::string& progname, FILE *f) {
-	::fprintf(f,"\n");
-	::fprintf(f,"%s - sample test program for libezsp\n\n", progname.c_str());
-	::fprintf(f,"Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]]\n", progname.c_str());
-	::fprintf(f,"Available switches:\n");
-	::fprintf(f,"-h (--help)                               : this help\n");
-	::fprintf(f,"-d (--debug)                              : enable debug logs\n");
-	::fprintf(f,"-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
-	::fprintf(f,"-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
-	::fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
-	::fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
-	::fprintf(f,"-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds. Note: responses to MSP authenticated requests is always allowed\n");
-	::fprintf(f,"-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
-	::fprintf(f,"-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
-	::fprintf(f,"-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all (repeated -r options are allowed)\n");
-	::fprintf(f,"-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
+	::fprintf(f, "\n");
+	::fprintf(f, "%s - sample test program for libezsp\n\n", progname.c_str());
+	::fprintf(f, "Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]]"\
+	             "[-s source_id/key [-s source_id2/key...]]]\n", progname.c_str());
+	::fprintf(f, "Available switches:\n");
+	::fprintf(f, "-h (--help)                               : this help\n");
+	::fprintf(f, "-d (--debug)                              : enable debug logs\n");
+	::fprintf(f, "-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
+	::fprintf(f, "-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
+	::fprintf(f, "-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
+	::fprintf(f, "-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
+	::fprintf(f, "-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds.\n");
+	::fprintf(f, "                                            Note: responses to MSP authenticated requests is always allowed\n");
+	::fprintf(f, "-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
+	::fprintf(f, "-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
+	::fprintf(f, "-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all\n");
+	::fprintf(f, "                                            Note: repeated -r options are allowed\n");
+	::fprintf(f, "-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key\n");
+	::fprintf(f, "                                            id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245')\n");
+	::fprintf(f, "                                            key as a 16-byte/32-digit hex string\n");
+	::fprintf(f, "                                            Note: repeated -s options are allowed\n");
 }
 
 /**
