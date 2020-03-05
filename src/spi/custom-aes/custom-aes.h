@@ -54,7 +54,7 @@
 
 #include <cstdint>
 
-#include "spi/aes/IAes.h"
+#include "spi/IAes.h"
 
 constexpr uint8_t  N_MAX_ROUNDS =         14;
 
@@ -67,11 +67,11 @@ typedef struct
     uint8_t rnd;
 }aes_context;
 
-class CAes : public IAes
+class CustomAes : public IAes
 {
     public:
 
-        CAes();
+        CustomAes();
 
         void set_key( const uint8_t key[IAes::AES_KEY_SIZE] );
         void set_key( const NSEZSP::EmberKeyData& key );
@@ -83,6 +83,7 @@ class CAes : public IAes
         //bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
 
         // helper functions
+    private:
         void xor_block( void *d, const void *s );
 
 

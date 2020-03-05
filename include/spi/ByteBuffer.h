@@ -1,3 +1,4 @@
+
 /**
  * @file ByteBuffer.h
  *
@@ -11,7 +12,7 @@
 
 #include <vector>
 #include <array>
-#include <stddef.h> // For size_t
+#include <cstddef> // For size_t
 
 #include <ezsp/export.h>
 
@@ -27,7 +28,7 @@ class LIBEXPORT ByteBuffer : public std::vector<uint8_t> {
 public:
 	ByteBuffer() : _Base() { }
 	ByteBuffer(const ByteBuffer& other) : _Base(other) { }
-	~ByteBuffer() { }    /* This is to please SonarCloud because std::vector class's destructor is not virtual anyway */
+	~ByteBuffer() = default;    /* This is to please SonarCloud because std::vector class's destructor is not virtual anyway */
 #if __cplusplus >= 201103L
 	ByteBuffer(ByteBuffer&& other) noexcept : _Base(std::move(other)) { }
 	ByteBuffer(std::vector<uint8_t>&& other) noexcept : _Base(std::move(other)) { }

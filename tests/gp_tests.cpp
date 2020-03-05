@@ -73,7 +73,7 @@ public:
 		std::cout << " (current stage " << std::dec << this->stage << ")\n";
 		writtenCnt = cnt;
 		bool transitionMatch = false;
-		if (this->stageExpectedTransitions && this->stageExpectedTransitions->size() > this->stage) {	/* Do we have an expected read buffer to automatically transition to the next stage? */
+		if (this->stageExpectedTransitions!=nullptr && this->stageExpectedTransitions->size() > this->stage) {	/* Do we have an expected read buffer to automatically transition to the next stage? */
 			if (compareBufWithVector(buf, cnt, (*this->stageExpectedTransitions)[this->stage])) {
 				this->stage++;
 				transitionMatch = true;
@@ -172,7 +172,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 			fsm.ezspStateChangeCallback(i_state);
 		}
 		catch (const std::exception& e) {
-			exit(1);
+			FAILF("Internal exception in MaineStateMachine");
 		}
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
@@ -181,6 +181,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		fsm.onReceivedGPFrame(i_gpf);
 	};
 	lib_main.registerGPFrameRecvCallback(gprecvobs);
+	
+	lib_main.start();
 
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);

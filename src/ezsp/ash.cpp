@@ -189,10 +189,12 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
     // DATA;
     //-- clogD << "CAsh::decode DATA" << std::endl;
 
-    // update ack number, use incoming frm number
-    ackNum = (static_cast<uint8_t>(lo_msg.at(0)>>4) & 0x07) + 1;
+    // update ack number, use incoming frame number
+    ackNum = lo_msg.at(0);
+    ackNum >>= 4;
     ackNum &= 0x07;
-
+    ackNum++;
+    ackNum &= 0x07;
 
     lo_msg = dataRandomise(lo_msg,1);
 

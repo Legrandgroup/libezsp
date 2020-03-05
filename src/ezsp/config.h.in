@@ -1,4 +1,4 @@
-#ifdef __EZSP_CONFIG_H__
+#ifndef __EZSP_CONFIG_H__
 #define __EZSP_CONFIG_H__
 #cmakedefine USE_RARITAN @USE_RARITAN@
 #cmakedefine USE_CPPTHREADS @USE_CPPTHREADS@

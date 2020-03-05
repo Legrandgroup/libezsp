@@ -414,8 +414,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
 	clogD << "Got EZSP_VERSION payload:" << bufDump.str() << "\n";
 	// Check if the wanted protocol version, and display stack version
-	if (i_msg_receive.size() == 2)
-	{
+	if (i_msg_receive.size() == 2) {
 		clogW << "Got a truncated EZSP version frame from a buggy NCP, using only the 2 last bytes\n";
 		ezspStackVersion = dble_u8_to_u16(i_msg_receive[1], i_msg_receive[0]);
 		truncatedVersion = true;
@@ -427,49 +426,43 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 		ezspProtocolVersion = this->exp_ezsp_min_version;
 		ezspStackType = this->exp_stack_type;
 	}
-	if (i_msg_receive.size() == 4)
-	{
+	if (i_msg_receive.size() == 4) {
 		ezspProtocolVersion = i_msg_receive.at(0);
 		ezspStackType = i_msg_receive.at(1);
 		ezspStackVersion = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
-		if (ezspStackType != this->exp_stack_type)
-		{
+		if (ezspStackType != this->exp_stack_type) {
 			clogE << "Wrong stack type: " << static_cast<unsigned int>(ezspStackType) << ", expected: " << static_cast<unsigned int>(this->exp_stack_type) << "\n";
 			clogE << "Stopping init here. Library will not work with this EZSP adapter\n";
 			return;
 		}
-		if (ezspProtocolVersion > this->exp_ezsp_min_version || ezspProtocolVersion <= this->exp_ezsp_max_version)
-		{
+		if (ezspProtocolVersion > this->exp_ezsp_min_version || ezspProtocolVersion <= this->exp_ezsp_max_version) {
 			clogD << "Current EZSP version supported by dongle (" << static_cast<int>(ezspProtocolVersion) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_min_version) << "). Re-initializing dongle\n";
 			this->exp_ezsp_min_version = ezspProtocolVersion;
 			acceptableVersion = false;
 			dongleInit(this->exp_ezsp_min_version);
-            return;
+			return;
 		}
-		else if (ezspProtocolVersion == this->exp_ezsp_min_version &&  ezspProtocolVersion <= this->exp_ezsp_max_version)
-		{
+		else if (ezspProtocolVersion == this->exp_ezsp_min_version &&  ezspProtocolVersion <= this->exp_ezsp_max_version) {
 			acceptableVersion = true;
 		}
 	}
-	if (acceptableVersion)
-	{
+	if (acceptableVersion) {
 		std::stringstream bufDump;  /* Log message container */
 		// EZSP protocol version
 		bufDump << "EZSP adapter is using EZSPv" << std::dec << static_cast<unsigned int>(ezspProtocolVersion);
 
 		// Stack type
 		bufDump << " with stack type " << static_cast<unsigned int>(ezspStackType);
-		if (ezspStackType == 2)
-		{
+		if (ezspStackType == 2) {
 			bufDump << " (mesh)";
 		}
 
 		// Stack version (encoded in nibbles)
 		bufDump << ". Stack version: ";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 12) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 8) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 4) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion) & 0x0f) << "\n";
+		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_lo_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_lo_u8(ezspStackVersion))) << "\n";
 
 		/* Output the log message */
 		clogI << bufDump.str();
@@ -477,8 +470,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 		// Now request the XNCP version
 		this->getXncpInfo();
 	}
-	else
-	{
+	else {
 		clogI << "EZSP version " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << " is not supported !" << std::endl;
 	}
 }

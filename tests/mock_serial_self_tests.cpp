@@ -141,7 +141,7 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
 	uartDriver.scheduleIncomingChunk(rBuf1);
-	/* We cannot do the check below because the scheduler thread could already have popped the incoming chunk (delay has been set to 0 above) */
+	/* We cannot do the check below because the scheduler thread could already have popped the incoming chunk (it does so immediately, without waiting for the scheduled delay) */
 	//~ if (uartDriver.getScheduledIncomingChunksCount() != 1) {
 		//~ FAILF("Expected 1 scheduled incoming chunk");
 	//~ }
@@ -190,13 +190,14 @@ TEST(mock_serial_tests, mock_serial_delayed_multiple_read) {
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
 	uartDriver.scheduleIncomingChunk(rBuf1);
-	std::cerr << "Current scheduled read queue: " << uartDriver.scheduledIncomingChunksToString() << "\n";
-	if (uartDriver.getScheduledIncomingChunksCount() != 1) {
-		FAILF("Expected 1 scheduled incoming chunk");
-	}
-	if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
-		FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
-	}
+	/* We cannot do the check below because the scheduler thread could already have popped the incoming chunk (it does so immediately, without waiting for the scheduled delay) */
+	//~ std::cerr << "Current scheduled read queue: " << uartDriver.scheduledIncomingChunksToString() << "\n";
+	//~ if (uartDriver.getScheduledIncomingChunksCount() != 1) {
+		//~ FAILF("Expected 1 scheduled incoming chunk");
+	//~ }
+	//~ if (uartDriver.getScheduledIncomingBytesCount() != rBuf1.byteBuffer.size()) {
+		//~ FAILF("Expected %lu scheduled incoming bytes", rBuf1.byteBuffer.size());
+	//~ }
 	std::cerr << "Waiting for scheduled read bytes...\n";
 	std::this_thread::sleep_for(std::chrono::milliseconds(1100));	/* 1s + 10% just to make sure the secondary thread delivers the bytes in the background */
 	/* Sleep a bit more than 1s to all for scheduled incoming bytes to triggered a read */

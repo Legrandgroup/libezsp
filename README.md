@@ -1,4 +1,5 @@
 # libezsp
+[![Build Status](https://travis-ci.org/Legrandgroup/libezsp.svg?branch=release)](https://travis-ci.org/Legrandgroup/libezsp)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=legrandgroup_libezsp&metric=alert_status)](https://sonarcloud.io/dashboard?id=legrandgroup_libezsp)
 
 C++ library to send/receive wireless traffic to/from a UART transceiver using the EZSP protocol from Silicon Labs.
@@ -36,7 +37,7 @@ Now, we have to compile libezsp pointing it to the libserialcpp library we have 
 Issue the following commands in order to compile libezsp:
 ```
 cd ~/libezsp
-LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_CPPTHREADS=ON
+LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_RARITAN=OFF -DUSE_CPPTHREADS=ON -DUSE_SERIALCPP=ON -DUSE_AESCUSTOM=ON
 make
 ```
 

@@ -3,10 +3,6 @@ option(USE_CPPTHREADS "Use CPPTHREAD" OFF)
 
 if(USE_CPPTHREADS)
 set(USE_RARITAN OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -DUSE_CPPTHREADS")
-endif()
-if(USE_RARITAN)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -DUSE_RARITAN")
 endif()
 
 add_executable(mainEzspTest mainEzspTest.cpp)

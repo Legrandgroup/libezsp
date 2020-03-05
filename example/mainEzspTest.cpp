@@ -1,7 +1,7 @@
 /**
  * @file mainEzspTest.cpp
  *
- * @brief Sample code for driving a dongle in the Raritan framework or using libserialcpp
+ * @brief Sample code for driving an EZSP adapter for GP reports
  */
 
 #include <iostream>
@@ -14,6 +14,9 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+
+#include <ezsp/ezsp.h>
+
 #ifdef USE_RARITAN
 #include <pp/Selector.h>
 #endif
@@ -23,7 +26,6 @@
 #include <csignal>
 #endif
 
-#include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
 
 #include "mainEzspStateMachine.h"
@@ -34,22 +36,119 @@ static std::condition_variable cv;
 static std::mutex m;
 #endif
 
-static void writeUsage(const char* progname, FILE *f) {
-    fprintf(f,"\n");
-    fprintf(f,"%s - sample test program for libezsp\n\n", progname);
-    fprintf(f,"Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]]\n", progname);
-    fprintf(f,"Available switches:\n");
-    fprintf(f,"-h (--help)                               : this help\n");
-    fprintf(f,"-d (--debug)                              : enable debug logs\n");
-    fprintf(f,"-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
-    fprintf(f,"-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
-    fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
-    fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
-    fprintf(f,"-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds. Note: responses to MSP authenticated requests is always allowed\n");
-    fprintf(f,"-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
-    fprintf(f,"-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
-    fprintf(f,"-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all (repeated -r options are allowed)\n");
-    fprintf(f,"-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key, id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245'), and key as a 16-byte/32-digit hex string (repeated -s options are allowed)\n");
+static void writeUsage(const std::string& progname, FILE *f) {
+	::fprintf(f, "\n");
+	::fprintf(f, "%s - sample test program for libezsp\n\n", progname.c_str());
+	::fprintf(f, "Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]]"\
+	             "[-s source_id/key [-s source_id2/key...]]]\n", progname.c_str());
+	::fprintf(f, "Available switches:\n");
+	::fprintf(f, "-h (--help)                               : this help\n");
+	::fprintf(f, "-d (--debug)                              : enable debug logs\n");
+	::fprintf(f, "-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
+	::fprintf(f, "-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
+	::fprintf(f, "-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
+	::fprintf(f, "-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
+	::fprintf(f, "-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds.\n");
+	::fprintf(f, "                                            Note: responses to MSP authenticated requests is always allowed\n");
+	::fprintf(f, "-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
+	::fprintf(f, "-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
+	::fprintf(f, "-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all\n");
+	::fprintf(f, "                                            Note: repeated -r options are allowed\n");
+	::fprintf(f, "-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key\n");
+	::fprintf(f, "                                            id being formatted as a 8-digit hexadecimal string (eg: 'ffae1245')\n");
+	::fprintf(f, "                                            key as a 16-byte/32-digit hex string\n");
+	::fprintf(f, "                                            Note: repeated -s options are allowed\n");
+}
+
+/**
+ * @brief Parses an argument string containing source ID and key specifications and appends it to the list of added green power devices list
+ *
+ * @param[in] devSpecs A string containing the details of the GP device to add (source ID+key)
+ * @param[in,out] addedDevList The list of green power devices to which we should append the device to add
+ *
+ * @return 0 if devSpecs could be parsed, !=0 otherwise
+ */
+int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDevice>& addedDevList) {
+	std::istringstream gpDevDataStream(devSpecs);
+	std::string gpDevSourceIdstr;
+	if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
+		std::stringstream gpDevSourceIdStream;
+		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+		unsigned int sourceIdValue;
+		gpDevSourceIdStream >> sourceIdValue;
+		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+			std::string gpDevKeyStr;
+			gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
+			//std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
+			if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
+				clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+				return 1;
+			}
+			else {
+				NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
+				if (gpDevKeyStr != "") {
+					std::vector<uint8_t> argAsBytes;
+					for (unsigned int i = 0; i<16; i++) {
+						uint8_t hiNibble;
+						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
+							clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
+							return 1;
+						}
+						uint8_t loNibble;
+						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
+							clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
+							return 1;
+						}
+						keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
+					}
+				}
+				addedDevList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
+			}
+		}
+		else {
+			clogE << "Invalid source ID: " << ::optarg << "\n";
+		}
+	}
+	return 0;
+}
+
+/**
+ * @brief Parses an argument string containing source ID and key specifications and appends it to the list of added green power devices list
+ *
+ * @param[in] devSpecs A string containing the details of the GP device to remove (source ID)
+ * @param[in,out] removedDevList The list of green power devices to which we should append the device to remove
+ * @param[in,out] removeAllDevs A reference to a boolean variable that will be set to true if devSpecs is the string "*" (meaning remove all devices)
+ *
+ * @return 0 if devSpecs could be parsed, !=0 otherwise
+ */
+int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
+	std::string gpDevSourceIdstr(devSpecs);
+	if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
+		if (removedDevList.size()) {
+			std::cerr << "-r * option cannot be used if another -r was used\n";
+			return 1;
+		}
+		removeAllDevs = true;
+	}
+	else {
+		if (removeAllDevs) {
+			std::cerr << "-r option cannot be used if -r * was used\n";
+			return 1;
+		}
+		std::stringstream gpDevSourceIdStream;
+		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+		unsigned int sourceIdValue;
+		gpDevSourceIdStream >> sourceIdValue;
+		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
+			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+			removedDevList.push_back(sourceIdValue);
+		}
+		else {
+			clogE << "Invalid source ID: " << ::optarg << "\n";
+		}
+	}
+	return 0;
 }
 
 int main(int argc, char **argv) {
@@ -87,88 +186,34 @@ int main(int argc, char **argv) {
         switch (c) {
             case 's':
             {
-                std::istringstream gpDevDataStream(optarg);
-                std::string gpDevSourceIdstr;
-                if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
-                    std::stringstream gpDevSourceIdStream;
-                    gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
-                    unsigned int sourceIdValue;
-                    gpDevSourceIdStream >> sourceIdValue;
-                    if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                        //std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-                        std::string gpDevKeyStr;
-                        gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
-                        //std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
-                        if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
-                            clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
-                            return 1;
-                        }
-                        else {
-                            NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
-                            if (gpDevKeyStr != "") {
-                                std::vector<uint8_t> argAsBytes;
-                                for (unsigned int i = 0; i<16; i++) {
-                                    uint8_t hiNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-                                        return 1;
-                                    }
-                                    uint8_t loNibble;
-                                    if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
-                                        clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-                                        return 1;
-                                    }
-                                    keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
-                                }
-                            }
-                            gpAddedDevDataList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
-                        }
-                    }
-                    else {
-                        clogE << "Invalid source ID: " << optarg << "\n";
-                    }
+                int result = appendSourceIdToAddedDevList(::optarg, gpAddedDevDataList);
+                if (result != 0) {
+                    return result;
                 }
             }
             break;
             case 'r':
             {
-                std::string gpDevSourceIdstr(optarg);
-                if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
-                    if (gpRemovedDevDataList.size()) {
-                        std::cerr << "-r * option cannot be used if another -r was used\n";
-                        return 1;
-                    }
-                    removeAllGpDevs = true;
-                }
-                else {
-                    std::stringstream gpDevSourceIdStream;
-                    gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
-                    unsigned int sourceIdValue;
-                    gpDevSourceIdStream >> sourceIdValue;
-                    if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-                        //std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-                        gpRemovedDevDataList.push_back(sourceIdValue);
-                    }
-                    else {
-                        clogE << "Invalid source ID: " << optarg << "\n";
-                    }
+                int result = appendSourceIdToAddedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
+                if (result != 0) {
+                    return result;
                 }
             }
             break;
             case 'b':
-                baudrate = strtol(optarg, NULL, 10);
+                baudrate = strtol(::optarg, nullptr, 10);
                 break;
             case 'u':
-                serialPort = optarg;
+                serialPort = ::optarg;
                 break;
             case 'c':
-                std::stringstream(optarg) >> resetToChannel;
+                std::stringstream(::optarg) >> resetToChannel;
                 break;
             case 'G':
                 openGpCommissionningAtStartup = true;
                 break;
             case 'C':
-                authorizeChRqstAnswerTimeout = std::stoi(optarg);
+                authorizeChRqstAnswerTimeout = std::stoi(::optarg);
                 break;
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
@@ -180,12 +225,12 @@ int main(int argc, char **argv) {
                 debugEnabled = true;
                 break;
             case 'h':
-                writeUsage(argv[0], stdout);
+                writeUsage(std::string(argv[0]), stdout);
                 return 0;
             case '?':
             default:
                 std::cerr << "Unsupported command-line option. Exitting\n";
-                writeUsage(argv[0], stdout);
+                writeUsage(std::string(argv[0]), stdout);
                 return 1;
         }
     }
@@ -200,7 +245,7 @@ int main(int argc, char **argv) {
     }
 
 #ifdef USE_CPPTHREADS
-    auto sighandler = [](int signal) {
+    auto sighandler = [](int signalCaught) {
       stop = true;
       cv.notify_one();
     };
@@ -223,13 +268,13 @@ int main(int argc, char **argv) {
             failure = true;
         }
         if (terminate) {
-    #ifdef USE_RARITAN
+#ifdef USE_RARITAN
             exit(failure?1:0);
-    #endif
-    #ifdef USE_CPPTHREADS
+#endif
+#ifdef USE_CPPTHREADS
             stop = true;
             cv.notify_one();
-    #endif
+#endif
         }
     };
     lib_main.registerLibraryStateCallback(clibobs);

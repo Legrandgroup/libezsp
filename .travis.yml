@@ -9,7 +9,7 @@ addons:
 script:
  - mkdir -p build
  - cd build
- - cmake ${CMAKE_OPTIONS} -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_MOCKSERIAL=ON ..
+ - cmake ${CMAKE_OPTIONS} -DUSE_CPPTHREADS=ON -DUSE_AESCUSTOM=ON -DUSE_GCOV=y -DUSE_MOCKSERIAL=ON ..
  - build-wrapper-linux-x86-64 --out-dir bw-output/ make
  - ./tests/gptest
  - ../gcov.sh

@@ -28,14 +28,14 @@ CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder)
 std::string CBootloaderPrompt::trim(const std::string &s)
 {
 	auto start = s.begin();
-	while (start != s.end() && std::isspace(*start)) {
+	while (start != s.end() && (std::isspace(*start)!=0)) {
 		start++;
 	}
 
 	auto end = s.end();
 	do {
 		end--;
-	} while (std::distance(start, end) > 0 && std::isspace(*end));
+	} while (std::distance(start, end) > 0 && (std::isspace(*end)!=0));
 
 	return std::string(start, end + 1);
 }
@@ -186,9 +186,10 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data)
   std::string str(accumulatedBytes.begin(), accumulatedBytes.end());
   std::stringstream msg;
   msg << "Accumulated buffer:";
-  for (size_t loop=0; loop<accumulatedBytes.size(); loop++)
+  for (size_t loop=0; loop<accumulatedBytes.size(); loop++) {
       msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
           +(static_cast<const unsigned int>(accumulatedBytes[loop]));
+  }
   msg << "\n";
   clogD << msg.str();
   clogD << "Equivalent string: \"" << str << "\"\n";

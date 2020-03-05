@@ -32,10 +32,6 @@ class LIBEXPORT IAes
         //bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
         virtual bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[AES_BLOCK_SIZE]) = 0;
         //bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
-
-        // helper functions
-        virtual void xor_block( void *d, const void *s ) = 0;
-
 };
 
 } // namespace NSSPI
