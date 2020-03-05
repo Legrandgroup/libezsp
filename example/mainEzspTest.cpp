@@ -219,12 +219,12 @@ int main(int argc, char **argv) {
                 debugEnabled = true;
                 break;
             case 'h':
-                writeUsage(argv[0], stdout);
+                writeUsage(std::string(argv[0]), stdout);
                 return 0;
             case '?':
             default:
                 std::cerr << "Unsupported command-line option. Exitting\n";
-                writeUsage(argv[0], stdout);
+                writeUsage(std::string(argv[0]), stdout);
                 return 1;
         }
     }
