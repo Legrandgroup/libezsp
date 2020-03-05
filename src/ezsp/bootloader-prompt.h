@@ -40,9 +40,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param i_timer_factory Timer builder object used to generate timers
+     * @param i_timer_builder Timer builder object used to generate timers
      */
-    explicit CBootloaderPrompt(NSSPI::TimerBuilder &i_timer_factory);
+    explicit CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder);
 
     CBootloaderPrompt(const CBootloaderPrompt&) = delete; /* No copy construction allowed */
 

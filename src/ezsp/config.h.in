@@ -1,0 +1,8 @@
+#ifdef __EZSP_CONFIG_H__
+#define __EZSP_CONFIG_H__
+#cmakedefine USE_RARITAN @USE_RARITAN@
+#cmakedefine USE_CPPTHREADS @USE_CPPTHREADS@
+#cmakedefine USE_SERIALCPP @USE_SERIALCPP@
+#cmakedefine USE_MOCKSERIAL @USE_MOCKSERIAL@
+#cmakedefine USE_AESCUSTOM @USE_AESCUSTOM@
+#endif // __EZSP_CONFIG_H__

@@ -12,7 +12,6 @@
 #include "spi/TimerBuilder.h"
 
 #include <ezsp/ezsp.h>
-#include "ezsp/lib-ezsp-main.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
@@ -31,11 +30,6 @@ namespace NSEZSP {
 enum class CLibEzspInternalState;
 
 /**
- * @brief Internal states for CLibEzspMain (not exposed outside of CLibEzspMain)
- */
-enum class CLibEzspInternalState;
-
-/**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
  */
 class CLibEzspMain : public CEzspDongleObserver, CGpObserver
@@ -48,11 +42,18 @@ public:
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain( NSSPI::IUartDriver* uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel);
+    CLibEzspMain( NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
     CLibEzspMain& operator=(CLibEzspMain) = delete; /*<! No assignment allowed */
+
+    /**
+     * @brief Startup the EZSP adapter
+     * 
+     * @note Calling this method is required after instanciation and before any data is sent to/received from the EZSP adatper
+     */
+    void start();
 
     /**
      * @brief Register callback on current library state
@@ -169,7 +170,8 @@ public:
     bool setChannel(uint8_t channel);
 
 private:
-    NSSPI::TimerBuilder &timerbuilder;	/*!< A builder to create timer instances */
+    NSSPI::IUartDriver* uartDriver; /*!< A handle to the UART driver */
+    const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
     uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
     uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */

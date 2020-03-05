@@ -1,16 +1,29 @@
+/**
+ * @file ezsp.cpp
+ * 
+ * @brief Facade for NSEZSP::CLibEzspMain, hiding its internals in the published headers
+ */
+
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 
 using NSEZSP::CEzsp;
 
-CEzsp::CEzsp(NSSPI::IUartDriver *uartDriver, NSSPI::TimerBuilder &timerbuilder, unsigned int requestZbNetworkResetToChannel)
+CEzsp::CEzsp(NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel)
 {
 #ifndef DYNAMIC_ALLOCATION
 	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder, requestZbNetworkResetToChannel);
 	main = &g_MainEzsp;
 #else
 	main = new CLibEzspMain(uartDriver, timerbuilder, requestZbNetworkResetToChannel);
+
+	/* Memory leak here, if DYNAMIC_ALLOCATION is defined, main is allocated but never de-allocated */
 #endif
+}
+
+void CEzsp::start()
+{
+	main->start();
 }
 
 void CEzsp::forceFirmwareUpgradeOnInitTimeout()

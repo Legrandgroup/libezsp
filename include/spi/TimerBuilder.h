@@ -1,12 +1,16 @@
 /**
  * @file TimerBuilder.h
  *
- * @brief Concrete implementation of a ITimer factory
+ * @brief Builder returning a concrete implementation of ITimer objects (matching with the architecture)
  */
 #ifndef __TIMERBUILDER_H__
 #define __TIMERBUILDER_H__
 
 #include <memory>
+
+#ifdef USE_RARITAN
+#include <pp/Selector.h>
+#endif
 
 #include <ezsp/export.h>
 #include <spi/ITimer.h>
@@ -14,14 +18,23 @@
 namespace NSSPI {
 
 /**
- * @brief Factory class to generate RaritanTimer objects
+ * @brief Utility class to generate ITimer objects
  */
 class LIBEXPORT TimerBuilder {
 public:
 	/**
-	 * @brief Constructor
+	 * @brief Default constructor
 	 */
-	TimerBuilder() = default;
+	TimerBuilder();
+
+#ifdef USE_RARITAN
+	/**
+	 * @brief Constructor using a specified selector
+	 * 
+	 * @param[in] selector The selector to use in the timer
+	 */
+	TimerBuilder(pp::Selector& selector);
+#endif
 
 	/**
 	 * @brief Destructor
@@ -35,8 +48,11 @@ public:
 	 */
 	std::unique_ptr<ITimer> create() const;
 private:
+#ifdef USE_RARITAN
+	pp::Selector& eventSelector;	/*!< The raritan event selector */
+#endif
 };
 
 } // namespace NSSPI
 
-#endif
+#endif	// __TIMERBUILDER_H__

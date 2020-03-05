@@ -45,8 +45,8 @@ private :
 
 int main() {
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	TimerBuilder factory();
-	std::unique_ptr<ITimer> newTimer(factory.create());
+	TimerBuilder timerBuilder();
+	std::unique_ptr<ITimer> newTimer(timerBuilder.create());
 	newTimer->start(10000, [](ITimer* triggeringTimer) {
 		clogI << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});

@@ -6,7 +6,8 @@
  * Used as a dependency inversion paradigm
  */
 
-#pragma once
+#ifndef __ITIMER_H__
+#define __ITIMER_H__
 
 #include <cstdint>
 #include <functional> // For std::function
@@ -85,3 +86,5 @@ public:
 };
 
 } // namespace NSSPI
+
+#endif	// __ITIMER_H__

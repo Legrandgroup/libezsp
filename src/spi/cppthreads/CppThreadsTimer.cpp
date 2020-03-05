@@ -11,7 +11,13 @@
 using NSSPI::CppThreadsTimer;
 using NSSPI::ITimer;
 
-CppThreadsTimer::CppThreadsTimer() : started(false), waitingThread(), cv(), cv_m() { }
+CppThreadsTimer::CppThreadsTimer() :
+	started(false),
+	waitingThread(),
+	cv(),
+	cv_m()
+{
+}
 
 CppThreadsTimer::~CppThreadsTimer() {
 	this->stop();

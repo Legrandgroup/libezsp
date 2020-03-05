@@ -41,6 +41,7 @@ static void writeUsage(const char* progname, FILE *f) {
     fprintf(f,"Available switches:\n");
     fprintf(f,"-h (--help)                               : this help\n");
     fprintf(f,"-d (--debug)                              : enable debug logs\n");
+    fprintf(f,"-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
     fprintf(f,"-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
     fprintf(f,"-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
     fprintf(f,"-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
@@ -53,7 +54,7 @@ static void writeUsage(const char* progname, FILE *f) {
 
 int main(int argc, char **argv) {
     NSSPI::IUartDriver *uartDriver = NSSPI::UartDriverBuilder::getInstance();
-    NSSPI::TimerBuilder timerFactory;
+    NSSPI::TimerBuilder timerBuilder;
     int optionIndex=0;
     int c;
     bool debugEnabled = false;
@@ -205,46 +206,56 @@ int main(int argc, char **argv) {
     };
     std::signal(SIGINT, sighandler);
 #endif
-	NSEZSP::CEzsp lib_main(uartDriver, timerFactory, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-	NSMAIN::MainStateMachine fsm(timerFactory, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
-	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
-		try {
-			fsm.ezspStateChangeCallback(i_state);
-		} catch (const std::exception& e) {
-			clogE << "Aborting\n";
+    NSEZSP::CEzsp lib_main(uartDriver, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+    NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
+    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
+        bool terminate = false; /* Shall we terminate the current process? */
+        bool failure = false;   /* Shall we exit with a failure? */
+        if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR) {
+            terminate = true;
+            failure = false;
+        }
+        try {
+                fsm.ezspStateChangeCallback(i_state);
+        } catch (const std::exception& e) {
+            clogE << "Aborting\n";
+            terminate = true;
+            failure = true;
+        }
+        if (terminate) {
+    #ifdef USE_RARITAN
+            exit(failure?1:0);
+    #endif
+    #ifdef USE_CPPTHREADS
+            stop = true;
+            cv.notify_one();
+    #endif
+        }
+    };
+    lib_main.registerLibraryStateCallback(clibobs);
+
+    auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
+            fsm.onReceivedGPFrame(i_gpf);
+    };
+    lib_main.registerGPFrameRecvCallback(gprecvobs);
+
+    // Sample incoming greenpower sourceId callback
+    // auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
+    //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
+    //              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
+    //              "\n";
+    // };
+    // lib_main.registerGPSourceIdCallback(cgpidobs);
+    lib_main.start();
+
 #ifdef USE_RARITAN
-			exit(1);
+    pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+    eventSelector.run();
 #endif
 #ifdef USE_CPPTHREADS
-			stop = true;
-			cv.notify_one();
+    std::unique_lock<std::mutex> lk(m);
+    cv.wait(lk, []{return stop;});
 #endif
-		}
-	};
-	lib_main.registerLibraryStateCallback(clibobs);
-
-	auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
-		fsm.onReceivedGPFrame(i_gpf);
-	};
-	lib_main.registerGPFrameRecvCallback(gprecvobs);
-
-	// lib incomming greenpower sourceId callback
-	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
-	//     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
-	//              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
-	//              "\n";
-	// };
-	// lib_main.registerGPSourceIdCallback(cgpidobs);
-
-
-#ifdef USE_RARITAN
-  pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-  eventSelector.run();
-#endif
-#ifdef USE_CPPTHREADS
-  std::unique_lock<std::mutex> lk(m);
-  cv.wait(lk, []{return stop;});
-#endif
-  clogI << "goodbye" << std::endl;
-  return 0;
+    clogI << "goodbye" << std::endl;
+    return 0;
 }

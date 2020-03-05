@@ -35,7 +35,8 @@ enum class CLibEzspInternalState {
     IN_BOOTLOADER_MENU,                 /*<! We are on the bootloader menu prompt */
     IN_XMODEM_XFR,                      /*<! We are currently doing X-Modem transfer */
     SWITCHING_TO_EZSP_MODE,             /*<! Switch to EZSP mode (normal mode) is pending */
-    SWITCH_TO_BOOTLOADER_IN_PROGRESS,
+    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! We are currently starting bootloader more */
+    TERMINATING,                        /*<! We are shutting down the library */
 };
 } // namespace NSEZSP
 
@@ -43,9 +44,10 @@ using NSEZSP::CLibEzspMain;
 using NSEZSP::CLibEzspState;
 using NSEZSP::CLibEzspInternalState;
 
-CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
-        NSSPI::TimerBuilder &timerbuilder,
+CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver* uartDriver,
+        const NSSPI::TimerBuilder& timerbuilder,
         unsigned int requestZbNetworkResetToChannel) :
+    uartDriver(uartDriver),
     timerbuilder(timerbuilder),
     exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
     exp_ezsp_max_version(7),    /* Expect EZSP version 7 maximum */
@@ -64,12 +66,26 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriver *uartDriver,
     scanInProgress(false),
     lastChannelToEnergyScan()
 {
-    // uart
-    if( dongle.open(uartDriver) ) {
-        clogI << "CLibEzspMain open success !" << std::endl;
-        dongle.registerObserver(this);
-        gp_sink.registerObserver(this);
+}
+
+void CLibEzspMain::start()
+{
+    if (this->lib_state != CLibEzspInternalState::UNINITIALIZED) {
+        clogW << "Start invoked while already initialized\n";
+    }
+    if (this->uartDriver == nullptr) {
+        clogW << "Start invoked without an effective UART driver\n";
+    }
+    this->dongle.registerObserver(this);
+    this->gp_sink.registerObserver(this);
+    if (this->dongle.open(this->uartDriver) ) {
+        clogI << "EZSP serial port opened\n";
         setState(CLibEzspInternalState::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */
+    }
+    else {
+        clogE << "EZSP failed opening serial port\n";
+        this->dongle.unregisterObserver(this);
+        this->gp_sink.registerObserver(this);
     }
 }
 
@@ -121,8 +137,10 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
                 break;
             case CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE:
             case CLibEzspInternalState::IN_BOOTLOADER_MENU:
-            case CLibEzspInternalState::IN_XMODEM_XFR:
                 obsStateCallback(CLibEzspState::SINK_BUSY);
+                break;
+            case CLibEzspInternalState::IN_XMODEM_XFR:
+                obsStateCallback(CLibEzspState::IN_XMODEM_XFR);
                 break;
             default:
                 clogE << "Internal state can not be translated to public state\n";
@@ -383,7 +401,6 @@ void CLibEzspMain::handleFirmwareXModemXfr()
 {
     this->setState(CLibEzspInternalState::IN_XMODEM_XFR);
     clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
-    exit(0);
 }
 
 void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive)

@@ -24,6 +24,13 @@ public:
 	RaritanTimer();
 
 	/**
+	 * @brief Constructor using a user-specified selector
+	 * 
+	 * @param selector The selector instance to use to run timers
+	 */
+	RaritanTimer(pp::Selector& selector);
+
+	/**
 	 * @brief Destructor
 	 */
 	virtual ~RaritanTimer();
@@ -55,7 +62,7 @@ public:
 
 private:
 	bool started;	/*!< Is the timer currently running */
-	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
+	pp::Selector& m_eventSelector;	/*!< The raritan event selector */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };
 

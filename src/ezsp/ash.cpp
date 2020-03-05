@@ -35,12 +35,12 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-CAsh::CAsh(CAshCallback *ipCb, NSSPI::TimerBuilder &i_timer_factory) :
+CAsh::CAsh(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
 	ackNum(0),
 	frmNum(0),
 	seq_num(0),
 	stateConnected(false),
-	timer(i_timer_factory.create()),
+	timer(i_timer_builder.create()),
 	pCb(ipCb),
 	in_msg()
 {
