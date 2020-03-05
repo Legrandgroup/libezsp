@@ -9,7 +9,7 @@
 #include <cstring>
 
 #include "ezsp/byte-manip.h"
-#include "spi/aes/AesBuilder.h"
+#include "spi/AesBuilder.h"
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 
 using NSEZSP::CGpdCommissioningPayload;
