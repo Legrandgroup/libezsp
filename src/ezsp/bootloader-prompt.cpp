@@ -186,9 +186,10 @@ NSEZSP::EBootloaderStage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data)
   std::string str(accumulatedBytes.begin(), accumulatedBytes.end());
   std::stringstream msg;
   msg << "Accumulated buffer:";
-  for (size_t loop=0; loop<accumulatedBytes.size(); loop++)
+  for (size_t loop=0; loop<accumulatedBytes.size(); loop++) {
       msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
           +(static_cast<const unsigned int>(accumulatedBytes[loop]));
+  }
   msg << "\n";
   clogD << msg.str();
   clogD << "Equivalent string: \"" << str << "\"\n";
