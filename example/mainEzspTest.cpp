@@ -107,7 +107,7 @@ int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDe
 			}
 		}
 		else {
-			clogE << "Invalid source ID: " << optarg << "\n";
+			clogE << "Invalid source ID: " << ::optarg << "\n";
 		}
 	}
 	return 0;
@@ -145,7 +145,7 @@ int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& re
 			removedDevList.push_back(sourceIdValue);
 		}
 		else {
-			clogE << "Invalid source ID: " << optarg << "\n";
+			clogE << "Invalid source ID: " << ::optarg << "\n";
 		}
 	}
 	return 0;
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
         switch (c) {
             case 's':
             {
-                int result = appendSourceIdToAddedDevList(optarg, gpAddedDevDataList);
+                int result = appendSourceIdToAddedDevList(::optarg, gpAddedDevDataList);
                 if (result != 0) {
                     return result;
                 }
@@ -194,26 +194,26 @@ int main(int argc, char **argv) {
             break;
             case 'r':
             {
-                int result = appendSourceIdToAddedDevList(optarg, gpRemovedDevDataList, removeAllGpDevs);
+                int result = appendSourceIdToAddedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
                 if (result != 0) {
                     return result;
                 }
             }
             break;
             case 'b':
-                baudrate = strtol(optarg, nullptr, 10);
+                baudrate = strtol(::optarg, nullptr, 10);
                 break;
             case 'u':
-                serialPort = optarg;
+                serialPort = ::optarg;
                 break;
             case 'c':
-                std::stringstream(optarg) >> resetToChannel;
+                std::stringstream(::optarg) >> resetToChannel;
                 break;
             case 'G':
                 openGpCommissionningAtStartup = true;
                 break;
             case 'C':
-                authorizeChRqstAnswerTimeout = std::stoi(optarg);
+                authorizeChRqstAnswerTimeout = std::stoi(::optarg);
                 break;
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
