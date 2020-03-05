@@ -13,7 +13,7 @@
 #include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h"
 
 #include "spi/ILogger.h"
-#include "spi/aes/AesBuilder.h"
+#include "spi/AesBuilder.h"
 
 using NSEZSP::CGpFrame;
 
@@ -153,8 +153,7 @@ NSSPI::ByteBuffer CGpFrame::getLastXiAESCBC(const EmberKeyData& i_gpd_key, const
     }
     uint8_t X0buf[X0.size()];
     X0.toMemory(X0buf);
-    /* FIXME: memory leak below! */
-    NSSPI::IAes *aes = NSSPI::AesBuilder::create();
+    std::unique_ptr<NSSPI::IAes> aes = NSSPI::AesBuilder::create();
 
     aes->set_key(i_gpd_key);
 
@@ -224,7 +223,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
     add_auth_data.push_back(u16_get_lo_u8(La));
     add_auth_data.append(a);
 
-    NSSPI::IAes *aes = NSSPI::AesBuilder::create();
+    std::unique_ptr<NSSPI::IAes> aes = NSSPI::AesBuilder::create();
     NSSPI::ByteBuffer padded_add_auth_data(add_auth_data);    /* Prepare a copy of add_auth_data that is going to be padded to align it to an exact multiple of AES block below */
     {
         unsigned int padToAesBlockSize = padded_add_auth_data.size() % NSSPI::IAes::AES_BLOCK_SIZE;
