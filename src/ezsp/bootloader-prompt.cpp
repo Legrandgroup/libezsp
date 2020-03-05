@@ -28,14 +28,14 @@ CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder)
 std::string CBootloaderPrompt::trim(const std::string &s)
 {
 	auto start = s.begin();
-	while (start != s.end() && std::isspace(*start)) {
+	while (start != s.end() && (std::isspace(*start)!=0)) {
 		start++;
 	}
 
 	auto end = s.end();
 	do {
 		end--;
-	} while (std::distance(start, end) > 0 && std::isspace(*end));
+	} while (std::distance(start, end) > 0 && (std::isspace(*end)!=0));
 
 	return std::string(start, end + 1);
 }

@@ -171,7 +171,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
 		} catch (const std::exception& e) {
-			exit(1);
+			FAILF("Internal exception in MaineStateMachine");
 		}
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
