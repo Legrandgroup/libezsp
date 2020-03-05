@@ -39,7 +39,7 @@ static std::mutex m;
 static void writeUsage(const std::string& progname, FILE *f) {
 	::fprintf(f,"\n");
 	::fprintf(f,"%s - sample test program for libezsp\n\n", progname.c_str());
-	::fprintf(f,"Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]]\n", progname);
+	::fprintf(f,"Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]] [-s source_id/key [-s source_id2/key...]]]\n", progname.c_str());
 	::fprintf(f,"Available switches:\n");
 	::fprintf(f,"-h (--help)                               : this help\n");
 	::fprintf(f,"-d (--debug)                              : enable debug logs\n");
