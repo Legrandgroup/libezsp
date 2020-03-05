@@ -283,7 +283,6 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 	CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
 #define BUILTIN_MIC_PROCESSING
 #ifdef BUILTIN_MIC_PROCESSING
-	// FIXME: temporary hardcoded key for tests only
 	NSEZSP::EmberKeyData l_gpd_key;    /* Local storage for getKeyForSourceId()'s output key */
 	if (!this->gp_dev_db.getKeyForSourceId(gpf.getSourceId(), l_gpd_key)) {
 		l_key_status = CGpdKeyStatus::Undefined;    /* Unknown source ID... no key */
