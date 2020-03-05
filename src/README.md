@@ -95,13 +95,18 @@ This allows dependency inversion paradigm, where the connector depends on the li
 
 All dependency on an external service should be implemented as an SPI (Service Provider Interface), as dictated by [Hexagonal Architeture](https://en.wikipedia.org/wiki/Hexagonal_architecture_%28software%29).
 
-C++11 is supported and C++11 features are to be preferred over home-made equivalent using earlier versions of the standard C++. For example, you should use `std::thread`, constexpr, std::move that is available in C++11.
-C++14-specific and above (C++17, C++20 etc.) language and STL features should be avoided (see the [related Wikipedia page](https://en.wikipedia.org/wiki/C%2B%2B14)).
-All headers that will be required for compilation by a client code of the library should be placed inside the folder [include/](include/).
-In that folder, we will distinguish between headers for the libezsp itself (domain), located in [include/ezsp/](include/ezsp/) and the includes related to SPIs located in [include/spi/](include/spi/).
-All `#include` directives used inside the headers files located under [include/](include/) should be done using named header include (using angle brackets `<` and `>`).
-All classes that should be accessible from the outside should prefix the class name with the macro LIBEXPORT (defined in [include/ezsp/export.h](include/ezsp/export.h).
-All header files located under [include/](include/) should use #ifdef, #define, #endif preprocessor conditions in order not to double-declare content when included more than once (or they could also use `#pragma once`, but this is less portable).
+* C++11 is supported and C++11 features are to be preferred over home-made equivalent using earlier versions of the standard C++. For example, you should use `std::thread`, constexpr, std::move that is available in C++11.
+  C++14-specific and above (C++17, C++20 etc.) language and STL features should be avoided (see the [related Wikipedia page](https://en.wikipedia.org/wiki/C%2B%2B14)).
+
+* All headers that will be required for compilation by a client code of the library should be placed inside the folder [include/](include/).
+  In that folder, we will distinguish between headers for the libezsp itself (domain), located in [include/ezsp/](include/ezsp/) and the includes related to SPIs located in [include/spi/](include/spi/).
+
+* All `#include` directives used inside the headers files located under [include/](include/) should be done using named header include (using angle brackets `<` and `>`).
+
+* All classes that should be accessible from the outside should prefix the class name with the macro LIBEXPORT (defined in [include/ezsp/export.h](include/ezsp/export.h).
+  Most probably, all classes and functions in header files located in under [include/](include/) should thus declare themselves using LIBEXPORT.
+
+* All header files located under [include/](include/) should use #ifdef, #define, #endif preprocessor conditions in order not to double-declare content when included more than once (or they could also use `#pragma once`, but this is less portable).
 
 ## Indentation
 
@@ -135,4 +140,4 @@ cmake -DUSE_GCOV
 
 If all tests pass, the above command will succeed with exit code 0.
 
-Note that this is what travis runs when performing coverage check (see [.travis.yml](.travis.yml)
+Note that this is what travis runs when performing coverage check (see [.travis.yml](.travis.yml)).
