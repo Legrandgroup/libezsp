@@ -14,13 +14,6 @@ typedef NSSPI::CustomAes Aes;
 using NSSPI::AesBuilder;
 using NSSPI::IAes;
 
-IAes *AesBuilder::create()
-{
-#ifndef DYNAMIC_ALLOCATION
-	static Aes instance;
-
-	return &instance;
-#else //DYNAMIC_ALLOCATION
-	return new Aes();
-#endif
+std::unique_ptr<IAes> AesBuilder::create() {
+	return std::unique_ptr<IAes>(new Aes());
 }

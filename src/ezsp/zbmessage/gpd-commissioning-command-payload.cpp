@@ -55,7 +55,7 @@ CGpdCommissioningPayload::CGpdCommissioningPayload(const NSSPI::ByteBuffer& raw_
             uint8_t nonce[EMBER_KEY_DATA_BYTE_SIZE];
             uint8_t in_key[EMBER_KEY_DATA_BYTE_SIZE];
             uint8_t out_key[EMBER_KEY_DATA_BYTE_SIZE];
-            NSSPI::IAes *aes = NSSPI::AesBuilder::create();
+            std::unique_ptr<NSSPI::IAes> aes = NSSPI::AesBuilder::create();
             // fill in_key
             memcpy(in_key,key.data(),16);
             // fill out key
