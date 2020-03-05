@@ -466,10 +466,10 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 
 		// Stack version (encoded in nibbles)
 		bufDump << ". Stack version: ";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 12) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 8) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion >> 4) & 0xf) << ".";
-		bufDump << static_cast<unsigned int>((ezspStackVersion) & 0x0f) << "\n";
+		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_lo_u8(ezspStackVersion))) << ".";
+		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_lo_u8(ezspStackVersion))) << "\n";
 
 		/* Output the log message */
 		clogI << bufDump.str();

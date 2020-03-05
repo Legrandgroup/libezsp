@@ -73,7 +73,7 @@ public:
 		std::cout << " (current stage " << std::dec << this->stage << ")\n";
 		writtenCnt = cnt;
 		bool transitionMatch = false;
-		if (this->stageExpectedTransitions && this->stageExpectedTransitions->size() > this->stage) {	/* Do we have an expected read buffer to automatically transition to the next stage? */
+		if (this->stageExpectedTransitions!=nullptr && this->stageExpectedTransitions->size() > this->stage) {	/* Do we have an expected read buffer to automatically transition to the next stage? */
 			if (compareBufWithVector(buf, cnt, (*this->stageExpectedTransitions)[this->stage])) {
 				this->stage++;
 				transitionMatch = true;
