@@ -8,6 +8,8 @@ src/ezsp/Makefile
 src/spi/Makefile
 tests/Makefile
 example/Makefile
+src/spi/libezspspi.so
+src/ezsp/libezsp.so
 example/mainEzspTest
 /version.h
 *.o
