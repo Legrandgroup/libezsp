@@ -4,6 +4,10 @@
 CMakeFiles/
 /CMakeCache.txt
 cmake_install.cmake
+src/ezsp/Makefile
+src/spi/Makefile
+tests/Makefile
+example/Makefile
 example/mainEzspTest
 /version.h
 *.o
