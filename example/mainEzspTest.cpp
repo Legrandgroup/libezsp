@@ -113,7 +113,7 @@ static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP
 }
 
 /**
- * @brief Parses an argument string containing source ID and key specifications and appends it to the list of added green power devices list
+ * @brief Parses an argument string containing source ID and key specifications and appends it to the list of removed green power devices list
  *
  * @param[in] devSpecs A string containing the details of the GP device to remove (source ID)
  * @param[in,out] removedDevList The list of green power devices to which we should append the device to remove
@@ -121,7 +121,7 @@ static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP
  *
  * @return 0 if devSpecs could be parsed, !=0 otherwise
  */
-static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
+static int appendSourceIdToRemovedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
 	std::string gpDevSourceIdstr(devSpecs);
 	if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
 		if (removedDevList.size()) {
@@ -139,13 +139,12 @@ static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32
 		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
 		unsigned int sourceIdValue;
 		gpDevSourceIdStream >> sourceIdValue;
-		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-			removedDevList.push_back(sourceIdValue);
+		if (sourceIdValue >= static_cast<uint32_t>(-1)) {	/* Check overflow */
+			clogE << "Invalid source ID (overflows 32 bit): " << ::optarg << "\n";
+			return 1;
 		}
-		else {
-			clogE << "Invalid source ID: " << ::optarg << "\n";
-		}
+		//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+		removedDevList.push_back(sourceIdValue);
 	}
 	return 0;
 }
@@ -193,7 +192,7 @@ int main(int argc, char **argv) {
             break;
             case 'r':
             {
-                int result = appendSourceIdToAddedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
+                int result = appendSourceIdToRemovedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
                 if (result != 0) {
                     return result;
                 }
