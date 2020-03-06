@@ -119,12 +119,17 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 {
   NSSPI::ByteBuffer lo_msg;
 
+  /*
+  clogD << "Going to send ASH message, encoding EZSP message (seq=" << +(static_cast<unsigned char>(seq_num))
+        << ", " << +(static_cast<unsigned char>(frmNum))
+        << ", FC=0): " << NSSPI::Logger::byteSequenceToString(li_data) << "\n"; // Note FC is hardcoded to 0 below
+  */
   lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
   frmNum = (static_cast<uint8_t>(frmNum + 1)) & 0x07;
 
   if( 0 != i_data.at(0) )
   {
-    // WARNING for all frames except "VersionRequest" frame, add exteded header
+    // WARNING for all frames except "VersionRequest" frame, add extended header
     i_data.insert(i_data.begin(),0);
     i_data.insert(i_data.begin(),0xFF);
   }
@@ -210,16 +215,13 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
         lo_msg.erase(lo_msg.begin()+2);
       }
     }
+    
     /*
     // For debugging
-    std::stringstream msg;
-    msg << "Received ASH message, decoded as EZSP message (seq=" << +(static_cast<unsigned char>(lo_msg[0])) << " , FC=" << +(static_cast<unsigned char>(lo_msg[1])) << " , FrameID=" << +(static_cast<unsigned char>(lo_msg[2])) << "):";
-    for (size_t loop=1; loop<lo_msg.size(); loop++) {
-      msg << " " << std::hex << std::setw(2) << std::setfill('0') <<
-          +(static_cast<unsigned char>(lo_msg[loop]));
-    }
-    msg << "\n";
-    clogD << msg.str();
+    clogD << "Received ASH message, decoded as EZSP message (seq=" << +(static_cast<unsigned char>(lo_msg[0]))
+          << ", FC=" << +(static_cast<unsigned char>(lo_msg[1]))
+          << ", FrameID=" << +(static_cast<unsigned char>(lo_msg[2])) << "): "
+          << NSSPI::Logger::byteSequenceToString(lo_msg) << "\n";
     */
   }
   else if ((lo_msg.at(0) & 0x60) == 0x00) {
