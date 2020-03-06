@@ -31,9 +31,9 @@
 #include "mainEzspStateMachine.h"
 
 #ifdef USE_CPPTHREADS
-static bool stop = false;
-static std::condition_variable cv;
-static std::mutex m;
+static bool stop = false;   //NOSONAR
+static std::condition_variable cv;  //NOSONAR
+static std::mutex m;    //NOSONAR
 #endif
 
 static void writeUsage(const std::string& progname, FILE *f) {
@@ -68,48 +68,47 @@ static void writeUsage(const std::string& progname, FILE *f) {
  *
  * @return 0 if devSpecs could be parsed, !=0 otherwise
  */
-int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDevice>& addedDevList) {
+static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDevice>& addedDevList) {
 	std::istringstream gpDevDataStream(devSpecs);
 	std::string gpDevSourceIdstr;
-	if (std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) {
-		std::stringstream gpDevSourceIdStream;
-		gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
-		unsigned int sourceIdValue;
-		gpDevSourceIdStream >> sourceIdValue;
-		if (sourceIdValue < static_cast<uint32_t>(-1)) {	/* Protection against overflow */
-			//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
-			std::string gpDevKeyStr;
-			gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
-			//std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
-			if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
-				clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+	if (!std::getline(gpDevDataStream, gpDevSourceIdstr, '/')) { /* Cannot split using character '/' */
+		clogE << "Invalid input for source ID (should contain a '/'): " << ::optarg << "\n";
+		return 1;
+	}
+	std::stringstream gpDevSourceIdStream;
+	gpDevSourceIdStream << std::hex << gpDevSourceIdstr;
+	unsigned int sourceIdValue;
+	gpDevSourceIdStream >> sourceIdValue;
+	if (sourceIdValue >= static_cast<uint32_t>(-1)) {	/* Check overflow */
+		clogE << "Invalid source ID (overflows 32 bit): " << ::optarg << "\n";
+		return 1;
+	}
+	//std::cerr << "Read source ID part of arg: " << std::hex << std::setw(8) << std::setfill('0') << sourceIdValue << "\n";
+	std::string gpDevKeyStr;
+	gpDevDataStream >> gpDevKeyStr;	/* Read everything after the separator, which should be the key */
+	//std::cerr << "Read key part of arg: " << gpDevKeyStr << "\n";
+	if (gpDevKeyStr.length() != 2*16) {   /* 2 hex digits per byte (16=EMBER_KEY_DATA_BYTE_SIZE) */
+		clogE << "Invalid key length: " << gpDevKeyStr << " (should be 16-bytes long).\n";
+		return 1;
+	}
+	NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
+	if (gpDevKeyStr != "") {
+		std::vector<uint8_t> argAsBytes;
+		for (unsigned int i = 0; i<16; i++) {
+			uint8_t hiNibble;
+			if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
+				clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
 				return 1;
 			}
-			else {
-				NSEZSP::EmberKeyData keyValue(NSEZSP::CGpDevice::UNKNOWN_KEY);
-				if (gpDevKeyStr != "") {
-					std::vector<uint8_t> argAsBytes;
-					for (unsigned int i = 0; i<16; i++) {
-						uint8_t hiNibble;
-						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2], hiNibble)) {
-							clogE << "Invalid character '" << gpDevKeyStr[i*2] << "' at position " << i*2+1 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-							return 1;
-						}
-						uint8_t loNibble;
-						if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
-							clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
-							return 1;
-						}
-						keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
-					}
-				}
-				addedDevList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
+			uint8_t loNibble;
+			if (!NSMAIN::hexDigitToNibble(gpDevKeyStr[i*2+1], loNibble)) {
+				clogE << "Invalid character '" << gpDevKeyStr[i*2+1] << "' at position " << i*2+2 << " in key " << gpDevKeyStr << "\n"; /* Note: 1st char is identified by a position=1 and not index 0 for readability */
+				return 1;
 			}
-		}
-		else {
-			clogE << "Invalid source ID: " << ::optarg << "\n";
+			keyValue.at(i) = (static_cast<uint8_t>(hiNibble << 4) | loNibble);
 		}
 	}
+	addedDevList.push_back(NSEZSP::CGpDevice(sourceIdValue, keyValue));
 	return 0;
 }
 
@@ -122,7 +121,7 @@ int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<NSEZSP::CGpDe
  *
  * @return 0 if devSpecs could be parsed, !=0 otherwise
  */
-int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
+static int appendSourceIdToAddedDevList(const char* devSpecs, std::vector<uint32_t>& removedDevList, bool& removeAllDevs) {
 	std::string gpDevSourceIdstr(devSpecs);
 	if (gpDevSourceIdstr == "*") {  /* Remove all source IDs */
 		if (removedDevList.size()) {
