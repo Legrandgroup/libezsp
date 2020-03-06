@@ -212,7 +212,6 @@ void CEzspDongle::sendNextMsg( void )
         li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
         li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
 
-        //-- clogD << "CEzspDongle::sendCommand ash.DataFrame" << std::endl;
         l_enc_data = ash.DataFrame(li_data);
         if( nullptr != pUart )
         {
