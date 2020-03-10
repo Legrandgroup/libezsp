@@ -79,29 +79,29 @@ CGpFrame::CGpFrame(const NSSPI::ByteBuffer& raw_message):
 uint8_t CGpFrame::toNwkFCByteField() const
 {
     uint8_t nwkFC = 0;
-    nwkFC |= 0x00;  /* Assume bit 1 to 0 = 0b00 (Frame type = Data) */
-    nwkFC |= 0x0c;  /* Assume bit 5 to 2 = 0b0011 (Protocol version = 0x03) */
+    nwkFC |= 0x00U;  /* Assume bit 1 to 0 = 0b00 (Frame type = Data) */
+    nwkFC |= 0x0cU;  /* Assume bit 5 to 2 = 0b0011 (Protocol version = 0x03) */
     if (this->auto_commissioning) {
-        nwkFC |= 0x40;  /* Bit 6 is set when autocommissionning is true */
+        nwkFC |= 0x40U;  /* Bit 6 is set when autocommissionning is true */
     }
-    nwkFC |= 0x80;  /* Assume bit 7 is set (NWK frame extension is enabled) */
+    nwkFC |= 0x80U;  /* Assume bit 7 is set (NWK frame extension is enabled) */
     return nwkFC;
 }
 
 uint8_t CGpFrame::toExtNwkFCByteField() const
 {
     uint8_t extNwkFC = 0;
-    extNwkFC |= this->application_id & 0x07;  /* Bits 2 to 0 contain the application ID */
-    extNwkFC |= (static_cast<uint8_t>(this->security) & 0x03) << 3;    /* Bits 4 to 3 contain the security level */
+    extNwkFC |= this->application_id & 0x07U;  /* Bits 2 to 0 contain the application ID */
+    extNwkFC |= (static_cast<uint8_t>(this->security) & 0x03U) << 3;    /* Bits 4 to 3 contain the security level */
     if (this->key_type != EGpSecurityKeyType::GPD_KEY_TYPE_NO_KEY) {
-        extNwkFC |= 0x20;   /* Bit 5 is set if security is enabled */
+        extNwkFC |= 0x20U;   /* Bit 5 is set if security is enabled */
     }
     if (this->rx_after_tx) {
-        extNwkFC |= 0x40;   /* Bit 6 is set if RX after TX is true */
+        extNwkFC |= 0x40U;   /* Bit 6 is set if RX after TX is true */
     }
-    if (false) { /* Bit 7 is set if direction is to GPD (not in our case for received frames) */
-        extNwkFC |= 0x80;   /* Bit 7 is set if transmission is done to GPD, cleared if transmission is done from GPD */
-    }
+    // if (false) { /* Bit 7 is set if direction is to GPD (not in our case for received frames) */
+    //     extNwkFC |= 0x80U;   /* Bit 7 is set if transmission is done to GPD, cleared if transmission is done from GPD */
+    // }
     return extNwkFC;
 }
 
@@ -249,7 +249,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
        AES CCM's M value is 4 (4-bytes MIC)
        flags = CGpFrame::computeFlags(a.size(), 4, 2)
     */
-    uint8_t flags = 0x49;
+    uint8_t flags = 0x49U;
 
     NSSPI::ByteBuffer B0({flags});
     B0.append(nonce);
@@ -267,7 +267,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
         unsigned int padToAesBlockSize = B.size() % NSSPI::IAes::AES_BLOCK_SIZE;
         if (padToAesBlockSize>0) {  /* Only pad if there are remaining bytes outside of an AES block boundary */
             for (unsigned int i = 0; i<NSSPI::IAes::AES_BLOCK_SIZE - padToAesBlockSize; i++) {
-                B.push_back(0x00);  /* Pad with byte 0x00 */
+                B.push_back(0x00U);  /* Pad with byte 0x00 */
             }
         }
     }
@@ -294,7 +294,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
     clogD << "Running AES-CTR part of AES-CCM\n";
 
     NSSPI::ByteBuffer A0;
-    A0.push_back(flags & 0x03);
+    A0.push_back(flags & 0x03U);
     A0.append(nonce);
     A0.push_back(0x00);
     A0.push_back(0x00);
