@@ -21,7 +21,7 @@ void CGPDeviceDb::clear() {
 
 void CGPDeviceDb::insertDevice(uint32_t i_source_id, const NSEZSP::EmberKeyData& i_key) {
 	clogD << "Inserting source ID 0x" << std::hex << std::setw(4) << std::setfill('0') << i_source_id << "\n";
-	if (this->gp_dev_list.insert(std::make_pair(i_source_id, i_key)).second == false) {
+	if ( !(this->gp_dev_list.insert(std::make_pair(i_source_id, i_key)).second) ) {
 		clogW << "Overwriting source ID 0x" << std::hex << std::setw(4) << std::setfill('0') << i_source_id << "\n";
 	}
 }
