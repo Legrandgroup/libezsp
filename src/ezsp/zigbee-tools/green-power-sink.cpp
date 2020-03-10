@@ -310,8 +310,8 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 		}
 	}
 #else
+	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 	{
-		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 		l_key_status = CGpdKeyStatus::Undefined;
 		if (l_status == EEmberStatus::EMBER_SUCCESS) {
 			l_key_status = CGpdKeyStatus::Valid;
@@ -322,6 +322,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 		else {
 			l_key_status = CGpdKeyStatus::Undefined;
 		}
+	}
 #endif
 	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
 
@@ -338,7 +339,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 #ifdef USE_BUILTIN_MIC_PROCESSING
 		gpdKnown = this->gp_dev_db.isSourceIdInDb(gpf.getSourceId());
 #else
-		gpdKnown = gpf.getProxyTableEntry()!=0xFF?true:false;
+		gpdKnown = (gpf.getProxyTableEntry()!=0xFF);
 #endif
 		notifyObserversOfRxGpdId(gpf.getSourceId(), gpdKnown, l_key_status);
 	}
