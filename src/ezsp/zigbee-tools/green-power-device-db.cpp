@@ -55,3 +55,7 @@ bool CGPDeviceDb::getKeyForSourceId(uint32_t i_source_id, NSEZSP::EmberKeyData& 
 		return false;
 	}
 }
+
+bool CGPDeviceDb::isSourceIdInDb(uint32_t i_source_id) const {
+	return (this->gp_dev_list.find(i_source_id) != this->gp_dev_list.end());
+}

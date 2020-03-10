@@ -160,51 +160,49 @@ bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
 #endif
 }
 
-bool CGpSink::clearAllGpds()
-{
-    if (this->sink_state !=  SINK_READY) {
-        clogE << "Request to clearAllGpds() while not in SINK_READY state: " << std::dec << this->sink_state << "\n";
-        return false;
-    }
+bool CGpSink::clearAllGpds() {
+	if (this->sink_state !=  SINK_READY) {
+		clogE << "Request to clearAllGpds() while not in SINK_READY state: " << std::dec << this->sink_state << "\n";
+		return false;
+	}
 
 #ifdef USE_BUILTIN_MIC_PROCESSING
-    this->setSinkState(SINK_CLEAR_ALL);
-    this->gp_dev_db.clear();
-    this->setSinkState(SINK_READY);
-    return true;
+	this->setSinkState(SINK_CLEAR_ALL);
+	this->gp_dev_db.clear();
+	this->setSinkState(SINK_READY);
+	return true;
 #else
-    /* When performing the CLEAR ALL action directly inside the dongle:
-     * - The SINK_CLEAR_ALL will be set by gpClearAllTables() directly
-     * - The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
-     */
-    return this->gpClearAllTables();
+	/* When performing the CLEAR ALL action directly inside the dongle:
+	 * - The SINK_CLEAR_ALL will be set by gpClearAllTables() directly
+	 * - The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
+	 */
+	return this->gpClearAllTables();
 #endif
 }
 
-bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
-{
-    if( SINK_READY != sink_state ) {
-        return false;
-    }
-    this->setSinkState(SINK_REMOVE_IN_PROGRESS);
+bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd ) {
+	if( SINK_READY != sink_state ) {
+		return false;
+	}
+	this->setSinkState(SINK_REMOVE_IN_PROGRESS);
 #ifdef USE_BUILTIN_MIC_PROCESSING
-    for (auto it = gpd.begin(); it != gpd.end(); ++it) {
-        if (!this->gp_dev_db.removeDevice(*it)) {
-            clogW << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << *it << " not found in internal database\n";
-        }
-    }
-    this->setSinkState(SINK_READY);
+	for (auto it = gpd.begin(); it != gpd.end(); ++it) {
+		if (!this->gp_dev_db.removeDevice(*it)) {
+			clogW << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << *it << " not found in internal database\n";
+		}
+	}
+	this->setSinkState(SINK_READY);
 #else
-    /* Save the list GPs that should be deleted, for background processing */
-    gpds_to_remove = gpd;
+	/* Save the list GPs that should be deleted, for background processing */
+	gpds_to_remove = gpd;
 
-    /* Request sink table entry for the first source ID to delete, the rest of the source IDs in the list gpds_to_remove will be processed asynchronously */
-    gpSinkTableLookup( gpds_to_remove.back() );
+	/* Request sink table entry for the first source ID to delete, the rest of the source IDs in the list gpds_to_remove will be processed asynchronously */
+	gpSinkTableLookup( gpds_to_remove.back() );
 
-    /* When performing the remove action directly inside the dongle:
-     * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
-     */
-    return true;
+	/* When performing the remove action directly inside the dongle:
+	 * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
+	 */
+	return true;
 #endif
 }
 
@@ -291,8 +289,6 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFra
 
 void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
-
 	// build gpf frame from ezsp rx message
 	CGpFrame gpf = CGpFrame(i_msg_receive);
 
@@ -300,55 +296,70 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 #ifdef USE_BUILTIN_MIC_PROCESSING
 	NSEZSP::EmberKeyData l_gpd_key;    /* Local storage for getKeyForSourceId()'s output key */
 	if (!this->gp_dev_db.getKeyForSourceId(gpf.getSourceId(), l_gpd_key)) {
-        clogD << "I know no key for this source ID\n";
+		clogD << "No key provisionned for source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << gpf.getSourceId() << "\n";
 		l_key_status = CGpdKeyStatus::Undefined;    /* Unknown source ID... no key */
 	}
 	else {
-        clogD << "I know a key for this source ID\n";
 		if (gpf.validateMIC(l_gpd_key)) {
-            clogD << "MIC is valid\n";
+			clogD << "MIC is valid for frame from source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << gpf.getSourceId() << "\n";
 			l_key_status = CGpdKeyStatus::Valid;
 		}
 		else {
-            clogD << "MIC is invalid\n";
+			clogD << "MIC is invalid for frame from source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << gpf.getSourceId() << "\n";
 			l_key_status = CGpdKeyStatus::Invalid;
 		}
 	}
+#else
+	{
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		l_key_status = CGpdKeyStatus::Undefined;
+		if (l_status == EEmberStatus::EMBER_SUCCESS) {
+			l_key_status = CGpdKeyStatus::Valid;
+		}
+		else if (l_status == EEmberStatus::UNDOCUMENTED_WRONG_MIC_FOR_SOURCE_ID) {
+			l_key_status = CGpdKeyStatus::Invalid;
+		}
+		else {
+			l_key_status = CGpdKeyStatus::Undefined;
+		}
 #endif
-//#else
-l_key_status = CGpdKeyStatus::Undefined;
-	if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
-	else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
-	else{ l_key_status = CGpdKeyStatus::Undefined; }
-//#endif
 	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
 
-	clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<
-		", link : " << unsigned(i_msg_receive.at(1)) <<
-		", sequence number : " << unsigned(i_msg_receive.at(2)) <<
-		", gp address : " << gpf <<
-		std::endl;
+	clogD << "handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(): "
+#ifndef USE_BUILTIN_MIC_PROCESSING
+	      << "Ember status: " << CEzspEnum::EEmberStatusToString(l_status) << ", "
+#endif
+	      << "key_check: " << static_cast<unsigned int>(l_key_status) << ", "
+	      << gpf << "\n";   /* Dump the whole GP frame */
+
+	/* Notify external observers of the reception of a source ID in any case */
+	{
+		bool gpdKnown;
+#ifdef USE_BUILTIN_MIC_PROCESSING
+		gpdKnown = this->gp_dev_db.isSourceIdInDb(gpf.getSourceId());
+#else
+		gpdKnown = gpf.getProxyTableEntry()!=0xFF?true:false;
+#endif
+		notifyObserversOfRxGpdId(gpf.getSourceId(), gpdKnown, l_key_status);
+	}
 
 	/**
-	 * trame gpf:
-	 * - no cryptée : on essaye de la validé en donner la TC link key (zig...009), dans le cas ou il s'agit d'une trame de commissioning
-	 * - crypté :
-	 *      - on cherche dans la table du sink (créé une class sink table entry comme décrit tabnle 25 section A3.3.2.2.2 du doc Green Power Basic spec v1.0)
-	 *      - si trouvé on essaye de la validé en passant la key associéé
-	 * - si la validation réussi on notifie le gpf au observateur
+	 * GPF frame:
+	 * - not encrypted: we try to validate it using the TC link key (zig...009), in case it is a commissionning frame
+	 * - encrypted:
+	 *      - we search in the sink table (as described in table 25 section A3.3.2.2.2 of the Green Power Basic spec v1.0)
+	 *      - if found, we try to validate it by passing the associated key
+	 * - if validation is successful, we notify the incoming GPF to external observers
 	 */
 
-	if( GPD_NO_SECURITY == gpf.getSecurity() )
-	{
+	if (gpf.getSecurity() == EGpSecurityLevel::GPD_NO_SECURITY) {
 		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(gpf);
 	}
-	else if(  EEmberStatus::EMBER_SUCCESS == l_status )
-	{
+	else if (l_key_status == CGpdKeyStatus::Valid) {
 		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(gpf);
 	}
-	else
-	{
-		// do nothing
+	else {
+		clogD << "Ignorning GP frame\n";
 	}
 }
 

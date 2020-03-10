@@ -44,7 +44,7 @@ public:
 	 * @brief Remove a device entry in the database
 	 *
 	 * @param i_source_id The source ID to delete
-	 * 
+	 *
 	 * @return true if the given source ID was removed from the database, false if it was already not in the database
 	 */
 	bool removeDevice(const uint32_t i_source_id);
@@ -67,6 +67,15 @@ public:
 	 * @return true if the source ID could be found in the database, false otherwise (in that case, o_source_id will remain unchanged)
 	 */
 	bool getKeyForSourceId(uint32_t i_source_id, NSEZSP::EmberKeyData& o_key) const;
+
+	/**
+	 * @brief Check if the provided source ID is in the database
+	 *
+	 * @param i_source_id The source ID we are searching
+	 *
+	 * @return true if the source ID could be found in the database
+	 */
+	bool isSourceIdInDb(uint32_t i_source_id) const;
 
 private:
 	std::map<uint32_t, NSEZSP::EmberKeyData> gp_dev_list;   /*!< The green power device list stored in this class */
