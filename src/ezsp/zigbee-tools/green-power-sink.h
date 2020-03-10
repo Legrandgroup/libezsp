@@ -6,8 +6,6 @@
 
 #pragma once
 
-#define BUILTIN_MIC_PROCESSING
-
 #include <map>
 #include <vector>
 
@@ -16,7 +14,7 @@
 #include "ezsp/green-power-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
-#ifdef BUILTIN_MIC_PROCESSING
+#ifdef USE_BUILTIN_MIC_PROCESSING
 #include "ezsp/zigbee-tools/green-power-device-db.h"
 #endif
 #include "ezsp/ezsp-protocol/struct/ember-gp-sink-table-entry-struct.h"
@@ -170,6 +168,8 @@ private:
 
     /**
      * @brief Finds or allocates a sink entry
+     * 
+     * @note You should make sure the sink was in SINK_READY state before invoking this private method
      *
      * @param i_src_id GPD source ID address to search
      */
@@ -306,7 +306,7 @@ private:
     // gpdf send list
     std::map<uint8_t, uint32_t> gpd_send_list;
     std::set<CGpObserver*> observers;   /*!< List of observers of this class */
-#ifdef BUILTIN_MIC_PROCESSING
+#ifdef USE_BUILTIN_MIC_PROCESSING
     NSEZSP::CGPDeviceDb gp_dev_db;    /*!< A database of known Green Power devices */
 #endif
 };

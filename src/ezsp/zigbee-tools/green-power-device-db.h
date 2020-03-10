@@ -41,6 +41,15 @@ public:
 	void insertDevice(const NSEZSP::CGpDevice& i_gp_device);
 
 	/**
+	 * @brief Remove a device entry in the database
+	 *
+	 * @param i_source_id The source ID to delete
+	 * 
+	 * @return true if the given source ID was removed from the database, false if it was already not in the database
+	 */
+	bool removeDevice(const uint32_t i_source_id);
+
+	/**
 	 * @brief Set the database with the exact content provided as specific device list
 	 *
 	 * @note The database will contain exactly this device list, any previous content will be destroyed

@@ -4,6 +4,7 @@
  * @brief Access to green power capabilities
  */
 
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -111,9 +112,9 @@ bool CGpSink::gpClearAllTables()
         return false;
     }
 
+    setSinkState(SINK_CLEAR_ALL);
     dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);   /* Handle sink table */
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{0});  /* Handle proxy table */
-    setSinkState(SINK_CLEAR_ALL);
     return true;
 }
 
@@ -141,32 +142,41 @@ bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
         return false;
     }
 
-#ifdef BUILTIN_MIC_PROCESSING
+    this->setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
+#ifdef USE_BUILTIN_MIC_PROCESSING
     this->gp_dev_db.setDb(gpd);
+    this->setSinkState(SINK_READY);
 #else
-    // Save GPD list in attributes for background processing
+    /* Save the list GPs that should be added, for background processing */
     gpds_to_register = gpd;
 
-    // request sink table entry
+    /* Request sink table entry for the first source ID to add, the rest of the source IDs in the list gpds_to_register will be processed asynchronously */
     gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
 
-    // set state
-    setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
-
+    /* When performing the register action directly inside the dongle:
+     * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
+     */
     return true;
 #endif
 }
 
 bool CGpSink::clearAllGpds()
 {
-    if ( SINK_READY != sink_state ) {
+    if (this->sink_state !=  SINK_READY) {
+        clogE << "Request to clearAllGpds() while not in SINK_READY state: " << std::dec << this->sink_state << "\n";
         return false;
     }
 
-#ifdef BUILTIN_MIC_PROCESSING
+#ifdef USE_BUILTIN_MIC_PROCESSING
+    this->setSinkState(SINK_CLEAR_ALL);
     this->gp_dev_db.clear();
+    this->setSinkState(SINK_READY);
     return true;
 #else
+    /* When performing the CLEAR ALL action directly inside the dongle:
+     * - The SINK_CLEAR_ALL will be set by gpClearAllTables() directly
+     * - The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
+     */
     return this->gpClearAllTables();
 #endif
 }
@@ -176,18 +186,24 @@ bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd )
     if( SINK_READY != sink_state ) {
         return false;
     }
-#ifdef BUILTIN_MIC_PROCESSING
-    clogE << "Not implemented\n";
-    exit(128);
+    this->setSinkState(SINK_REMOVE_IN_PROGRESS);
+#ifdef USE_BUILTIN_MIC_PROCESSING
+    for (auto it = gpd.begin(); it != gpd.end(); ++it) {
+        if (!this->gp_dev_db.removeDevice(*it)) {
+            clogW << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << *it << " not found in internal database\n";
+        }
+    }
+    this->setSinkState(SINK_READY);
 #else
-    // Save GPD list in attributes for background processing
+    /* Save the list GPs that should be deleted, for background processing */
     gpds_to_remove = gpd;
 
-    // request sink table entry
+    /* Request sink table entry for the first source ID to delete, the rest of the source IDs in the list gpds_to_remove will be processed asynchronously */
     gpSinkTableLookup( gpds_to_remove.back() );
 
-    // set state
-    setSinkState(SINK_REMOVE_IN_PROGRESS);
+    /* When performing the remove action directly inside the dongle:
+     * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
+     */
     return true;
 #endif
 }
@@ -281,25 +297,30 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 	CGpFrame gpf = CGpFrame(i_msg_receive);
 
 	CGpdKeyStatus l_key_status = CGpdKeyStatus::Undefined;
-#define BUILTIN_MIC_PROCESSING
-#ifdef BUILTIN_MIC_PROCESSING
+#ifdef USE_BUILTIN_MIC_PROCESSING
 	NSEZSP::EmberKeyData l_gpd_key;    /* Local storage for getKeyForSourceId()'s output key */
 	if (!this->gp_dev_db.getKeyForSourceId(gpf.getSourceId(), l_gpd_key)) {
+        clogD << "I know no key for this source ID\n";
 		l_key_status = CGpdKeyStatus::Undefined;    /* Unknown source ID... no key */
 	}
 	else {
+        clogD << "I know a key for this source ID\n";
 		if (gpf.validateMIC(l_gpd_key)) {
+            clogD << "MIC is valid\n";
 			l_key_status = CGpdKeyStatus::Valid;
 		}
 		else {
+            clogD << "MIC is invalid\n";
 			l_key_status = CGpdKeyStatus::Invalid;
 		}
 	}
-#else
+#endif
+//#else
+l_key_status = CGpdKeyStatus::Undefined;
 	if( EEmberStatus::EMBER_SUCCESS == l_status ){ l_key_status = CGpdKeyStatus::Valid; }
 	else if( 0x7E == l_status ){ l_key_status = CGpdKeyStatus::Invalid; }
 	else{ l_key_status = CGpdKeyStatus::Undefined; }
-#endif
+//#endif
 	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
 
 	clogD << "EZSP_GPEP_INCOMING_MESSAGE_HANDLER status : " << CEzspEnum::EEmberStatusToString(l_status) <<

@@ -32,6 +32,8 @@ list(APPEND ezsp_SOURCES
 	zigbee-tools/green-power-device-db.cpp
 )
 
+option(USE_BUILTIN_MIC_PROCESSING "Compute and check MIC on the host rather than in the adapter" OFF)
+
 configure_file(${PROJECT_SOURCE_DIR}/src/ezsp/config.h.in ${PROJECT_SOURCE_DIR}/include/ezsp/config.h)
 
 set(ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/gpd.h)
