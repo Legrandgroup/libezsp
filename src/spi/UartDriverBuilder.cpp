@@ -59,7 +59,9 @@ std::unique_ptr<IUartDriver> UartDriverBuilder::create() const {
 #else	// USE_RARITAN
 	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
 	 * return std::make_unique<NSSPI::UartDriver>();
+	 * Note: disabling code anaylis below because SonarCloud insists on blacklisting any dynamic allocation
+	 * but we really require it is a factory or builder, and using it is mitigated by the unique_ptr container
 	 */
-	return std::unique_ptr<IUartDriver>(new NSSPI::UartDriver());
+	return std::unique_ptr<IUartDriver>(new NSSPI::UartDriver());	//NOSONAR
 #endif	// USE_RARITAN
 }

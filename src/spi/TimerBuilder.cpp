@@ -51,8 +51,10 @@ std::unique_ptr<ITimer> TimerBuilder::create() const {
 #else // USE_RARITAN
 	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
 	 * return std::make_unique<NSSPI::Timer>();
+	 * Note: disabling code anaylis below because SonarCloud insists on blacklisting any dynamic allocation
+	 * but we really require it is a factory or builder, and using it is mitigated by the unique_ptr container
 	 */
-	return std::unique_ptr<ITimer>(new NSSPI::Timer());
+	return std::unique_ptr<ITimer>(new NSSPI::Timer()); //NOSONAR
 #endif	// #ifdef USE_CPPTHREADS
 
 }
