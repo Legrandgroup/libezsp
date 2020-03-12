@@ -40,7 +40,7 @@ bool RaritanTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction
 	}
 	else {
 		auto tcb = [this,timeout,callBackFunction](pp::Selector::TimedCbHandle&) {
-			plogD("Timeout reached after %u", timeout);
+			plogD("Timeout reached after %u", static_cast<unsigned int>(timeout));
 			plogD("Now running %p timer's callback", this);
 			callBackFunction(this);
 		};
