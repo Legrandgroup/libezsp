@@ -15,5 +15,8 @@ using NSSPI::AesBuilder;
 using NSSPI::IAes;
 
 std::unique_ptr<IAes> AesBuilder::create() {
+	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
+	 * return std::make_unique<IAes>();
+	 */
 	return std::unique_ptr<IAes>(new Aes());
 }

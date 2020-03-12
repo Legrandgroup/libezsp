@@ -15,12 +15,11 @@ using NSSPI::GenericAsyncDataInputObservable;
 using NSSPI::RaritanUartDriver;
 using NSSPI::RaritanLogger;
 
-RaritanUartDriver::RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler) :
-	m_eventSelector(*pp::SelectorSingleton::getInstance()),
+RaritanUartDriver::RaritanUartDriver(pp::Selector& selector, GenericAsyncDataInputObservable* uartIncomingDataHandler) :
+	m_eventSelector(selector),
 	m_sel_handle(),
 	m_serial_tty(),
-	m_data_input_observable(uartIncomingDataHandler)
-{
+	m_data_input_observable(uartIncomingDataHandler) {
 }
 
 RaritanUartDriver::~RaritanUartDriver() {

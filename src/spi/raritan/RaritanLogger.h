@@ -12,8 +12,12 @@
 #define SINGLETON_LOGGER_CLASS_NAME RaritanLogger
 #include <string>
 
+#ifndef PP_MODULE_NAME
+#ifndef PP_DIAG_CTX_libezsp
 #define PP_DIAG_CTX_libezsp 255
+#endif
 #define PP_MODULE_NAME libezsp
+#endif
 
 #include <pp/diag.h>
 

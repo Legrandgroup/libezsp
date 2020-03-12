@@ -10,6 +10,9 @@
 #ifdef USE_RARITAN
 #define __TIMER_SPI_FOUND__
 #include "spi/raritan/RaritanTimer.h"
+namespace NSSPI {
+typedef RaritanTimer Timer;
+}
 #endif
 #ifdef USE_CPPTHREADS
 # ifdef __TIMER_SPI_FOUND__
@@ -17,6 +20,9 @@
 # endif
 #define __TIMER_SPI_FOUND__
 #include "spi/cppthreads/CppThreadsTimer.h"
+namespace NSSPI {
+typedef CppThreadsTimer Timer;
+}
 #endif
 #ifndef __TIMER_SPI_FOUND__
 # error At least one timer SPI should be selected
@@ -32,18 +38,22 @@ TimerBuilder::TimerBuilder(pp::Selector& selector) : eventSelector(selector) {
 
 TimerBuilder::TimerBuilder() : TimerBuilder(*pp::SelectorSingleton::getInstance()) {
 }
-#endif	// USE_RARITAN
-
-#ifdef USE_CPPTHREADS
+#else	// USE_RARITAN
 TimerBuilder::TimerBuilder() = default;
-#endif
+#endif	// USE_RARITAN
 
 std::unique_ptr<ITimer> TimerBuilder::create() const {
 #ifdef USE_RARITAN
+	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
+	 * return std::make_unique<NSSPI::RaritanTimer>(this->eventSelector);
+	 */
 	return std::unique_ptr<ITimer>(new NSSPI::RaritanTimer(this->eventSelector));
-#endif
-#ifdef USE_CPPTHREADS
-	return std::unique_ptr<ITimer>(new NSSPI::CppThreadsTimer());
-#endif
+#else // USE_RARITAN
+	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
+	 * return std::make_unique<NSSPI::Timer>();
+	 */
+	return std::unique_ptr<ITimer>(new NSSPI::Timer());
+#endif	// #ifdef USE_CPPTHREADS
+
 }
 

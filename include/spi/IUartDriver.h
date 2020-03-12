@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <memory>	// For std::shared_ptr
 
 #include <ezsp/export.h>
 
@@ -75,5 +76,7 @@ public:
 	 */
 	virtual void close() = 0;
 };
+
+typedef std::shared_ptr<NSSPI::IUartDriver> IUartDriverHandle;	/*!< Convenience shortcut for all functions & methods that store a reference to NSSPI::IUartDriver to send/receive frames */
 
 } // namespace NSSPI

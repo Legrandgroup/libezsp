@@ -150,7 +150,6 @@ static int appendSourceIdToRemovedDevList(const char* devSpecs, std::vector<uint
 }
 
 int main(int argc, char **argv) {
-    NSSPI::IUartDriver *uartDriver = NSSPI::UartDriverBuilder::getInstance();
     NSSPI::TimerBuilder timerBuilder;
     int optionIndex=0;
     int c;
@@ -237,10 +236,12 @@ int main(int argc, char **argv) {
 
     clogI << "Starting ezsp test program (info)\n";
 
-    if (uartDriver->open(serialPort, baudrate) != 0) {
-        clogE << "Failed opening serial port. Aborting\n";
-        return 1;
-    }
+    NSSPI::IUartDriverHandle uartHandle = NSSPI::UartDriverBuilder().create();
+
+	if (uartHandle->open(serialPort, baudrate) != 0) {
+		clogE << "Failed opening serial port. Aborting\n";
+		return 1;
+	}
 
 #ifdef USE_CPPTHREADS
     auto sighandler = [](int signalCaught) {
@@ -249,7 +250,7 @@ int main(int argc, char **argv) {
     };
     std::signal(SIGINT, sighandler);
 #endif
-    NSEZSP::CEzsp lib_main(uartDriver, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
+	NSEZSP::CEzsp lib_main(uartHandle, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
     NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
     auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         bool terminate = false; /* Shall we terminate the current process? */

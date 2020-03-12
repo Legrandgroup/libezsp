@@ -13,13 +13,7 @@ using NSSPI::ITimer;
 RaritanTimer::RaritanTimer(pp::Selector& selector) :
 	started(false),
 	m_eventSelector(selector),
-	m_toutcbhandle()
-{
-}
-
-RaritanTimer::RaritanTimer() :
-	RaritanTimer(*pp::SelectorSingleton::getInstance())
-{
+	m_toutcbhandle() {
 }
 
 RaritanTimer::~RaritanTimer() {

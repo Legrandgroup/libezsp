@@ -37,25 +37,29 @@ typedef MockUartDriver UartDriver;
 
 using NSSPI::UartDriverBuilder;
 using NSSPI::IUartDriver;
-using NSSPI::IUartDriverInstance;
 
 using NSSPI::UartDriver;
 
-IUartDriverInstance UartDriverBuilder::mInstance;
+#ifdef USE_RARITAN
+UartDriverBuilder::UartDriverBuilder(pp::Selector& selector) : eventSelector(selector) {
+}
 
-IUartDriver *UartDriverBuilder::getInstance()
-{
-#ifndef DYNAMIC_ALLOCATION
-	static UartDriver uartDriver;
+UartDriverBuilder::UartDriverBuilder() : UartDriverBuilder(*pp::SelectorSingleton::getInstance()) {
+}
+#else	// USE_RARITAN
+UartDriverBuilder::UartDriverBuilder() = default;
+#endif	// USE_RARITAN
 
-	static bool static_init = []()->bool {
-		mInstance = IUartDriverInstance(&uartDriver, [](IUartDriver* ptr)
-        {
-        });
-		return true;
-	}();
-	return mInstance.get();
-#else //DYNAMIC_ALLOCATION
-	return new UartDriver();
-#endif
+std::unique_ptr<IUartDriver> UartDriverBuilder::create() const {
+#ifdef USE_RARITAN
+	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
+	 * return std::make_unique<NSSPI::RaritanUartDriver>(this->eventSelector);
+	 */
+	return std::unique_ptr<IUartDriver>(new NSSPI::RaritanUartDriver(this->eventSelector));
+#else	// USE_RARITAN
+	/* TODO: When using a C++14 compliant compiler, the line below should be replaced with:
+	 * return std::make_unique<NSSPI::UartDriver>();
+	 */
+	return std::unique_ptr<IUartDriver>(new NSSPI::UartDriver());
+#endif	// USE_RARITAN
 }

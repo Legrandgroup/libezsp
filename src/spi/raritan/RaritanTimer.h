@@ -19,16 +19,11 @@ namespace NSSPI {
 class RaritanTimer : public ITimer {
 public:
 	/**
-	 * @brief Default constructor
+	 * @brief Constructor
+	 *
+	 * @param selector An optional selector instance to use to run timers
 	 */
-	RaritanTimer();
-
-	/**
-	 * @brief Constructor using a user-specified selector
-	 * 
-	 * @param selector The selector instance to use to run timers
-	 */
-	RaritanTimer(pp::Selector& selector);
+	RaritanTimer(pp::Selector& selector = *pp::SelectorSingleton::getInstance());
 
 	/**
 	 * @brief Destructor

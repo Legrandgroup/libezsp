@@ -28,11 +28,12 @@ public:
 	 */
 	TimerBuilder();
 
+/* Note: Raritan environment has an extra constructor allowing to pass the event loop selector when constructing this builder */
 #ifdef USE_RARITAN
 	/**
 	 * @brief Constructor using a specified selector
 	 * 
-	 * @param[in] selector The selector to use in the timer
+	 * @param[in] selector The selector to use in the generated timer
 	 */
 	TimerBuilder(pp::Selector& selector);
 #endif

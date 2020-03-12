@@ -9,15 +9,15 @@
 
 using NSEZSP::CEzsp;
 
-CEzsp::CEzsp(NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel)
+CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel)
 {
 #ifndef DYNAMIC_ALLOCATION
-	static CLibEzspMain g_MainEzsp(uartDriver, timerbuilder, requestZbNetworkResetToChannel);
+	static CLibEzspMain g_MainEzsp(uartHandle, timerbuilder, requestZbNetworkResetToChannel);
 	main = &g_MainEzsp;
 #else
-	main = new CLibEzspMain(uartDriver, timerbuilder, requestZbNetworkResetToChannel);
+	main = new CLibEzspMain(uartHandle, timerbuilder, requestZbNetworkResetToChannel);
 
-	/* Memory leak here, if DYNAMIC_ALLOCATION is defined, main is allocated but never de-allocated */
+	/* FIXME: Memory leak here, if DYNAMIC_ALLOCATION is defined, main is allocated but never de-allocated, change this to a std::unique_ptr */
 #endif
 }
 

@@ -38,11 +38,11 @@ public:
     /**
      * @brief Default constructor with minimal args to initialize library
      *
-     * @param uartDriver An IUartDriver instance to send/receive EZSP message over a serial line
+     * @param uartHandle A handle on a IUartDriver instance to send/receive EZSP message over a serial line
      * @param timerbuilder An ITimerFactory used to generate ITimer objects
      * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
      */
-    CLibEzspMain( NSSPI::IUartDriver* uartDriver, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
+    CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
     CLibEzspMain() = delete; /*<! Construction without arguments is not allowed */
     CLibEzspMain(const CLibEzspMain&) = delete; /*<! No copy construction allowed */
@@ -170,7 +170,7 @@ public:
     bool setChannel(uint8_t channel);
 
 private:
-    NSSPI::IUartDriver* uartDriver; /*!< A handle to the UART driver */
+    NSSPI::IUartDriverHandle uartHandle; /*!< A handle to the UART driver */
     const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
     uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
     uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */

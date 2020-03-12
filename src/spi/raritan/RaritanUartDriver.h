@@ -21,9 +21,10 @@ public:
 	/**
 	 * @brief Constructor
 	 *
+	 * @param selector An optional selector instance to use to run timers
 	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
 	 */
-	RaritanUartDriver(GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+	RaritanUartDriver(pp::Selector& selector = *pp::SelectorSingleton::getInstance(), GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
 
 	/**
 	 * @brief Copy constructor

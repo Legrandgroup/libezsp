@@ -48,9 +48,9 @@ public:
     /**
      * @brief Set the serial port to use for communication with the EZSP adapter
      * 
-     * @param ipUart A IUartDriver to send/receive data
+     * @param uartHandle A handle on a IUartDriver to send/receive data
      */
-    void setUart(NSSPI::IUartDriver *ipUart);
+    void setUart(NSSPI::IUartDriverHandle uartHandle);
 
     /**
      * @brief Reset and intialize an EZSP communication with the EZSP adapter
@@ -99,8 +99,8 @@ private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
     CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
-    const NSSPI::TimerBuilder& timerBuilder;
-    NSSPI::IUartDriver* uartDriver; /*!< The UartDriver object used to send/receive serial data to the EZSP adapter */
+    const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
+    NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
     CAsh ash;   /*!< An ASH decoder instance */
     CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
