@@ -14,7 +14,7 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	lastKnownMode(CEzspDongleMode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
 	timerBuilder(i_timer_builder),
-	pUart(nullptr),
+	uartDriver(nullptr),
 	uartIncomingDataHandler(),
 	ash(static_cast<CAshCallback*>(this), timerBuilder),
 	blp(timerBuilder),
@@ -28,47 +28,40 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
     }
 }
 
-bool CEzspDongle::open(NSSPI::IUartDriver *ipUart)
-{
-    bool lo_success = true;
-    NSSPI::ByteBuffer l_buffer;
-    size_t l_size;
+void CEzspDongle::setUart(NSSPI::IUartDriver *ipUart) {
+	this->uartDriver = ipUart;
+}
 
-    if( nullptr == ipUart )
-    {
-        lo_success = false;
-    }
-    else
-    {
-        pUart = ipUart;
+bool CEzspDongle::reset() {
+	NSSPI::ByteBuffer l_buffer;
+	size_t l_size;
 
-        // Send a ASH reset to the NCP
-        l_buffer = ash.resetNCPFrame();
+	if (this->uartDriver == nullptr) {
+		clogE << "No UART usable driver when invoking reset()\n";
+		return false;
+	}
+	else {
+		// Send a ASH reset to the NCP
+		l_buffer = ash.resetNCPFrame();
 
-        if( pUart->write(l_size, l_buffer.data(), l_buffer.size()) < 0 )
-        {
-            // error
-            lo_success = false;
-            pUart = nullptr;
-        }
-        else
-        {
-            if( l_size != l_buffer.size() )
-            {
-                // error size mismatch
-                lo_success = false;
-                pUart = nullptr;
-            }
-            else
-            {
-                clogD << "CEzspDongle::open register uart !" << std::endl;
-                uartIncomingDataHandler.registerObserver(this);
-                pUart->setIncomingDataHandler(&uartIncomingDataHandler);
-            }
-        }
-    }
+		if (this->uartDriver->write(l_size, l_buffer.data(), l_buffer.size()) < 0 ) {
+			clogE << "Failed sending reset frame to serial port\n";
+			return false;
+		}
+		else {
+			if (l_buffer.size() != l_size) {
+				clogE << "Reset frame not fully written to serial port\n";
+				return false;
+			}
+			else {
+				clogD << "CEzspDongle UART reset\n";
+				this->uartIncomingDataHandler.registerObserver(this);
+				this->uartDriver->setIncomingDataHandler(&uartIncomingDataHandler);
+			}
+		}
+	}
 
-    return lo_success;
+	return true;
 }
 
 void CEzspDongle::ashCbInfo( EAshInfo info )
@@ -157,7 +150,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER)
                 {
                     NSSPI::ByteBuffer l_msg = ash.AckFrame();
-                    pUart->write(l_size, l_msg.data(), l_msg.size());
+                    this->uartDriver->write(l_size, l_msg.data(), l_msg.size());
                     /* Unqueue the message (and send a new one) if required */
                     this->handleResponse(l_cmd);
                 }
@@ -213,10 +206,9 @@ void CEzspDongle::sendNextMsg( void )
         li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
 
         l_enc_data = ash.DataFrame(li_data);
-        if( nullptr != pUart )
-        {
+        if (this->uartDriver != nullptr) {
             //-- clogD << "CEzspDongle::sendCommand pUart->write" << std::endl;
-            pUart->write(l_size, l_enc_data.data(), l_enc_data.size());
+            this->uartDriver->write(l_size, l_enc_data.data(), l_enc_data.size());
 
             wait_rsp = true;
         }
@@ -245,31 +237,29 @@ void CEzspDongle::forceFirmwareUpgradeOnInitTimeout()
 void CEzspDongle::setMode(CEzspDongleMode requestedMode)
 {
     if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP
-        && (requestedMode == CEzspDongleMode::EZSP_NCP || requestedMode == CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP))
-    {
+        && (requestedMode == CEzspDongleMode::EZSP_NCP || requestedMode == CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP)) {
         /* We are requested to get out of the booloader */
         this->lastKnownMode = requestedMode;
         this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-            return this->pUart->write(writtenCnt, buf, cnt);
+            return this->uartDriver->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongleMode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
             /* Restart the EZSP startup procedure here */
-            this->open(this->pUart); /* FIXME: we don't need to run all the code from open(), just reset state variables, send the reset frame and arm again the ASH reset timeout */
+            this->reset();
         });
         this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
     if ((this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
-        && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE)
-    {
+        && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE) {
         clogD << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
         this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-            return this->pUart->write(writtenCnt, buf, cnt);
+            return this->uartDriver->write(writtenCnt, buf, cnt);
         });    /* Allow the blp object to write to the serial port via our own pUart attribute */
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
