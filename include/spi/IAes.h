@@ -29,12 +29,9 @@ class LIBEXPORT IAes
         virtual bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] ) = 0;
 
         // encryption functions
-        // \todo rewrite with class context
-        /*
-        bool decrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK], const aes_context ctx[1] );
-        bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
-        bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
-        */
+        //bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
+        virtual bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[AES_BLOCK_SIZE]) = 0;
+        //bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
 };
 
 } // namespace NSSPI

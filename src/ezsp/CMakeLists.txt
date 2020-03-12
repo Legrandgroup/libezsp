@@ -29,7 +29,10 @@ list(APPEND ezsp_SOURCES
 	zigbee-tools/green-power-sink.cpp
 	zigbee-tools/zigbee-messaging.cpp
 	zigbee-tools/zigbee-networking.cpp
+	zigbee-tools/green-power-device-db.cpp
 )
+
+option(USE_BUILTIN_MIC_PROCESSING "Compute and check MIC on the host rather than in the adapter" OFF)
 
 configure_file(${PROJECT_SOURCE_DIR}/src/ezsp/config.h.in ${PROJECT_SOURCE_DIR}/include/ezsp/config.h)
 

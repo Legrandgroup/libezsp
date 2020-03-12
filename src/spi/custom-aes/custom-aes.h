@@ -78,13 +78,9 @@ class CustomAes : public IAes
 
         bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] );
 
-        // encryption functions
-        // \todo rewrite with class context
-        /*
-        aes_result decrypt( const unsigned char in[N_BLOCK], unsigned char out[N_BLOCK], const aes_context ctx[1] );
-        aes_result cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
-        aes_result cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[N_BLOCK], const aes_context ctx[1] );
-        */
+        //bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
+        bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE]);
+        //bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
 
         // helper functions
     private:
@@ -101,7 +97,7 @@ class CustomAes : public IAes
         void shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
         void inv_shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
         void mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
-        void inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );        
+        void inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
 };
 
 } // namespace NSSPI

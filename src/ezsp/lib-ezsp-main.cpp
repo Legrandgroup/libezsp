@@ -304,13 +304,14 @@ bool CLibEzspMain::clearAllGPDevices()
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
-    if (!this->gp_sink.gpClearAllTables())
-    {
+    this->setState(CLibEzspInternalState::SINK_BUSY);
+    bool success = this->gp_sink.clearAllGpds();
+    if (!success) {
         return false; /* Probably sink is not ready */
     }
-
-    this->setState(CLibEzspInternalState::SINK_BUSY);
-    return true;
+    else {
+        return true;
+    }
 }
 
 bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
@@ -318,12 +319,12 @@ bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
+    this->setState(CLibEzspInternalState::SINK_BUSY);
     if (!this->gp_sink.removeGpds(sourceIdList))
     {
         return false; /* Probably sink is not ready */
     }
 
-    this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 
@@ -332,12 +333,12 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
     if (this->getState() != CLibEzspInternalState::READY) {
         return false;
     }
+    this->setState(CLibEzspInternalState::SINK_BUSY);
     if (!this->gp_sink.registerGpds(gpDevicesList))
     {
         return false; /* Probably sink is not ready */
     }
 
-    this->setState(CLibEzspInternalState::SINK_BUSY);
     return true;
 }
 

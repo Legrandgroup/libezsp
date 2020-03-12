@@ -393,26 +393,25 @@ bool CustomAes::encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned 
 }
 
 // CBC encrypt a number of blocks (input and return an IV)
-/*
-bool CustomAes::cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] )
+bool CustomAes::cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE])
 {
     if (size % 16 != 0)
-        return EXIT_FAILURE;
+        return false;
 
-    unsigned long IAes::AES_BLOCK_SIZE = size / 16;
+    unsigned long n_block = size / 16;
 
-    while(IAes::AES_BLOCK_SIZE--)
+    while(n_block--)
     {
         xor_block(iv, in);
-        if(aes_encrypt(iv, iv, ctx) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
+        if (!this->encrypt(iv, iv))
+            return false;
         memcpy(out, iv, IAes::AES_BLOCK_SIZE);
         in += IAes::AES_BLOCK_SIZE;
         out += IAes::AES_BLOCK_SIZE;
     }
-    return EXIT_SUCCESS;
+    return true;
 }
-*/
+
 // Decrypt a single block of 16 bytes
 /*
 bool CustomAes::decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] )
@@ -443,9 +442,9 @@ bool CustomAes::cbc_decrypt( const unsigned char *in, unsigned char *out, unsign
     if (size % 16 != 0)
         return EXIT_FAILURE;
 
-    unsigned long IAes::AES_BLOCK_SIZE = size / 16;
+    unsigned long n_block = size / 16;
 
-    while (IAes::AES_BLOCK_SIZE--)
+    while (n_block--)
     {
         uint8_t tmp[IAes::AES_BLOCK_SIZE];
 

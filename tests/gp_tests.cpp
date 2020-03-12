@@ -170,7 +170,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
-		} catch (const std::exception& e) {
+		}
+		catch (const std::exception& e) {
 			FAILF("Internal exception in MaineStateMachine");
 		}
 	};
