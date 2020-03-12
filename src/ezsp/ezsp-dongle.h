@@ -46,9 +46,18 @@ public:
     CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
 
     /**
-     * @brief Open connetion to dongle of type ezsp
+     * @brief Set the serial port to use for communication with the EZSP adapter
+     * 
+     * @param ipUart A IUartDriver to send/receive data
      */
-    bool open(NSSPI::IUartDriver *ipUart);
+    void setUart(NSSPI::IUartDriver *ipUart);
+
+    /**
+     * @brief Reset and intialize an EZSP communication with the EZSP adapter
+     * 
+     * @return true if the reset was successful, EZSP command can then be sent
+     */
+    bool reset();
 
     /**
      * @brief Send Ezsp Command
@@ -91,7 +100,7 @@ private:
     CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;
-    NSSPI::IUartDriver* pUart;
+    NSSPI::IUartDriver* uartDriver; /*!< The UartDriver object used to send/receive serial data to the EZSP adapter */
     CAsh ash;   /*!< An ASH decoder instance */
     CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
