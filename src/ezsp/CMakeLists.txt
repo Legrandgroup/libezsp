@@ -37,6 +37,7 @@ option(USE_BUILTIN_MIC_PROCESSING "Compute and check MIC on the host rather than
 configure_file(${PROJECT_SOURCE_DIR}/src/ezsp/config.h.in ${PROJECT_SOURCE_DIR}/include/ezsp/config.h)
 
 set(ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/gpd.h)
+list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/enum-generator.h)
 list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/gpd.h)
 list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/zcl.h)
 list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/gpd-commissioning-command-payload.h)
