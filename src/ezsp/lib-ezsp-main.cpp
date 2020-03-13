@@ -11,33 +11,10 @@
 
 #include <sstream>
 #include <iomanip>
+#include <cstring>   // For strcmp()
 
 namespace NSEZSP {
-/**
- * @brief Internal states for CLibEzspMain
- * 
- * @note Not all these states are exposed to the outside, only CLibEzspState states (and the related changes) are notified
- *       A mapping between CLibEzspInternalState and CLibEzspMain can be found in method setState()
- */
-enum class CLibEzspInternalState {
-    UNINITIALIZED,                      /*<! Initial state, before starting */
-    WAIT_DONGLE_READY,
-    GETTING_EZSP_VERSION,               /*<! Inside the EZSP version matching loop */
-    GETTING_XNCP_INFO,                  /*<! Inside the XNCP info check */
-    STACK_INIT,                         /*<! We are starting up the Zigbee stack in the adapter */
-    FORM_NWK_IN_PROGRESS,               /*<! We are currently creating a new Zigbee network */
-    LEAVE_NWK_IN_PROGRESS,              /*<! We are currently leaving the Zigbee network we previously joined */
-    READY,                              /*<! Library is ready to work and process new command */
-    SCANNING,                           /*<! An network scan in currently being run */
-    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    SWITCHING_TO_BOOTLOADER_MODE,       /*<! Switch to bootloader is pending */
-    IN_BOOTLOADER_MENU,                 /*<! We are on the bootloader menu prompt */
-    IN_XMODEM_XFR,                      /*<! We are currently doing X-Modem transfer */
-    SWITCHING_TO_EZSP_MODE,             /*<! Switch to EZSP mode (normal mode) is pending */
-    SWITCH_TO_BOOTLOADER_IN_PROGRESS,   /*<! We are currently starting bootloader more */
-    TERMINATING,                        /*<! We are shutting down the library */
-};
+    DEFINE_ENUM(CLibEzspInternalState, CLIBEZSP_INTERNAL_STATE_LIST)
 } // namespace NSEZSP
 
 using NSEZSP::CLibEzspMain;
@@ -110,7 +87,9 @@ void CLibEzspMain::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSource
 
 void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
 {
+    CLibEzspInternalState l_old_state = this->lib_state;
     this->lib_state = i_new_state;
+    clogD << "CLibEzspMain state changing from " << NSEZSP::getString(l_old_state) << " to " << NSEZSP::getString(i_new_state) << "\n";
     if( nullptr != obsStateCallback )
     {
         switch (i_new_state)
@@ -521,7 +500,7 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_
 	{
 		clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
 	}
-	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternalState=" << static_cast<unsigned int>(this->getState()) << "\n";
+	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternalState=" << NSEZSP::getString(this->getState()) << "\n";
 	if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
 	{
 		// We create a network on the required channel
