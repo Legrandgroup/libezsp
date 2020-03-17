@@ -39,7 +39,7 @@ namespace NSEZSP {
  * @see enum-generator.h
  */
 
-class CLibEzspPublic {
+class LIBEXPORT CLibEzspPublic {
     public:
         DECLARE_ENUM(State, CLIBEZSP_STATE_LIST)
 };
@@ -53,7 +53,7 @@ typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus 
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
 
-class LIBEXPORT CEzsp{
+class LIBEXPORT CEzsp {
 public:
     /**
      * @brief Default constructor with minimal args to initialize library
