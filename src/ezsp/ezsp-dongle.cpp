@@ -7,11 +7,13 @@
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
 
+DEFINE_ENUM(Mode, EZSP_DONGLE_MODE_LIST, NSEZSP::CEzspDongle)
+
 using NSEZSP::CEzspDongle;
 
 CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer) :
 	firstStartup(true),
-	lastKnownMode(CEzspDongleMode::UNKNOWN),
+	lastKnownMode(CEzspDongle::Mode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
 	timerBuilder(i_timer_builder),
 	uartHandle(nullptr),
@@ -72,7 +74,7 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
         if( ash.isConnected() )
         {
             notifyObserversOfDongleState( DONGLE_READY );
-            this->lastKnownMode = CEzspDongleMode::EZSP_NCP;    /* We are now sure the dongle is communicating over ASH */
+            this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;    /* We are now sure the dongle is communicating over ASH */
         }
         else
         {
@@ -93,11 +95,11 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
             /* If this is the startup sequence, we might be in bootloader prompt mode, not in ASH mode, so try to exit to EZSP/ASH mode from bootloader */
             if (this->switchToFirmwareUpgradeOnInitTimeout)
             {
-                this->setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
+                this->setMode(CEzspDongle::Mode::BOOTLOADER_FIRMWARE_UPGRADE);
             }
             else
             {
-                this->setMode(CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP);
+                this->setMode(CEzspDongle::Mode::BOOTLOADER_EXIT_TO_EZSP_NCP);
             }
             firstStartup = false;
         }
@@ -126,8 +128,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
     while( !li_data.empty())
     {
-        if (this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
-        {
+        if (this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN) {
             lo_msg = ash.decode(li_data);
 
             /* Got an incoming EZSP message... will be forwarded to the user */
@@ -167,7 +168,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )
 {
-    sMsg l_msg;
+    SMsg l_msg;
 
     l_msg.i_cmd = i_cmd;
     l_msg.payload = i_cmd_payload;
@@ -186,14 +187,13 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )
 
 void CEzspDongle::sendNextMsg( void )
 {
-    if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP && this->lastKnownMode != CEzspDongleMode::UNKNOWN)
-    {
+    if (this->lastKnownMode != CEzspDongle::Mode::EZSP_NCP && this->lastKnownMode != CEzspDongle::Mode::UNKNOWN) {
         clogW << "Refusing to send EZSP messages in bootloader mode\n";
         return; /* No EZSP message can be sent in bootloader mode */
     }
     if( (!wait_rsp) && (!sendingMsgQueue.empty()) )
     {
-        sMsg l_msg = sendingMsgQueue.front();
+        SMsg l_msg = sendingMsgQueue.front();
 
         // encode command using ash and write to uart
         NSSPI::ByteBuffer li_data;
@@ -232,10 +232,9 @@ void CEzspDongle::forceFirmwareUpgradeOnInitTimeout()
     this->switchToFirmwareUpgradeOnInitTimeout = true;
 }
 
-void CEzspDongle::setMode(CEzspDongleMode requestedMode)
-{
-    if (this->lastKnownMode != CEzspDongleMode::EZSP_NCP
-        && (requestedMode == CEzspDongleMode::EZSP_NCP || requestedMode == CEzspDongleMode::BOOTLOADER_EXIT_TO_EZSP_NCP)) {
+void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
+    if (this->lastKnownMode != CEzspDongle::Mode::EZSP_NCP
+        && (requestedMode == CEzspDongle::Mode::EZSP_NCP || requestedMode == CEzspDongle::Mode::BOOTLOADER_EXIT_TO_EZSP_NCP)) {
         /* We are requested to get out of the booloader */
         this->lastKnownMode = requestedMode;
         this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
@@ -244,15 +243,15 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
-            this->lastKnownMode = CEzspDongleMode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
+            this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
             /* Restart the EZSP startup procedure here */
             this->reset();
         });
         this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
-    if ((this->lastKnownMode == CEzspDongleMode::EZSP_NCP || this->lastKnownMode == CEzspDongleMode::UNKNOWN)
-        && requestedMode == CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE) {
+    if ((this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN)
+        && requestedMode == CEzspDongle::Mode::BOOTLOADER_FIRMWARE_UPGRADE) {
         clogD << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
@@ -264,7 +263,7 @@ void CEzspDongle::setMode(CEzspDongleMode requestedMode)
             /* Note: we provide selectModeUpgradeFw() with a callback that will be invoked when the firmware image transfer over serial link can start */
             /* This callback will only invoke our own notifyObserversOfFirmwareXModemXfrReady() method, that will in turn notify all observers that the firmware image transfer can start */
             this->blp.selectModeUpgradeFw([this]() { this->notifyObserversOfFirmwareXModemXfrReady(); });
-            this->lastKnownMode = CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE;   /* After launching the upgrade command, we are in firmware upgrade mode (X-modem) */
+            this->lastKnownMode = CEzspDongle::Mode::BOOTLOADER_FIRMWARE_UPGRADE;   /* After launching the upgrade command, we are in firmware upgrade mode (X-modem) */
         });
         this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
@@ -316,7 +315,7 @@ void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 			*/
 			clogE << "Received a message with a non-empty queue while no response was expected\n";
 		}
-		sMsg l_msgQ = sendingMsgQueue.front();
+		SMsg l_msgQ = sendingMsgQueue.front();
 		if( l_msgQ.i_cmd == i_cmd ) /* Make sure that the EZSP message is a response to the last command we sent */
 		{
 			// remove waiting message and send next

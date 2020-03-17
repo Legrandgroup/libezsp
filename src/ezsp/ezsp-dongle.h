@@ -14,30 +14,36 @@
 #include "spi/TimerBuilder.h"
 #include "spi/IAsyncDataInputObserver.h"
 #include "spi/ByteBuffer.h"
+#include "ezsp/enum-generator.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
-    typedef struct sMsg
-    {
+    typedef struct {
         NSEZSP::EEzspCmd i_cmd;
         NSSPI::ByteBuffer payload;
-    }SMsg;
+    } SMsg;
 }
 
 namespace NSEZSP {
 
-/**
- * @brief Requested state for the ezsp adapter
- */
-enum class CEzspDongleMode {
-    UNKNOWN,                            /*<! Unknown initial run mode for the dongle */
-    EZSP_NCP,                           /*<! Dongle is in EZSP commands processor mode */
-    BOOTLOADER_FIRMWARE_UPGRADE,        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */
-    BOOTLOADER_EXIT_TO_EZSP_NCP,        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */
-};
+#define EZSP_DONGLE_MODE_LIST(XX) \
+    XX(UNKNOWN,=1)                          /*<! Unknown initial run mode for the dongle */ \
+    XX(EZSP_NCP,)                           /*<! Dongle is in EZSP commands processor mode */ \
+    XX(BOOTLOADER_FIRMWARE_UPGRADE,)        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */ \
+    XX(BOOTLOADER_EXIT_TO_EZSP_NCP,)        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */ \
 
 class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
 {
 public:
+    /**
+     * @brief Requested mode for the EZSP adapter
+     *
+     * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+     *       In this macro, XX is a placeholder for the macro to use for building.
+     *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+     * @see enum-generator.h
+     */
+    DECLARE_ENUM(Mode, EZSP_DONGLE_MODE_LIST)
+
     CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
@@ -93,11 +99,11 @@ public:
      *
      * @param requestedMode The new requested mode
      */
-    void setMode(CEzspDongleMode requestedMode);
+    void setMode(CEzspDongle::Mode requestedMode);
 
 private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
-    CEzspDongleMode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
+    CEzspDongle::Mode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
