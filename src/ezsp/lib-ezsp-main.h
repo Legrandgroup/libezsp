@@ -12,8 +12,8 @@
 #include "spi/TimerBuilder.h"
 
 #include <ezsp/ezsp.h>
-#include "ezsp/ezsp-dongle.h"
 #include "ezsp/enum-generator.h"
+#include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
@@ -25,40 +25,41 @@
 
 
 namespace NSEZSP {
+
+#define CLIBEZSP_INTERNAL_STATE_LIST(XX) \
+	XX(UNINITIALIZED,=1)                    /*<! Initial state, before starting */ \
+	XX(WAIT_DONGLE_READY,)                  /*<! Waiting for the dongle to be ready */ \
+	XX(GETTING_EZSP_VERSION,)               /*<! Inside the EZSP version matching loop */ \
+	XX(GETTING_XNCP_INFO,)                  /*<! Inside the XNCP info check */ \
+	XX(STACK_INIT,)                         /*<! We are starting up the Zigbee stack in the adapter */ \
+	XX(FORM_NWK_IN_PROGRESS,)               /*<! We are currently creating a new Zigbee network */ \
+	XX(LEAVE_NWK_IN_PROGRESS,)              /*<! We are currently leaving the Zigbee network we previously joined */ \
+	XX(READY,)                              /*<! Library is ready to work and process new command */ \
+	XX(SCANNING,)                           /*<! An network scan in currently being run */ \
+	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
+	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
+	XX(SWITCHING_TO_BOOTLOADER_MODE,)       /*<! Switch to bootloader is pending */ \
+	XX(IN_BOOTLOADER_MENU,)                 /*<! We are on the bootloader menu prompt */ \
+	XX(IN_XMODEM_XFR,)                      /*<! We are currently doing X-Modem transfer */ \
+	XX(SWITCHING_TO_EZSP_MODE,)             /*<! Switch to EZSP mode (normal mode) is pending */ \
+	XX(SWITCH_TO_BOOTLOADER_IN_PROGRESS,)   /*<! We are currently starting bootloader more */ \
+	XX(TERMINATING,)                        /*<! We are shutting down the library */ \
+
 /**
  * @brief Internal states for CLibEzspMain
  *
- * @note Not all these states are exposed to the outside, only CLibEzspState states (and the related changes) are notified
- *       A mapping between CLibEzspInternalState and CLibEzspMain can be found in method setState()
+ * Not all these states are exposed to the outside, only CLibEzspState states (and the related changes) are notified
+ * A mapping between CLibEzspInternalState and CLibEzspMain can be found in method setState()
+ *
+ * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+ *       In this macro, XX is a placeholder for the macro to use for building.
+ *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+ * @see enum-generator.h
  */
-
-#define CLIBEZSP_INTERNAL_STATE_LIST(XX) \
-    XX(UNINITIALIZED,=0)                    
-/*<! Initial state, before starting */ \
-XX(WAIT_DONGLE_READY,)                  /*<! Waiting for the dongle to be ready */ \
-XX(GETTING_EZSP_VERSION,)               /*<! Inside the EZSP version matching loop */ \
-XX(GETTING_XNCP_INFO,)                  /*<! Inside the XNCP info check */ \
-XX(STACK_INIT,)                         /*<! We are starting up the Zigbee stack in the adapter */ \
-XX(FORM_NWK_IN_PROGRESS,)               /*<! We are currently creating a new Zigbee network */ \
-XX(LEAVE_NWK_IN_PROGRESS,)              /*<! We are currently leaving the Zigbee network we previously joined */ \
-XX(READY,)                              /*<! Library is ready to work and process new command */ \
-XX(SCANNING,)                           /*<! An network scan in currently being run */ \
-XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
-XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
-XX(SWITCHING_TO_BOOTLOADER_MODE,)       /*<! Switch to bootloader is pending */ \
-XX(IN_BOOTLOADER_MENU,)                 /*<! We are on the bootloader menu prompt */ \
-XX(IN_XMODEM_XFR,)                      /*<! We are currently doing X-Modem transfer */ \
-XX(SWITCHING_TO_EZSP_MODE,)             /*<! Switch to EZSP mode (normal mode) is pending */ \
-XX(SWITCH_TO_BOOTLOADER_IN_PROGRESS,)   /*<! We are currently starting bootloader more */ \
-XX(TERMINATING,)                        /*<! We are shutting down the library */ \
-
-/*!
- * \brief The lines below describes all brands known by SmartTool in order to build both an enum and an enum-to-string
- * XX is a placeholder for the macro to use for building.
- * See: enumFactory.h
- * Note: we start numbering from 1, so that 0 can be understood as value not found for enumFactory.h
- */
-DECLARE_ENUM(CLibEzspInternalState, CLIBEZSP_INTERNAL_STATE_LIST)
+class CLibEzspInternal {
+    public:
+        DECLARE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST)
+};
 
 /**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
@@ -207,7 +208,7 @@ private:
 	uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
 	uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
 	uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
-	CLibEzspInternalState lib_state;    /*!< Current state for our internal state machine */
+	CLibEzspInternal::State lib_state;    /*!< Current state for our internal state machine */
 	FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
 	CEzspDongle dongle; /*!< Dongle manipulation handler */
 	CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
@@ -220,8 +221,8 @@ private:
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
 
-	void setState( CLibEzspInternalState i_new_state );
-	CLibEzspInternalState getState() const;
+	void setState(CLibEzspInternal::State i_new_state);
+	CLibEzspInternal::State getState() const;
 	void dongleInit( uint8_t ezsp_version);
 	void stackInit();
 

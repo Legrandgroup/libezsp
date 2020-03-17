@@ -14,6 +14,7 @@
 
 #include <ezsp/export.h>
 #include <ezsp/config.h>
+#include "ezsp/enum-generator.h"
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <ezsp/zbmessage/green-power-frame.h>
@@ -21,20 +22,33 @@
 #include <spi/IUartDriver.h>
 
 namespace NSEZSP {
+
+#define CLIBEZSP_STATE_LIST(XX) \
+	XX(UNINITIALIZED,=1)                    /*<! Initial state, before starting. */ \
+	XX(READY,)                              /*<! Library is ready to work and process new command */ \
+	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
+	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
+	XX(IN_XMODEM_XFR,)                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */ \
+
 /**
  * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
+ *
+ * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+ *       In this macro, XX is a placeholder for the macro to use for building.
+ *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+ * @see enum-generator.h
  */
-enum class CLibEzspState {
-    UNINITIALIZED,                      /*<! Initial state, before starting. */
-    READY,                              /*<! Library is ready to work and process new command */
-    INIT_FAILED,                        /*<! Initialisation failed, Library is out of work */
-    SINK_BUSY,                          /*<! Enclosed sink is busy executing commands */
-    IN_XMODEM_XFR,                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */
+
+class CLibEzspPublic {
+    public:
+        DECLARE_ENUM(State, CLIBEZSP_STATE_LIST)
 };
+
+typedef CLibEzspPublic::State CLibEzspState;    /* Shortcut for access to public state enum */
 
 class CLibEzspMain;
 
-typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
+typedef std::function<void (CLibEzspPublic::State i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */

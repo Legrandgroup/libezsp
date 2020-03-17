@@ -7,6 +7,8 @@
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 
+DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic)
+
 using NSEZSP::CEzsp;
 
 CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel)

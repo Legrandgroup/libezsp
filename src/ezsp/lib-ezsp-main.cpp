@@ -11,15 +11,12 @@
 
 #include <sstream>
 #include <iomanip>
-#include <cstring>   // For strcmp()
 
-namespace NSEZSP {
-    DEFINE_ENUM(CLibEzspInternalState, CLIBEZSP_INTERNAL_STATE_LIST)
-} // namespace NSEZSP
+DEFINE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST, NSEZSP::CLibEzspInternal)
 
 using NSEZSP::CLibEzspMain;
-using NSEZSP::CLibEzspState;
-using NSEZSP::CLibEzspInternalState;
+using NSEZSP::CLibEzspPublic;
+using NSEZSP::CLibEzspInternal;
 
 CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) :
     uartHandle(uartHandle),
@@ -29,7 +26,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
     exp_stack_type(2),  /* Expect a stack type=2 (mesh) */
     xncpManufacturerId(0),  /* 0 means unknown (yet) */
     xncpVersionNumber(0),  /* 0 means unknown (yet) */
-    lib_state(CLibEzspInternalState::UNINITIALIZED),
+    lib_state(CLibEzspInternal::State::UNINITIALIZED),
     obsStateCallback(nullptr),
     dongle(timerbuilder, this),
     zb_messaging(dongle, timerbuilder),
@@ -45,7 +42,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 
 void CLibEzspMain::start()
 {
-    if (this->lib_state != CLibEzspInternalState::UNINITIALIZED) {
+    if (this->lib_state != CLibEzspInternal::State::UNINITIALIZED) {
         clogW << "Start invoked while already initialized\n";
     }
     if (this->uartHandle == nullptr) {
@@ -56,7 +53,7 @@ void CLibEzspMain::start()
     this->dongle.setUart(this->uartHandle);
     if (this->dongle.reset()) {
         clogI << "EZSP serial communication started\n";
-        setState(CLibEzspInternalState::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */
+        setState(CLibEzspInternal::State::WAIT_DONGLE_READY);  /* Because the dongle observer has been set to ourselves just above, our handleDongleState() method will be called back as soon as the dongle is detected */
     }
     else {
         clogE << "EZSP failed starting serial communication with adapter\n";
@@ -85,40 +82,40 @@ void CLibEzspMain::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSource
     this->obsGPSourceIdCallback = newObsGPSourceIdCallback;
 }
 
-void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
+void CLibEzspMain::setState(CLibEzspInternal::State i_new_state)
 {
-    CLibEzspInternalState l_old_state = this->lib_state;
+    CLibEzspInternal::State l_old_state = this->lib_state;
     this->lib_state = i_new_state;
-    clogD << "CLibEzspMain state changing from " << NSEZSP::getString(l_old_state) << " to " << NSEZSP::getString(i_new_state) << "\n";
+    clogD << "CLibEzspMain state changing from " << NSEZSP::CLibEzspInternal::getString(l_old_state) << " to " << NSEZSP::CLibEzspInternal::getString(i_new_state) << "\n";
     if( nullptr != obsStateCallback )
     {
         switch (i_new_state)
         {
-            case CLibEzspInternalState::UNINITIALIZED:
-            case CLibEzspInternalState::WAIT_DONGLE_READY:
-            case CLibEzspInternalState::GETTING_EZSP_VERSION:
-            case CLibEzspInternalState::GETTING_XNCP_INFO:
-            case CLibEzspInternalState::STACK_INIT:
-                obsStateCallback(CLibEzspState::UNINITIALIZED);
+            case CLibEzspInternal::State::UNINITIALIZED:
+            case CLibEzspInternal::State::WAIT_DONGLE_READY:
+            case CLibEzspInternal::State::GETTING_EZSP_VERSION:
+            case CLibEzspInternal::State::GETTING_XNCP_INFO:
+            case CLibEzspInternal::State::STACK_INIT:
+                obsStateCallback(CLibEzspPublic::State::UNINITIALIZED);
                 break;
-            case CLibEzspInternalState::READY:
-            case CLibEzspInternalState::SCANNING:
-                obsStateCallback(CLibEzspState::READY);
+            case CLibEzspInternal::State::READY:
+            case CLibEzspInternal::State::SCANNING:
+                obsStateCallback(CLibEzspPublic::State::READY);
                 break;
-            case CLibEzspInternalState::INIT_FAILED:
-                obsStateCallback(CLibEzspState::INIT_FAILED);
+            case CLibEzspInternal::State::INIT_FAILED:
+                obsStateCallback(CLibEzspPublic::State::INIT_FAILED);
                 break;
-            case CLibEzspInternalState::SINK_BUSY:
-            case CLibEzspInternalState::FORM_NWK_IN_PROGRESS:
-            case CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS:
-                obsStateCallback(CLibEzspState::SINK_BUSY);
+            case CLibEzspInternal::State::SINK_BUSY:
+            case CLibEzspInternal::State::FORM_NWK_IN_PROGRESS:
+            case CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS:
+                obsStateCallback(CLibEzspPublic::State::SINK_BUSY);
                 break;
-            case CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE:
-            case CLibEzspInternalState::IN_BOOTLOADER_MENU:
-                obsStateCallback(CLibEzspState::SINK_BUSY);
+            case CLibEzspInternal::State::SWITCHING_TO_BOOTLOADER_MODE:
+            case CLibEzspInternal::State::IN_BOOTLOADER_MENU:
+                obsStateCallback(CLibEzspPublic::State::SINK_BUSY);
                 break;
-            case CLibEzspInternalState::IN_XMODEM_XFR:
-                obsStateCallback(CLibEzspState::IN_XMODEM_XFR);
+            case CLibEzspInternal::State::IN_XMODEM_XFR:
+                obsStateCallback(CLibEzspPublic::State::IN_XMODEM_XFR);
                 break;
             default:
                 clogE << "Internal state can not be translated to public state\n";
@@ -126,7 +123,7 @@ void CLibEzspMain::setState( CLibEzspInternalState i_new_state )
     }
 }
 
-CLibEzspInternalState CLibEzspMain::getState() const
+CLibEzspInternal::State CLibEzspMain::getState() const
 {
     return this->lib_state;
 }
@@ -137,13 +134,13 @@ void CLibEzspMain::dongleInit(uint8_t ezsp_version)
      * Note that we really need to send this specific command just after a reset because until we do, the dongle will refuse most other commands anyway
     /* Response to this should be the reception of an EZSP_VERSION in the handleEzspRxMessage() handler below
      */
-    setState(CLibEzspInternalState::GETTING_EZSP_VERSION);
+    setState(CLibEzspInternal::State::GETTING_EZSP_VERSION);
     dongle.sendCommand(EEzspCmd::EZSP_VERSION, NSSPI::ByteBuffer({ ezsp_version }));
 }
 
 void CLibEzspMain::getXncpInfo()
 {
-    setState(CLibEzspInternalState::GETTING_XNCP_INFO);
+    setState(CLibEzspInternal::State::GETTING_XNCP_INFO);
     dongle.sendCommand(EEzspCmd::EZSP_GET_XNCP_INFO);
 }
 
@@ -260,7 +257,7 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
     if( DONGLE_READY == i_state )
     {
-        if( CLibEzspInternalState::WAIT_DONGLE_READY == getState() )
+        if( CLibEzspInternal::State::WAIT_DONGLE_READY == getState() )
         {
             dongleInit(this->exp_ezsp_min_version);
         }
@@ -278,10 +275,10 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
 
 bool CLibEzspMain::clearAllGPDevices()
 {
-    if (this->getState() != CLibEzspInternalState::READY) {
+    if (this->getState() != CLibEzspInternal::State::READY) {
         return false;
     }
-    this->setState(CLibEzspInternalState::SINK_BUSY);
+    this->setState(CLibEzspInternal::State::SINK_BUSY);
     bool success = this->gp_sink.clearAllGpds();
     if (!success) {
         return false; /* Probably sink is not ready */
@@ -293,10 +290,10 @@ bool CLibEzspMain::clearAllGPDevices()
 
 bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 {
-    if (this->getState() != CLibEzspInternalState::READY) {
+    if (this->getState() != CLibEzspInternal::State::READY) {
         return false;
     }
-    this->setState(CLibEzspInternalState::SINK_BUSY);
+    this->setState(CLibEzspInternal::State::SINK_BUSY);
     if (!this->gp_sink.removeGpds(sourceIdList))
     {
         return false; /* Probably sink is not ready */
@@ -307,10 +304,10 @@ bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
 
 bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 {
-    if (this->getState() != CLibEzspInternalState::READY) {
+    if (this->getState() != CLibEzspInternal::State::READY) {
         return false;
     }
-    this->setState(CLibEzspInternalState::SINK_BUSY);
+    this->setState(CLibEzspInternal::State::SINK_BUSY);
     if (!this->gp_sink.registerGpds(gpDevicesList))
     {
         return false; /* Probably sink is not ready */
@@ -321,7 +318,7 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
 
 bool CLibEzspMain::openCommissioningSession()
 {
-    if (this->getState() != CLibEzspInternalState::READY) {
+    if (this->getState() != CLibEzspInternal::State::READY) {
         return false;
     }
     this->gp_sink.openCommissioningSession();
@@ -330,7 +327,7 @@ bool CLibEzspMain::openCommissioningSession()
 
 bool CLibEzspMain::closeCommissioningSession()
 {
-    if (this->getState() != CLibEzspInternalState::READY) {
+    if (this->getState() != CLibEzspInternal::State::READY) {
         return false;
     }
     gp_sink.closeCommissioningSession();
@@ -345,13 +342,13 @@ void CLibEzspMain::setAnswerToGpfChannelRqstPolicy(bool allowed)
 void CLibEzspMain::setFirmwareUpgradeMode()
 {
     this->dongle.sendCommand(EZSP_LAUNCH_STANDALONE_BOOTLOADER, { 0x01 });  /* 0x00 for STANDALONE_BOOTLOADER_NORMAL_MODE */
-    this->setState(CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE);
+    this->setState(CLibEzspInternal::State::SWITCHING_TO_BOOTLOADER_MODE);
     /* We should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage() handler below, and only then, issue a carriage return to get the bootloader prompt */
 }
 
 bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration)
 {
-    if (this->getState() != CLibEzspInternalState::READY || this->scanInProgress) {
+    if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
         clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
         return false;
     }
@@ -362,14 +359,14 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
     l_payload.push_back(u32_get_byte2(channelMask));
     l_payload.push_back(u32_get_byte3(channelMask));
     l_payload.push_back(duration);
-    this->setState(CLibEzspInternalState::SCANNING);
+    this->setState(CLibEzspInternal::State::SCANNING);
     this->obsEnergyScanCallback = energyScanCallback;
     this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
     return true;
 }
 
 bool CLibEzspMain::setChannel(uint8_t channel) {
-    if (this->getState() != CLibEzspInternalState::READY || this->scanInProgress) {
+    if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
         return false;
     }
     this->dongle.sendCommand(EZSP_SET_RADIO_CHANNEL, { channel });
@@ -378,7 +375,7 @@ bool CLibEzspMain::setChannel(uint8_t channel) {
 
 void CLibEzspMain::handleFirmwareXModemXfr()
 {
-    this->setState(CLibEzspInternalState::IN_XMODEM_XFR);
+    this->setState(CLibEzspInternal::State::IN_XMODEM_XFR);
     clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
 }
 
@@ -490,44 +487,44 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
         }
     }
     // Now, configure and startup the adapter's embedded stack
-    setState(CLibEzspInternalState::STACK_INIT);
+    setState(CLibEzspInternal::State::STACK_INIT);
     stackInit();
 }
 
 void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if (this->getState() != CLibEzspInternalState::STACK_INIT)
+	if (this->getState() != CLibEzspInternal::State::STACK_INIT)
 	{
 		clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
 	}
-	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternalState=" << NSEZSP::getString(this->getState()) << "\n";
+	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getString(this->getState()) << "\n";
 	if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
 	{
 		// We create a network on the required channel
-		if (this->getState() == CLibEzspInternalState::STACK_INIT)
+		if (this->getState() == CLibEzspInternal::State::STACK_INIT)
 		{
 			clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
 			zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
 			//set new state
-			this->setState(CLibEzspInternalState::FORM_NWK_IN_PROGRESS);
+			this->setState(CLibEzspInternal::State::FORM_NWK_IN_PROGRESS);
 			this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
 		}
 	}
 	else
 	{
-		if ((this->getState() == CLibEzspInternalState::STACK_INIT) && (this->resetDot154ChannelAtInit != 0))
+		if ((this->getState() == CLibEzspInternal::State::STACK_INIT) && (this->resetDot154ChannelAtInit != 0))
 		{
 			clogI << "Zigbee reset requested... Leaving current network\n";
 			// leave current network
 			zb_nwk.leaveNetwork();
-			this->setState(CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS);
+			this->setState(CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS);
 		}
 	}
 }
 
 void CLibEzspMain::handleEzspRxMessage_EZSP_LAUNCH_STANDALONE_BOOTLOADER(const NSSPI::ByteBuffer& i_msg_receive)
 {
-    if( this->getState() == CLibEzspInternalState::SWITCHING_TO_BOOTLOADER_MODE )
+    if( this->getState() == CLibEzspInternal::State::SWITCHING_TO_BOOTLOADER_MODE )
     {
         clogD << "Bootloader prompt mode is now going to start. Scheduling selection of the firmware upgrade option.\n";
         this->dongle.setMode(CEzspDongleMode::BOOTLOADER_FIRMWARE_UPGRADE);
@@ -545,7 +542,7 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 	 * This is because EZSP adapter send spurious EMBER_NETWORK_UP or EMBER_NOT_JOINED while leaving the network.
 	 * We will ignore all these until we get a EZSP_LEAVE_NETWORK message (see handler below)
 	 */
-	if (this->getState() != CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS)
+	if (this->getState() != CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS)
 	{
 		clogD << "CEZSP_STACK_STATUS_HANDLER status : " << CEzspEnum::EEmberStatusToString(status) << "\n";
 		/* Note: we start the sink below only if network is up, but even if this is the case, we will not do it if we have been asked to reset the Zigbee network
@@ -553,15 +550,15 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 		* will we get called again with EMBER_NETWORK_UP once the Zigbee network has been re-created */
 		if ((EMBER_NETWORK_UP == status) && (this->resetDot154ChannelAtInit == 0))
 		{
-			this->setState(CLibEzspInternalState::SINK_BUSY);
+			this->setState(CLibEzspInternal::State::SINK_BUSY);
 			/* Create a sink state change callback to find out when the sink is ready */
 			/* When the sink becomes ready, then libezsp will also switch to ready state */
 			auto clibobs = [this](ESinkState& i_state) -> bool
 			{
 				clogD << "Underneath sink changed to state: " << std::dec << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
 				if ((ESinkState::SINK_READY == i_state) &&
-					(this->getState() == CLibEzspInternalState::SINK_BUSY)) {
-				   this->setState(CLibEzspInternalState::READY);
+					(this->getState() == CLibEzspInternal::State::SINK_BUSY)) {
+				   this->setState(CLibEzspInternal::State::READY);
 				}
 				return true;   /* Do not ask the caller to withdraw ourselves from the callback */
 			};
@@ -632,12 +629,12 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
         break;
         case EZSP_LEAVE_NETWORK:
         {
-            if (this->getState() != CLibEzspInternalState::LEAVE_NWK_IN_PROGRESS)
+            if (this->getState() != CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS)
             {
-                clogW << "Got EZSP_LEAVE_NETWORK while not in CLibEzspInternalState=LEAVE_NWK_IN_PROGRESS\n";
+                clogW << "Got EZSP_LEAVE_NETWORK while not in CLibEzspInternal::State=LEAVE_NWK_IN_PROGRESS\n";
             }
             // Reset our current state to stack init
-            this->setState(CLibEzspInternalState::STACK_INIT);
+            this->setState(CLibEzspInternal::State::STACK_INIT);
         }
         break;
         /*
@@ -656,7 +653,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         case EZSP_START_SCAN:
         {
-            if (this->getState() != CLibEzspInternalState::SCANNING)
+            if (this->getState() != CLibEzspInternal::State::SCANNING)
             {
                 clogW << "Got a EZSP_START_SCAN message while not in SCANNING state\n";
             }
@@ -670,7 +667,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         case EZSP_ENERGY_SCAN_RESULT_HANDLER:
         {
-            if (this->getState() != CLibEzspInternalState::SCANNING)
+            if (this->getState() != CLibEzspInternal::State::SCANNING)
             {
                 clogW << "Got a EZSP_ENERGY_SCAN_RESULT_HANDLER message while not in SCANNING state\n";
             }
@@ -683,7 +680,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         case EZSP_SCAN_COMPLETE_HANDLER:
         {
-            if (this->getState() != CLibEzspInternalState::SCANNING)
+            if (this->getState() != CLibEzspInternal::State::SCANNING)
             {
                 clogW << "Got a EZSP_SCAN_COMPLETE_HANDLER message while not in SCANNING state\n";
             }
@@ -692,8 +689,8 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
                 clogD << "Scan finished\n";
             }
             this->scanInProgress = false;
-            if (this->getState() == CLibEzspInternalState::SCANNING) {
-                this->setState(CLibEzspInternalState::READY);
+            if (this->getState() == CLibEzspInternal::State::SCANNING) {
+                this->setState(CLibEzspInternal::State::READY);
                 if (this->obsEnergyScanCallback)
                 {
                     this->obsEnergyScanCallback(this->lastChannelToEnergyScan);

@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#include <cstring>   // For strcmp()
 
 /*!
  * \brief Expansion macro for enum value definition
@@ -43,16 +44,16 @@
   enum EnumType { \
     ENUM_DEF(ENUM_VALUE) \
   }; \
-  const char* getString(EnumType value); \
-  EnumType get##EnumType##Value(const char* str); \
+  static const char* getString(EnumType value); \
+  static EnumType get##EnumType##Value(const char* str); \
 
 /*!
  * \brief Define the access function names
  *
  * Marco to implement (define) the functions for the prototypes previously declared using macro #DECLARE_ENUM(EnumType,ENUM_DEF)
  */
-#define DEFINE_ENUM(EnumType,ENUM_DEF) \
-  const char* getString(EnumType value) \
+#define DEFINE_ENUM(EnumType,ENUM_DEF,Scope) \
+  const char* Scope::getString(EnumType value) \
   { \
     switch(value) \
     { \
@@ -62,9 +63,10 @@
                throw std::range_error(ss.str());; /* handle input error */ \
     } \
   } \
-  EnumType get##EnumType##Value(const char* str) \
+  Scope::EnumType Scope::get##EnumType##Value(const char* str) \
   { \
     ENUM_DEF(ENUM_STRCMP) \
     throw std::range_error("String " + std::string(str) + " does not match any value"); /* handle input error */ \
   }
+  
 
