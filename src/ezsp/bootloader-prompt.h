@@ -6,25 +6,31 @@
 
 #include "spi/TimerBuilder.h"
 #include "spi/ByteBuffer.h"
+#include "ezsp/enum-generator.h"
 
 namespace NSEZSP {
 
-/**
- * @brief Internal states for CLibEzspMain
- * 
- * @note Not all these states are exposed to the outside, only CLibEzspState states (and the related changes) are notified
- *       A mapping between CLibEzspInternalState and CLibEzspMain can be found in method setState()
- */
-enum class EBootloaderStage {
-    RX_FLUSH,               /*<! Initial state, first flush all incoming bytes from serial link */
-    PROBE,                  /*<! We don't know yet if we are in bootloader mode, we are just probing */
-    TOPLEVEL_MENU_HEADER,   /*<! Toplevel menu header, displaying Gecko Bootloader v1.6.0 */
-    TOPLEVEL_MENU_CONTENT,  /*<! Toplevel menu content, displaying a menu with the various numeric options */
-    TOPLEVEL_MENU_PROMPT,   /*<! String "BL >" following the toplevel menu header */
-    XMODEM_READY_CHAR_WAIT, /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */
-    XMODEM_XFR,             /*<! A firmware image transfer using X-modem is ongoing */
-};
+#define BOOTLOADER_STAGE_LIST(XX) \
+    XX(RX_FLUSH,=1)             /*<! Initial state, first flush all incoming bytes from serial link */ \
+    XX(PROBE,)                  /*<! We don't know yet if we are in bootloader mode, we are just probing */ \
+    XX(TOPLEVEL_MENU_HEADER,)   /*<! Toplevel menu header, displaying Gecko Bootloader v1.6.0 */ \
+    XX(TOPLEVEL_MENU_CONTENT,)  /*<! Toplevel menu content, displaying a menu with the various numeric options */ \
+    XX(TOPLEVEL_MENU_PROMPT,)   /*<! String "BL >" following the toplevel menu header */ \
+    XX(XMODEM_READY_CHAR_WAIT,) /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */ \
+    XX(XMODEM_XFR,)             /*<! A firmware image transfer using X-modem is ongoing */ \
 
+/**
+ * @brief Internal stages for bootloader prompt detection and interaction
+ *
+ * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+ *       In this macro, XX is a placeholder for the macro to use for building.
+ *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+ * @see enum-generator.h
+ */
+class EBootloader {
+    public:
+        DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST)
+};
 
 class CBootloaderPrompt : protected NSSPI::ITimerVisitor
 {
@@ -95,7 +101,7 @@ public:
      * 
      * @param i_data New bytes to add to the previously accumulated ones
      */
-    EBootloaderStage decode(NSSPI::ByteBuffer& i_data);
+    EBootloader::Stage decode(NSSPI::ByteBuffer& i_data);
 
 protected:
     /**
@@ -114,7 +120,7 @@ private:
     std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
     NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
-    EBootloaderStage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
+    EBootloader::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
     FBootloaderWriteFunc bootloaderWriteFunc;   /*!< A function to write bytes to the serial port */
     std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
     FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
