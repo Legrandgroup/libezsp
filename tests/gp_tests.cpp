@@ -1,6 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include <stdint.h>
+#include <cstdint>
 
 #include "spi/mock-uart/MockUartDriver.h"
 #include "spi/TimerBuilder.h"
@@ -35,7 +35,7 @@ public:
 	 *            Because this is a pointer, you can update this vector on the fly during the test, we will use an always up-to-date vector each time bytes are written to the serial port.
 	 *            However, this also means you have to keep the vector of vector of uint8_t memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
 	 */
-	GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
+	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
 
 	/**
 	 * @brief Copy constructor
@@ -59,8 +59,9 @@ public:
 	int onWriteCallback(size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) {
 		std::cout << "Request to write " << std::dec << cnt << " bytes: ";
 		for(unsigned int loop=0; loop<cnt; loop++) {
-			if (loop!=0)
+			if (loop!=0) {
 				std::cout << " ";
+			}
 			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(buf))[loop]);
 		}
 		if (delta != std::chrono::duration<double, std::milli>::max()) {
@@ -114,8 +115,9 @@ public:
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
 		std::cerr << "Got notification of " << std::dec << dataLen << " bytes read: ";
 		for(unsigned int loop=0; loop<dataLen; loop++) {
-			if (loop!=0)
+			if (loop!=0) {
 				std::cout << " ";
+			}
 			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(dataIn))[loop]);
 		}
 		std::cerr << "\n";
@@ -138,13 +140,13 @@ public:
 TEST_GROUP(gp_tests) {
 };
 
-#define UT_WAIT_MS(tms) std::this_thread::sleep_for(std::chrono::milliseconds(tms))
+#define UT_WAIT_MS(tms) std::this_thread::sleep_for(std::chrono::milliseconds(tms)) //NOSONAR
 #define UT_FAILF_UNLESS_STAGE(tstage) do {\
 	if (serialProcessor.stage != tstage) \
 		FAILF("Failed to transition to stage %d", tstage); \
 	else \
 		std::cout << "ASH transitionned to stage " << tstage << "\n"; \
-	} while(0)
+	} while(0) //NOSONAR
 
 
 #define GPD_KEY { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa }
