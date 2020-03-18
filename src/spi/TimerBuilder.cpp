@@ -6,7 +6,7 @@
 
 #include "spi/TimerBuilder.h"
 
-#undef __TIMER_SPI_FOUND__
+#undef __TIMER_SPI_FOUND__ //NOSONAR
 #ifdef USE_RARITAN
 #define __TIMER_SPI_FOUND__
 #include "spi/raritan/RaritanTimer.h"
@@ -27,7 +27,7 @@ typedef CppThreadsTimer Timer;
 #ifndef __TIMER_SPI_FOUND__
 # error At least one timer SPI should be selected
 #endif
-#undef __TIMER_SPI_FOUND__
+#undef __TIMER_SPI_FOUND__ //NOSONAR
 
 using NSSPI::TimerBuilder;
 using NSSPI::ITimer;

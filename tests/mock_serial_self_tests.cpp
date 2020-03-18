@@ -27,8 +27,9 @@ public:
 	int onWriteCallback(size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) {
 		std::cout << "Request to write " << std::dec << cnt << " bytes: ";
 		for(unsigned int loop=0; loop<cnt; loop++) {
-			if (loop!=0)
+			if (loop!=0) {
 				std::cout << " ";
+			}
 			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(buf))[loop]);
 		}
 		if (cnt != 4)
@@ -55,8 +56,9 @@ public:
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
 		std::cout << "Got notification of " << std::dec << dataLen << " bytes read: ";
 		for(unsigned int loop=0; loop<dataLen; loop++) {
-			if (loop!=0)
+			if (loop!=0) {
 				std::cout << " ";
+			}
 			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(dataIn))[loop]);
 		}
 		if (dataLen != 3)

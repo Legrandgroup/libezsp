@@ -1,6 +1,6 @@
 #include "spi/AesBuilder.h"
 
-#undef __AES_SPI_FOUND__
+#undef __AES_SPI_FOUND__ //NOSONAR
 #define __AES_SPI_FOUND__
 #ifdef USE_AESCUSTOM
 #include "spi/custom-aes/custom-aes.h"
@@ -9,7 +9,7 @@ typedef NSSPI::CustomAes Aes;
 #ifndef __AES_SPI_FOUND__
 # error At least one AES SPI should be selected
 #endif
-#undef __AES_SPI_FOUND__
+#undef __AES_SPI_FOUND__ //NOSONAR
 
 using NSSPI::AesBuilder;
 using NSSPI::IAes;

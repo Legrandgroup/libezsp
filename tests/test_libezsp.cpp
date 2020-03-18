@@ -4,10 +4,10 @@
  * Automated unit tests runner
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
-#include <assert.h>	// For assert()
+#include <cassert>	// For assert()
 #include "TestHarness.h"
 
 #ifndef USE_CPPUTEST

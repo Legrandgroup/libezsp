@@ -49,38 +49,38 @@
 
 #include "custom-aes.h"
 
-#include <string.h>
+#include <cstring>
 
-#define WPOLY   0x011b
-#define BPOLY     0x1b
-#define DPOLY   0x008d
+#define WPOLY   0x011b //NOSONAR
+#define BPOLY     0x1b //NOSONAR
+#define DPOLY   0x008d //NOSONAR
 
-#define f1(x)   (x)
-#define f2(x)   (((x) << 1) ^ ((((x) >> 7) & 1) * WPOLY))
+#define f1(x)   (x) //NOSONAR
+#define f2(x)   (((x) << 1) ^ ((((x) >> 7) & 1) * WPOLY)) //NOSONAR
 #define f4(x)   (((x) << 2) ^ ((((x) >> 6) & 1) * WPOLY) \
-                          ^ ((((x) >> 6) & 2) * WPOLY))
+                          ^ ((((x) >> 6) & 2) * WPOLY)) //NOSONAR
 #define f8(x)   (((x) << 3) ^ ((((x) >> 5) & 1) * WPOLY) \
                           ^ ((((x) >> 5) & 2) * WPOLY) \
-                          ^ ((((x) >> 5) & 4) * WPOLY))
-#define d2(x)   ((((x)) >> 1) ^ (((x)) & 1 ? DPOLY : 0))
+                          ^ ((((x) >> 5) & 4) * WPOLY)) //NOSONAR
+#define d2(x)   ((((x)) >> 1) ^ (((x)) & 1 ? DPOLY : 0)) //NOSONAR
 
-#define f3(x)   (f2(x) ^ (x))
-#define f9(x)   (f8(x) ^ (x))
-#define fb(x)   (f8(x) ^ f2(x) ^ (x))
-#define fd(x)   (f8(x) ^ f4(x) ^ (x))
-#define fe(x)   (f8(x) ^ f4(x) ^ f2(x))
+#define f3(x)   (f2(x) ^ (x)) //NOSONAR
+#define f9(x)   (f8(x) ^ (x)) //NOSONAR
+#define fb(x)   (f8(x) ^ f2(x) ^ (x)) //NOSONAR
+#define fd(x)   (f8(x) ^ f4(x) ^ (x)) //NOSONAR
+#define fe(x)   (f8(x) ^ f4(x) ^ f2(x)) //NOSONAR
 
-#define s_box(x)     sbox[(x)]
-#define is_box(x)    isbox[(x)]
-#define gfm2_sb(x)   gfm2_sbox[(x)]
-#define gfm3_sb(x)   gfm3_sbox[(x)]
-#define gfm_9(x)     gfmul_9[(x)]
-#define gfm_b(x)     gfmul_b[(x)]
-#define gfm_d(x)     gfmul_d[(x)]
-#define gfm_e(x)     gfmul_e[(x)]
+#define s_box(x)     sbox[(x)] //NOSONAR
+#define is_box(x)    isbox[(x)] //NOSONAR
+#define gfm2_sb(x)   gfm2_sbox[(x)] //NOSONAR
+#define gfm3_sb(x)   gfm3_sbox[(x)] //NOSONAR
+#define gfm_9(x)     gfmul_9[(x)] //NOSONAR
+#define gfm_b(x)     gfmul_b[(x)] //NOSONAR
+#define gfm_d(x)     gfmul_d[(x)] //NOSONAR
+#define gfm_e(x)     gfmul_e[(x)] //NOSONAR
 
-#define block_copy_nn(d, s, l)    memcpy((d), (s), (l))
-#define block_copy(d, s)          memcpy((d), (s), IAes::AES_BLOCK_SIZE)
+#define block_copy_nn(d, s, l)    memcpy((d), (s), (l)) //NOSONAR
+#define block_copy(d, s)          memcpy((d), (s), IAes::AES_BLOCK_SIZE) //NOSONAR
 
 #define sb_data(w) {    /* S Box data values */                            \
     w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), w(0xc5),\
@@ -114,7 +114,7 @@
     w(0xe1), w(0xf8), w(0x98), w(0x11), w(0x69), w(0xd9), w(0x8e), w(0x94),\
     w(0x9b), w(0x1e), w(0x87), w(0xe9), w(0xce), w(0x55), w(0x28), w(0xdf),\
     w(0x8c), w(0xa1), w(0x89), w(0x0d), w(0xbf), w(0xe6), w(0x42), w(0x68),\
-    w(0x41), w(0x99), w(0x2d), w(0x0f), w(0xb0), w(0x54), w(0xbb), w(0x16) }
+    w(0x41), w(0x99), w(0x2d), w(0x0f), w(0xb0), w(0x54), w(0xbb), w(0x16) } //NOSONAR
 
 #define isb_data(w) {   /* inverse S Box data values */                    \
     w(0x52), w(0x09), w(0x6a), w(0xd5), w(0x30), w(0x36), w(0xa5), w(0x38),\
@@ -148,7 +148,7 @@
     w(0xa0), w(0xe0), w(0x3b), w(0x4d), w(0xae), w(0x2a), w(0xf5), w(0xb0),\
     w(0xc8), w(0xeb), w(0xbb), w(0x3c), w(0x83), w(0x53), w(0x99), w(0x61),\
     w(0x17), w(0x2b), w(0x04), w(0x7e), w(0xba), w(0x77), w(0xd6), w(0x26),\
-    w(0xe1), w(0x69), w(0x14), w(0x63), w(0x55), w(0x21), w(0x0c), w(0x7d) }
+    w(0xe1), w(0x69), w(0x14), w(0x63), w(0x55), w(0x21), w(0x0c), w(0x7d) } //NOSONAR
 
 #define mm_data(w) {    /* basic data for forming finite field tables */   \
     w(0x00), w(0x01), w(0x02), w(0x03), w(0x04), w(0x05), w(0x06), w(0x07),\
@@ -182,7 +182,7 @@
     w(0xe0), w(0xe1), w(0xe2), w(0xe3), w(0xe4), w(0xe5), w(0xe6), w(0xe7),\
     w(0xe8), w(0xe9), w(0xea), w(0xeb), w(0xec), w(0xed), w(0xee), w(0xef),\
     w(0xf0), w(0xf1), w(0xf2), w(0xf3), w(0xf4), w(0xf5), w(0xf6), w(0xf7),\
-    w(0xf8), w(0xf9), w(0xfa), w(0xfb), w(0xfc), w(0xfd), w(0xfe), w(0xff) }
+    w(0xf8), w(0xf9), w(0xfa), w(0xfb), w(0xfc), w(0xfd), w(0xfe), w(0xff) } //NOSONAR
 
 using NSSPI::CustomAes;
 using NSSPI::aes_context;
@@ -387,24 +387,27 @@ bool CustomAes::encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned 
         shift_sub_rows( s1 );
         copy_and_key( out, s1, context.ksch + r * IAes::AES_BLOCK_SIZE );
     }
-    else
+    else {
         return false;
+    }
     return true;
 }
 
 // CBC encrypt a number of blocks (input and return an IV)
 bool CustomAes::cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE])
 {
-    if (size % 16 != 0)
+    if (size % 16 != 0) {
         return false;
+    }
 
     unsigned long n_block = size / 16;
 
     while(n_block--)
     {
         xor_block(iv, in);
-        if (!this->encrypt(iv, iv))
+        if (!this->encrypt(iv, iv)) {
             return false;
+        }
         memcpy(out, iv, IAes::AES_BLOCK_SIZE);
         in += IAes::AES_BLOCK_SIZE;
         out += IAes::AES_BLOCK_SIZE;

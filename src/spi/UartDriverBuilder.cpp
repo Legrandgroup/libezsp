@@ -1,6 +1,6 @@
 #include "spi/UartDriverBuilder.h"
 
-#undef __UARTDRIVER_SPI_FOUND__
+#undef __UARTDRIVER_SPI_FOUND__ //NOSONAR
 #ifdef USE_RARITAN
 #define __UARTDRIVER_SPI_FOUND__
 #include "spi/raritan/RaritanUartDriver.h"
@@ -31,7 +31,7 @@ typedef MockUartDriver UartDriver;
 #ifndef __UARTDRIVER_SPI_FOUND__
 # error At least one UART driver SPI should be selected
 #endif
-#undef __UARTDRIVER_SPI_FOUND__
+#undef __UARTDRIVER_SPI_FOUND__ //NOSONAR
 
 //#define DYNAMIC_ALLOCATION
 
