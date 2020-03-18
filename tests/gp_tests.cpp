@@ -156,7 +156,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
 	};
-	std::shared_ptr<MockUartDriver> mockUartDriverHandle(new MockUartDriver(wcb));
+	/* We are disabling analisys on the line below because analyser doesn't like dynamic allocations, even if then stored in a smart pointer container */
+	std::shared_ptr<MockUartDriver> mockUartDriverHandle(new MockUartDriver(wcb)); //NOSONAR
 	if (mockUartDriverHandle->open("/dev/ttyUSB0", 115200) != 0) {
 		FAILF("Failed opening mock serial port");
 	}
