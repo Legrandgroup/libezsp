@@ -19,6 +19,11 @@ This means that the core code of the library (domain) is isolated (inside folder
 SPI connectors implement a concrete implementation that complies to a specified interface declared in interface headers (.h header files which filename starts with a capital I).
 This allows dependency inversion paradigm, where the connector depends on the library, rather than the library depends on the underlying connectors. Connectors then become interchangeable, and we use this method a lot to abstract the library from the services it uses (a version of these services are using the Raritan framework, another version is independent from the Raritan framework and can run outside of it).
 
+## Coding style
+
+C++ code should be formatted using `astyle --style=java --indent=tab --break-closing-brackets` to ensure homogeneous code style and indentation.
+This means identation should use tabs, and opening curly braces should be placed at the end of the previous line like most java-formatted code.
+
 ## SPI interface definition
 
 * include/spi/ITimer.h and include/spi/ITimerBuilder.h
