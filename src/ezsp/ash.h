@@ -75,7 +75,15 @@ private:
     void decode_flag(NSSPI::ByteBuffer &lo_msg);
     void clean_flag(NSSPI::ByteBuffer &lo_msg);
     NSSPI::ByteBuffer stuffedOutputData(NSSPI::ByteBuffer i_msg);
-    NSSPI::ByteBuffer dataRandomise(NSSPI::ByteBuffer i_data, uint8_t start);
+
+	/**
+	 * @brief Apply ASH randomisation (XORed LFSR) to an ASH payload
+	 *
+	 * @param i_data The payload to randomize
+	 *
+	 * @return A randomized buffer for transmission over a serial link
+	 */
+	static NSSPI::ByteBuffer dataRandomize(NSSPI::ByteBuffer i_data, uint8_t start = 0);
 };
 
 /**

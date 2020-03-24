@@ -132,11 +132,7 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
   i_data.insert(i_data.begin(),seq_num++);
 
 
-  i_data = dataRandomise(i_data,0);
-  for (auto &val : i_data)
-  {
-      lo_msg.push_back(val);
-  }
+	lo_msg.append(dataRandomize(i_data));
 
   uint16_t crc = computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
@@ -203,7 +199,7 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
 		this->ackNum++;
 		this->ackNum &= 0x07;
 
-    lo_msg = dataRandomise(lo_msg,1);
+		lo_msg = dataRandomize(lo_msg,1);
 
     if (lo_msg.size()<3)
     {
@@ -425,21 +421,21 @@ NSSPI::ByteBuffer CAsh::stuffedOutputData(NSSPI::ByteBuffer i_msg)
   return lo_msg;
 }
 
-NSSPI::ByteBuffer CAsh::dataRandomise(NSSPI::ByteBuffer i_data, uint8_t start)
-{
-    NSSPI::ByteBuffer lo_data;
+NSSPI::ByteBuffer CAsh::dataRandomize(NSSPI::ByteBuffer i_data, uint8_t start) {
+	NSSPI::ByteBuffer result;
 
-    // Randomise the data
-    uint8_t data = 0x42;
-    for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
-        lo_data.push_back(i_data.at(cnt) ^ data);
+	// Randomise the data
+	uint8_t lfsrByte = 0x42;
+	for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
+		result.push_back(i_data.at(cnt) ^ lfsrByte);
 
-        if ((data & 0x01) == 0) {
-            data = static_cast<uint8_t>(data >> 1);
-        } else {
-            data = (static_cast<uint8_t>(data >> 1) ^ static_cast<uint8_t>(0xb8));
-        }
-    }
+		/* Now, compute the next LFSR byte */
+		bool lfsrByteBit0 = lfsrByte & 0x01;
+		lfsrByte >>= 1;
+		if (lfsrByteBit0) {
+			lfsrByte ^= static_cast<uint8_t>(0xb8U);
+		}
+	}
 
-    return lo_data;
+	return result;
 }
