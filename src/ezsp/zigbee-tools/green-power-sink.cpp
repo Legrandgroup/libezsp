@@ -153,17 +153,11 @@ bool CGpSink::registerGpds(std::vector<CGpDevice> gpd) {
 	this->setSinkState(CGpSink::State::SINK_READY);
 #else
 	/* The list GPs that should be added has been stored inside this->gpds_to_register, for background processing */
-	for (auto it = this->gpds_to_register.begin(); it != this->gpds_to_register.end(); ++it) {
-		CGpDevice& dev = *it;
-		clogD << "Queuing source ID " << std::hex << std::setfill('0') << dev.getSourceId() << " for registration\n";
-	}
 
-	clogD << "Before gpSinkTableFindOrAllocateEntry()\n";
 	/* Request sink table entry for the first source ID to add, the rest of the source IDs in the list gpds_to_register will be processed asynchronously */
 	/* Note: gpds_to_register vector cannot be empty because of the initial test on gpd argument, that was then swapped */
 	/* It is thus safe to issue back() on that vector */
 	gpSinkTableFindOrAllocateEntry(gpds_to_register.back().getSourceId());
-	clogD << "After gpSinkTableFindOrAllocateEntry()\n";
 
 	/* When performing the register action directly inside the dongle:
 	 * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
