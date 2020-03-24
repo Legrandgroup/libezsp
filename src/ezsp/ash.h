@@ -62,8 +62,8 @@ protected:
     void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
-    uint8_t ackNum;
-    uint8_t frmNum;
+	uint8_t ackNum; /*!< The sequence number of the next acknowledgement we are expecting */
+	uint8_t frmNum; /*!< The sequence number of the next data frame we will send */
     uint8_t seq_num;
     bool stateConnected;
     std::unique_ptr<NSSPI::ITimer> timer;

@@ -10,6 +10,8 @@
 #include <iomanip>
 
 #include "ash.h"
+#include "ezsp/ezsp-protocol/ezsp-enum.h"
+#include "ezsp/byte-manip.h"
 
 #include "spi/ILogger.h"
 
@@ -115,16 +117,16 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
         << ", FC=0): " << NSSPI::Logger::byteSequenceToString(li_data) << "\n"; // Note FC is hardcoded to 0 below
   */
   lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
-  frmNum = (static_cast<uint8_t>(frmNum + 1)) & 0x07;
+	this->frmNum++;
+	this->frmNum &= 0x07;
 
-  if( 0 != i_data.at(0) )
-  {
-    // WARNING for all frames except "VersionRequest" frame, add extended header
-    i_data.insert(i_data.begin(),0);
-    i_data.insert(i_data.begin(),0xFF);
-  }
+	if (i_data.at(0) != NSEZSP::EEzspCmd::EZSP_VERSION) {
+		/* For all frames except "VersionRequest" frame, prepend with the extended header 0xff 0x00 */
+		i_data.insert(i_data.begin(),0);
+		i_data.insert(i_data.begin(),0xFF);
+	}
 
-  // insert frm control
+	// Prepend the frame control byte 0x00
   i_data.insert(i_data.begin(),0);
   // insert seq number
   i_data.insert(i_data.begin(),seq_num++);
@@ -137,8 +139,8 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
   }
 
   uint16_t crc = computeCRC(lo_msg);
-  lo_msg.push_back(static_cast<uint8_t>(crc>>8));
-  lo_msg.push_back(static_cast<uint8_t>(crc&0xFF));
+	lo_msg.push_back(u16_get_hi_u8(crc));
+	lo_msg.push_back(u16_get_lo_u8(crc));
 
   lo_msg = stuffedOutputData(lo_msg);
 
@@ -180,16 +182,26 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
 	  clogD << "CAsh::decode Wrong CRC" << std::endl;
 	  return;
   }
-  if ((lo_msg.at(0) & 0x80) == 0) {
-    // DATA;
-    //-- clogD << "CAsh::decode DATA" << std::endl;
+	uint8_t ashControlByte = lo_msg.at(0);
+	if ((ashControlByte & 0x80) == 0) {
+		// DATA;
+		//-- clogD << "CAsh::decode DATA" << std::endl;
 
-    // update ack number, use incoming frame number
-    ackNum = lo_msg.at(0);
-    ackNum >>= 4;
-    ackNum &= 0x07;
-    ackNum++;
-    ackNum &= 0x07;
+		// Check the ACK from incoming frame
+		uint8_t expectedAckNum = this->ackNum;
+		uint8_t remoteAckNum = ashControlByte;
+		remoteAckNum >>= 4;
+		remoteAckNum &= 0x07;
+		if (expectedAckNum != remoteAckNum) {
+			clogE << "Received a wrong ack num: " << +(remoteAckNum) << ", expected: " << +(expectedAckNum) << "\n";
+		}
+		else {
+			timer->stop();  /* Stop any possibly existing timer that was waiting for an ACK */
+		}
+		/* In any case (ACK correct or not), update increase our frame number for the next transmition */
+		this->ackNum = remoteAckNum;
+		this->ackNum++;
+		this->ackNum &= 0x07;
 
     lo_msg = dataRandomise(lo_msg,1);
 
@@ -214,17 +226,19 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
           << NSSPI::Logger::byteSequenceToString(lo_msg) << "\n";
     */
   }
-  else if ((lo_msg.at(0) & 0x60) == 0x00) {
-    // ACK;
+	else if ((ashControlByte & 0x60) == 0x00) {
+		// ACK;
     //-- clogD << "CAsh::decode ACK" << std::endl;
     lo_msg.clear();
     timer->stop();
 
-    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_ACK); }
-  }
-  else if ((lo_msg.at(0) & 0x60) == 0x20) {
-    // NAK;
-    frmNum = lo_msg.at(0) & 0x07;
+		if( nullptr != pCb ) {
+			pCb->ashCbInfo(ASH_ACK);
+		}
+	}
+	else if ((ashControlByte & 0x60) == 0x20) {
+		// NAK;
+		frmNum = ashControlByte & 0x07;
 
     clogD << "CAsh::decode NACK" << std::endl;
 
@@ -232,13 +246,16 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
     lo_msg.clear();
     timer->stop();
 
-    if( nullptr != pCb ) { pCb->ashCbInfo(ASH_NACK); }
+		if( nullptr != pCb ) {
+			pCb->ashCbInfo(ASH_NACK);
+		}
+	}
+	else if (ashControlByte == 0xC0) {  /* RST */
+		lo_msg.clear();
+		timer->stop();
+		clogD << "CAsh::decode RST" << std::endl;
   }
-  else if (lo_msg.at(0) == 0xC0) {  /* RST */
-    lo_msg.clear();
-    clogD << "CAsh::decode RST" << std::endl;
-  }
-  else if (lo_msg.at(0) == 0xC1) { /* RSTACK */
+	else if (ashControlByte == 0xC1) { /* RSTACK */
     uint8_t version = lo_msg.at(1);
     uint8_t resetCode = lo_msg.at(2);
     clogD << "CAsh::decode RSTACK v" << std::dec << static_cast<const unsigned int>(version) << ", resetCode=0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
@@ -266,7 +283,7 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
       }
     }
   }
-  else if (lo_msg.at(0) == 0xC2) {
+  else if (ashControlByte == 0xC2) {
     clogE << "CAsh::decode ERROR" << std::endl;
     lo_msg.clear();
   }
