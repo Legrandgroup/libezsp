@@ -64,12 +64,10 @@ bool CEzspDongle::reset() {
 	return true;
 }
 
-void CEzspDongle::ashCbInfo( EAshInfo info )
-{
-    clogD <<  "ashCbInfo : " << CAsh::EAshInfoToString(info) << std::endl;
+void CEzspDongle::ashCbInfo(CAsh::EAshInfo info) {
+	clogD <<  "ashCbInfo : " << CAsh::getString(info) << "\n";
 
-    if( ASH_STATE_CHANGE == info )
-    {
+	if (CAsh::EAshInfo::ASH_STATE_CHANGE == info) {
         // inform upper layer that dongle is ready !
         if( ash.isConnected() )
         {
@@ -81,14 +79,12 @@ void CEzspDongle::ashCbInfo( EAshInfo info )
             notifyObserversOfDongleState( DONGLE_REMOVE );
         }
     }
-    else if ( ASH_NACK == info )
-    {
+	else if (CAsh::EAshInfo::ASH_NACK == info) {
         clogW << "Caught an ASH NACK from NCP... resending\n";
         wait_rsp = false;
         sendNextMsg();
     }
-    else if( ASH_RESET_FAILED == info )
-    {
+	else if (CAsh::EAshInfo::ASH_RESET_FAILED == info) {
         /* ASH reset failed */
         if (firstStartup)
         {

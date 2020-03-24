@@ -75,10 +75,12 @@ public:
      */
     void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
-    /**
-     * @brief Callback invoked on ASH info
-     */
-    void ashCbInfo( EAshInfo info );
+	/**
+	 * @brief Callback invoked on ASH info
+	 *
+	 * @param info The new ASH state
+	 */
+	void ashCbInfo(CAsh::EAshInfo info);
 
     /**
      * Managing Observer of this class

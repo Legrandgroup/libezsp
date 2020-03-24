@@ -16,6 +16,8 @@
 // For debug logging only
 //#include <sstream>
 
+DEFINE_ENUM(EAshInfo, ASH_INFO, NSEZSP::CAsh)
+
 using NSEZSP::CAsh;
 
 /**
@@ -86,18 +88,6 @@ NSSPI::ByteBuffer CAsh::resetNCPFrame(void)
     timer->start( T_ACK_ASH_RESET, this);
 
     return lo_msg;
-}
-
-std::string CAsh::EAshInfoToString( EAshInfo in )
-{
-    const std::map<EAshInfo,std::string> MyEnumStrings {
-        { ASH_RESET_FAILED, "ASH_RESET_FAILED" },
-        { ASH_ACK, "ASH_ACK" },
-        { ASH_NACK, "ASH_NACK" },
-        { ASH_STATE_CHANGE, "ASH_STATE_CHANGE" },
-    };
-    auto   it  = MyEnumStrings.find(in);
-    return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;      
 }
 
 NSSPI::ByteBuffer CAsh::AckFrame(void)
