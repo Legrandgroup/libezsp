@@ -143,8 +143,8 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data) 
     return state;
   }
 	else if (this->state == EBootloader::Stage::XMODEM_READY_CHAR_WAIT) {
-    if (i_data.back() == 'C') /* 'C' is the X-modem ready character */
-    {
+		/* Note: it is safe to invoke method bak() because we know that i_data is not empty from the test above */
+		if (i_data.back() == 'C') { /* 'C' is the X-modem ready character */
       clogD << "Got the X-modem ready character from adapter\n";
 		if (this->firmwareTransferStartFunc) {
 		this->state = EBootloader::Stage::XMODEM_XFR;

@@ -110,11 +110,11 @@ void CGpSink::init()
 
 bool CGpSink::gpClearAllTables()
 {
-    if ( SINK_READY != sink_state ) {
+	if (CGpSink::State::SINK_READY != sink_state) {
         return false;
     }
 
-    setSinkState(SINK_CLEAR_ALL);
+	setSinkState(CGpSink::State::SINK_CLEAR_ALL);
     dongle.sendCommand(EZSP_GP_SINK_TABLE_CLEAR_ALL);   /* Handle sink table */
     dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY,{0});  /* Handle proxy table */
     return true;
@@ -125,8 +125,7 @@ void CGpSink::openCommissioningSession()
     // set local proxy in commissioning mode
     sendLocalGPProxyCommissioningMode(0x05);
 
-    // set state
-    setSinkState(SINK_COM_OPEN);
+	setSinkState(CGpSink::State::SINK_COM_OPEN); // Update state
 }
 
 void CGpSink::closeCommissioningSession()
@@ -134,30 +133,29 @@ void CGpSink::closeCommissioningSession()
     // set local proxy in commissioning mode
     sendLocalGPProxyCommissioningMode(0x00);
 
-    // set state
-    setSinkState(SINK_READY);
+	setSinkState(CGpSink::State::SINK_READY); // Update state
 }
 
 bool CGpSink::registerGpds(std::vector<CGpDevice> gpd) {
-    if( SINK_READY != sink_state ) {
-        return false;
-    }
+	if (CGpSink::State::SINK_READY != sink_state) {
+		return false;
+	}
 
-	if (this->gpds_to_register.size() != 0) {
+	if (!this->gpds_to_register.empty()) {
 		clogW << "registerGpds() called while there were still GPDs previously queued for registration\n";
 	}
 
-	if (gpd.size() == 0) {
+	if (gpd.empty()) {
 		clogW << "registerGpds() called with an empty GPD list\n";
 		return false;
 	}
 
-	this->setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
+	this->setSinkState(CGpSink::State::SINK_COM_OFFLINE_IN_PROGRESS);
 	swap(this->gpds_to_register, gpd);
 #ifdef USE_BUILTIN_MIC_PROCESSING
-    this->gp_dev_db.setDb(gpd);
+	this->gp_dev_db.setDb(gpd);
 	this->gpds_to_register.clear();
-    this->setSinkState(SINK_READY);
+	this->setSinkState(CGpSink::State::SINK_READY);
 #else
 	/* The list GPs that should be added has been stored inside this->gpds_to_register, for background processing */
 	for (auto it = this->gpds_to_register.begin(); it != this->gpds_to_register.end(); ++it) {
@@ -180,15 +178,15 @@ bool CGpSink::registerGpds(std::vector<CGpDevice> gpd) {
 }
 
 bool CGpSink::clearAllGpds() {
-	if (this->sink_state !=  SINK_READY) {
-		clogE << "Request to clearAllGpds() while not in SINK_READY state: " << std::dec << this->sink_state << "\n";
+	if (this->sink_state != CGpSink::State::SINK_READY) {
+		clogE << "Request to clearAllGpds() while not SINK_READY. Current state: " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
 		return false;
 	}
 
 #ifdef USE_BUILTIN_MIC_PROCESSING
-	this->setSinkState(SINK_CLEAR_ALL);
+	this->setSinkState(CGpSink::State::SINK_CLEAR_ALL);
 	this->gp_dev_db.clear();
-	this->setSinkState(SINK_READY);
+	this->setSinkState(CGpSink::State::SINK_READY);
 	return true;
 #else
 	/* When performing the CLEAR ALL action directly inside the dongle:
@@ -200,20 +198,20 @@ bool CGpSink::clearAllGpds() {
 }
 
 bool CGpSink::removeGpds(std::vector<uint32_t> gpd) {
-	if (SINK_READY != sink_state) {
+	if (CGpSink::State::SINK_READY != sink_state) {
 		return false;
 	}
 
-	if (this->gpds_to_remove.size() != 0) {
+	if (!this->gpds_to_remove.empty()) {
 		clogW << "removeGpds() called while there were still GPDs previously queued for removal\n";
 	}
 
-	if (gpd.size() == 0) {
+	if (gpd.empty()) {
 		clogW << "removeGpds() called with an empty GPD list\n";
 		return false;
 	}
 
-	this->setSinkState(SINK_REMOVE_IN_PROGRESS);
+	this->setSinkState(CGpSink::State::SINK_REMOVE_IN_PROGRESS);
 	swap(this->gpds_to_remove, gpd);
 #ifdef USE_BUILTIN_MIC_PROCESSING
 	for (auto it = gpd.begin(); it != gpd.end(); ++it) {
@@ -222,7 +220,7 @@ bool CGpSink::removeGpds(std::vector<uint32_t> gpd) {
 		}
 	}
 	this->gpds_to_remove.clear();
-	this->setSinkState(SINK_READY);
+	this->setSinkState(CGpSink::State::SINK_READY);
 #else
 	/* Note: the list GPs that should be deleted has been stored inside this->gpds_to_remove, for background processing */
 
@@ -250,10 +248,8 @@ void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(const NSSPI::ByteBuffer
 void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGpFrame& gpf)
 {
 	// do action only if we are in commissioning mode
-	if( SINK_COM_OPEN == sink_state )
-	{
-		if(  GPF_COMMISSIONING_CMD == gpf.getCommandId() )
-		{
+	if (CGpSink::State::SINK_COM_OPEN == sink_state) {
+		if (GPF_COMMISSIONING_CMD == gpf.getCommandId()) {
 			// find entry in sink table
 			gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
 
@@ -261,7 +257,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGp
 			gpf_comm_frame = gpf;
 
 			// set new state
-			setSinkState(SINK_COM_IN_PROGRESS);
+			setSinkState(CGpSink::State::SINK_COM_IN_PROGRESS);
 		}
 	}
 	if( authorizeGpfChannelRqst && (GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId()) )
@@ -398,8 +394,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 
 void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if( SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-	{
+	if (CGpSink::State::SINK_COM_IN_PROGRESS == sink_state || SINK_COM_OFFLINE_IN_PROGRESS == sink_state) {
 		sink_table_index = i_msg_receive.at(0); // get allocated index
 		clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY response index: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(sink_table_index) << "\n";
 		if( 0xFF != sink_table_index )
@@ -410,7 +405,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI:
 		{
 			// no place to record pairing : FAILED
 			clogE << "INVALID SINK TABLE ENTRY, PAIRING FAILED !!" << std::endl;
-			setSinkState(SINK_READY);
+			setSinkState(CGpSink::State::SINK_READY);
 		}
 	}
 	else
@@ -421,8 +416,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI:
 
 void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
-	{
+	if (CGpSink::State::SINK_REMOVE_IN_PROGRESS == sink_state) {
 		if( 0xFF != i_msg_receive.at(0) )
 		{
 			// remove index
@@ -430,7 +424,12 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_m
 		}
 
 		// find proxy table entry
-		gpProxyTableLookup(gpds_to_remove.back());
+		if (!gpds_to_remove.empty()) {
+			gpProxyTableLookup(gpds_to_remove.back());
+		}
+		else {
+			clogE << "Internal error: trying to use data from empty gpds_to_remove vector\n";
+		}
 	}
 }
 
@@ -442,16 +441,15 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& 
 	CEmberGpAddressStruct l_gp_addr;
 
 	// debug
-	clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+	clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status: " <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
 
-	if( SINK_COM_IN_PROGRESS == sink_state ) /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
-	/* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
-	{
+	if (CGpSink::State::SINK_COM_IN_PROGRESS == sink_state) { /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
+		/* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
 		// decode payload
 		CGpdCommissioningPayload l_payload(gpf_comm_frame.getPayload(),gpf_comm_frame.getSourceId());
 
 		// debug
-		clogD << "GPD Commissioning payload : " << l_payload << std::endl;
+		clogD << "GPD Commissioning payload: " << l_payload << "\n";
 
 		// update sink table entry
 		l_gp_addr = CEmberGpAddressStruct(gpf_comm_frame.getSourceId());
@@ -463,21 +461,24 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& 
 		l_entry.setFrameCounter(l_payload.getOutFrameCounter());
 		l_entry.setKey(l_payload.getKey());
 	}
-	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-	{
+	else if (CGpSink::State::SINK_COM_OFFLINE_IN_PROGRESS == sink_state) {
 		// update sink table entry
-		l_gp_addr = CEmberGpAddressStruct(gpds_to_register.back().getSourceId());
-		l_options = gpds_to_register.back().getSinkOption();
+		if (!gpds_to_register.empty()) {
+			NSEZSP::CGpDevice& new_gpd_to_register = gpds_to_register.back();
+			l_gp_addr = CEmberGpAddressStruct(new_gpd_to_register.getSourceId());
+			l_options = new_gpd_to_register.getSinkOption();
 
-		l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
-		l_entry.setSecurityOption(gpds_to_register.back().getSinkSecurityOption());
-		l_entry.setFrameCounter(0);
-		l_entry.setKey(gpds_to_register.back().getKey());
-
+			l_entry.setAlias(static_cast<uint16_t>(l_gp_addr.getSourceId()&0xFFFF));
+			l_entry.setSecurityOption(new_gpd_to_register.getSinkSecurityOption());
+			l_entry.setFrameCounter(0);
+			l_entry.setKey(new_gpd_to_register.getKey());
+		}
+		else {
+			clogE << "Internal error: trying to use data from empty gpds_to_register vector\n";
+		}
 	}
-	else
-	{
-		clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY : sink_state" <<  sink_state << std::endl;
+	else {
+		clogW << "Ignoring EZSP_GP_SINK_TABLE_GET_ENTRY because we are in sink_state " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
 		return;
 	}
 	l_entry.setEntryActive(true);
@@ -495,8 +496,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& 
 
 void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if( (SINK_COM_IN_PROGRESS == sink_state) || (SINK_COM_OFFLINE_IN_PROGRESS == sink_state) )
-	{
+	if ((CGpSink::State::SINK_COM_IN_PROGRESS == sink_state) || (CGpSink::State::SINK_COM_OFFLINE_IN_PROGRESS == sink_state)) {
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
 		// debug
@@ -506,7 +506,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& 
 		{
 			// error
 			clogD << "ERROR, Stop commissioning process !!" << std::endl;
-			setSinkState(SINK_READY);
+			setSinkState(CGpSink::State::SINK_READY);
 		}
 		else
 		{
@@ -521,33 +521,31 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& 
 
 void CGpSink::handleEzspRxMessage_PROXY_TABLE_LOOKUP(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if ( SINK_REMOVE_IN_PROGRESS == sink_state )
-	{
-		if( 0xFF != i_msg_receive.at(0) )
-		{
-			// remove index
-			CProcessGpPairingParam l_param(gpds_to_remove.back());
-			gpProxyTableProcessGpPairing(l_param);
+	if (CGpSink::State::SINK_REMOVE_IN_PROGRESS == sink_state) {
+		if( 0xFF != i_msg_receive.at(0) ) {
+			if (!gpds_to_remove.empty()) {
+				// remove index
+				CProcessGpPairingParam l_param(gpds_to_remove.back());
+				gpProxyTableProcessGpPairing(l_param);
+			}
 		}
 
 		// find next sink table entry
-		gpds_to_remove.pop_back();
-		if( gpds_to_remove.empty() )
-		{
-			// no more gpd to remove
-			setSinkState(SINK_READY);
+		if (!gpds_to_remove.empty()) {
+			gpds_to_remove.pop_back();
 		}
-		else
-		{
+		if (gpds_to_remove.empty())	{
+			// No more gpd to remove
+			setSinkState(CGpSink::State::SINK_READY);
+		}
+		else {
 			gpSinkTableLookup(gpds_to_remove.back());
 		}
 	}
 }
 
-void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive)
-{
-	if( SINK_CLEAR_ALL == sink_state )
-	{
+void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& i_msg_receive) {
+	if (CGpSink::State::SINK_CLEAR_ALL == sink_state) {
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 		if( EMBER_SUCCESS == l_status )
 		{
@@ -560,7 +558,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer&
 		{
 			// assume end of table
 			// set new state
-			setSinkState(SINK_READY);
+			setSinkState(CGpSink::State::SINK_READY);
 		}
 
 	}
@@ -568,39 +566,33 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer&
 
 void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(const NSSPI::ByteBuffer& i_msg_receive)
 {
-	if( SINK_COM_IN_PROGRESS == sink_state )
-	{
+	if (CGpSink::State::SINK_COM_IN_PROGRESS == sink_state) {
 		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
 		// close commissioning session
 		closeCommissioningSession();
 	}
-	else if( SINK_COM_OFFLINE_IN_PROGRESS == sink_state )
-	{
+	else if (CGpSink::State::SINK_COM_OFFLINE_IN_PROGRESS == sink_state) {
 		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
 
 		gpds_to_register.pop_back();
 
-		if( gpds_to_register.size() )
-		{
+		if (!gpds_to_register.empty()) {
 			// request sink table entry
-			gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
+			gpSinkTableFindOrAllocateEntry(gpds_to_register.back().getSourceId());
 		}
-		else
-		{
+		else {  /* We reached the end of the vector of gpds to register */
 			// set state
-			setSinkState(SINK_READY);
+			setSinkState(CGpSink::State::SINK_READY);
 		}
 	}
-	else if( SINK_CLEAR_ALL == sink_state )
-	{
+	else if (CGpSink::State::SINK_CLEAR_ALL == sink_state) {
 		// retrieve next entry
 		proxy_table_index++;
 		dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY, { proxy_table_index });
 	}
-	else
-	{
-		clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING : sink_state " << sink_state << std::endl;
+	else {
+		clogW << "Ignoring EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING because we are in sink_state " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
 	}
 }
 
@@ -620,7 +612,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
         break;
         case EZSP_GP_SINK_TABLE_INIT:
         {
-            clogD << "EZSP_GP_SINK_TABLE_INIT RSP" << std::endl;
+            clogD << "EZSP_GP_SINK_TABLE_INIT RSP\n";
         }
         break;
         case EZSP_GPEP_INCOMING_MESSAGE_HANDLER:
