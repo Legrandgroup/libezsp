@@ -137,9 +137,10 @@ Unit tests are located under `tests`, and are grouped by families in common .cpp
 Unit tests can be run inside the cpputest framework (requires installing cpputest) or as a standalone executable (using the lightweight unit test utilities located in `src/tests/TestHarness.h`).
 When run as standalone, an executable named `test_runner` will be compiled and will contain all the code to run for automated unit testing.
 
-In order to both compile and run unit tests, using -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_MOCKSERIAL=ON options when running cmake:
+In order to both compile and run unit tests, using -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_SERIALCPP=OFF -DUSE_MOCKSERIAL=ON options when running cmake:
 ```
-cmake -DUSE_GCOV
+cmake -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_SERIALCPP=OFF -DUSE_MOCKSERIAL=ON
+make
 ./tests/gptest
 ```
 
