@@ -74,7 +74,15 @@ private:
     uint16_t computeCRC( NSSPI::ByteBuffer i_msg );
     void decode_flag(NSSPI::ByteBuffer &lo_msg);
     void clean_flag(NSSPI::ByteBuffer &lo_msg);
-    NSSPI::ByteBuffer stuffedOutputData(NSSPI::ByteBuffer i_msg);
+
+	/**
+	 * @brief Apply ASH byte stuffing to an ASH payload
+	 *
+	 * @param i_data The payload to randomize
+	 *
+	 * @return A randomized buffer for transmission over a serial link
+	 */
+	static NSSPI::ByteBuffer addByteStuffing(NSSPI::ByteBuffer i_msg);
 
 	/**
 	 * @brief Apply ASH randomisation (XORed LFSR) to an ASH payload

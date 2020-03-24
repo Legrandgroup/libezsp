@@ -79,10 +79,10 @@ NSSPI::ByteBuffer CAsh::resetNCPFrame(void)
     lo_msg.push_back(0xC0);
 
     uint16_t crc = computeCRC(lo_msg);
-    lo_msg.push_back(static_cast<uint8_t>(crc>>8));
-    lo_msg.push_back(static_cast<uint8_t>(crc&0xFF));
+	lo_msg.push_back(u16_get_hi_u8(crc));
+	lo_msg.push_back(u16_get_lo_u8(crc));
 
-    lo_msg = stuffedOutputData(lo_msg);
+	lo_msg = addByteStuffing(lo_msg);
 
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
@@ -99,12 +99,10 @@ NSSPI::ByteBuffer CAsh::AckFrame(void)
   lo_msg.push_back(static_cast<uint8_t>(0x80+ackNum));
 
   uint16_t crc = computeCRC(lo_msg);
-  lo_msg.push_back(static_cast<uint8_t>(crc>>8));
-  lo_msg.push_back(static_cast<uint8_t>(crc&0xFF));
+	lo_msg.push_back(u16_get_hi_u8(crc));
+	lo_msg.push_back(u16_get_lo_u8(crc));
 
-  lo_msg = stuffedOutputData(lo_msg);
-
-  return lo_msg;
+	return addByteStuffing(lo_msg);
 }
 
 NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
@@ -116,7 +114,9 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
         << ", " << +(static_cast<unsigned char>(frmNum))
         << ", FC=0): " << NSSPI::Logger::byteSequenceToString(li_data) << "\n"; // Note FC is hardcoded to 0 below
   */
-  lo_msg.push_back(static_cast<uint8_t>(frmNum << 4) + ackNum);
+ 
+  uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + ackNum;
+  lo_msg.push_back(ashControlByte);
 	this->frmNum++;
 	this->frmNum &= 0x07;
 
@@ -138,13 +138,11 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
-  lo_msg = stuffedOutputData(lo_msg);
-
   // start timer
   timer->stop();
   timer->start( T_RX_ACK_INIT, this);
 
-  return lo_msg;
+	return addByteStuffing(lo_msg);
 }
 
 void CAsh::clean_flag(NSSPI::ByteBuffer& lo_msg)
@@ -355,10 +353,6 @@ NSSPI::ByteBuffer CAsh::decode(NSSPI::ByteBuffer& i_data)
 }
 
 
-/**
- * PRIVATE FUNCTION
- */
-
 uint16_t CAsh::computeCRC( NSSPI::ByteBuffer i_msg )
 {
   uint16_t lo_crc = 0xFFFF; // initial value
@@ -380,45 +374,44 @@ uint16_t CAsh::computeCRC( NSSPI::ByteBuffer i_msg )
   return lo_crc;
 }
 
-NSSPI::ByteBuffer CAsh::stuffedOutputData(NSSPI::ByteBuffer i_msg)
-{
-  NSSPI::ByteBuffer lo_msg;
+NSSPI::ByteBuffer CAsh::addByteStuffing(NSSPI::ByteBuffer i_msg) {
 
-  for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
-      switch (i_msg.at(cnt)) {
-          case 0x7E:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x5E );
-              break;
-          case 0x7D:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x5D );
-              break;
-          case 0x11:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x31 );
-              break;
-          case 0x13:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x33 );
-              break;
-          case 0x18:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x38 );
-              break;
-          case 0x1A:
-              lo_msg.push_back( 0x7D );
-              lo_msg.push_back( 0x3A );
-              break;
-          default:
-              lo_msg.push_back( i_msg.at(cnt) );
-              break;
-      }
-  }
-  lo_msg.push_back( 0x7E );
+	NSSPI::ByteBuffer result;
 
+	for (auto it = i_msg.begin(); it != i_msg.end(); ++it) {
+		switch (*it) {
+		case 0x7EU:
+			result.push_back(0x7DU);
+			result.push_back(0x5EU);
+			break;
+		case 0x7DU:
+			result.push_back(0x7DU);
+			result.push_back(0x5DU);
+			break;
+		case 0x11U:
+			result.push_back(0x7DU);
+			result.push_back(0x31U);
+			break;
+		case 0x13U:
+			result.push_back(0x7DU);
+			result.push_back(0x33U);
+			break;
+		case 0x18U:
+			result.push_back(0x7DU);
+			result.push_back(0x38U);
+			break;
+		case 0x1AU:
+			result.push_back(0x7DU);
+			result.push_back(0x3AU);
+			break;
+		default:
+			result.push_back(*it);
+			break;
+		}
+	}
+	result.push_back(0x7EU);
 
-  return lo_msg;
+	return result;
 }
 
 NSSPI::ByteBuffer CAsh::dataRandomize(NSSPI::ByteBuffer i_data, uint8_t start) {
