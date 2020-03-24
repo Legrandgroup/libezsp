@@ -23,6 +23,8 @@
 
 #include "spi/ILogger.h"
 
+DEFINE_ENUM(State, SINK_STATE, NSEZSP::CGpSink)
+
 using NSEZSP::CGpSink;
 
 // some defines to help understanding
@@ -728,8 +730,7 @@ bool CGpSink::unregisterObserver(CGpObserver* observer)
     return static_cast<bool>(this->observers.erase(observer));
 }
 
-void CGpSink::registerStateCallback(std::function<bool (ESinkState& i_state)> newObsStateCallback)
-{
+void CGpSink::registerStateCallback(std::function<bool (CGpSink::State& i_state)> newObsStateCallback) {
     this->obsStateCallback=newObsStateCallback;
 }
 
@@ -1000,25 +1001,10 @@ void CGpSink::gpSinkTableLookup(uint32_t i_src_id)
     dongle.sendCommand(EZSP_GP_SINK_TABLE_LOOKUP, i_addr.getRaw());
 }
 
-void CGpSink::setSinkState( ESinkState i_state )
-{
-    sink_state = i_state;
+void CGpSink::setSinkState(CGpSink::State i_state) {
 
-    const std::map<ESinkState,std::string> MyEnumStrings {
-        { SINK_NOT_INIT, "SINK_NOT_INIT" },
-        { SINK_READY, "SINK_READY" },
-        { SINK_ERROR, "SINK_ERROR" },
-        { SINK_COM_OPEN, "SINK_COM_OPEN" },
-        { SINK_COM_IN_PROGRESS, "SINK_COM_IN_PROGRESS" },
-        { SINK_COM_OFFLINE_IN_PROGRESS, "SINK_COM_OFFLINE_IN_PROGRESS" },
-        { SINK_AUTHORIZE_ANSWER_CH_RQST, "SINK_AUTHORIZE_ANSWER_CH_RQST" },
-        { SINK_CLEAR_ALL, "SINK_CLEAR_ALL" },
-        { SINK_REMOVE_IN_PROGRESS, "SINK_REMOVE_IN_PROGRESS" },
-    };
-
-    auto  it  = MyEnumStrings.find(sink_state); /* FIXME: we issue a warning, but the variable app_state is now out of bounds */
-    std::string error_str = it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
-    clogD << "SINK State change : " << error_str << std::endl;
+	clogD << "SINK State change from " << NSEZSP::CGpSink::getString(this->sink_state) << " to " << NSEZSP::CGpSink::getString(i_state) << "\n";
+	this->sink_state = i_state;
 
     if( nullptr != obsStateCallback )
     {

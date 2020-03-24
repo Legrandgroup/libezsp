@@ -553,10 +553,9 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 			this->setState(CLibEzspInternal::State::SINK_BUSY);
 			/* Create a sink state change callback to find out when the sink is ready */
 			/* When the sink becomes ready, then libezsp will also switch to ready state */
-			auto clibobs = [this](ESinkState& i_state) -> bool
-			{
+			auto clibobs = [this](CGpSink::State& i_state) -> bool {
 				clogD << "Underneath sink changed to state: " << std::dec << static_cast<unsigned int>(i_state) << ", current libezsp state: " << static_cast<unsigned int>(this->getState()) << "\n";
-				if ((ESinkState::SINK_READY == i_state) &&
+				if ((CGpSink::State::SINK_READY == i_state) &&
 					(this->getState() == CLibEzspInternal::State::SINK_BUSY)) {
 				   this->setState(CLibEzspInternal::State::READY);
 				}

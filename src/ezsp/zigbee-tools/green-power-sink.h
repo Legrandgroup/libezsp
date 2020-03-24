@@ -21,25 +21,33 @@
 #include "ezsp/ezsp-protocol/struct/ember-process-gp-pairing-parameter.h"
 #include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
 #include "spi/ByteBuffer.h"
+#include "ezsp/enum-generator.h"
 
 namespace NSEZSP {
 
-typedef enum
-{
-    SINK_NOT_INIT, // starting state
-    SINK_READY,  // default state if no action in progress
-    SINK_ERROR,  // something wrong
-    SINK_COM_OPEN,  // GP Proxy Commissioning mode open
-    SINK_COM_IN_PROGRESS,  // GP sink receive gpf comm frame
-    SINK_COM_OFFLINE_IN_PROGRESS, // Doing offline commissioning for GPD list
-    SINK_AUTHORIZE_ANSWER_CH_RQST,  // be able to answer to channel request maintenance green power frame
-    SINK_CLEAR_ALL, // clear all tables (sink/proxy) in progress
-    SINK_REMOVE_IN_PROGRESS, // remove a list of gpd from sink and proxy table
-}ESinkState;
+#define SINK_STATE(XX) \
+	XX(SINK_NOT_INIT,=1)                 /*<! Initializing state */ \
+	XX(SINK_READY,)                      /*<! Default state if no action in progress */ \
+	XX(SINK_ERROR,)                      /*<! Something went wrong */ \
+	XX(SINK_COM_OPEN,)                   /*<! GP Proxy Commissioning mode open */ \
+	XX(SINK_COM_IN_PROGRESS,)            /*<! GP sink received gpf commissionning frame */ \
+	XX(SINK_COM_OFFLINE_IN_PROGRESS,)    /*<! Doing offline commissionning based on a pre-known GPD source ID+key list (stored in gpds_to_register) */ \
+	XX(SINK_AUTHORIZE_ANSWER_CH_RQST,)   /*<! Allowing answer to channel request maintenance green power frame */ \
+	XX(SINK_CLEAR_ALL,)                  /*<! Currently clearing all tables (sink/proxy) */ \
+	XX(SINK_REMOVE_IN_PROGRESS,)         /*<! Currently removing, from the sink and proxy tables, data matching with a specific list of GPDS (stored in gpds_to_remove) */ \
 
-class CGpSink : public CEzspDongleObserver
-{
+class CGpSink : public CEzspDongleObserver {
 public:
+	/**
+	 * @brief Current state for the GP sink
+	 *
+	 * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+	 *       In this macro, XX is a placeholder for the macro to use for building.
+	 *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+	 * @see enum-generator.h
+	 */
+	DECLARE_ENUM(State, SINK_STATE)
+
     CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 
     CGpSink() = delete; /* Construction without arguments is not allowed */
@@ -129,10 +137,10 @@ public:
      */
     bool unregisterObserver(CGpObserver* observer);
 
-    /**
-     * @brief Register callback on current library state
-     */
-    void registerStateCallback(std::function<bool (ESinkState& i_state)> newObsStateCallback);
+	/**
+	 * @brief Register callback on current library state
+	 */
+	void registerStateCallback(std::function<bool (CGpSink::State& i_state)> newObsStateCallback);
 
 private:
     /**
@@ -149,10 +157,10 @@ private:
      */
     void notifyObserversOfRxGpdId( uint32_t i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
-    /**
-     * @brief Private utility function to manage error state
-     */
-    void setSinkState( ESinkState i_state );
+	/**
+	 * @brief Private utility function to manage error state
+	 */
+	void setSinkState(CGpSink::State i_state);
 
     /**
      * @brief send zigbee unicast message GP Proxy Commissioning Mode.
@@ -202,8 +210,8 @@ private:
      * @param i_handle An handle value for this frame, use to identify in sent callback.
      *
      */
-    void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
-                    uint8_t i_gpd_command_id, const NSSPI::ByteBuffer& i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
+	void gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,
+	            uint8_t i_gpd_command_id, const NSSPI::ByteBuffer& i_gpd_command_payload, uint16_t i_life_time_ms, uint8_t i_handle=0 );
 
     /**
      * @brief Remove an entry in sink table
@@ -294,8 +302,8 @@ private:
 private:
     CEzspDongle &dongle; /*!< The EZSP adapter used to send/receive EZSP commands */
     CZigbeeMessaging &zb_messaging;     /*!< A CZigbeeMessaging object used to send unicast Zigbee messages */
-    ESinkState sink_state;  /*!< Current state for our internal state machine */
-    std::function<bool (ESinkState& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
+	CGpSink::State sink_state;  /*!< Current state for our internal state machine */
+	std::function<bool (CGpSink::State& i_state)> obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
     CEmberNetworkParameters nwk_parameters;
     bool authorizeGpfChannelRqst;
     // parameters to save for pairing/clearing
