@@ -145,31 +145,8 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 	return addByteStuffing(lo_msg);
 }
 
-void CAsh::clean_flag(NSSPI::ByteBuffer& lo_msg)
-{
-  // Remove byte stuffing
-  bool escape = false;
-  for (auto &data : in_msg) {
-    if (escape) {
-      escape = false;
-      if ((data & 0x20) == 0) {
-        data = static_cast<uint8_t>(data + 0x20);
-      } else {
-        data = static_cast<uint8_t>(data & 0xDF);
-      }
-    } else if (data == 0x7D) {
-      escape = true;
-      continue;
-    }
-    else {
-	}
-    lo_msg.push_back(data);
-  }
-}
-
-void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg)
-{
-  clean_flag(lo_msg);
+void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
+	lo_msg.append(removeByteStuffing(this->in_msg));  /* FIXME: we are using this->in_msg here, we should pass it as arg instead */
   // Check CRC
   if (computeCRC(lo_msg) != 0) {
 	  lo_msg.clear();
@@ -374,11 +351,37 @@ uint16_t CAsh::computeCRC( NSSPI::ByteBuffer i_msg )
   return lo_crc;
 }
 
-NSSPI::ByteBuffer CAsh::addByteStuffing(NSSPI::ByteBuffer i_msg) {
+NSSPI::ByteBuffer CAsh::removeByteStuffing(const NSSPI::ByteBuffer& i_data) {
+	NSSPI::ByteBuffer result;
+
+	// Remove byte stuffing
+	bool escape = false;
+	for (auto it = i_data.begin(); it != i_data.end(); ++it) {
+		if (escape) {
+			escape = false;
+			if ((*it & 0x20) == 0) {
+				result.push_back(static_cast<uint8_t>(*it | 0x20U));
+			} else {
+				result.push_back(static_cast<uint8_t>(*it & 0xDFU));
+			}
+		}
+		else { // escape==false
+			if (*it == 0x7D) {
+				escape = true;
+			}
+			else {
+				result.push_back(*it);  // Non-stuffed byte is copied over as-is
+			}
+		}
+	}
+	return result;
+}
+
+NSSPI::ByteBuffer CAsh::addByteStuffing(const NSSPI::ByteBuffer& i_data) {
 
 	NSSPI::ByteBuffer result;
 
-	for (auto it = i_msg.begin(); it != i_msg.end(); ++it) {
+	for (auto it = i_data.begin(); it != i_data.end(); ++it) {
 		switch (*it) {
 		case 0x7EU:
 			result.push_back(0x7DU);
@@ -414,7 +417,7 @@ NSSPI::ByteBuffer CAsh::addByteStuffing(NSSPI::ByteBuffer i_msg) {
 	return result;
 }
 
-NSSPI::ByteBuffer CAsh::dataRandomize(NSSPI::ByteBuffer i_data, uint8_t start) {
+NSSPI::ByteBuffer CAsh::dataRandomize(const NSSPI::ByteBuffer& i_data, uint8_t start) {
 	NSSPI::ByteBuffer result;
 
 	// Randomise the data
