@@ -7,7 +7,7 @@
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
 
-DEFINE_ENUM(Mode, EZSP_DONGLE_MODE_LIST, NSEZSP::CEzspDongle)
+DEFINE_ENUM(Mode, EZSP_DONGLE_MODE_LIST, NSEZSP::CEzspDongle);
 
 using NSEZSP::CEzspDongle;
 

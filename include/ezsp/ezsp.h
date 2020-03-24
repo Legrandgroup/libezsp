@@ -40,8 +40,8 @@ namespace NSEZSP {
  */
 
 class LIBEXPORT CLibEzspPublic {
-    public:
-        DECLARE_ENUM(State, CLIBEZSP_STATE_LIST)
+public:
+	DECLARE_ENUM(State, CLIBEZSP_STATE_LIST);
 };
 
 typedef CLibEzspPublic::State CLibEzspState;    /* Shortcut for access to public state enum */

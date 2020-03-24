@@ -23,7 +23,7 @@
 
 #include "spi/ILogger.h"
 
-DEFINE_ENUM(State, SINK_STATE, NSEZSP::CGpSink)
+DEFINE_ENUM(State, SINK_STATE, NSEZSP::CGpSink);
 
 using NSEZSP::CGpSink;
 

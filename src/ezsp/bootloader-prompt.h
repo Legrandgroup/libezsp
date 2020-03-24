@@ -1,3 +1,9 @@
+/***
+ * @file bootloader-prompt.h
+ * 
+ * @brief Ember bootloader CLI decoder
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -11,13 +17,13 @@
 namespace NSEZSP {
 
 #define BOOTLOADER_STAGE_LIST(XX) \
-    XX(RX_FLUSH,=1)             /*<! Initial state, first flush all incoming bytes from serial link */ \
-    XX(PROBE,)                  /*<! We don't know yet if we are in bootloader mode, we are just probing */ \
-    XX(TOPLEVEL_MENU_HEADER,)   /*<! Toplevel menu header, displaying Gecko Bootloader v1.6.0 */ \
-    XX(TOPLEVEL_MENU_CONTENT,)  /*<! Toplevel menu content, displaying a menu with the various numeric options */ \
-    XX(TOPLEVEL_MENU_PROMPT,)   /*<! String "BL >" following the toplevel menu header */ \
-    XX(XMODEM_READY_CHAR_WAIT,) /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */ \
-    XX(XMODEM_XFR,)             /*<! A firmware image transfer using X-modem is ongoing */ \
+	XX(RX_FLUSH,=1)             /*<! Initial state, first flush all incoming bytes from serial link */ \
+	XX(PROBE,)                  /*<! We don't know yet if we are in bootloader mode, we are just probing */ \
+	XX(TOPLEVEL_MENU_HEADER,)   /*<! Toplevel menu header, displaying Gecko Bootloader v1.6.0 */ \
+	XX(TOPLEVEL_MENU_CONTENT,)  /*<! Toplevel menu content, displaying a menu with the various numeric options */ \
+	XX(TOPLEVEL_MENU_PROMPT,)   /*<! String "BL >" following the toplevel menu header */ \
+	XX(XMODEM_READY_CHAR_WAIT,) /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */ \
+	XX(XMODEM_XFR,)             /*<! A firmware image transfer using X-modem is ongoing */ \
 
 /**
  * @brief Internal stages for bootloader prompt detection and interaction
@@ -28,8 +34,8 @@ namespace NSEZSP {
  * @see enum-generator.h
  */
 class EBootloader {
-    public:
-        DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST)
+public:
+	DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST);
 };
 
 class CBootloaderPrompt : protected NSSPI::ITimerVisitor

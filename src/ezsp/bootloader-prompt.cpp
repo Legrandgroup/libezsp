@@ -1,5 +1,7 @@
 /**
  * @file bootloader-prompt.cpp
+ * 
+ * @brief Ember bootloader CLI decoder
  **/
 
 #include <iostream>
@@ -12,7 +14,7 @@
 
 #include "spi/ILogger.h"
 
-DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::EBootloader)
+DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::EBootloader);
 
 using NSEZSP::CBootloaderPrompt;
 

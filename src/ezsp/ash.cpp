@@ -16,7 +16,7 @@
 // For debug logging only
 //#include <sstream>
 
-DEFINE_ENUM(EAshInfo, ASH_INFO, NSEZSP::CAsh)
+DEFINE_ENUM(EAshInfo, ASH_INFO, NSEZSP::CAsh);
 
 using NSEZSP::CAsh;
 

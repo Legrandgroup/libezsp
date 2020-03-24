@@ -7,7 +7,7 @@
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 
-DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic)
+DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic);
 
 using NSEZSP::CEzsp;
 

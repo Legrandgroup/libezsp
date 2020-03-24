@@ -42,7 +42,7 @@ public:
      *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
      * @see enum-generator.h
      */
-    DECLARE_ENUM(Mode, EZSP_DONGLE_MODE_LIST)
+    DECLARE_ENUM(Mode, EZSP_DONGLE_MODE_LIST);
 
     CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed

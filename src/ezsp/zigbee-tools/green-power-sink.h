@@ -46,7 +46,7 @@ public:
 	 *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
 	 * @see enum-generator.h
 	 */
-	DECLARE_ENUM(State, SINK_STATE)
+	DECLARE_ENUM(State, SINK_STATE);
 
 	CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging );
 

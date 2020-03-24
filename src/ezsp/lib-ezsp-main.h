@@ -57,8 +57,8 @@ namespace NSEZSP {
  * @see enum-generator.h
  */
 class CLibEzspInternal {
-    public:
-        DECLARE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST)
+public:
+	DECLARE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST);
 };
 
 /**

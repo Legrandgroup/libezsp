@@ -34,7 +34,7 @@ public:
 	 *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
 	 * @see enum-generator.h
 	 */
-	DECLARE_ENUM(EAshInfo, ASH_INFO)
+	DECLARE_ENUM(EAshInfo, ASH_INFO);
 
     CAsh() = delete; /* Construction without arguments is not allowed */
     /**

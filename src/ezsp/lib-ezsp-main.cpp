@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 
-DEFINE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST, NSEZSP::CLibEzspInternal)
+DEFINE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST, NSEZSP::CLibEzspInternal);
 
 using NSEZSP::CLibEzspMain;
 using NSEZSP::CLibEzspPublic;
