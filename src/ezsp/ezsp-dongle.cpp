@@ -65,7 +65,7 @@ bool CEzspDongle::reset() {
 }
 
 void CEzspDongle::ashCbInfo(CAsh::EAshInfo info) {
-	clogD <<  "ashCbInfo : " << CAsh::getString(info) << "\n";
+	clogD <<  "ashCbInfo : " << CAsh::getEAshInfoAsString(info) << "\n";
 
 	if (CAsh::EAshInfo::ASH_STATE_CHANGE == info) {
         // inform upper layer that dongle is ready !

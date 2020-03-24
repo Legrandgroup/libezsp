@@ -184,7 +184,7 @@ public:
      * @param i_state The new state of the EZSP library
      */
     void ezspStateChangeCallback(NSEZSP::CLibEzspState i_state) {
-        clogI << "EZSP library change to state " << NSEZSP::CLibEzspPublic::getString(i_state) << "\n";
+		clogI << "EZSP library change to state " << NSEZSP::CLibEzspPublic::getStateAsString(i_state) << "\n";
         if (i_state == NSEZSP::CLibEzspState::READY) {
             clogI << "EZSP library is ready, entering main state machine with MainState " << static_cast<int>(this->currentState) << "\n";
             if (this->currentState == MainState::INIT_PENDING && this->startFirmwareUpgrade) {

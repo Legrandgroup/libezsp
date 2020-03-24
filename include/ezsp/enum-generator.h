@@ -44,8 +44,8 @@
   enum EnumType { \
     ENUM_DEF(ENUM_VALUE) \
   }; \
-  static const char* getString(EnumType value); \
-  static EnumType get##EnumType##Value(const char* str); \
+  static const char* get##EnumType##AsString(EnumType value); \
+  static EnumType get##EnumType##Value(const char* str)
 
 /*!
  * \brief Define the access function names
@@ -53,7 +53,7 @@
  * Marco to implement (define) the functions for the prototypes previously declared using macro #DECLARE_ENUM(EnumType,ENUM_DEF)
  */
 #define DEFINE_ENUM(EnumType,ENUM_DEF,Scope) \
-  const char* Scope::getString(EnumType value) \
+  const char* Scope::get##EnumType##AsString(EnumType value) \
   { \
     switch(value) \
     { \
@@ -68,5 +68,5 @@
     ENUM_DEF(ENUM_STRCMP) \
     throw std::range_error("String " + std::string(str) + " does not match any value"); /* handle input error */ \
   }
-  
+
 

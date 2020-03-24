@@ -168,7 +168,7 @@ bool CGpSink::registerGpds(std::vector<CGpDevice> gpd) {
 
 bool CGpSink::clearAllGpds() {
 	if (this->sink_state != CGpSink::State::SINK_READY) {
-		clogE << "Request to clearAllGpds() while not SINK_READY. Current state: " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
+		clogE << "Request to clearAllGpds() while not SINK_READY. Current state: " << NSEZSP::CGpSink::getStateAsString(this->sink_state) << "\n";
 		return false;
 	}
 
@@ -454,7 +454,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& 
 		}
 	}
 	else {
-		clogW << "Ignoring EZSP_GP_SINK_TABLE_GET_ENTRY because we are in sink_state " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
+		clogW << "Ignoring EZSP_GP_SINK_TABLE_GET_ENTRY because we are in sink_state " << NSEZSP::CGpSink::getStateAsString(this->sink_state) << "\n";
 		return;
 	}
 	l_entry.setEntryActive(true);
@@ -561,7 +561,7 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(const NSSPI::By
 		dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY, { proxy_table_index });
 	}
 	else {
-		clogW << "Ignoring EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING because we are in sink_state " << NSEZSP::CGpSink::getString(this->sink_state) << "\n";
+		clogW << "Ignoring EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING because we are in sink_state " << NSEZSP::CGpSink::getStateAsString(this->sink_state) << "\n";
 	}
 }
 
@@ -936,7 +936,7 @@ void CGpSink::gpSinkTableLookup(uint32_t i_src_id) {
 
 void CGpSink::setSinkState(CGpSink::State i_state) {
 
-	clogD << "SINK State change from " << NSEZSP::CGpSink::getString(this->sink_state) << " to " << NSEZSP::CGpSink::getString(i_state) << "\n";
+	clogD << "SINK State change from " << NSEZSP::CGpSink::getStateAsString(this->sink_state) << " to " << NSEZSP::CGpSink::getStateAsString(i_state) << "\n";
 	this->sink_state = i_state;
 
 	if( nullptr != obsStateCallback ) {

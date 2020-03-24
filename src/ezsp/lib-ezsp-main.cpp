@@ -86,9 +86,8 @@ void CLibEzspMain::setState(CLibEzspInternal::State i_new_state)
 {
     CLibEzspInternal::State l_old_state = this->lib_state;
     this->lib_state = i_new_state;
-    clogD << "CLibEzspMain state changing from " << NSEZSP::CLibEzspInternal::getString(l_old_state) << " to " << NSEZSP::CLibEzspInternal::getString(i_new_state) << "\n";
-    if( nullptr != obsStateCallback )
-    {
+	clogD << "CLibEzspMain state changing from " << NSEZSP::CLibEzspInternal::getStateAsString(l_old_state) << " to " << NSEZSP::CLibEzspInternal::getStateAsString(i_new_state) << "\n";
+	if (nullptr != obsStateCallback) {
         switch (i_new_state)
         {
             case CLibEzspInternal::State::UNINITIALIZED:
@@ -497,7 +496,7 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_
 	{
 		clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
 	}
-	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << unsigned(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getString(this->getState()) << "\n";
+	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << static_cast<unsigned int>(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getStateAsString(this->getState()) << "\n";
 	if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
 	{
 		// We create a network on the required channel
