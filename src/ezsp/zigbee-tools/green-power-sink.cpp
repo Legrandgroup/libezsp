@@ -136,28 +136,39 @@ void CGpSink::closeCommissioningSession()
     setSinkState(SINK_READY);
 }
 
-bool CGpSink::registerGpds(const std::vector<CGpDevice>& gpd)
-{
+bool CGpSink::registerGpds(std::vector<CGpDevice> gpd) {
     if( SINK_READY != sink_state ) {
         return false;
     }
 
-    this->setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
+	if (this->gpds_to_register.size() != 0) {
+		clogW << "registerGpds() called while there were still GPDs previously queued for registration\n";
+	}
+
+	if (gpd.size() == 0) {
+		clogW << "registerGpds() called with an empty GPD list\n";
+		return false;
+	}
+
+	this->setSinkState(SINK_COM_OFFLINE_IN_PROGRESS);
+	swap(this->gpds_to_register, gpd);
 #ifdef USE_BUILTIN_MIC_PROCESSING
     this->gp_dev_db.setDb(gpd);
+	this->gpds_to_register.clear();
     this->setSinkState(SINK_READY);
 #else
-    /* Save the list GPs that should be added, for background processing */
-    this->gpds_to_register = gpd;
-    for (auto it = this->gpds_to_register.begin(); it != this->gpds_to_register.end(); ++it) {
-        CGpDevice& dev = *it;
-        clogD << "Queuing source ID " << std::hex << std::setfill('0') << dev.getSourceId() << " for registration\n";
-    }
+	/* The list GPs that should be added has been stored inside this->gpds_to_register, for background processing */
+	for (auto it = this->gpds_to_register.begin(); it != this->gpds_to_register.end(); ++it) {
+		CGpDevice& dev = *it;
+		clogD << "Queuing source ID " << std::hex << std::setfill('0') << dev.getSourceId() << " for registration\n";
+	}
 
-    clogD << "Before gpSinkTableFindOrAllocateEntry()\n";
-    /* Request sink table entry for the first source ID to add, the rest of the source IDs in the list gpds_to_register will be processed asynchronously */
-    gpSinkTableFindOrAllocateEntry( gpds_to_register.back().getSourceId() );
-    clogD << "After gpSinkTableFindOrAllocateEntry()\n";
+	clogD << "Before gpSinkTableFindOrAllocateEntry()\n";
+	/* Request sink table entry for the first source ID to add, the rest of the source IDs in the list gpds_to_register will be processed asynchronously */
+	/* Note: gpds_to_register vector cannot be empty because of the initial test on gpd argument, that was then swapped */
+	/* It is thus safe to issue back() on that vector */
+	gpSinkTableFindOrAllocateEntry(gpds_to_register.back().getSourceId());
+	clogD << "After gpSinkTableFindOrAllocateEntry()\n";
 
     /* When performing the register action directly inside the dongle:
      * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)
@@ -186,24 +197,37 @@ bool CGpSink::clearAllGpds() {
 #endif
 }
 
-bool CGpSink::removeGpds( const std::vector<uint32_t> &gpd ) {
-	if( SINK_READY != sink_state ) {
+bool CGpSink::removeGpds(std::vector<uint32_t> gpd) {
+	if (SINK_READY != sink_state) {
 		return false;
 	}
+
+	if (this->gpds_to_remove.size() != 0) {
+		clogW << "removeGpds() called while there were still GPDs previously queued for removal\n";
+	}
+
+	if (gpd.size() == 0) {
+		clogW << "removeGpds() called with an empty GPD list\n";
+		return false;
+	}
+
 	this->setSinkState(SINK_REMOVE_IN_PROGRESS);
+	swap(this->gpds_to_remove, gpd);
 #ifdef USE_BUILTIN_MIC_PROCESSING
 	for (auto it = gpd.begin(); it != gpd.end(); ++it) {
 		if (!this->gp_dev_db.removeDevice(*it)) {
 			clogW << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << *it << " not found in internal database\n";
 		}
 	}
+	this->gpds_to_remove.clear();
 	this->setSinkState(SINK_READY);
 #else
-	/* Save the list GPs that should be deleted, for background processing */
-	gpds_to_remove = gpd;
+	/* Note: the list GPs that should be deleted has been stored inside this->gpds_to_remove, for background processing */
 
 	/* Request sink table entry for the first source ID to delete, the rest of the source IDs in the list gpds_to_remove will be processed asynchronously */
-	gpSinkTableLookup( gpds_to_remove.back() );
+	/* Note: gpds_to_remove vector cannot be empty because of the initial test on gpd argument, that was then swapped */
+	/* It is thus safe to issue back() on that vector */
+	gpSinkTableLookup(gpds_to_remove.back());
 
 	/* When performing the remove action directly inside the dongle:
 	 * The SINK_READY final state will be set when reaching the end of the adapter's table iteration, so we don't set SINK_READY right now (it will be done asynchronously)

@@ -76,30 +76,32 @@ public:
      */
     bool clearAllGpds();
 
-    /**
-     * @brief Add a green power device to this sink
-     *
-     * @param gpd list of gpds to add
-     *
-     * @return true if action can be done
-     */
-    bool registerGpds( const std::vector<CGpDevice> &gpd );
+	/**
+	 * @brief Add a green power device to this sink
+	 *
+	 * @param gpd list of gpds to add
+	 *
+	 * @return true if action can be done
+	 */
+	bool registerGpds(std::vector<CGpDevice> gpd);
 
-    /**
-     * @brief remove a green power device to this sink
-     *
-     * @param gpd list of gpds sourceId to remove
-     *
-     * @return true if action can be done
-     */
-    bool removeGpds( const std::vector<uint32_t> &gpd );
+	/**
+	 * @brief remove a green power device to this sink
+	 *
+	 * @param gpd list of gpds sourceId to remove
+	 *
+	 * @return true if action can be done
+	 */
+	bool removeGpds(std::vector<uint32_t> gpd);
 
-    /**
-     * @brief authorize answer to channel request
-     *
-     * @param i_authorize : true to authorize, false otherwize
-     */
-    void authorizeAnswerToGpfChannelRqst( bool i_authorize ){ authorizeGpfChannelRqst = i_authorize; }
+	/**
+	 * @brief authorize answer to channel request
+	 *
+	 * @param i_authorize : true to authorize, false otherwize
+	 */
+	void authorizeAnswerToGpfChannelRqst( bool i_authorize ) {
+		authorizeGpfChannelRqst = i_authorize;
+	}
 
     /**
      * @brief Method that will be invoked on incoming EZSP messages
