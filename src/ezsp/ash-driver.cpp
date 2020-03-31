@@ -1,7 +1,7 @@
 /**
- * @file ash-codec.cpp
+ * @file ash-driver.cpp
  *
- * @brief ASH protocol decoder/encoder
+ * @brief ASH serial driver
  **/
 
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <map>
 #include <iomanip>
 
-#include "ash-codec.h"
+#include "ash-driver.h"
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/byte-manip.h"
 
@@ -18,9 +18,7 @@
 // For debug logging only
 //#include <sstream>
 
-DEFINE_ENUM(EAshInfo, ASH_INFO, NSEZSP::AshCodec);
-
-using NSEZSP::AshCodec;
+using NSEZSP::AshDriver;
 
 /**
  * The receive timeout settings - min/initial/max - defined in milliseconds
@@ -39,8 +37,8 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-AshCodec::AshCodec(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
-	pCb(ipCb),
+AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
+	ashCodec(ipCb, i_timer_builder /*FIXME: timer should only be used inside driver*/),
 	ackNum(0),
 	frmNum(0),
 	ezspSeqNum(0),
@@ -50,13 +48,12 @@ AshCodec::AshCodec(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builde
 {
 }
 
-void AshCodec::trigger(NSSPI::ITimer* triggeringTimer) {
+void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
     if( !stateConnected )
     {
-        if( nullptr != pCb )
-        {
-            pCb->ashCbInfo(ASH_RESET_FAILED);
-        }
+		if (this->ashCodec.pCb) {
+			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_RESET_FAILED);
+		}
     }
     else
     {
@@ -64,7 +61,7 @@ void AshCodec::trigger(NSSPI::ITimer* triggeringTimer) {
     }
 }
 
-NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
+NSSPI::ByteBuffer AshDriver::sendResetNCPFrame(void) {
 	this->ackNum = 0;
 	this->frmNum = 0;
 	this->ezspSeqNum = 0;
@@ -72,17 +69,17 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
     NSSPI::ByteBuffer lo_msg;
 
 	this->ackTimer->stop();
-	if (this->pCb != nullptr) {
-		pCb->ashCbInfo(ASH_STATE_CHANGE);
+	if (this->ashCodec.pCb) {
+		this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_STATE_CHANGE);
 	}
 
     lo_msg.push_back(0xC0);
 
-    uint16_t crc = computeCRC(lo_msg);
+    uint16_t crc = NSEZSP::AshCodec::computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
-	lo_msg = addByteStuffing(lo_msg);
+	lo_msg = NSEZSP::AshCodec::addByteStuffing(lo_msg);
 
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
@@ -92,21 +89,21 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
     return lo_msg;
 }
 
-NSSPI::ByteBuffer AshCodec::AckFrame(void) {
+NSSPI::ByteBuffer AshDriver::sendAckFrame(void) {
   NSSPI::ByteBuffer lo_msg;
 
 	uint8_t ashControlByte = this->ackNum | 0x80;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec sending ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+	clogD << "AshDriver sending ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
-  uint16_t crc = computeCRC(lo_msg);
+  uint16_t crc = NSEZSP::AshCodec::computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
-	return addByteStuffing(lo_msg);
+	return NSEZSP::AshCodec::addByteStuffing(lo_msg);
 }
 
-NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
+NSSPI::ByteBuffer AshDriver::sendDataFrame(NSSPI::ByteBuffer i_data) {
   NSSPI::ByteBuffer lo_msg;
 
   /*
@@ -117,7 +114,7 @@ NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
  
   uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + ackNum;
   lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec sending DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+	clogD << "AshDriver sending DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 	      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
 	      << ", seqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
@@ -135,9 +132,9 @@ NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
 	i_data.insert(i_data.begin(),this->ezspSeqNum++);
 
 
-	lo_msg.append(dataRandomize(i_data));
+	lo_msg.append(NSEZSP::AshCodec::dataRandomize(i_data));
 
-  uint16_t crc = computeCRC(lo_msg);
+  uint16_t crc = NSEZSP::AshCodec::computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
@@ -145,15 +142,15 @@ NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
 	this->ackTimer->stop();
 	this->ackTimer->start(T_RX_ACK_INIT, this);
 
-	return addByteStuffing(lo_msg);
+	return NSEZSP::AshCodec::addByteStuffing(lo_msg);
 }
 
-void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
-	lo_msg.append(removeByteStuffing(this->in_msg));  /* FIXME: we are using this->in_msg here, we should pass it as arg instead */
+void AshDriver::decode_flag(NSSPI::ByteBuffer& lo_msg) {
+	lo_msg.append(NSEZSP::AshCodec::removeByteStuffing(this->in_msg));  /* FIXME: we are using this->in_msg here, we should pass it as arg instead */
   // Check CRC
-  if (computeCRC(lo_msg) != 0) {
+  if (NSEZSP::AshCodec::computeCRC(lo_msg) != 0) {
 		lo_msg.clear();
-		clogD << "AshCodec::decode Wrong CRC\n";
+		clogD << "AshDriver::decode Wrong CRC\n";
 		return;
   }
 	uint8_t ashControlByte = lo_msg.at(0);
@@ -162,7 +159,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		uint8_t remoteAckNum = ashControlByte;
 		remoteAckNum >>= 4;
 		remoteAckNum &= 0x07;
-		clogD << "AshCodec received DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+		clogD << "AshDriver received DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 		      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
 		if (expectedAckNum != remoteAckNum) {
@@ -176,7 +173,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		this->ackNum++;
 		this->ackNum &= 0x07;
 
-		lo_msg = dataRandomize(lo_msg,1);
+		lo_msg = NSEZSP::AshCodec::dataRandomize(lo_msg,1);
 
     if (lo_msg.size()<3)
     {
@@ -205,33 +202,33 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
     lo_msg.clear();
 		this->ackTimer->stop();
 
-		if (this->pCb != nullptr) {
-			pCb->ashCbInfo(ASH_ACK);
+		if (this->ashCodec.pCb) {
+			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_ACK);
 		}
 	}
 	else if ((ashControlByte & 0x60) == 0x20) {
 		// NAK
 		frmNum = ashControlByte & 0x07;
 
-        clogD << "AshCodec::decode NACK\n";
+        clogD << "AshDriver::decode NACK\n";
 
     //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
     lo_msg.clear();
 		this->ackTimer->stop();
 
-		if( nullptr != pCb ) {
-			pCb->ashCbInfo(ASH_NACK);
+		if (this->ashCodec.pCb) {
+			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_NACK);
 		}
 	}
 	else if (ashControlByte == 0xC0) {  /* RST */
 		lo_msg.clear();
 		this->ackTimer->stop();
-		clogD << "AshCodec::decode RST\n";
+		clogD << "AshDriver::decode RST\n";
   }
 	else if (ashControlByte == 0xC1) { /* RSTACK */
     uint8_t version = lo_msg.at(1);
     uint8_t resetCode = lo_msg.at(2);
-    clogD << "AshCodec::decode RSTACK v" << std::dec << static_cast<const unsigned int>(version) << ", resetCode=0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
+    clogD << "AshDriver::decode RSTACK v" << std::dec << static_cast<const unsigned int>(version) << ", resetCode=0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
 
     if (version!=2U) {
       clogE << "Unsupported ASH version: " << std::dec << static_cast<const unsigned int>(version) << "\n";
@@ -247,7 +244,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
          ) {
 				this->stateConnected = true;
 				this->ackTimer->stop();
-        if (nullptr != pCb) { pCb->ashCbInfo(ASH_STATE_CHANGE); }
+        if (this->ashCodec.pCb) {
+			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_STATE_CHANGE);
+		}
       }
       else {
         clogE << "Unexpected reset code: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
@@ -257,17 +256,17 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
     }
   }
   else if (ashControlByte == 0xC2) {
-		clogE << "AshCodec::decode ERROR\n";
+		clogE << "AshDriver::decode ERROR\n";
     lo_msg.clear();
   }
   else
   {
-		clogE << "AshCodec::decode UNKNOWN\n";
+		clogE << "AshDriver::decode UNKNOWN\n";
     lo_msg.clear();
   }
 }
 
-NSSPI::ByteBuffer AshCodec::decode(NSSPI::ByteBuffer& i_data) {
+NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {
   /**
    * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
    */
@@ -328,110 +327,4 @@ NSSPI::ByteBuffer AshCodec::decode(NSSPI::ByteBuffer& i_data) {
   }
 
   return lo_msg;
-}
-
-
-uint16_t AshCodec::computeCRC(const NSSPI::ByteBuffer& buf) {
-  uint16_t lo_crc = 0xFFFF; // initial value
-  uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
-
-	for (std::size_t cnt = 0; cnt < buf.size(); cnt++) {
-      for (uint8_t i = 0; i < 8; i++) {
-			bool bit = ((static_cast<uint8_t>(buf.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
-          bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
-          lo_crc = static_cast<uint16_t>(lo_crc << 1U);
-          if (c15 != bit) {
-              lo_crc ^= polynomial;
-          }
-      }
-  }
-
-  lo_crc &= 0xffff;
-
-  return lo_crc;
-}
-
-NSSPI::ByteBuffer AshCodec::removeByteStuffing(const NSSPI::ByteBuffer& i_data) {
-	NSSPI::ByteBuffer result;
-
-	// Remove byte stuffing
-	bool escape = false;
-	for (auto it = i_data.begin(); it != i_data.end(); ++it) {
-		if (escape) {
-			escape = false;
-			if ((*it & 0x20) == 0) {
-				result.push_back(static_cast<uint8_t>(*it | 0x20U));
-			} else {
-				result.push_back(static_cast<uint8_t>(*it & 0xDFU));
-			}
-		}
-		else { // escape==false
-			if (*it == 0x7D) {
-				escape = true;
-			}
-			else {
-				result.push_back(*it);  // Non-stuffed byte is copied over as-is
-			}
-		}
-	}
-	return result;
-}
-
-NSSPI::ByteBuffer AshCodec::addByteStuffing(const NSSPI::ByteBuffer& i_data) {
-
-	NSSPI::ByteBuffer result;
-
-	for (auto it = i_data.begin(); it != i_data.end(); ++it) {
-		switch (*it) {
-		case 0x7EU:
-			result.push_back(0x7DU);
-			result.push_back(0x5EU);
-			break;
-		case 0x7DU:
-			result.push_back(0x7DU);
-			result.push_back(0x5DU);
-			break;
-		case 0x11U:
-			result.push_back(0x7DU);
-			result.push_back(0x31U);
-			break;
-		case 0x13U:
-			result.push_back(0x7DU);
-			result.push_back(0x33U);
-			break;
-		case 0x18U:
-			result.push_back(0x7DU);
-			result.push_back(0x38U);
-			break;
-		case 0x1AU:
-			result.push_back(0x7DU);
-			result.push_back(0x3AU);
-			break;
-		default:
-			result.push_back(*it);
-			break;
-		}
-	}
-	result.push_back(0x7EU);
-
-	return result;
-}
-
-NSSPI::ByteBuffer AshCodec::dataRandomize(const NSSPI::ByteBuffer& i_data, uint8_t start) {
-	NSSPI::ByteBuffer result;
-
-	// Randomise the data
-	uint8_t lfsrByte = 0x42;
-	for (uint8_t cnt = start; cnt < i_data.size(); cnt++) {
-		result.push_back(i_data.at(cnt) ^ lfsrByte);
-
-		/* Now, compute the next LFSR byte */
-		bool lfsrByteBit0 = lfsrByte & 0x01;
-		lfsrByte >>= 1;
-		if (lfsrByteBit0) {
-			lfsrByte ^= static_cast<uint8_t>(0xb8U);
-		}
-	}
-
-	return result;
 }

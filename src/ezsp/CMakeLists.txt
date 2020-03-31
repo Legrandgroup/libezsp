@@ -2,9 +2,10 @@ set(ezsp_SOURCES)
 list(APPEND ezsp_SOURCES
 	ezsp.cpp
 	lib-ezsp-main.cpp
+	ezsp-dongle.cpp
+	ash-driver.cpp
 	ash-codec.cpp
 	bootloader-prompt.cpp
-	ezsp-dongle.cpp
 	ezsp-protocol/ezsp-enum.cpp
 	ezsp-protocol/get-network-parameters-response.cpp
 	ezsp-protocol/struct/ember-child-data-struct.cpp

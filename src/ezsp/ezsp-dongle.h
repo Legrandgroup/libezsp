@@ -7,7 +7,7 @@
 
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
-#include "ash-codec.h"
+#include "ash-driver.h"
 #include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
 #include <spi/GenericAsyncDataInputObservable.h>
@@ -31,8 +31,7 @@ namespace NSEZSP {
     XX(BOOTLOADER_FIRMWARE_UPGRADE,)        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */ \
     XX(BOOTLOADER_EXIT_TO_EZSP_NCP,)        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */ \
 
-class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
-{
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback {
 public:
     /**
      * @brief Requested mode for the EZSP adapter
@@ -109,8 +108,8 @@ private:
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
-	AshCodec ash;   /*!< An ASH encoder/decoder instance */
-    CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
+	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
+    NSEZSP::CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
