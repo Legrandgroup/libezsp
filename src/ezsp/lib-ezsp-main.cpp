@@ -420,6 +420,9 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 		else if (ezspProtocolVersion == this->exp_ezsp_min_version &&  ezspProtocolVersion <= this->exp_ezsp_max_version) {
 			acceptableVersion = true;
 		}
+		else {
+			acceptableVersion = false;
+		}
 	}
 	if (acceptableVersion) {
 		std::stringstream bufDump;  /* Log message container */

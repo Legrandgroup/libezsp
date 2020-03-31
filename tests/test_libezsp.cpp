@@ -4,7 +4,7 @@
  * Automated unit tests runner
  */
 
-#include <cstdio>
+#include <cstdio>       //NOSONAR
 #include <cstdlib>
 
 #include <cassert>	// For assert()

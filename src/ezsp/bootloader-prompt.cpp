@@ -155,7 +155,9 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data) 
         this->probe();  /* Restart probing to find out if we are back in the bootloader prompt */
       }
     }
-  }
+	}
+	else {
+	}
   bool lastRXByteIsNUL(false);
   while( !i_data.empty() )
   {
