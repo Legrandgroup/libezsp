@@ -59,6 +59,10 @@ void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> 
   this->promptDetectCallback = newObsPromptDetectCallback;
 }
 
+bool CBootloaderPrompt::hasARegisteredSerialWriteFunc() const {
+	return (this->serialWriteFunc != nullptr);
+}
+
 void CBootloaderPrompt::reset() {
 	this->state = EBootloader::Stage::RX_FLUSH;
   accumulatedBytes.clear();

@@ -21,7 +21,8 @@ class CAshCallback;     /* Forward declaration */
 	XX(ASH_RESET_FAILED,=1) \
 	XX(ASH_ACK,) \
 	XX(ASH_NACK,) \
-	XX(ASH_STATE_CHANGE,) \
+	XX(ASH_STATE_DISCONNECTED,) \
+	XX(ASH_STATE_CONNECTED,) \
 
 class AshCodec : protected NSSPI::ITimerVisitor
 {
@@ -47,6 +48,13 @@ public:
 	AshCodec(const AshCodec&) = delete; /* No copy construction allowed */
 
 	AshCodec& operator=(AshCodec) = delete; /* No assignment allowed */
+
+	/**
+	 * @brief Check whether we are in ASH connected state or not
+	 * 
+	 * @return true if we are in ASH connected state
+	 */
+	bool isInConnectedState() const;
 
     NSSPI::ByteBuffer resetNCPFrame(void);
 

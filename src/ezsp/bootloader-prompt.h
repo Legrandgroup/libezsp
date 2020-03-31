@@ -67,6 +67,13 @@ public:
      */
     void registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc);
 
+	/**
+	 * @brief Check if a serial write functor is registered
+	 *
+	 * @return true if a serial write functor is active or false otherwise
+	 */
+	bool hasARegisteredSerialWriteFunc() const;
+
     /**
      * @brief Register a prompt detection callback
      *

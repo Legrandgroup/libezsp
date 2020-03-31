@@ -40,7 +40,21 @@ public:
 	 */
 	void registerSerialWriteFunc(FAshDriverWriteFunc newWriteFunc);
 
-	NSSPI::ByteBuffer sendResetNCPFrame(void);
+	/**
+	 * @brief Check if a serial write functor is registered
+	 *
+	 * @return true if a serial write functor is active or false otherwise
+	 */
+	bool hasARegisteredSerialWriteFunc() const;
+
+	/**
+	 * @brief Send an ASH NCP reset frame
+	 * 
+	 * This frame must be sent to re-initialize the communication with the NCP when an ASH connection is initiated, so that any previous communication state is cancelled
+	 * 
+	 * @return true If the NCP reset frame was sent successfully (note that when we return true, we don't have any response yet)
+	 */
+	bool sendResetNCPFrame(void);
 
 	NSSPI::ByteBuffer sendAckFrame(void);
 
@@ -48,16 +62,13 @@ public:
 
 	NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
 
-	bool isConnected(void) {
-		return stateConnected;
-	}
+	bool isConnected() const;
 
 protected:
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
-	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
 	FAshDriverWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
 };

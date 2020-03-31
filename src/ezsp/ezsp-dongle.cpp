@@ -30,6 +30,18 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
 	this->uartHandle = uartHandle;
+	if (this->ash.hasARegisteredSerialWriteFunc()) {
+		/* If ash knows a way to write to the serial port, update the callback to use the new uartHandle */
+		this->ash.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
+            return this->uartHandle->write(writtenCnt, buf, cnt);
+        });
+	}
+	if (this->blp.hasARegisteredSerialWriteFunc()) {
+		/* If blp knows a way to write to the serial port, update the callback to use the new uartHandle */
+		this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
+			return this->uartHandle->write(writtenCnt, buf, cnt);
+		});
+	}
 }
 
 bool CEzspDongle::reset() {
@@ -42,22 +54,18 @@ bool CEzspDongle::reset() {
 	}
 	else {
 		// Send a ASH reset to the NCP
-		l_buffer = ash.sendResetNCPFrame();
-
-		if (this->uartHandle->write(l_size, l_buffer.data(), l_buffer.size()) < 0 ) {
+		this->ash.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
+			return this->uartHandle->write(writtenCnt, buf, cnt);
+		});    /* Allow the blp object to write to the serial port via our own pUart attribute */
+		
+		if (!this->ash.sendResetNCPFrame()) {
 			clogE << "Failed sending reset frame to serial port\n";
 			return false;
 		}
 		else {
-			if (l_buffer.size() != l_size) {
-				clogE << "Reset frame not fully written to serial port\n";
-				return false;
-			}
-			else {
-				clogD << "CEzspDongle UART reset\n";
-				this->uartIncomingDataHandler.registerObserver(this);
-				this->uartHandle->setIncomingDataHandler(&uartIncomingDataHandler);
-			}
+			clogD << "CEzspDongle UART reset\n";
+			this->uartIncomingDataHandler.registerObserver(this);
+			this->uartHandle->setIncomingDataHandler(&uartIncomingDataHandler);
 		}
 	}
 
@@ -67,48 +75,43 @@ bool CEzspDongle::reset() {
 void CEzspDongle::ashCbInfo(AshCodec::EAshInfo info) {
 	clogD <<  "ashCbInfo : " << AshCodec::getEAshInfoAsString(info) << "\n";
 
-	if (AshCodec::EAshInfo::ASH_STATE_CHANGE == info) {
-        // inform upper layer that dongle is ready !
-        if( ash.isConnected() )
-        {
-            notifyObserversOfDongleState( DONGLE_READY );
-            this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;    /* We are now sure the dongle is communicating over ASH */
-        }
-        else
-        {
-            notifyObserversOfDongleState( DONGLE_REMOVE );
-        }
-    }
-	else if (AshCodec::EAshInfo::ASH_NACK == info) {
-        clogW << "Caught an ASH NACK from NCP... resending\n";
-        wait_rsp = false;
-        sendNextMsg();
-    }
-	else if (AshCodec::EAshInfo::ASH_RESET_FAILED == info) {
-        /* ASH reset failed */
-        if (firstStartup)
-        {
-            /* If this is the startup sequence, we might be in bootloader prompt mode, not in ASH mode, so try to exit to EZSP/ASH mode from bootloader */
-            if (this->switchToFirmwareUpgradeOnInitTimeout)
-            {
-                this->setMode(CEzspDongle::Mode::BOOTLOADER_FIRMWARE_UPGRADE);
-            }
-            else
-            {
-                this->setMode(CEzspDongle::Mode::BOOTLOADER_EXIT_TO_EZSP_NCP);
-            }
-            firstStartup = false;
-        }
-        else
-        {
-            clogE << "EZSP adapter is not responding\n";
-            notifyObserversOfDongleState( DONGLE_NOT_RESPONDING );
-        }
-    }
-    else
-    {
-        clogW << "Caught an unknown ASH\n";
-    }
+	switch (info) {
+		case AshCodec::EAshInfo::ASH_STATE_CONNECTED: {
+			notifyObserversOfDongleState(DONGLE_READY);
+			this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;    /* We are now sure the dongle is communicating over ASH */
+		}
+		break;
+		case AshCodec::EAshInfo::ASH_STATE_DISCONNECTED: {
+			notifyObserversOfDongleState(DONGLE_REMOVE);
+		}
+		break;
+		case AshCodec::EAshInfo::ASH_NACK: {
+			clogW << "Caught an ASH NACK from NCP... resending\n";
+			wait_rsp = false;
+			sendNextMsg();
+		}
+		break;
+		case AshCodec::EAshInfo::ASH_RESET_FAILED: {
+			/* ASH reset failed */
+			if (firstStartup) {
+				/* If this is the startup sequence, we might be in bootloader prompt mode, not in ASH mode, so try to exit to EZSP/ASH mode from bootloader */
+				if (this->switchToFirmwareUpgradeOnInitTimeout) {
+					this->setMode(CEzspDongle::Mode::BOOTLOADER_FIRMWARE_UPGRADE);
+				}
+				else {
+					this->setMode(CEzspDongle::Mode::BOOTLOADER_EXIT_TO_EZSP_NCP);
+				}
+				firstStartup = false;
+			}
+			else {
+				clogE << "EZSP adapter is not responding\n";
+				notifyObserversOfDongleState( DONGLE_NOT_RESPONDING );
+			}
+		}
+		break;
+		default:
+			clogW << "Caught an unknown ASH\n";
+	}
 }
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)

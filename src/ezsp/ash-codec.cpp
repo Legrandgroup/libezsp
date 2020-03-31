@@ -64,6 +64,10 @@ void AshCodec::trigger(NSSPI::ITimer* triggeringTimer) {
     }
 }
 
+bool AshCodec::isInConnectedState() const {
+	return this->stateConnected;
+}
+
 NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
 	this->ackNum = 0;
 	this->frmNum = 0;
@@ -72,8 +76,8 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
     NSSPI::ByteBuffer lo_msg;
 
 	this->ackTimer->stop();
-	if (this->pCb != nullptr) {
-		pCb->ashCbInfo(ASH_STATE_CHANGE);
+	if (this->pCb) {
+		pCb->ashCbInfo(ASH_STATE_DISCONNECTED);
 	}
 
     lo_msg.push_back(0xC0);
@@ -247,7 +251,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
          ) {
 				this->stateConnected = true;
 				this->ackTimer->stop();
-        if (nullptr != pCb) { pCb->ashCbInfo(ASH_STATE_CHANGE); }
+				if (pCb) {
+					pCb->ashCbInfo(ASH_STATE_CONNECTED);
+				}
       }
       else {
         clogE << "Unexpected reset code: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";

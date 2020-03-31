@@ -39,12 +39,12 @@ constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
 	ashCodec(ipCb, i_timer_builder /*FIXME: timer should only be used inside driver*/),
-	stateConnected(false),
-	ackTimer(i_timer_builder.create()) {
+	ackTimer(i_timer_builder.create()),
+	serialWriteFunc(nullptr) {
 }
 
 void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
-	if( !stateConnected ) {
+	if (!this->ashCodec.isInConnectedState()) {
 		if (this->ashCodec.pCb) {
 			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_RESET_FAILED);
 		}
@@ -58,8 +58,27 @@ void AshDriver::registerSerialWriteFunc(FAshDriverWriteFunc newWriteFunc) {
 	this->serialWriteFunc = newWriteFunc;
 }
 
-NSSPI::ByteBuffer AshDriver::sendResetNCPFrame(void) {
-	return this->ashCodec.resetNCPFrame();
+bool AshDriver::hasARegisteredSerialWriteFunc() const {
+	return (this->serialWriteFunc != nullptr);
+}
+
+bool AshDriver::sendResetNCPFrame(void) {
+	NSSPI::ByteBuffer resetFrame(this->ashCodec.resetNCPFrame());
+	size_t writtenBytes = 0;
+
+	if (!this->serialWriteFunc) {
+		clogE << "Cannot send NCP reset frame because no write functor is available\n";
+		return false;
+	}
+	if (this->serialWriteFunc(writtenBytes, resetFrame.data(), resetFrame.size()) < 0 ) {
+		clogE << "Failed sending reset frame to serial port\n";
+		return false;
+	}
+	if (resetFrame.size() != writtenBytes) {
+		clogE << "Reset frame not fully written to serial port\n";
+		return false;
+	}
+	return true;
 }
 
 NSSPI::ByteBuffer AshDriver::sendAckFrame(void) {
@@ -72,4 +91,8 @@ NSSPI::ByteBuffer AshDriver::sendDataFrame(NSSPI::ByteBuffer i_data) {
 
 NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {
 	return this->ashCodec.decode(i_data);
+}
+
+bool AshDriver::isConnected() const {
+	return this->ashCodec.isInConnectedState();
 }
