@@ -21,28 +21,30 @@ class AshDriver : public NSSPI::GenericAsyncDataInputObservable, protected NSSPI
 public:
 	AshDriver() = delete; /* Construction without arguments is not allowed */
 
-    /**
-     * @param ipCb Callback invoked on ASH state change
-     * @param i_timer_builder Timer builder object used to generate timers
-     */
+	/**
+	 * @param ipCb Callback invoked on ASH state change
+	 * @param i_timer_builder Timer builder object used to generate timers
+	 */
 	AshDriver(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
 
 	AshDriver(const AshDriver&) = delete; /* No copy construction allowed */
 
 	AshDriver& operator=(AshDriver) = delete; /* No assignment allowed */
 
-    NSSPI::ByteBuffer sendResetNCPFrame(void);
+	NSSPI::ByteBuffer sendResetNCPFrame(void);
 
-    NSSPI::ByteBuffer sendAckFrame(void);
+	NSSPI::ByteBuffer sendAckFrame(void);
 
-    NSSPI::ByteBuffer sendDataFrame(NSSPI::ByteBuffer i_data);
+	NSSPI::ByteBuffer sendDataFrame(NSSPI::ByteBuffer i_data);
 
-    NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
+	NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
 
-    bool isConnected(void){ return stateConnected; }
+	bool isConnected(void) {
+		return stateConnected;
+	}
 
 protected:
-    void trigger(NSSPI::ITimer* triggeringTimer);
+	void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */

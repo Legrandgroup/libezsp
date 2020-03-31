@@ -40,21 +40,18 @@ constexpr uint32_t ASH_MAX_LENGTH     = 131;
 AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
 	ashCodec(ipCb, i_timer_builder /*FIXME: timer should only be used inside driver*/),
 	stateConnected(false),
-	ackTimer(i_timer_builder.create())
-{
+	ackTimer(i_timer_builder.create()) {
 }
 
 void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
-    if( !stateConnected )
-    {
+	if( !stateConnected ) {
 		if (this->ashCodec.pCb) {
 			this->ashCodec.pCb->ashCbInfo(NSEZSP::AshCodec::ASH_RESET_FAILED);
 		}
-    }
-    else
-    {
-        clogE << "ASH timeout while connected\n";
-    }
+	}
+	else {
+		clogE << "ASH timeout while connected\n";
+	}
 }
 
 NSSPI::ByteBuffer AshDriver::sendResetNCPFrame(void) {
