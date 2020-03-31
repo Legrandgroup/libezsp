@@ -56,8 +56,6 @@ public:
 
     NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
 
-    bool isConnected(void){ return stateConnected; }
-
 	/**
 	 * @brief Compute an ASH CRC16 on a speficied buffer
 	 *
@@ -95,7 +93,13 @@ public:
 	static NSSPI::ByteBuffer dataRandomize(const NSSPI::ByteBuffer& i_data, uint8_t start = 0);
 
 protected:
-    void trigger(NSSPI::ITimer* triggeringTimer);
+	void trigger(NSSPI::ITimer* triggeringTimer);
+
+private:
+	/**
+	 * @brief Update state from the flag byte in the ASH message
+	 */
+	void decode_flag(NSSPI::ByteBuffer &lo_msg);
 
 public:
 	CAshCallback *pCb;
@@ -105,10 +109,7 @@ private:
 	uint8_t ezspSeqNum;	/*!< FIXME: should be moved out of ASH, this is EZSP specific. The EZSP sequence number (wrapping 0-255 counter) */
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
-
-    NSSPI::ByteBuffer in_msg;
-
-    void decode_flag(NSSPI::ByteBuffer &lo_msg);
+	NSSPI::ByteBuffer in_msg; /*!< Currently accumulated buffer */
 
 };
 

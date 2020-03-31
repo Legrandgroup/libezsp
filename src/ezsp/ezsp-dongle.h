@@ -109,7 +109,7 @@ private:
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
-    NSEZSP::CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
+	NSEZSP::CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;

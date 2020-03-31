@@ -46,15 +46,8 @@ protected:
 
 private:
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
-	uint8_t ackNum; /*!< The sequence number of the next frame we are expecting, meaning we acknowlegde reception of the the last frame received with sequence number ackNum-1 */
-	uint8_t frmNum; /*!< The sequence number of the next data frame originated by us */
-	uint8_t ezspSeqNum;	/*!< FIXME: should be moved out of ASH, this is EZSP specific. The EZSP sequence number (wrapping 0-255 counter) */
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
-
-    NSSPI::ByteBuffer in_msg;
-
-    void decode_flag(NSSPI::ByteBuffer &lo_msg);
 };
 
 } // namespace NSEZSP

@@ -144,7 +144,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
                 /* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
                 if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER)
                 {
-                    NSSPI::ByteBuffer l_msg = ash.sendAckFrame();
+					NSSPI::ByteBuffer l_msg = this->ash.sendAckFrame();
                     this->uartHandle->write(l_size, l_msg.data(), l_msg.size());
                     /* Unqueue the message (and send a new one) if required */
                     this->handleResponse(l_cmd);
@@ -199,7 +199,7 @@ void CEzspDongle::sendNextMsg( void )
         li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
         li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
 
-        l_enc_data = ash.sendDataFrame(li_data);
+		l_enc_data = this->ash.sendDataFrame(li_data);
 		if (this->uartHandle) {
 			//-- clogD << "CEzspDongle::sendCommand pUart->write" << std::endl;
 			this->uartHandle->write(l_size, l_enc_data.data(), l_enc_data.size());
