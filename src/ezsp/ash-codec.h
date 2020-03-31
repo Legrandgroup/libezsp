@@ -23,7 +23,7 @@ class CAshCallback;     /* Forward declaration */
 	XX(ASH_NACK,) \
 	XX(ASH_STATE_CHANGE,) \
 
-class CAsh : protected NSSPI::ITimerVisitor
+class AshCodec : protected NSSPI::ITimerVisitor
 {
 public:
 	/**
@@ -36,16 +36,17 @@ public:
 	 */
 	DECLARE_ENUM(EAshInfo, ASH_INFO);
 
-    CAsh() = delete; /* Construction without arguments is not allowed */
+	AshCodec() = delete; /* Construction without arguments is not allowed */
+
     /**
      * @param ipCb Callback invoked on ASH state change
      * @param i_timer_builder Timer builder object used to generate timers
      */
-    CAsh(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
+	AshCodec(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
 
-    CAsh(const CAsh&) = delete; /* No copy construction allowed */
+	AshCodec(const AshCodec&) = delete; /* No copy construction allowed */
 
-    CAsh& operator=(CAsh) = delete; /* No assignment allowed */
+	AshCodec& operator=(AshCodec) = delete; /* No assignment allowed */
 
     NSSPI::ByteBuffer resetNCPFrame(void);
 
@@ -127,7 +128,7 @@ public:
 	 *
 	 * @param info The new ASH state
 	 */
-	virtual void ashCbInfo(CAsh::EAshInfo info) = 0;
+	virtual void ashCbInfo(AshCodec::EAshInfo info) = 0;
 };
 
 } // namespace NSEZSP
