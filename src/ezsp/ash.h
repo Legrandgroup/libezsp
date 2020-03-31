@@ -71,8 +71,16 @@ private:
 
     NSSPI::ByteBuffer in_msg;
 
-    uint16_t computeCRC( NSSPI::ByteBuffer i_msg );
     void decode_flag(NSSPI::ByteBuffer &lo_msg);
+
+	/**
+	 * @brief Compute an ASH CRC16 on a speficied buffer
+	 *
+	 * @param buf The raw data on which we will compute the CRC16
+	 *
+	 * @return The 16-bit computed CRC
+	 */
+	static uint16_t computeCRC(const NSSPI::ByteBuffer& buf);
 
 	/**
 	 * @brief Remove ASH byte stuffing on an ASH raw stream

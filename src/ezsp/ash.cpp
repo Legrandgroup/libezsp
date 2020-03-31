@@ -335,14 +335,13 @@ NSSPI::ByteBuffer CAsh::decode(NSSPI::ByteBuffer& i_data)
 }
 
 
-uint16_t CAsh::computeCRC( NSSPI::ByteBuffer i_msg )
-{
+uint16_t CAsh::computeCRC(const NSSPI::ByteBuffer& buf) {
   uint16_t lo_crc = 0xFFFF; // initial value
   uint16_t polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
 
-  for (std::size_t cnt = 0; cnt < i_msg.size(); cnt++) {
+	for (std::size_t cnt = 0; cnt < buf.size(); cnt++) {
       for (uint8_t i = 0; i < 8; i++) {
-          bool bit = ((static_cast<uint8_t>(i_msg.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
+			bool bit = ((static_cast<uint8_t>(buf.at(cnt) >> static_cast<uint8_t>(7 - i)) & 1) == 1);
           bool c15 = ((static_cast<uint8_t>(lo_crc >> 15) & 1) == 1);
           lo_crc = static_cast<uint16_t>(lo_crc << 1U);
           if (c15 != bit) {
