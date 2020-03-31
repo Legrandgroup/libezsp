@@ -42,9 +42,9 @@ constexpr uint32_t ASH_MAX_LENGTH     = 131;
 CAsh::CAsh(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
 	ackNum(0),
 	frmNum(0),
-	seq_num(0),
+	ezspSeqNum(0),
 	stateConnected(false),
-	timer(i_timer_builder.create()),
+	ackTimer(i_timer_builder.create()),
 	pCb(ipCb),
 	in_msg()
 {
@@ -65,16 +65,17 @@ void CAsh::trigger(NSSPI::ITimer* triggeringTimer)
     }
 }
 
-NSSPI::ByteBuffer CAsh::resetNCPFrame(void)
-{
-    ackNum = 0;
-    frmNum = 0;
-    seq_num = 0;
-    stateConnected = false;
+NSSPI::ByteBuffer CAsh::resetNCPFrame(void) {
+	this->ackNum = 0;
+	this->frmNum = 0;
+	this->ezspSeqNum = 0;
+	this->stateConnected = false;
     NSSPI::ByteBuffer lo_msg;
 
-    timer->stop();
-    if( nullptr != pCb ){ pCb->ashCbInfo(ASH_STATE_CHANGE); }
+	this->ackTimer->stop();
+	if (this->pCb != nullptr) {
+		pCb->ashCbInfo(ASH_STATE_CHANGE);
+	}
 
     lo_msg.push_back(0xC0);
 
@@ -86,8 +87,8 @@ NSSPI::ByteBuffer CAsh::resetNCPFrame(void)
 
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
 
-    // start timer
-    timer->start( T_ACK_ASH_RESET, this);
+	// start timer
+	this->ackTimer->start( T_ACK_ASH_RESET, this);
 
     return lo_msg;
 }
@@ -96,7 +97,9 @@ NSSPI::ByteBuffer CAsh::AckFrame(void)
 {
   NSSPI::ByteBuffer lo_msg;
 
-  lo_msg.push_back(static_cast<uint8_t>(0x80+ackNum));
+	uint8_t ashControlByte = this->ackNum | 0x80;
+	lo_msg.push_back(ashControlByte);
+	clogD << "CAsh sending ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
   uint16_t crc = computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
@@ -117,6 +120,9 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
  
   uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + ackNum;
   lo_msg.push_back(ashControlByte);
+	clogD << "CAsh sending DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+	      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
+	      << ", seqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
 	this->frmNum &= 0x07;
 
@@ -128,8 +134,8 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 
 	// Prepend the frame control byte 0x00
   i_data.insert(i_data.begin(),0);
-  // insert seq number
-  i_data.insert(i_data.begin(),seq_num++);
+	// Insert EZSP seq number
+	i_data.insert(i_data.begin(),this->ezspSeqNum++);
 
 
 	lo_msg.append(dataRandomize(i_data));
@@ -138,9 +144,9 @@ NSSPI::ByteBuffer CAsh::DataFrame(NSSPI::ByteBuffer i_data)
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
-  // start timer
-  timer->stop();
-  timer->start( T_RX_ACK_INIT, this);
+	// start timer
+	this->ackTimer->stop();
+	this->ackTimer->start(T_RX_ACK_INIT, this);
 
 	return addByteStuffing(lo_msg);
 }
@@ -155,19 +161,18 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
   }
 	uint8_t ashControlByte = lo_msg.at(0);
 	if ((ashControlByte & 0x80) == 0) {
-		// DATA;
-		//-- clogD << "CAsh::decode DATA" << std::endl;
-
-		// Check the ACK from incoming frame
 		uint8_t expectedAckNum = this->ackNum;
 		uint8_t remoteAckNum = ashControlByte;
 		remoteAckNum >>= 4;
 		remoteAckNum &= 0x07;
+		clogD << "CAsh received DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+		      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+
 		if (expectedAckNum != remoteAckNum) {
 			clogE << "Received a wrong ack num: " << +(remoteAckNum) << ", expected: " << +(expectedAckNum) << "\n";
 		}
 		else {
-			timer->stop();  /* Stop any possibly existing timer that was waiting for an ACK */
+			this->ackTimer->stop();  /* Stop any possibly existing timer that was waiting for an ACK */
 		}
 		/* In any case (ACK correct or not), update increase our frame number for the next transmition */
 		this->ackNum = remoteAckNum;
@@ -201,9 +206,9 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		// ACK;
     //-- clogD << "CAsh::decode ACK" << std::endl;
     lo_msg.clear();
-    timer->stop();
+		this->ackTimer->stop();
 
-		if( nullptr != pCb ) {
+		if (this->pCb != nullptr) {
 			pCb->ashCbInfo(ASH_ACK);
 		}
 	}
@@ -215,7 +220,7 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 
     //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
     lo_msg.clear();
-    timer->stop();
+		this->ackTimer->stop();
 
 		if( nullptr != pCb ) {
 			pCb->ashCbInfo(ASH_NACK);
@@ -223,7 +228,7 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 	}
 	else if (ashControlByte == 0xC0) {  /* RST */
 		lo_msg.clear();
-		timer->stop();
+		this->ackTimer->stop();
 		clogD << "CAsh::decode RST" << std::endl;
   }
 	else if (ashControlByte == 0xC1) { /* RSTACK */
@@ -238,13 +243,13 @@ void CAsh::decode_flag(NSSPI::ByteBuffer& lo_msg) {
     }
 
     lo_msg.clear();
-    if( !stateConnected ) {
+		if (!this->stateConnected ) {
       if (resetCode == 0x0b /* Software reset */
           || resetCode == 0x09 /* Run app from bootloader */
           || resetCode == 0x02 /* Power on */
          ) {
-        stateConnected = true;
-        timer->stop();
+				this->stateConnected = true;
+				this->ackTimer->stop();
         if (nullptr != pCb) { pCb->ashCbInfo(ASH_STATE_CHANGE); }
       }
       else {
