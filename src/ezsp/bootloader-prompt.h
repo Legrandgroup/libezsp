@@ -127,7 +127,7 @@ private:
     NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
     bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
     EBootloader::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
-    FBootloaderWriteFunc bootloaderWriteFunc;   /*!< A function to write bytes to the serial port */
+	FBootloaderWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
     std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
     FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
 };

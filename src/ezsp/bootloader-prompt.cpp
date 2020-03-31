@@ -23,7 +23,7 @@ CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder)
 	accumulatedBytes(),
 	bootloaderCLIChecked(false),
 	state(EBootloader::Stage::RX_FLUSH),
-	bootloaderWriteFunc(nullptr),
+	serialWriteFunc(nullptr),
 	promptDetectCallback(nullptr),
 	firmwareTransferStartFunc(nullptr)
 {
@@ -50,16 +50,14 @@ void CBootloaderPrompt::trigger(NSSPI::ITimer* triggeringTimer)
   this->probe();
 }
 
-void CBootloaderPrompt::registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc)
-{
-  this->bootloaderWriteFunc = newWriteFunc;
+void CBootloaderPrompt::registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc) {
+	this->serialWriteFunc = newWriteFunc;
 }
 
 void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback)
 {
   this->promptDetectCallback = newObsPromptDetectCallback;
 }
-
 
 void CBootloaderPrompt::reset() {
 	this->state = EBootloader::Stage::RX_FLUSH;
@@ -74,10 +72,10 @@ void CBootloaderPrompt::probe()
 {
   static const uint8_t probeSeq[] = "\n";
 	this->state = EBootloader::Stage::PROBE;
-	if (this->bootloaderWriteFunc) {
+	if (this->serialWriteFunc) {
     size_t writtenBytes;
     clogD << "Starting probe\n";
-    this->bootloaderWriteFunc(writtenBytes, probeSeq, sizeof(probeSeq) -1 );  /* We don't send the terminating '\0' of probeSeq */
+		this->serialWriteFunc(writtenBytes, probeSeq, sizeof(probeSeq) -1 );  /* We don't send the terminating '\0' of probeSeq */
   }
   else
   {
@@ -93,12 +91,11 @@ bool CBootloaderPrompt::selectModeRun()
     clogE << "Cannot type command without a valid prompt\n";
     return false;
   }
-  if (this->bootloaderWriteFunc)
-  {
+	if (this->serialWriteFunc) {
     size_t writtenBytes;
     clogD << "Entering run command\n";
-	this->state = EBootloader::Stage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
-    this->bootloaderWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
+		this->state = EBootloader::Stage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
+		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
   }
   else
   {
@@ -114,13 +111,12 @@ bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback)
     clogE << "Cannot type command without a valid prompt\n";
     return false;
   }
-  if (this->bootloaderWriteFunc)
-  {
+	if (this->serialWriteFunc) {
     size_t writtenBytes;
     clogD << "Entering upload ebl command\n";
-	this->state = EBootloader::Stage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
+		this->state = EBootloader::Stage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
     this->firmwareTransferStartFunc = callback;
-    this->bootloaderWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
+		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
   }
   else
   {
