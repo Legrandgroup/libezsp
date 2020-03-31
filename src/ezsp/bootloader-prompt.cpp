@@ -50,8 +50,14 @@ void CBootloaderPrompt::trigger(NSSPI::ITimer* triggeringTimer)
   this->probe();
 }
 
-void CBootloaderPrompt::registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc) {
+void CBootloaderPrompt::registerSerialWriter(FBootloaderWriteFunc newWriteFunc) {
 	this->serialWriteFunc = newWriteFunc;
+}
+
+void CBootloaderPrompt::registerSerialWriter(NSSPI::IUartDriverHandle uartHandle) {
+	this->registerSerialWriter([uartHandle](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
+		return uartHandle->write(writtenCnt, buf, cnt);
+	});
 }
 
 void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback)
@@ -59,7 +65,7 @@ void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> 
   this->promptDetectCallback = newObsPromptDetectCallback;
 }
 
-bool CBootloaderPrompt::hasARegisteredSerialWriteFunc() const {
+bool CBootloaderPrompt::hasARegisteredSerialWriter() const {
 	return (this->serialWriteFunc != nullptr);
 }
 

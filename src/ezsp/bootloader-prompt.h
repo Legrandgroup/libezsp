@@ -12,6 +12,7 @@
 
 #include "spi/TimerBuilder.h"
 #include "spi/ByteBuffer.h"
+#include "spi/IUartDriver.h"
 #include "ezsp/enum-generator.h"
 
 namespace NSEZSP {
@@ -60,19 +61,28 @@ public:
 
     CBootloaderPrompt& operator=(CBootloaderPrompt) = delete; /* No assignment allowed */
 
-    /**
-     * @brief Register a serial write functor
-     *
-     * @param newWriteFunc A callback function of type int func(size_t& writtenCnt, const void* buf, size_t cnt), that we will invoke to write bytes to the serial port we are decoding (or nullptr to disable callbacks)
-     */
-    void registerSerialWriteFunc(FBootloaderWriteFunc newWriteFunc);
+	/**
+	 * @brief Register a serial writer functor
+	 *
+	 * @param newWriteFunc A callback function of type int func(size_t& writtenCnt, const void* buf, size_t cnt), that we will invoke to write bytes to the serial port we are decoding (or nullptr to disable callbacks)
+	 */
+	void registerSerialWriter(FBootloaderWriteFunc newWriteFunc);
 
 	/**
-	 * @brief Check if a serial write functor is registered
+	 * @brief Register a serial writer functor that writes to the given uartHandle
 	 *
-	 * @return true if a serial write functor is active or false otherwise
+	 * @param uartHandle A UART handle to use to write to the serial port
+	 * 
+	 * @note This is a shortcut equivalent to registering a callback using registerSerialWriter() with a FAshDriverWriteFunc argument
 	 */
-	bool hasARegisteredSerialWriteFunc() const;
+	void registerSerialWriter(NSSPI::IUartDriverHandle uartHandle);
+
+	/**
+	 * @brief Check if a serial writer functor is registered
+	 *
+	 * @return true if a serial writer functor is active or false otherwise
+	 */
+	bool hasARegisteredSerialWriter() const;
 
     /**
      * @brief Register a prompt detection callback

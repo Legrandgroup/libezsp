@@ -30,17 +30,13 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
 	this->uartHandle = uartHandle;
-	if (this->ash.hasARegisteredSerialWriteFunc()) {
-		/* If ash knows a way to write to the serial port, update the callback to use the new uartHandle */
-		this->ash.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-            return this->uartHandle->write(writtenCnt, buf, cnt);
-        });
+	if (this->ash.hasARegisteredSerialWriter()) {
+		/* If ash knows a way to write to the serial port, update it writer functor to use the new uartHandle */
+		this->ash.registerSerialWriter(uartHandle);
 	}
-	if (this->blp.hasARegisteredSerialWriteFunc()) {
-		/* If blp knows a way to write to the serial port, update the callback to use the new uartHandle */
-		this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-			return this->uartHandle->write(writtenCnt, buf, cnt);
-		});
+	if (this->blp.hasARegisteredSerialWriter()) {
+		/* If blp knows a way to write to the serial port, update it writer functor to use the new uartHandle */
+		this->blp.registerSerialWriter(uartHandle);
 	}
 }
 
@@ -48,16 +44,15 @@ bool CEzspDongle::reset() {
 	NSSPI::ByteBuffer l_buffer;
 	size_t l_size;
 
-	if (this->uartHandle == nullptr) {
+	if (!this->uartHandle) {
 		clogE << "No UART usable driver when invoking reset()\n";
 		return false;
 	}
 	else {
-		// Send a ASH reset to the NCP
-		this->ash.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-			return this->uartHandle->write(writtenCnt, buf, cnt);
-		});    /* Allow the blp object to write to the serial port via our own pUart attribute */
+		/* Allow the blp object to write to the serial port via our own uartHandle attribute */
+		this->ash.registerSerialWriter(this->uartHandle);
 		
+        /* Send a ASH reset to the NCP */
 		if (!this->ash.sendResetNCPFrame()) {
 			clogE << "Failed sending reset frame to serial port\n";
 			return false;
@@ -236,9 +231,8 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
         && (requestedMode == CEzspDongle::Mode::EZSP_NCP || requestedMode == CEzspDongle::Mode::BOOTLOADER_EXIT_TO_EZSP_NCP)) {
         /* We are requested to get out of the booloader */
         this->lastKnownMode = requestedMode;
-        this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-            return this->uartHandle->write(writtenCnt, buf, cnt);
-        });    /* Allow the blp object to write to the serial port via our own pUart attribute */
+		/* Allow the blp object to write to the serial port via our own pUart attribute */
+		this->blp.registerSerialWriter(this->uartHandle);
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
@@ -254,9 +248,8 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
         clogD << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
-        this->blp.registerSerialWriteFunc([this](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
-            return this->uartHandle->write(writtenCnt, buf, cnt);
-        });    /* Allow the blp object to write to the serial port via our own pUart attribute */
+		/* Allow the blp object to write to the serial port via our own pUart attribute */
+		this->blp.registerSerialWriter(this->uartHandle);
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             /* Note: we provide selectModeUpgradeFw() with a callback that will be invoked when the firmware image transfer over serial link can start */

@@ -54,11 +54,17 @@ void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
 	}
 }
 
-void AshDriver::registerSerialWriteFunc(FAshDriverWriteFunc newWriteFunc) {
+void AshDriver::registerSerialWriter(FAshDriverWriteFunc newWriteFunc) {
 	this->serialWriteFunc = newWriteFunc;
 }
 
-bool AshDriver::hasARegisteredSerialWriteFunc() const {
+void AshDriver::registerSerialWriter(NSSPI::IUartDriverHandle uartHandle) {
+	this->registerSerialWriter([uartHandle](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
+		return uartHandle->write(writtenCnt, buf, cnt);
+	});
+}
+
+bool AshDriver::hasARegisteredSerialWriter() const {
 	return (this->serialWriteFunc != nullptr);
 }
 
