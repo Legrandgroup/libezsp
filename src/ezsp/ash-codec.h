@@ -110,7 +110,6 @@ private:
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
 	NSSPI::ByteBuffer in_msg; /*!< Currently accumulated buffer */
-
 };
 
 /**
