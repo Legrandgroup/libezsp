@@ -1,5 +1,5 @@
 /**
- * @file ash.h
+ * @file ash-codec.h
  *
  * @brief ASH protocol decoder/encoder
  **/

@@ -7,7 +7,7 @@
 
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
-#include "ash.h"
+#include "ash-codec.h"
 #include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
 #include <spi/GenericAsyncDataInputObservable.h>
