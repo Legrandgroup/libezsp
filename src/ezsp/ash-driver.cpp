@@ -54,6 +54,10 @@ void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
 	}
 }
 
+void AshDriver::registerSerialWriteFunc(FAshDriverWriteFunc newWriteFunc) {
+	this->serialWriteFunc = newWriteFunc;
+}
+
 NSSPI::ByteBuffer AshDriver::sendResetNCPFrame(void) {
 	return this->ashCodec.resetNCPFrame();
 }
