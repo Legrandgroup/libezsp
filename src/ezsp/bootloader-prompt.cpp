@@ -152,7 +152,6 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data) 
 		this->state = EBootloader::Stage::XMODEM_XFR;
         this->firmwareTransferStartFunc();  /* Invoke the firmware transfer ready function that has been set in selectModeUpgradeFw() */
         this->firmwareTransferStartFunc = nullptr;  /* Remove the callback */
-        this->probe();  /* Restart probing to find out if we are back in the bootloader prompt */
       }
     }
   }
