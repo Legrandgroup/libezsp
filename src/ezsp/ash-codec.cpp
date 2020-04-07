@@ -39,29 +39,15 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-AshCodec::AshCodec(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
+AshCodec::AshCodec(CAshCallback* ipCb, std::function<void (void)> ackTimeoutCancelFunc) :
 	pCb(ipCb),
 	ackNum(0),
 	frmNum(0),
 	ezspSeqNum(0),
 	stateConnected(false),
-	ackTimer(i_timer_builder.create()),
+	ackTimerCancelFunc(ackTimeoutCancelFunc),
 	in_msg()
 {
-}
-
-void AshCodec::trigger(NSSPI::ITimer* triggeringTimer) {
-    if( !stateConnected )
-    {
-        if( nullptr != pCb )
-        {
-            pCb->ashCbInfo(ASH_RESET_FAILED);
-        }
-    }
-    else
-    {
-        clogE << "ASH timeout while connected\n";
-    }
 }
 
 bool AshCodec::isInConnectedState() const {
@@ -75,9 +61,11 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
 	this->stateConnected = false;
     NSSPI::ByteBuffer lo_msg;
 
-	this->ackTimer->stop();
+	if (ackTimerCancelFunc) {
+		this->ackTimerCancelFunc();	/* Cancel any existing armed ack timeout */
+	}
 	if (this->pCb) {
-		pCb->ashCbInfo(ASH_STATE_DISCONNECTED);
+		this->pCb->ashCbInfo(ASH_STATE_DISCONNECTED);
 	}
 
     lo_msg.push_back(0xC0);
@@ -89,9 +77,6 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
 	lo_msg = addByteStuffing(lo_msg);
 
     lo_msg.insert( lo_msg.begin(), ASH_CANCEL_BYTE );
-
-	// start timer
-	this->ackTimer->start( T_ACK_ASH_RESET, this);
 
     return lo_msg;
 }
@@ -145,10 +130,6 @@ NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
 	lo_msg.push_back(u16_get_hi_u8(crc));
 	lo_msg.push_back(u16_get_lo_u8(crc));
 
-	// start timer
-	this->ackTimer->stop();
-	this->ackTimer->start(T_RX_ACK_INIT, this);
-
 	return addByteStuffing(lo_msg);
 }
 
@@ -173,7 +154,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 			clogE << "Received a wrong ack num: " << +(remoteAckNum) << ", expected: " << +(expectedAckNum) << "\n";
 		}
 		else {
-			this->ackTimer->stop();  /* Stop any possibly existing timer that was waiting for an ACK */
+			if (this->ackTimerCancelFunc) {
+				this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
+			}
 		}
 		/* In any case (ACK correct or not), update increase our frame number for the next transmition */
 		this->ackNum = remoteAckNum;
@@ -207,7 +190,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		// ACK
 		//-- clogD << "AshCodec::decode ACK\n";
     lo_msg.clear();
-		this->ackTimer->stop();
+		if (this->ackTimerCancelFunc) {
+			this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
+		}
 
 		if (this->pCb != nullptr) {
 			pCb->ashCbInfo(ASH_ACK);
@@ -221,7 +206,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 
     //LOGGER(logTRACE) << "<-- RX ASH NACK Frame !! : 0x" << QString::number(lo_msg.at(0),16).toUpper().rightJustified(2,'0');
     lo_msg.clear();
-		this->ackTimer->stop();
+		if (this->ackTimerCancelFunc) {
+			this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
+		}
 
 		if( nullptr != pCb ) {
 			pCb->ashCbInfo(ASH_NACK);
@@ -229,7 +216,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 	}
 	else if (ashControlByte == 0xC0) {  /* RST */
 		lo_msg.clear();
-		this->ackTimer->stop();
+		if (this->ackTimerCancelFunc) {
+			this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
+		}
 		clogD << "AshCodec::decode RST\n";
   }
 	else if (ashControlByte == 0xC1) { /* RSTACK */
@@ -250,7 +239,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
           || resetCode == 0x02 /* Power on */
          ) {
 				this->stateConnected = true;
-				this->ackTimer->stop();
+				if (this->ackTimerCancelFunc) {
+					this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
+				}
 				if (pCb) {
 					pCb->ashCbInfo(ASH_STATE_CONNECTED);
 				}

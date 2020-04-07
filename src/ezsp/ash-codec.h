@@ -24,8 +24,7 @@ class CAshCallback;     /* Forward declaration */
 	XX(ASH_STATE_DISCONNECTED,) \
 	XX(ASH_STATE_CONNECTED,) \
 
-class AshCodec : protected NSSPI::ITimerVisitor
-{
+class AshCodec {
 public:
 	/**
 	 * @brief Current state for the ASH decoder
@@ -39,15 +38,27 @@ public:
 
 	AshCodec() = delete; /* Construction without arguments is not allowed */
 
-    /**
-     * @param ipCb Callback invoked on ASH state change
-     * @param i_timer_builder Timer builder object used to generate timers
-     */
-	AshCodec(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
+	/**
+	 * Constructor
+	 *
+	 * @param ipCb Callback invoked on ASH state change
+	 * @param ackTimeoutCancelFunc A function callback invoked to cancel a running ack timeout (run when a proper ack is received)
+	 */
+	AshCodec(CAshCallback *ipCb, std::function<void (void)> ackTimeoutCancelFunc = nullptr);
 
-	AshCodec(const AshCodec&) = delete; /* No copy construction allowed */
+	/**
+	 * Copy constructor
+	 *
+	 * @warning No copy construction allowed
+	 */
+	AshCodec(const AshCodec&) = delete;
 
-	AshCodec& operator=(AshCodec) = delete; /* No assignment allowed */
+	/**
+	 * Assignment operator
+	 *
+	 * @warning No assignment is allowed
+	 */
+	AshCodec& operator=(AshCodec) = delete;
 
 	/**
 	 * @brief Check whether we are in ASH connected state or not
@@ -55,6 +66,15 @@ public:
 	 * @return true if we are in ASH connected state
 	 */
 	bool isInConnectedState() const;
+
+	/**
+	 * @brief Select the callback to invoke to cancel an ack timer
+	 * 
+	 * @param ackTimeoutCancelFunc The callback function to invoke (or nullptr to disable this callback)
+	 */
+	void setAckTimeoutCancelFunc(std::function<void (void)> ackTimeoutCancelFunc) {
+		this->ackTimerCancelFunc = ackTimeoutCancelFunc;
+	}
 
     NSSPI::ByteBuffer resetNCPFrame(void);
 
@@ -112,11 +132,11 @@ private:
 public:
 	CAshCallback *pCb;
 private:
+	std::function<void (void)> ackTimerCancelFunc;	/*!< The function we will invoke to cancel an ack timeout */
 	uint8_t ackNum; /*!< The sequence number of the next frame we are expecting, meaning we acknowlegde reception of the the last frame received with sequence number ackNum-1 */
 	uint8_t frmNum; /*!< The sequence number of the next data frame originated by us */
 	uint8_t ezspSeqNum;	/*!< FIXME: should be moved out of ASH, this is EZSP specific. The EZSP sequence number (wrapping 0-255 counter) */
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
-	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
 	NSSPI::ByteBuffer in_msg; /*!< Currently accumulated buffer */
 };
 

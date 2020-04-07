@@ -38,9 +38,14 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
-	ashCodec(ipCb, i_timer_builder /*FIXME: timer should only be used inside driver*/),
 	ackTimer(i_timer_builder.create()),
+	ashCodec(ipCb),
 	serialWriteFunc(nullptr) {
+	/* Tell the codec that it should invoke cancelTimer() below to cancel ACk timeoutes when a proper ASH ACK is received */
+
+	this->ashCodec.setAckTimeoutCancelFunc([this]() {
+		this->ackTimer->stop();
+	});
 }
 
 void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
@@ -69,6 +74,9 @@ bool AshDriver::hasARegisteredSerialWriter() const {
 }
 
 bool AshDriver::sendResetNCPFrame(void) {
+
+	this->ackTimer->stop();	/* Stop any possibly running timer */
+
 	NSSPI::ByteBuffer resetFrame(this->ashCodec.resetNCPFrame());
 	size_t writtenBytes = 0;
 
@@ -84,6 +92,9 @@ bool AshDriver::sendResetNCPFrame(void) {
 		clogE << "Reset frame not fully written to serial port\n";
 		return false;
 	}
+	/* Start RESET confirmation timer */
+	this->ackTimer->start(T_ACK_ASH_RESET, this);
+
 	return true;
 }
 
@@ -93,6 +104,9 @@ NSSPI::ByteBuffer AshDriver::sendAckFrame(void) {
 
 NSSPI::ByteBuffer AshDriver::sendDataFrame(NSSPI::ByteBuffer i_data) {
 	return this->ashCodec.DataFrame(i_data);
+	/* Start ack timer */
+	this->ackTimer->stop();
+	this->ackTimer->start(T_RX_ACK_INIT, this);
 }
 
 NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {

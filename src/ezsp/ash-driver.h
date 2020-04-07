@@ -78,8 +78,8 @@ protected:
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
-	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
+	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
 	FAshDriverWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
 };
 
