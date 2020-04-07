@@ -119,12 +119,12 @@ public:
      */
     bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
 
-    /**
-     * @brief Decode new incoming bytes output by the bootloader
-     * 
-     * @param i_data New bytes to add to the previously accumulated ones
-     */
-    EBootloader::Stage decode(NSSPI::ByteBuffer& i_data);
+	/**
+	 * @brief Decode new incoming bytes output by the bootloader
+	 * 
+	 * @param i_data New bytes to add to the previously accumulated ones
+	 */
+	EBootloader::Stage appendIncoming(NSSPI::ByteBuffer& i_data);
 
 protected:
     /**

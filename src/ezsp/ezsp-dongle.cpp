@@ -155,7 +155,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
         {
             /* No ash decoding in bootloader mode */
             /* When switching to the bootloader, we are expecting a prompt (see class CBootloaderPrompt for more details) */
-            blp.decode(li_data);
+			blp.appendIncoming(li_data);
         }
     }
 }

@@ -135,7 +135,7 @@ bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback)
   return true;
 }
 
-NSEZSP::EBootloader::Stage CBootloaderPrompt::decode(NSSPI::ByteBuffer& i_data) {
+NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& i_data) {
   uint8_t val;
 
   if (i_data.empty())

@@ -77,7 +77,7 @@ bool AshDriver::sendResetNCPFrame(void) {
 
 	this->ackTimer->stop();	/* Stop any possibly running timer */
 
-	NSSPI::ByteBuffer resetFrame(this->ashCodec.resetNCPFrame());
+	NSSPI::ByteBuffer resetFrame(this->ashCodec.forgeResetNCPFrame());
 	size_t writtenBytes = 0;
 
 	if (!this->serialWriteFunc) {
@@ -99,18 +99,18 @@ bool AshDriver::sendResetNCPFrame(void) {
 }
 
 NSSPI::ByteBuffer AshDriver::sendAckFrame(void) {
-	return this->ashCodec.AckFrame();
+	return this->ashCodec.forgeAckFrame();
 }
 
 NSSPI::ByteBuffer AshDriver::sendDataFrame(NSSPI::ByteBuffer i_data) {
-	return this->ashCodec.DataFrame(i_data);
+	return this->ashCodec.forgeDataFrame(i_data);
 	/* Start ack timer */
 	this->ackTimer->stop();
 	this->ackTimer->start(T_RX_ACK_INIT, this);
 }
 
 NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {
-	return this->ashCodec.decode(i_data);
+	return this->ashCodec.appendIncoming(i_data);
 }
 
 bool AshDriver::isConnected() const {

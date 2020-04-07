@@ -54,7 +54,7 @@ bool AshCodec::isInConnectedState() const {
 	return this->stateConnected;
 }
 
-NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
+NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
 	this->ackNum = 0;
 	this->frmNum = 0;
 	this->ezspSeqNum = 0;
@@ -81,7 +81,7 @@ NSSPI::ByteBuffer AshCodec::resetNCPFrame(void) {
     return lo_msg;
 }
 
-NSSPI::ByteBuffer AshCodec::AckFrame(void) {
+NSSPI::ByteBuffer AshCodec::forgeAckFrame(void) {
   NSSPI::ByteBuffer lo_msg;
 
 	uint8_t ashControlByte = this->ackNum | 0x80;
@@ -95,7 +95,7 @@ NSSPI::ByteBuffer AshCodec::AckFrame(void) {
 	return addByteStuffing(lo_msg);
 }
 
-NSSPI::ByteBuffer AshCodec::DataFrame(NSSPI::ByteBuffer i_data) {
+NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
   NSSPI::ByteBuffer lo_msg;
 
   /*
@@ -264,7 +264,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
   }
 }
 
-NSSPI::ByteBuffer AshCodec::decode(NSSPI::ByteBuffer& i_data) {
+NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
   /**
    * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
    */

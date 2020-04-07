@@ -76,13 +76,35 @@ public:
 		this->ackTimerCancelFunc = ackTimeoutCancelFunc;
 	}
 
-    NSSPI::ByteBuffer resetNCPFrame(void);
+	/**
+	 * @brief Create an ASH Reset NCP frame
+	 * 
+	 * @return The ASH frame as a buffer
+	 */
+	NSSPI::ByteBuffer forgeResetNCPFrame(void);
 
-    NSSPI::ByteBuffer AckFrame(void);
+	/**
+	 * @brief Create an ASH ack frame
+	 * 
+	 * @return The ASH frame as a buffer
+	 */
+	NSSPI::ByteBuffer forgeAckFrame(void);
 
-    NSSPI::ByteBuffer DataFrame(NSSPI::ByteBuffer i_data);
+	/**
+	 * @brief Create an ASH data frame containing i_data as payload and return it
+	 * 
+	 * @param i_data The EZSP payload to be carried by the ASH frame
+	 * 
+	 * @return The ASH frame as a buffer
+	 */
+	NSSPI::ByteBuffer forgeDataFrame(NSSPI::ByteBuffer i_data);
 
-    NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
+	/**
+	 * @brief Decode new incoming bytes received from the adapter
+	 * 
+	 * @param i_data New bytes to add to the previously accumulated ones
+	 */
+	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer &i_data);
 
 	/**
 	 * @brief Compute an ASH CRC16 on a speficied buffer
