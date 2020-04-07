@@ -75,23 +75,46 @@ char portname[] = "/dev/ttyUSB0";
 
 int sp;
 
+/**
+ * @brief Timed read of one byte from device associated with the global filedescriptor sp
+ *
+ * @param timeout The timeout to read a byte (in ms)
+ *
+ * @return The byte read, or -1 if there was a failure or -2 if no byte was available after the timeout was reached
+**/
 int _inbyte(unsigned short timeout) { /* timeout in ms */
     unsigned char buf;
     
     ssize_t n = read(sp, &buf, 1);
     if (n<0) {
         printf("Error %d while reading from serial port\n", errno);
+    }
+    if (n<=0) {
         return -1;
     }
     return buf;
 }
 
+/**
+ * @brief Write one byte to the device associated with the global filedescriptor sp
+ *
+ * @param c The byte to write
+ *
+ * @note Parameter @p c should have a value between 0x00 and 0xff included
+**/
 void _outbyte(int c) {
     
     unsigned char byte = c;
     write(sp, &byte, 1);
 }
 
+/**
+ * @brief Read a chunk of xmodemSize bytes from the input image file
+ *
+ * @param[in] context A FILE* handle to the input image file (casted as void*)
+ * @param[in] xmodemBuffer A pointer to the memory to fill with the chunk read from the input file
+ * @param xmodemSize The size of the chunk to read
+**/
 void myFetchChunk(void *context, void *xmodemBuffer, int xmodemSize) {
     
     FILE* fp = (FILE*)context;
@@ -109,6 +132,10 @@ void myFetchChunk(void *context, void *xmodemBuffer, int xmodemSize) {
 }
 
 #ifdef TEST_XMODEM_RECEIVE
+/**
+ * Note: this code is obsolete (it uses hardcoded memory areas, and should be adapter for Linux
+ * Only yhe sending code has been adapted
+**/
 int main(void)
 {
 	int st;
