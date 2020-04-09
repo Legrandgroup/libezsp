@@ -497,16 +497,22 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_
 		clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
 	}
 	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << static_cast<unsigned int>(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getStateAsString(this->getState()) << "\n";
-	if( EMBER_NO_NETWORK == i_msg_receive.at(0) )
-	{
-		// We create a network on the required channel
-		if (this->getState() == CLibEzspInternal::State::STACK_INIT)
-		{
-			clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
-			zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
-			//set new state
-			this->setState(CLibEzspInternal::State::FORM_NWK_IN_PROGRESS);
-			this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
+	if (i_msg_receive.at(0) == EMBER_NO_NETWORK) {
+		/* No network exists on the dongle */
+		clogD << "No pre-existing network on the EZSP adapter\n";
+		if (this->resetDot154ChannelAtInit == 0) {
+			clogE << "No channel value has been provided and no network is configured in the adapter at init. Cannot continue initialization\n";
+			this->setState(CLibEzspInternal::State::INIT_FAILED);
+		}
+		else {
+			/* We create a network on the required channel */
+			if (this->getState() == CLibEzspInternal::State::STACK_INIT) {
+				clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
+				zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
+				/* Update our internal state, we are now waiting for a network creation success (EZSP_STACK_STATUS_HANDLER with status==EMBER_NETWORK_UP */
+				this->setState(CLibEzspInternal::State::FORM_NWK_IN_PROGRESS);
+				this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
+			}
 		}
 	}
 	else
