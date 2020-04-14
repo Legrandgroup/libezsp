@@ -1,6 +1,6 @@
 /***
  * @file bootloader-prompt.h
- * 
+ *
  * @brief Ember bootloader CLI decoder
  */
 
@@ -41,12 +41,12 @@ public:
 
 class BootloaderPromptDriver : protected NSSPI::ITimerVisitor {
 public:
-    static const std::string GECKO_BOOTLOADER_HEADER;
-    static const std::string GECKO_BOOTLOADER_PROMPT;
-    static const uint16_t GECKO_QUIET_RX_TIMEOUT;
+	static const std::string GECKO_BOOTLOADER_HEADER;
+	static const std::string GECKO_BOOTLOADER_PROMPT;
+	static const uint16_t GECKO_QUIET_RX_TIMEOUT;
 
-    typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
-    typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
+	typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
+	typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
 
 	/**
 	 * @brief Constructor
@@ -88,7 +88,7 @@ public:
 	 * @brief Register a serial writer functor that writes to the given uartHandle
 	 *
 	 * @param uartHandle A UART handle to use to write to the serial port
-	 * 
+	 *
 	 * @note This is a shortcut equivalent to registering a callback using registerSerialWriter() with a FAshDriverWriteFunc argument
 	 */
 	void registerSerialWriter(NSSPI::IUartDriverHandle uartHandle);
@@ -100,69 +100,69 @@ public:
 	 */
 	bool hasARegisteredSerialWriter() const;
 
-    /**
-     * @brief Register a prompt detection callback
-     *
-     * @param newObsPromptDetectCallback A callback function of that we will invoke each time we reach a bootloader prompt (or nullptr to disable callbacks)
-     */
-    void registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback);
+	/**
+	 * @brief Register a prompt detection callback
+	 *
+	 * @param newObsPromptDetectCallback A callback function of that we will invoke each time we reach a bootloader prompt (or nullptr to disable callbacks)
+	 */
+	void registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback);
 
-    /**
-     * @brief Reset the bootloader parser state
-     */
-    void reset();
+	/**
+	 * @brief Reset the bootloader parser state
+	 */
+	void reset();
 
-    /**
-     * @brief Start probing for a bootloader prompt
-     *
-     * We will try to stroke the prompt by entering a LF character in order to get an Ember serial bootloader header+prompt
-     */
-    void probe();
+	/**
+	 * @brief Start probing for a bootloader prompt
+	 *
+	 * We will try to stroke the prompt by entering a LF character in order to get an Ember serial bootloader header+prompt
+	 */
+	void probe();
 
-    /**
-     * @brief Select the application run bootloader menu
-     * 
-     * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
-     */
-    bool selectModeRun();
+	/**
+	 * @brief Select the application run bootloader menu
+	 *
+	 * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
+	 */
+	bool selectModeRun();
 
-    /**
-     * @brief Select the firmware upgrade bootloader menu
-     * 
-     * @param callback Is a method of type void func(void) that will be invoked when the bootloader is waiting for an image transfer
-     * 
-     * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
-     */
-    bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
+	/**
+	 * @brief Select the firmware upgrade bootloader menu
+	 *
+	 * @param callback Is a method of type void func(void) that will be invoked when the bootloader is waiting for an image transfer
+	 *
+	 * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
+	 */
+	bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
 
 	/**
 	 * @brief Decode new incoming bytes output by the bootloader
-	 * 
+	 *
 	 * @param i_data New bytes to add to the previously accumulated ones
 	 */
 	EBootloader::Stage appendIncoming(NSSPI::ByteBuffer& i_data);
 
 protected:
-    /**
-     * @brief Internal method invoked on timeouts
-     */
-    void trigger(NSSPI::ITimer* triggeringTimer);
-    
-    /**
-     * @brief Trim a string (removing leading and trailing whitespaces)
-     * @param s The string to trim
-     * @return A copy of @p s, without leading and trailing whitespaces
-     */
-    static std::string trim(const std::string &s);
+	/**
+	 * @brief Internal method invoked on timeouts
+	 */
+	void trigger(NSSPI::ITimer* triggeringTimer);
+
+	/**
+	 * @brief Trim a string (removing leading and trailing whitespaces)
+	 * @param s The string to trim
+	 * @return A copy of @p s, without leading and trailing whitespaces
+	 */
+	static std::string trim(const std::string &s);
 
 private:
-    std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
-    NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
-    bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
-    EBootloader::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
+	std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
+	NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
+	bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
+	EBootloader::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
 	FBootloaderWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
-    std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
-    FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
+	std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
+	FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
 };
 
 }
