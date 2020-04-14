@@ -6,6 +6,7 @@
 
 #include "MockUartDriver.h"
 
+#include "spi/ILogger.h"
 #include <exception>
 #include <cstring>	// For memcpy()
 #include <sstream>	// For std::stringstream
@@ -129,12 +130,8 @@ std::string MockUartDriver::scheduledIncomingChunksToString() {
 			result << ", ";	/* Add a separator */
 		nextChunk = scheduledReadQueueCopy.front();
 		NSSPI::ByteBuffer bytes(nextChunk.byteBuffer);
-		for(auto it = bytes.begin(); it!=bytes.end(); ++it) {
-			if (it != bytes.begin())
-				result << " ";
-			result << std::hex << std::setw(2) << std::setfill('0') << unsigned(*it);
-		}
-	    scheduledReadQueueCopy.pop();
+		result << NSSPI::Logger::byteSequenceToString(bytes);
+		scheduledReadQueueCopy.pop();
 	}
 	return "[" + result.str() + "]";
 }

@@ -383,11 +383,9 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	uint8_t ezspProtocolVersion;
 	uint8_t ezspStackType;
 	uint16_t ezspStackVersion;
-	std::stringstream bufDump;
 	bool truncatedVersion = false;  /* Flag set to true when receiving a truncated EZSP_VERSION payload */
 	bool acceptableVersion = false; /* Flag set to true when the version received from the EZSP adapter is acceptable for us */
-	for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
-	clogD << "Got EZSP_VERSION payload:" << bufDump.str() << "\n";
+	clogD << "Got EZSP_VERSION payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
 	// Check if the wanted protocol version, and display stack version
 	if (i_msg_receive.size() == 2) {
 		clogW << "Got a truncated EZSP version frame from a buggy NCP, using only the 2 last bytes\n";
@@ -453,11 +451,8 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	}
 }
 
-void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive)
-{
-    std::stringstream bufDump;
-    for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
-    //clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
+void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive) {
+	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
 
     if (i_msg_receive.size() < 5)
     {
@@ -709,14 +704,9 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         default:
         {
-            /* DEBUG VIEW
-            std::stringstream bufDump;
-
-            for (size_t i =0; i<i_msg_receive.size(); i++) {
-                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
-            }
-            clogI << "CAppDemo::ezspHandler : " << bufDump.str() << std::endl;
-            */
+			/* DEBUG VIEW
+			clogI << "Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+			*/
         }
         break;
     }

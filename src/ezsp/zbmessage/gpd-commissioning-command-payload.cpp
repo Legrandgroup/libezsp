@@ -9,6 +9,7 @@
 #include <cstring>
 
 #include "ezsp/byte-manip.h"
+#include "spi/ILogger.h"
 #include "spi/AesBuilder.h"
 #include "ezsp/zbmessage/gpd-commissioning-command-payload.h"
 
@@ -144,18 +145,16 @@ std::string CGpdCommissioningPayload::String() const
     buf << "[device_id : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(device_id) << "]";
     buf << "[options : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(options) << "]";
     buf << "[extended_options : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(extended_options) << "]";
-    buf << "[key : ";
-    for(uint8_t loop=0; loop<key.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(key[loop]); }
-    buf << "]";
+	buf << "[key: " << NSSPI::Logger::byteSequenceToString(key) << "]";
     buf << "[key_mic : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(key_mic) << "]";
     buf << "[out_frame_counter : "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(out_frame_counter) << "]";
     buf << "[app_information : "<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(app_information) << "]";
     buf << "[manufacturer_id : "<< std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(manufacturer_id) << "]";
     buf << "[model_id : "<< std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(model_id) << "]";
-    buf << "[gpd_command_list :";
+	buf << "[gpd_command_list:";
     for(uint8_t loop=0; loop<gpd_command_list.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(gpd_command_list[loop]); }
     buf << "]";
-    buf << "[gpd_cluster_list :";
+	buf << "[gpd_cluster_list:";
     for(uint8_t loop=0; loop<gpd_cluster_list.size(); loop++){ buf << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(gpd_cluster_list[loop]); }
     buf << "]";
     buf << " }";
