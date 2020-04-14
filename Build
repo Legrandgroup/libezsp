@@ -35,6 +35,8 @@ pp_build_local () {
 	-DCMAKE_C_FLAGS="${FW_CFLAGS_3RDPARTY}" \
 	-DCMAKE_CXX_FLAGS="${FW_CXXFLAGS_3RDPARTY}" \
 	-DCMAKE_LD_FLAGS="${FW_LDFLAGS_3RDPARTY}" \
+	-DUSE_RARITAN=ON \
+	-DUSE_AESCUSTOM=ON \
 	..
     make
     make install
