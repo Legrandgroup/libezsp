@@ -1,7 +1,7 @@
 /**
- * @file bootloader-prompt.cpp
+ * @file bootloader-prompt-driver.cpp
  *
- * @brief Ember bootloader CLI decoder
+ * @brief Ember bootloader CLI prompt interaction driver
  **/
 
 #include <iostream>
