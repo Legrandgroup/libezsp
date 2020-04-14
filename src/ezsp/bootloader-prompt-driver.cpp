@@ -10,15 +10,15 @@
 #include <sstream>
 #include <iomanip>
 
-#include "bootloader-prompt.h"
+#include "bootloader-prompt-driver.h"
 
 #include "spi/ILogger.h"
 
 DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::EBootloader);
 
-using NSEZSP::CBootloaderPrompt;
+using NSEZSP::BootloaderPromptDriver;
 
-CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder) :
+BootloaderPromptDriver::BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder) :
 	timer(i_timer_builder.create()),
 	accumulatedBytes(),
 	bootloaderCLIChecked(false),
@@ -29,8 +29,7 @@ CBootloaderPrompt::CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder)
 {
 }
 
-std::string CBootloaderPrompt::trim(const std::string &s)
-{
+std::string BootloaderPromptDriver::trim(const std::string &s) {
 	auto start = s.begin();
 	while (start != s.end() && (std::isspace(*start)!=0)) {
 		start++;
@@ -44,42 +43,39 @@ std::string CBootloaderPrompt::trim(const std::string &s)
 	return std::string(start, end + 1);
 }
 
-void CBootloaderPrompt::trigger(NSSPI::ITimer* triggeringTimer)
-{
+void BootloaderPromptDriver::trigger(NSSPI::ITimer* triggeringTimer) {
   clogD << "Initial flush is over\n";
   this->probe();
 }
 
-void CBootloaderPrompt::registerSerialWriter(FBootloaderWriteFunc newWriteFunc) {
+void BootloaderPromptDriver::registerSerialWriter(FBootloaderWriteFunc newWriteFunc) {
 	this->serialWriteFunc = newWriteFunc;
 }
 
-void CBootloaderPrompt::registerSerialWriter(NSSPI::IUartDriverHandle uartHandle) {
+void BootloaderPromptDriver::registerSerialWriter(NSSPI::IUartDriverHandle uartHandle) {
 	this->registerSerialWriter([uartHandle](size_t& writtenCnt, const uint8_t* buf, size_t cnt) -> int {
 		return uartHandle->write(writtenCnt, buf, cnt);
 	});
 }
 
-void CBootloaderPrompt::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback)
-{
+void BootloaderPromptDriver::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback) {
   this->promptDetectCallback = newObsPromptDetectCallback;
 }
 
-bool CBootloaderPrompt::hasARegisteredSerialWriter() const {
+bool BootloaderPromptDriver::hasARegisteredSerialWriter() const {
 	return (this->serialWriteFunc != nullptr);
 }
 
-void CBootloaderPrompt::reset() {
+void BootloaderPromptDriver::reset() {
 	this->state = EBootloader::Stage::RX_FLUSH;
   accumulatedBytes.clear();
   bootloaderCLIChecked = false;
   this->firmwareTransferStartFunc = nullptr;  /* Remove any callback for image transfer */
   /* If we don't receive any byte after GECKO_QUIET_RX_TIMEOUT ms, assume we have flushed the RX */
-  timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, this);
+	timer->start(BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT, this);
 }
 
-void CBootloaderPrompt::probe()
-{
+void BootloaderPromptDriver::probe() {
   static const uint8_t probeSeq[] = "\n";
 	this->state = EBootloader::Stage::PROBE;
 	if (this->serialWriteFunc) {
@@ -93,8 +89,7 @@ void CBootloaderPrompt::probe()
   }
 }
 
-bool CBootloaderPrompt::selectModeRun()
-{
+bool BootloaderPromptDriver::selectModeRun() {
   static const uint8_t cmdSeq[] = "2";
 
 	if (this->state != EBootloader::Stage::TOPLEVEL_MENU_PROMPT) {
@@ -114,7 +109,7 @@ bool CBootloaderPrompt::selectModeRun()
   return true;
 }
 
-bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback) {
+bool BootloaderPromptDriver::selectModeUpgradeFw(FFirmwareTransferStartFunc callback) {
   static const uint8_t cmdSeq[] = "1";
 
 	if (this->state != EBootloader::Stage::TOPLEVEL_MENU_PROMPT) {
@@ -135,7 +130,7 @@ bool CBootloaderPrompt::selectModeUpgradeFw(FFirmwareTransferStartFunc callback)
   return true;
 }
 
-NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& i_data) {
+NSEZSP::EBootloader::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
   uint8_t val;
 
   if (i_data.empty())
@@ -147,7 +142,7 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& 
     //clogD << "Received " << i_data.size() << " bytes while in flush mode (discarding)\n";
     i_data.clear();
     timer->stop();
-    timer->start(CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT, this);
+		timer->start(BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT, this);
     return state;
   }
 	else if (this->state == EBootloader::Stage::XMODEM_READY_CHAR_WAIT) {
@@ -195,7 +190,7 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& 
   msg << "\n";
   clogD << msg.str();
   clogD << "Equivalent string: \"" << str << "\"\n";
-  size_t blh = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_HEADER);
+	size_t blh = str.find(BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER);
   if (blh != std::string::npos)
   {
     /* We found the Gecko bootloader header, this is good news */
@@ -204,7 +199,7 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& 
     }
 		state = EBootloader::Stage::TOPLEVEL_MENU_HEADER;
     clogD << "Got bootloader header at position \"" << static_cast<unsigned int>(blh) << "\"\n";
-    accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh + CBootloaderPrompt::GECKO_BOOTLOADER_HEADER.length()); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
+		accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh + BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER.length()); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
     str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
   }
 	if (EBootloader::Stage::TOPLEVEL_MENU_HEADER == state) {
@@ -220,7 +215,7 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& 
   }
 	if (EBootloader::Stage::TOPLEVEL_MENU_HEADER == state ||
 	    EBootloader::Stage::TOPLEVEL_MENU_CONTENT == state) {
-    size_t blPrompt = str.find(CBootloaderPrompt::GECKO_BOOTLOADER_PROMPT);
+		size_t blPrompt = str.find(BootloaderPromptDriver::GECKO_BOOTLOADER_PROMPT);
     if (blPrompt != std::string::npos) {
 			state = EBootloader::Stage::TOPLEVEL_MENU_PROMPT;
       //clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
@@ -243,6 +238,6 @@ NSEZSP::EBootloader::Stage CBootloaderPrompt::appendIncoming(NSSPI::ByteBuffer& 
   return state;
 }
 
-const std::string CBootloaderPrompt::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
-const std::string CBootloaderPrompt::GECKO_BOOTLOADER_PROMPT = "BL >";
-const uint16_t CBootloaderPrompt::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */
+const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
+const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_PROMPT = "BL >";
+const uint16_t BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */

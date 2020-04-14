@@ -8,7 +8,7 @@
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include "spi/IUartDriver.h"
 #include "ash-driver.h"
-#include "bootloader-prompt.h"
+#include "bootloader-prompt-driver.h"
 #include "ezsp-dongle-observer.h"
 #include <spi/GenericAsyncDataInputObservable.h>
 #include "spi/TimerBuilder.h"
@@ -109,7 +109,7 @@ private:
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
-	NSEZSP::CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
+	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
     NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;

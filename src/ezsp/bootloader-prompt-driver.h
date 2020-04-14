@@ -39,8 +39,7 @@ public:
 	DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST);
 };
 
-class CBootloaderPrompt : protected NSSPI::ITimerVisitor
-{
+class BootloaderPromptDriver : protected NSSPI::ITimerVisitor {
 public:
     static const std::string GECKO_BOOTLOADER_HEADER;
     static const std::string GECKO_BOOTLOADER_PROMPT;
@@ -49,17 +48,34 @@ public:
     typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
     typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
 
-    CBootloaderPrompt() = delete; /* Construction without arguments is not allowed */
-    /**
-     * @brief Constructor
-     *
-     * @param i_timer_builder Timer builder object used to generate timers
-     */
-    explicit CBootloaderPrompt(const NSSPI::TimerBuilder& i_timer_builder);
+	/**
+	 * @brief Constructor
+	 *
+	 * Construction without arguments is not allowed
+	 */
 
-    CBootloaderPrompt(const CBootloaderPrompt&) = delete; /* No copy construction allowed */
+	BootloaderPromptDriver() = delete;
 
-    CBootloaderPrompt& operator=(CBootloaderPrompt) = delete; /* No assignment allowed */
+	/**
+	 * @brief Constructor
+	 *
+	 * @param i_timer_builder Timer builder object used to generate timers
+	 */
+	explicit BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder);
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * Copy construction is not allowed
+	 */
+	BootloaderPromptDriver(const BootloaderPromptDriver&) = delete;
+
+	/**
+	 * @brief Assignment operator
+	 *
+	 * Assignment is not allowed
+	 */
+	BootloaderPromptDriver& operator=(BootloaderPromptDriver) = delete; /* No assignment allowed */
 
 	/**
 	 * @brief Register a serial writer functor
