@@ -1,10 +1,9 @@
-#include "GenericAsyncDataInputObservable.h"
+#include <spi/GenericAsyncDataInputObservable.h>
+
+using NSSPI::GenericAsyncDataInputObservable;
 
 GenericAsyncDataInputObservable::GenericAsyncDataInputObservable() : observers() {
 
-}
-
-GenericAsyncDataInputObservable::~GenericAsyncDataInputObservable() {
 }
 
 bool GenericAsyncDataInputObservable::registerObserver(IAsyncDataInputObserver* observer) {

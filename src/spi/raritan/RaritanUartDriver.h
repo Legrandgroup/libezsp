@@ -9,13 +9,9 @@
 #include <pp/Selector.h>
 #include <pp/File.h>
 #include <pp/Tty.h>
-#include "../IUartDriver.h"
-#include "RaritanEventLoop.h"
+#include "spi/IUartDriver.h"
 
-#ifdef USE_RARITAN
-/**** Start of the official API; no includes below this point! ***************/
-#include <pp/official_api_start.h>
-#endif // USE_RARITAN
+namespace NSSPI {
 
 /**
  * @brief Class to interact with a UART in the Raritan framework
@@ -23,19 +19,12 @@
 class RaritanUartDriver : public IUartDriver {
 public:
 	/**
-	 * @brief Default constructor
-	 *
-	 * Construction without arguments is not allowed
-	 */
-	RaritanUartDriver() = delete;
-
-	/**
 	 * @brief Constructor
 	 *
-	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
+	 * @param selector An optional selector instance to use to run timers
 	 * @param uartIncomingDataHandler An observable instance that will notify its observer when one or more new bytes have been read, if =nullptr, no notification will be done
 	 */
-	RaritanUartDriver(RaritanEventLoop& eventLoop, GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
+	RaritanUartDriver(pp::Selector& selector = *pp::SelectorSingleton::getInstance(), GenericAsyncDataInputObservable* uartIncomingDataHandler = nullptr);
 
 	/**
 	 * @brief Copy constructor
@@ -71,7 +60,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 57600);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -84,7 +73,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Close the serial port
@@ -92,12 +81,10 @@ public:
 	void close();
 
 private:
-	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	pp::Selector& m_eventSelector;	/*!< The raritan mainloop */
 	pp::Selector::SelectableHandle m_sel_handle;	/*!< A handle on the selectable (to read bytes) */
 	pp::Tty::SPtr m_serial_tty;	/*!< The serial port file descriptor */
 	GenericAsyncDataInputObservable* m_data_input_observable;	/*!< The observable that will notify observers when new bytes are available on the UART */
 };
 
-#ifdef USE_RARITAN
-#include <pp/official_api_end.h>
-#endif // USE_RARITAN
+} // namespace NSSPI

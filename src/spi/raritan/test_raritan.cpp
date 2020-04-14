@@ -1,6 +1,6 @@
 #include "spi/raritan/RaritanEventLoop.h"
 #include "spi/raritan/RaritanUartDriver.h"
-#include "spi/raritan/RaritanTimerFactory.h"
+#include "spi/TimerBuilder.h"
 #include "spi/GenericAsyncDataInputObservable.h"
 #include "spi/GenericLogger.h"
 #include <string>
@@ -44,15 +44,14 @@ private :
 };
 
 int main() {
-	RaritanEventLoop eventLoop;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
-	RaritanTimerFactory factory(eventLoop);
-	std::unique_ptr<ITimer> newTimer(factory.create());
+	TimerBuilder timerBuilder();
+	std::unique_ptr<ITimer> newTimer(timerBuilder.create());
 	newTimer->start(10000, [](ITimer* triggeringTimer) {
 		clogI << "Timer finished (was launched by a " << triggeringTimer->duration << " ms timer)" << std::endl;
 	});
 	DebuggerDisplayer disp("Debugger displayer");
-	RaritanUartDriver uartDriver(eventLoop);
+	RaritanUartDriver uartDriver();
 	uartIncomingDataHandler.registerObserver(&disp); // Seb ne veut pas se préoccuper du type de l'UART et enregistrer l'observer après la construction uartDriver.
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 	uartDriver.open("/dev/ttyUSB0", 57600);
@@ -61,7 +60,8 @@ int main() {
 	size_t written;
 	uartDriver.write(written, buf, 5);
 
-	eventLoop.run();
+    pp::Selector eventSelector(*pp::SelectorSingleton::getInstance())
+    eventSelector.run();
 
 	return 0;
 }

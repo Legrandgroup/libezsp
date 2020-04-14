@@ -1,4 +1,5 @@
 LIBEZSP_COMMON_SRC = \
+                     $(SRC_DOMAIN_PATH)/lib-ezsp-main.cpp \
                      $(SRC_DOMAIN_PATH)/ezsp-dongle.cpp \
                      $(SRC_DOMAIN_PATH)/ash.cpp \
                      $(SRC_DOMAIN_PATH)/custom-aes.cpp \

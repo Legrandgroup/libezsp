@@ -12,7 +12,12 @@
 #include <iomanip>	// For std::setw etc.
 #include <iostream>	// FIXME: for std::cerr during debug
 
-MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
+#include "spi/GenericAsyncDataInputObservable.h"
+using NSSPI::MockUartDriver;
+using NSSPI::MockUartScheduledByteDelivery;
+using NSSPI::GenericAsyncDataInputObservable;
+
+MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const NSSPI::ByteBuffer& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
 delay(scheduleDelay),
 byteBuffer(scheduledBuffer) { }
 
@@ -44,8 +49,8 @@ int MockUartDriver::open(const std::string& serialPortName, unsigned int baudRat
 	return 0;
 }
 
-int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
-	
+int MockUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
+
 	std::lock_guard<std::recursive_mutex> lock(writeMutex);	/* Make sure there is only one simultaneous executiong of method write() */
 	std::chrono::time_point<std::chrono::high_resolution_clock> now =  std::chrono::high_resolution_clock::now();
 	int result = 0;
@@ -68,7 +73,7 @@ int MockUartDriver::write(size_t& writtenCnt, const void* buf, size_t cnt) {
 }
 
 void MockUartDriver::scheduleIncomingChunk(const MockUartScheduledByteDelivery& scheduledBytes) {
-	
+
 	bool frontSchedule;	/*!< Was the queued chunk list empty before scheduling these new scheduledBytes? If so, we need to start a new thread. */
 	{
 		std::lock_guard<std::mutex> lock(this->scheduledReadQueueMutex);
@@ -123,7 +128,7 @@ std::string MockUartDriver::scheduledIncomingChunksToString() {
 		if (result.str().length() != 0 )	/* result string is not empty (discarding the leading '[') */
 			result << ", ";	/* Add a separator */
 		nextChunk = scheduledReadQueueCopy.front();
-		std::vector<unsigned char> bytes(nextChunk.byteBuffer);
+		NSSPI::ByteBuffer bytes(nextChunk.byteBuffer);
 		for(auto it = bytes.begin(); it!=bytes.end(); ++it) {
 			if (it != bytes.begin())
 				result << " ";

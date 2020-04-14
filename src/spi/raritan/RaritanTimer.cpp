@@ -5,41 +5,46 @@
  */
 
 #include "RaritanTimer.h"
-#include "../GenericLogger.h"
+#include "spi/Logger.h"
 
-RaritanTimer::RaritanTimer(RaritanEventLoop& eventLoop) : m_eventLoop(eventLoop), m_toutcbhandle() {
+using NSSPI::RaritanTimer;
+using NSSPI::ITimer;
+
+RaritanTimer::RaritanTimer(pp::Selector& selector) :
+	started(false),
+	m_eventSelector(selector),
+	m_toutcbhandle() {
 }
 
 RaritanTimer::~RaritanTimer() {
 	this->stop();
 }
 
-bool RaritanTimer::start(uint16_t timeout, std::function<void (ITimer* triggeringTimer)> callBackFunction) {
-	plogD("Starting timer %p for %ums", this, timeout);
+bool RaritanTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) {
+	//clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
-	if (started) {
-		plogD("First stopping the already existing timer %p before starting again", this);
+	if (this->started) {
+		clogD << "First stopping the already existing timer " << static_cast<void *>(this) << " before starting again\n";
 		this->stop();
 	}
 
 	if (!callBackFunction) {
-		clogW << "Invalid callback function provided during start()\n";
+		clogW << "No callback function provided\n";
 		return false;
 	}
 
-	duration = timeout;
-	if (duration == 0) {
+	this->duration = timeout;
+	if (this->duration == 0) {
 		clogD << "Timeout set to 0, directly running callback function\n";
 		callBackFunction(this);
 	}
 	else {
 		auto tcb = [this,timeout,callBackFunction](pp::Selector::TimedCbHandle&) {
-			plogD("Timeout reached after %u", timeout);
-			plogD("Now running %p timer's callback", this);
+			clogD << "Timeout reached after " << std::dec << static_cast<unsigned int>(timeout) << "ms. Now running " << static_cast<void *>(this) << " timer's callback\n";
 			callBackFunction(this);
 		};
-		m_eventLoop.getSelector().addCallback(m_toutcbhandle, duration, pp::Selector::ONCE, tcb);
-		started=true;
+		this->started = true;
+		m_eventSelector.addCallback(m_toutcbhandle, this->duration, pp::Selector::ONCE, tcb);
 	}
 	return true;
 }

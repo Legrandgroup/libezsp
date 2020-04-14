@@ -1,0 +1,97 @@
+set(ezspspi_SOURCES )
+list(APPEND ezspspi_SOURCES TimerBuilder.cpp)
+list(APPEND ezspspi_SOURCES GenericAsyncDataInputObservable.cpp)
+list(APPEND ezspspi_SOURCES UartDriverBuilder.cpp)
+list(APPEND ezspspi_SOURCES Logger.cpp)
+list(APPEND ezspspi_SOURCES AesBuilder.cpp)
+set(ezspspi_PUBLIC_HEADERS )
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/AesBuilder.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/custom-aes/custom-aes.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/IAes.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/ByteBuffer.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/console/ConsoleLogger.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/cppthreads/CppThreadsTimer.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/GenericAsyncDataInputObservable.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/IAsyncDataInputObserver.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/ILogger.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/ITimer.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/IUartDriver.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/Logger.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/raritan/RaritanLogger.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/raritan/RaritanTimer.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/raritan/RaritanUartDriver.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/spi/serial/SerialUartDriver.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/TimerBuilder.h)
+list(APPEND ezspspi_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/spi/UartDriverBuilder.h)
+set(ezspspi_LIBS )
+
+option(USE_RARITAN "Use RARITAN environment" ON)
+option(USE_CPPTHREADS "Use CPPTHREAD" OFF)
+option(USE_SERIALCPP "Use SERIALCPP" OFF)
+option(USE_MOCKSERIAL "Use MOCKSERIAL" OFF)
+option(USE_AESCUSTOM "Use built-in AES encryption/decryption" ON)
+if(USE_CPPTHREADS)
+set(USE_RARITAN OFF)
+set(USE_SERIALCPP ON)
+endif()
+if(USE_MOCKSERIAL)
+set(USE_RARITAN OFF)
+set(USE_SERIALCPP OFF)
+endif()
+
+if(USE_CPPTHREADS)
+list(APPEND ezspspi_SOURCES
+	console/ConsoleLogger.cpp
+	cppthreads/CppThreadsTimer.cpp
+)
+list(APPEND ezspspi_LIBS pthread)
+endif()
+
+if(USE_SERIALCPP)
+list(APPEND ezspspi_SOURCES serial/SerialUartDriver.cpp)
+list(APPEND ezspspi_LIBS serialcpp)
+endif()
+
+if(USE_MOCKSERIAL)
+list(APPEND ezspspi_SOURCES mock-uart/MockUartDriver.cpp)
+endif()
+
+if(USE_RARITAN)
+list(APPEND ezspspi_SOURCES
+	raritan/RaritanUartDriver.cpp
+	raritan/RaritanTimer.cpp
+	raritan/RaritanLogger.cpp
+)
+list(APPEND ezspspi_LIBS pp_base)
+endif()
+
+if(USE_AESCUSTOM)
+list(APPEND ezspspi_SOURCES custom-aes/custom-aes.cpp)
+endif()
+
+add_library(ezspspi SHARED ${ezspspi_SOURCES})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+target_include_directories(ezspspi PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(ezspspi PUBLIC ${ezspspi_LIBS})
+
+# The lines below are commented-out because preserving the directory structure for includes is not yet handlede properly by cmake
+# See for example: https://github.com/robotology/how-to-export-cpp-library/issues/8
+#set_target_properties(ezspspi PROPERTIES PUBLIC_HEADER "${ezspspi_PUBLIC_HEADERS}")
+#install(TARGETS ezspspi LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/spi)
+install(TARGETS ezspspi LIBRARY DESTINATION lib)
+# Instead we grab all include/ directory
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/spi DESTINATION include)
+# And we manually list all subdirs (please remember to update this list below if you create a new subdir with exported headers)
+if(USE_AESCUSTOM)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/custom-aes DESTINATION include/spi FILES_MATCHING PATTERN "*.h")
+endif()
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/console DESTINATION include/spi FILES_MATCHING PATTERN "*.h")
+if(USE_CPPTHREADS)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/cppthreads DESTINATION include/spi FILES_MATCHING PATTERN "*.h")
+endif()
+if(USE_SERIALCPP)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/serial DESTINATION include/spi FILES_MATCHING PATTERN "*.h")
+endif()
+if(USE_RARITAN)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/spi/raritan DESTINATION include/spi FILES_MATCHING PATTERN "*.h")
+endif()

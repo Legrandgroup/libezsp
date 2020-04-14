@@ -6,34 +6,40 @@
 
 #pragma once
 
-
-#include "../IUartDriver.h"
-#include <vector>
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include <functional>
+
+#include <ezsp/export.h>
+#include <spi/IUartDriver.h>
+#include <spi/ByteBuffer.h>
+
+namespace NSSPI {
 
 /**
  * @brief Structure to interact with a UART using libserialcpp
  */
-class MockUartScheduledByteDelivery {
+class LIBEXPORT MockUartScheduledByteDelivery {
 public:
 	/**
 	 * @brief Default constructor
 	 */
-	MockUartScheduledByteDelivery(const std::vector<unsigned char>& scheduledBuffer=std::vector<unsigned char>(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
+	MockUartScheduledByteDelivery(const NSSPI::ByteBuffer& scheduledBuffer=NSSPI::ByteBuffer(), const std::chrono::milliseconds& scheduleDelay=std::chrono::milliseconds(0));
 
 	/* Member variables */
 	std::chrono::milliseconds delay;	/*!< A delay (in ms) to wait before making the bytes (stored in byteBuffer) available on the emulated UART */
-	std::vector<unsigned char> byteBuffer;	/*!< The content of the emulated bytes */
+	NSSPI::ByteBuffer byteBuffer;	/*!< The content of the emulated bytes */
 };
 
 /**
  * @brief Class to implement an emulated (robotised) UART for unit testing
  */
-class MockUartDriver : public IUartDriver {
+class LIBEXPORT MockUartDriver : public IUartDriver {
 public:
+	typedef std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> FWriteCallback; /*!< Callback type provided as argument to out constructor */
+
 	/**
 	 * @brief Default constructor
 	 *
@@ -44,7 +50,7 @@ public:
 	 *        std::chrono::duration<double, std::milli> delta: the elapsed time since last bytes were written (in ms)
 	 *        This callback should return 0 on success, errno on failure
 	 */
-	MockUartDriver(std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback = nullptr);
+	MockUartDriver(FWriteCallback onWriteCallback = nullptr);
 
 	/**
 	 * @brief Destructor
@@ -89,7 +95,7 @@ public:
 	 *
 	 * This method is purely virtual and should be overridden by inheriting classes defining a concrete implementation
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 115200);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -100,7 +106,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Schedule a byte sequence to be ready for read on emulated serial port
@@ -168,9 +174,11 @@ public:
 	std::recursive_mutex writeMutex;	/*!< Mutex to protect writes... recursive to allow the caller to grab the mutex for us */
 private:
 	GenericAsyncDataInputObservable *dataInputObservable;		/*!< The observable that will notify observers when new bytes are available on the UART */
-	std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback;	/*!< Callback invoked each time bytes are written to the emulated UART, this callback must have a prototype that takes 3 parameters: size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta. delta being the time since last bytes were written (in ms) */
+	FWriteCallback onWriteCallback;	/*!< Callback invoked each time bytes are written to the emulated UART, this callback must have a prototype that takes 3 parameters: size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta. delta being the time since last bytes were written (in ms) */
 	std::chrono::time_point<std::chrono::high_resolution_clock> lastWrittenBytesTimestamp;	/*!< A timestamp of the last bytes written */
 	size_t scheduledReadBytesCount;	/*!< The current size of the scheduled read bytes queue. Grab scheduledReadQueueMutex before accessing this  */
 	size_t deliveredReadBytesCount;	/*!< The cumulative number of emulated read bytes delivered to the GenericAsyncDataInputObservable observer since the instanciation of this object. Grab scheduledReadQueueMutex before accessing this */
 	size_t writtenBytesCount;	/*!< The number of bytes written, as a total sum of the onWriteCallback function's successive writtenCnt returned values */
 };
+
+} // namespace NSSPI

@@ -6,9 +6,12 @@
 
 #pragma once
 
-#include "../ITimer.h"
-#include "RaritanEventLoop.h"
 #include <pp/Selector.h>
+
+#include "spi/ITimer.h"
+#include "spi/Logger.h"
+
+namespace NSSPI {
 
 /**
  * @brief Concrete implementation of ITimer using the Raritan framework
@@ -16,23 +19,16 @@
 class RaritanTimer : public ITimer {
 public:
 	/**
-	 * @brief Default constructor
-	 *
-	 * Construction without arguments is not allowed
-	 */
-	RaritanTimer() = delete;
-
-	/**
 	 * @brief Constructor
 	 *
-	 * @param eventLoop A RaritanEventLoop object to access the mainloop selector
+	 * @param selector An optional selector instance to use to run timers
 	 */
-	RaritanTimer(RaritanEventLoop& eventLoop);
+	RaritanTimer(pp::Selector& selector = *pp::SelectorSingleton::getInstance());
 
 	/**
 	 * @brief Destructor
 	 */
-	~RaritanTimer();
+	virtual ~RaritanTimer();
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -45,9 +41,11 @@ public:
 	/**
 	 * @brief Stop and reset the timer
 	 *
+	 * @note When invoking stop(), the callback associated with this timer will not be run
+	 *
 	 * @return true if we actually could stop a running timer
 	 */
-	bool stop();
+	bool stop() final;
 
 	/**
 	 * @brief Is the timer currently running?
@@ -58,6 +56,9 @@ public:
 
 
 private:
-	RaritanEventLoop& m_eventLoop;	/*!< The raritan mainloop */
+	bool started;	/*!< Is the timer currently running */
+	pp::Selector& m_eventSelector;	/*!< The raritan event selector */
 	pp::Selector::TimedCbHandle m_toutcbhandle;	/*!< A handle on the callback */
 };
+
+} // namespace NSSPI

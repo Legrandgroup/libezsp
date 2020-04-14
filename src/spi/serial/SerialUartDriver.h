@@ -7,10 +7,11 @@
 #pragma once
 
 
-#include "../IUartDriver.h"
+#include "spi/IUartDriver.h"
 
 #include <thread>
 #include "serial/serial.h"
+namespace NSSPI {
 
 /**
  * @brief Class to interact with a UART using libserialcpp
@@ -25,7 +26,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~SerialUartDriver();
+	virtual ~SerialUartDriver();
 
 	/**
 	 * @brief Copy constructor
@@ -56,7 +57,7 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int open(const std::string& serialPortName, unsigned int baudRate = 57600);
+	int open(const std::string& serialPortName, unsigned int baudRate);
 
 	/**
 	 * @brief Write a byte sequence to the serial port
@@ -67,16 +68,20 @@ public:
 	 *
 	 * @return 0 on success, errno on failure
 	 */
-	int write(size_t& writtenCnt, const void* buf, size_t cnt);
+	int write(size_t& writtenCnt, const uint8_t* buf, size_t cnt);
 
 	/**
 	 * @brief Close the serial port
 	 */
-	void close();
+	void close() final;
 
 private:
+	void threadreader();	/*!< The method that will read incoming bytes, running in a secondary thread */
+	
 	serial::Serial m_serial_port;	/*!< The serial port in use for read/writes */
 	GenericAsyncDataInputObservable *m_data_input_observable;		/*!< The observable that will notify observers when new bytes are available on the UART */
 	volatile bool m_read_thread_alive;	/*!< A boolean, indicating whether the secondary thread m_read_messages_thread is running */
 	std::thread m_read_messages_thread;	/*!< The secondary thread that will block on serial read */
 };
+
+} // namespace NSSPI
