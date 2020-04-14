@@ -1,7 +1,7 @@
 /***
- * @file bootloader-prompt.h
+ * @file bootloader-prompt-driver.h
  *
- * @brief Ember bootloader CLI decoder
+ * @brief Ember bootloader CLI prompt interaction driver
  */
 
 #pragma once
