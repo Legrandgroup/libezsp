@@ -73,23 +73,29 @@ bool AshDriver::hasARegisteredSerialWriter() const {
 	return (this->serialWriteFunc != nullptr);
 }
 
-bool AshDriver::sendResetNCPFrame(void) {
-
-	this->ackTimer->stop();	/* Stop any possibly running timer */
-
-	NSSPI::ByteBuffer resetFrame(this->ashCodec.forgeResetNCPFrame());
+bool AshDriver::sendAshFrame(const NSSPI::ByteBuffer& frame) {
 	size_t writtenBytes = 0;
 
 	if (!this->serialWriteFunc) {
 		clogE << "Cannot send NCP reset frame because no write functor is available\n";
 		return false;
 	}
-	if (this->serialWriteFunc(writtenBytes, resetFrame.data(), resetFrame.size()) < 0 ) {
+	if (this->serialWriteFunc(writtenBytes, frame.data(), frame.size()) < 0 ) {
 		clogE << "Failed sending reset frame to serial port\n";
 		return false;
 	}
-	if (resetFrame.size() != writtenBytes) {
+	if (frame.size() != writtenBytes) {
 		clogE << "Reset frame not fully written to serial port\n";
+		return false;
+	}
+	return true;
+}
+
+bool AshDriver::sendResetNCPFrame() {
+
+	this->ackTimer->stop();	/* Stop any possibly running timer */
+
+	if (!this->sendAshFrame(this->ashCodec.forgeResetNCPFrame())) {
 		return false;
 	}
 	/* Start RESET confirmation timer */
@@ -98,15 +104,21 @@ bool AshDriver::sendResetNCPFrame(void) {
 	return true;
 }
 
-NSSPI::ByteBuffer AshDriver::sendAckFrame(void) {
-	return this->ashCodec.forgeAckFrame();
+bool AshDriver::sendAckFrame() {
+	return this->sendAshFrame(this->ashCodec.forgeAckFrame());
 }
 
-NSSPI::ByteBuffer AshDriver::sendDataFrame(NSSPI::ByteBuffer i_data) {
-	return this->ashCodec.forgeDataFrame(i_data);
-	/* Start ack timer */
-	this->ackTimer->stop();
+bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
+	/* FIXME: sendDataFrame() should not be allowed until the previous ack is confirmed, or the peer may have missed a frame! */
+	this->ackTimer->stop();	/* Stop any possibly running timer */
+
+	if (!this->sendAshFrame(this->ashCodec.forgeDataFrame(i_data))) {
+		return false;
+	}
+	/* Start ACK timer */
 	this->ackTimer->start(T_RX_ACK_INIT, this);
+
+	return true;
 }
 
 NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {

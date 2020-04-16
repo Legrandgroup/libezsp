@@ -58,19 +58,42 @@ public:
 	bool hasARegisteredSerialWriter() const;
 
 	/**
+	 * @brief Send an ASH frame via the registered serial port writer functor
+	 *
+	 * @return true if the frame could be sent
+	 * 
+	 * @note If no serial writer functor is registered, this method will return false
+	 */
+	bool sendAshFrame(const NSSPI::ByteBuffer& frame);
+
+	/**
 	 * @brief Send an ASH NCP reset frame
 	 * 
 	 * This frame must be sent to re-initialize the communication with the NCP when an ASH connection is initiated, so that any previous communication state is cancelled
 	 * 
-	 * @return true If the NCP reset frame was sent successfully (note that when we return true, we don't have any response yet)
+	 * @return true If the NCP reset frame was sent successfully (note that when we return true, we don't have any response or acknowledgment yet)
 	 */
 	bool sendResetNCPFrame(void);
 
-	NSSPI::ByteBuffer sendAckFrame(void);
+	/**
+	 * @brief Send an ASH ack frame
+	 * 
+	 * The sequence number will be computed to match the last succesfully received frame
+	 * 
+	 * @return true If the ack frame was sent successfully
+	 */
+	bool sendAckFrame(void);
 
-	NSSPI::ByteBuffer sendDataFrame(NSSPI::ByteBuffer i_data);
+	/**
+	 * @brief Send an ASH data frame
+	 * 
+	 * @param[in] i_data The data payload of the frame we are sending
+	 * 
+	 * @return true If the data frame was sent successfully (note that when we return true, we don't have any response or acknowledgment yet)
+	 */
+	bool sendDataFrame(const NSSPI::ByteBuffer& i_data);
 
-	NSSPI::ByteBuffer decode(NSSPI::ByteBuffer &i_data);
+	NSSPI::ByteBuffer decode(NSSPI::ByteBuffer& i_data);
 
 	bool isConnected() const;
 
