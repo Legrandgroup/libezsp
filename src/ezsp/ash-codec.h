@@ -62,14 +62,14 @@ public:
 
 	/**
 	 * @brief Check whether we are in ASH connected state or not
-	 * 
+	 *
 	 * @return true if we are in ASH connected state
 	 */
 	bool isInConnectedState() const;
 
 	/**
 	 * @brief Select the callback to invoke to cancel an ack timer
-	 * 
+	 *
 	 * @param ackTimeoutCancelFunc The callback function to invoke (or nullptr to disable this callback)
 	 */
 	void setAckTimeoutCancelFunc(std::function<void (void)> ackTimeoutCancelFunc) {
@@ -78,30 +78,30 @@ public:
 
 	/**
 	 * @brief Create an ASH Reset NCP frame
-	 * 
+	 *
 	 * @return The ASH frame as a buffer
 	 */
 	NSSPI::ByteBuffer forgeResetNCPFrame(void);
 
 	/**
 	 * @brief Create an ASH ack frame
-	 * 
+	 *
 	 * @return The ASH frame as a buffer
 	 */
 	NSSPI::ByteBuffer forgeAckFrame(void);
 
 	/**
 	 * @brief Create an ASH data frame containing i_data as payload and return it
-	 * 
+	 *
 	 * @param i_data The EZSP payload to be carried by the ASH frame
-	 * 
+	 *
 	 * @return The ASH frame as a buffer
 	 */
 	NSSPI::ByteBuffer forgeDataFrame(NSSPI::ByteBuffer i_data);
 
 	/**
 	 * @brief Decode new incoming bytes received from the adapter
-	 * 
+	 *
 	 * @param i_data New bytes to add to the previously accumulated ones
 	 */
 	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer &i_data);
