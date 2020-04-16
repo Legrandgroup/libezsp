@@ -100,11 +100,13 @@ public:
 	NSSPI::ByteBuffer forgeDataFrame(NSSPI::ByteBuffer i_data);
 
 	/**
-	 * @brief Decode new incoming bytes received from the adapter
+	 * @brief Try to decode a stream of ASH bytes
 	 *
-	 * @param i_data New bytes to add to the previously accumulated ones
+	 * @param[in,out] i_data A stream of bytes to try to decode. If a message could be extracted, then the successfully decoded bytes wille be stipped from this buffer
+	 * 
+	 * @return The parsed data contained in the ASH frame (mainly EZSP message contained in ASH data frames)
 	 */
-	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer &i_data);
+	NSSPI::ByteBuffer parseStream(NSSPI::ByteBuffer &i_data);
 
 	/**
 	 * @brief Compute an ASH CRC16 on a speficied buffer
@@ -155,8 +157,9 @@ public:
 	CAshCallback *pCb;
 private:
 	std::function<void (void)> ackTimerCancelFunc;	/*!< The function we will invoke to cancel an ack timeout */
-	uint8_t ackNum; /*!< The sequence number of the next frame we are expecting, meaning we acknowlegde reception of the the last frame received with sequence number ackNum-1 */
-	uint8_t frmNum; /*!< The sequence number of the next data frame originated by us */
+	uint8_t nextExpectedNEackNum; /*!< The sequence number value of the next far-end (=from remote) ACK we are expecting to receive, meaning that the remote will then acknowlegde reception of the the last frame received with sequence number nextExpectedNEackNum-1 */
+	uint8_t frmNum; /*!< The sequence number of the next data frame we will send */
+	uint8_t lastReceivedNEAckNum;	/*!< The sequence number value received in the last far-end (=from remote) acknowlegdement, meaning the remote acknowlegded reception of all frames up to sequence number lastReceivedNEAckNum-1 */
 	uint8_t ezspSeqNum;	/*!< FIXME: should be moved out of ASH, this is EZSP specific. The EZSP sequence number (wrapping 0-255 counter) */
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	NSSPI::ByteBuffer in_msg; /*!< Currently accumulated buffer */

@@ -41,8 +41,9 @@ constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 AshCodec::AshCodec(CAshCallback* ipCb, std::function<void (void)> ackTimeoutCancelFunc) :
 	pCb(ipCb),
-	ackNum(0),
+	nextExpectedNEackNum(0),
 	frmNum(0),
+	lastReceivedNEAckNum(0),
 	ezspSeqNum(0),
 	stateConnected(false),
 	ackTimerCancelFunc(ackTimeoutCancelFunc),
@@ -54,7 +55,8 @@ bool AshCodec::isInConnectedState() const {
 }
 
 NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
-	this->ackNum = 0;
+	this->nextExpectedNEackNum = 0;
+	this->lastReceivedNEAckNum = 0;
 	this->frmNum = 0;
 	this->ezspSeqNum = 0;
 	this->stateConnected = false;
@@ -83,9 +85,9 @@ NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
 NSSPI::ByteBuffer AshCodec::forgeAckFrame(void) {
 	NSSPI::ByteBuffer lo_msg;
 
-	uint8_t ashControlByte = this->ackNum | 0x80;
+	uint8_t ashControlByte = this->nextExpectedNEackNum | 0x80;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec sending ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+	clogD << "AshCodec creating ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
 	uint16_t crc = computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
@@ -103,9 +105,9 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	      << ", FC=0): " << NSSPI::Logger::byteSequenceToString(li_data) << "\n"; // Note FC is hardcoded to 0 below
 	*/
 
-	uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + ackNum;
+	uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + nextExpectedNEackNum;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec sending DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+	clogD << "AshCodec creating DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 	      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
 	      << ", seqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
@@ -142,11 +144,11 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 	}
 	uint8_t ashControlByte = lo_msg.at(0);
 	if ((ashControlByte & 0x80) == 0) {
-		uint8_t expectedAckNum = this->ackNum;
+		uint8_t expectedAckNum = this->nextExpectedNEackNum;
 		uint8_t remoteAckNum = ashControlByte;
 		remoteAckNum >>= 4;
 		remoteAckNum &= 0x07;
-		clogD << "AshCodec received DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+		clogD << "AshCodec decoding DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 		      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
 		if (expectedAckNum != remoteAckNum) {
@@ -158,9 +160,9 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 			}
 		}
 		/* In any case (ACK correct or not), update increase our frame number for the next transmition */
-		this->ackNum = remoteAckNum;
-		this->ackNum++;
-		this->ackNum &= 0x07;
+		this->nextExpectedNEackNum = remoteAckNum;
+		this->nextExpectedNEackNum++;
+		this->nextExpectedNEackNum &= 0x07;
 
 		lo_msg = dataRandomize(lo_msg,1);
 
@@ -259,7 +261,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 	}
 }
 
-NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
+NSSPI::ByteBuffer AshCodec::parseStream(NSSPI::ByteBuffer& i_data) {
 	/**
 	 * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
 	 */

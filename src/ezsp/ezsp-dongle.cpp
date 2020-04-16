@@ -111,17 +111,10 @@ void CEzspDongle::ashCbInfo(AshCodec::EAshInfo info) {
 
 void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
 {
-    NSSPI::ByteBuffer li_data;
+	NSSPI::ByteBuffer li_data(dataIn, dataLen);
     NSSPI::ByteBuffer lo_msg;
 
-    li_data.clear();
-    for( size_t loop=0; loop< dataLen; loop++ )
-    {
-        li_data.push_back(dataIn[loop]);
-    }
-
-    while( !li_data.empty())
-    {
+	while (!li_data.empty()) {
         if (this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN) {
             lo_msg = ash.decode(li_data);
 
