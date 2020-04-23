@@ -28,7 +28,13 @@ class LIBEXPORT ByteBuffer : public std::vector<uint8_t> {
 public:
 	ByteBuffer() : _Base() { }
 	ByteBuffer(const ByteBuffer& other) : _Base(other) { } //NOSONAR
-	~ByteBuffer() = default;    /* This is to please SonarCloud because std::vector class's destructor is not virtual anyway */
+	/**
+	 * @brief Destructor
+	 *
+	 * @warning This destructor definition is here to please SonarCloud because std::vector class's destructor is not virtual anyway
+	 */
+	~ByteBuffer() = default;
+	
 #if __cplusplus >= 201103L
 	ByteBuffer(ByteBuffer&& other) noexcept : _Base(std::move(other)) { }
 	ByteBuffer(std::vector<uint8_t>&& other) noexcept : _Base(std::move(other)) { }
@@ -61,6 +67,7 @@ public:
 			this->push_back(*it);
 		}
 	}
+	
 	ByteBuffer& operator=(const ByteBuffer& other) {
 		return static_cast<ByteBuffer&>(_Base::operator=(static_cast<_Base>(other)));
 	}
