@@ -134,13 +134,22 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	return addByteStuffing(lo_msg);
 }
 
-void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
+NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
+
+	NSSPI::ByteBuffer lo_msg;
+
+	if (this->in_msg.size() < 3) {
+		clogE << "ASH fame too short";
+		return lo_msg;
+	}
+
 	lo_msg.append(removeByteStuffing(this->in_msg));  /* FIXME: we are using this->in_msg here, we should pass it as arg instead */
+
 	// Check CRC
 	if (computeCRC(lo_msg) != 0) {
 		lo_msg.clear();
 		clogD << "AshCodec::decode Wrong CRC\n";
-		return;
+		return lo_msg;
 	}
 	uint8_t ashControlByte = lo_msg.at(0);
 	if ((ashControlByte & 0x80) == 0) {
@@ -164,7 +173,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		this->nextExpectedNEackNum++;
 		this->nextExpectedNEackNum &= 0x07;
 
-		lo_msg = dataRandomize(lo_msg,1);
+		lo_msg = dataRandomize(lo_msg, 1);
 
 		if (lo_msg.size()<3) {
 			clogE << "EZSP data message is too short, discarding\n";
@@ -227,7 +236,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		if (version!=2U) {
 			clogE << "Unsupported ASH version: " << std::dec << static_cast<const unsigned int>(version) << "\n";
 			lo_msg.clear();
-			return;
+			return lo_msg;
 		}
 
 		lo_msg.clear();
@@ -247,7 +256,7 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 			else {
 				clogE << "Unexpected reset code: 0x" << std::hex << std::setw(2) << std::setfill('0') << +(static_cast<unsigned char>(resetCode)) << "\n";
 				lo_msg.clear();
-				return;
+				return lo_msg;
 			}
 		}
 	}
@@ -259,18 +268,18 @@ void AshCodec::decode_flag(NSSPI::ByteBuffer& lo_msg) {
 		clogE << "AshCodec::decode UNKNOWN\n";
 		lo_msg.clear();
 	}
+	return lo_msg;
 }
 
-NSSPI::ByteBuffer AshCodec::parseStream(NSSPI::ByteBuffer& i_data) {
+NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	/**
 	 * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
 	 */
 	bool inputError = false;
-	//std::list<uint8_t> li_data;
-	NSSPI::ByteBuffer lo_msg;
+	NSSPI::ByteBuffer extractedPayload;
 	uint8_t val;
 
-	while( !i_data.empty() && lo_msg.empty() ) {
+	while( !i_data.empty() && extractedPayload.empty() ) {
 		val = i_data.front();
 		i_data.erase(i_data.begin());
 		switch( val ) {
@@ -278,7 +287,7 @@ NSSPI::ByteBuffer AshCodec::parseStream(NSSPI::ByteBuffer& i_data) {
 			// Cancel Byte: Terminates a frame in progress. A Cancel Byte causes all data received since the
 			// previous Flag Byte to be ignored. Note that as a special case, RST and RSTACK frames are preceded
 			// by Cancel Bytes to ignore any link startup noise.
-			in_msg.clear();
+			this->in_msg.clear();
 			inputError = false;
 			break;
 		case ASH_FLAG_BYTE:
@@ -286,10 +295,10 @@ NSSPI::ByteBuffer AshCodec::parseStream(NSSPI::ByteBuffer& i_data) {
 			// Flag Byte: Marks the end of a frame.When a Flag Byte is received, the data received since the
 			// last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
 			//LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
-			if (!inputError && !in_msg.empty() && ( in_msg.size() >= 3 )) {
-				decode_flag(lo_msg);
+			if (!inputError && !this->in_msg.empty()) {
+				extractedPayload = this->processInterFlagStream();
 			}
-			in_msg.clear();
+			this->in_msg.clear();
 			inputError = false;
 			break;
 		case ASH_SUBSTITUTE_BYTE:
@@ -309,17 +318,17 @@ NSSPI::ByteBuffer AshCodec::parseStream(NSSPI::ByteBuffer& i_data) {
 		          break;
 		*/
 		default:
-			if (in_msg.size() >= ASH_MAX_LENGTH) {
-				in_msg.clear();
+			if (this->in_msg.size() >= ASH_MAX_LENGTH) {
+				this->in_msg.clear();
 				inputError = true;
 			}
-			in_msg.push_back(val);
+			this->in_msg.push_back(val);
 			break;
 		}
 
 	}
 
-	return lo_msg;
+	return extractedPayload;
 }
 
 

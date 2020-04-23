@@ -93,20 +93,24 @@ public:
 	/**
 	 * @brief Create an ASH data frame containing i_data as payload and return it
 	 *
-	 * @param i_data The EZSP payload to be carried by the ASH frame
+	 * @param[in] i_data The EZSP payload to be carried by the ASH frame
+	 * 
+	 * @note This buffer needs to be passed by copy because it is modified internally inside this method.
 	 *
 	 * @return The ASH frame as a buffer
 	 */
 	NSSPI::ByteBuffer forgeDataFrame(NSSPI::ByteBuffer i_data);
 
 	/**
-	 * @brief Try to decode a stream of ASH bytes
+	 * @brief Try to append a chunk of ASH bytes to the current accumulated incoming bytes
 	 *
-	 * @param[in,out] i_data A stream of bytes to try to decode. If a message could be extracted, then the successfully decoded bytes wille be stipped from this buffer
+	 * @param[in] i_data A stream of bytes to try to decode. If one or more messages could be extracted, then the successfully decoded bytes will be stripped from this buffer
+	 *
+	 * @note This buffer needs to be passed by copy because it is modified internally inside this method.
 	 * 
 	 * @return The parsed data contained in the ASH frame (mainly EZSP message contained in ASH data frames)
 	 */
-	NSSPI::ByteBuffer parseStream(NSSPI::ByteBuffer &i_data);
+	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer& i_data);
 
 	/**
 	 * @brief Compute an ASH CRC16 on a speficied buffer
@@ -149,9 +153,11 @@ protected:
 
 private:
 	/**
-	 * @brief Update state from the flag byte in the ASH message
+	 * @brief Process an ASH byte stream located between two FLAG bytes (ASH-encoded content)
+	 * 
+	 * @return The decoded ASH payload if any
 	 */
-	void decode_flag(NSSPI::ByteBuffer &lo_msg);
+	NSSPI::ByteBuffer processInterFlagStream();
 
 public:
 	CAshCallback *pCb;

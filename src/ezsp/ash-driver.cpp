@@ -122,7 +122,7 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 }
 
 NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {
-	return this->ashCodec.parseStream(i_data);
+	return this->ashCodec.appendIncoming(i_data);
 }
 
 bool AshDriver::isConnected() const {
