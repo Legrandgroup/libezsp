@@ -4,13 +4,15 @@
  * @brief Main API methods for libezsp
  */
 
+#include <sstream>
+#include <iomanip>
+
+#include <ezsp/ezsp-adapter-version.h>
+
 #include "ezsp/lib-ezsp-main.h"
 #include "spi/ILogger.h"
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParametersResponse
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
-
-#include <sstream>
-#include <iomanip>
 
 DEFINE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST, NSEZSP::CLibEzspInternal);
 
@@ -456,38 +458,28 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
     for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
     //clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
 
-    if (i_msg_receive.size() < 5)
-    {
-        clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
-    }
-    else
-    {
-        if (i_msg_receive[0] != EMBER_SUCCESS)
-        {
-            clogW << "EZSP_GET_XNCP_INFO failed\n";
-        }
-        else
-        {
-            this->xncpManufacturerId = dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]);
-            this->xncpVersionNumber = dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]);
-            //clogD << "XNCP manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId)
-            //      << ", version: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpVersionNumber) << "\n";
-            if (this->xncpManufacturerId != 0x1021) {
-                clogW << "EZSP adapter is not from Legrand (manufacturer 0x1021 expected)\n";
-            }
-            else {
-                unsigned int xncpAdapterHardwareVersion = u16_get_hi_u8(this->xncpVersionNumber) >> 4;  /* High nibble of MSB */
-                unsigned int xncpAdapterMajorVersion = u16_get_hi_u8(this->xncpVersionNumber) & 0x0f;  /* Low nibble of MSB */
-                unsigned int xncpAdapterMinorVersion = u16_get_lo_u8(this->xncpVersionNumber) >> 4;  /* High nibble of LSB */
-                unsigned int xncpAdapterRevisionVersion = u16_get_lo_u8(this->xncpVersionNumber) & 0x0f;  /* Low nibble of LSB */
-                clogI << "Legrand EZSP adapter found with hardware version " << std::dec << xncpAdapterHardwareVersion
-                      << " and firmware v" << xncpAdapterMajorVersion << "." << xncpAdapterMinorVersion << "." << xncpAdapterRevisionVersion << "\n";
-            }
-        }
-    }
-    // Now, configure and startup the adapter's embedded stack
-    setState(CLibEzspInternal::State::STACK_INIT);
-    stackInit();
+	if (i_msg_receive.size() < 5) {
+		clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
+	}
+	else {
+		if (i_msg_receive[0] != EMBER_SUCCESS) {
+			clogW << "EZSP_GET_XNCP_INFO failed\n";
+		}
+		else {
+			NSEZSP::EzspAdapterVersion ezspAdapterVersion(dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]),
+			                                              dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]));
+			if (ezspAdapterVersion.xncpManufacturerId != static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND)) {
+				clogW << "EZSP adapter is not from Legrand (manufacturer " << std::hex << static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND) << " expected)\n";
+			}
+			else {
+				clogI << "Legrand EZSP adapter found with hardware version " << std::dec << ezspAdapterVersion.xncpAdapterHardwareVersion
+				      << " and firmware v" << ezspAdapterVersion.getFirmwareVersionAsString() << "\n";
+			}
+		}
+	}
+	// Now, configure and startup the adapter's embedded stack
+	setState(CLibEzspInternal::State::STACK_INIT);
+	stackInit();
 }
 
 void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive)
