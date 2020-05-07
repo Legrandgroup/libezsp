@@ -13,6 +13,7 @@ using NSEZSP::CEzspDongle;
 
 CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer) :
 	firstStartup(true),
+	version(),
 	lastKnownMode(CEzspDongle::Mode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
 	timerBuilder(i_timer_builder),
@@ -62,6 +63,15 @@ bool CEzspDongle::reset() {
 	}
 
 	return true;
+}
+
+void CEzspDongle::setFetchedVersion(const NSEZSP::EzspAdapterVersion& ezspAdapterVersion) {
+	this->version = ezspAdapterVersion;
+	this->notifyObserversOfDongleState(DONGLE_VERSION_RETRIEVED);   /* Notify observers that we now know the EZSP adapter's version */
+}
+
+NSEZSP::EzspAdapterVersion CEzspDongle::getVersion() const {
+	return this->version;
 }
 
 void CEzspDongle::ashCbInfo(CAsh::EAshInfo info) {

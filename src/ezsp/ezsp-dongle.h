@@ -6,15 +6,17 @@
 #include <set>
 
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
-#include "spi/IUartDriver.h"
+#include <ezsp/ezsp-adapter-version.h>
+#include <spi/IUartDriver.h>
+#include <spi/GenericAsyncDataInputObservable.h>
+#include <spi/TimerBuilder.h>
+#include <spi/IAsyncDataInputObserver.h>
+#include <spi/ByteBuffer.h>
+#include "ezsp/enum-generator.h"
+
 #include "ash.h"
 #include "bootloader-prompt.h"
 #include "ezsp-dongle-observer.h"
-#include <spi/GenericAsyncDataInputObservable.h>
-#include "spi/TimerBuilder.h"
-#include "spi/IAsyncDataInputObserver.h"
-#include "spi/ByteBuffer.h"
-#include "ezsp/enum-generator.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct {
@@ -66,6 +68,26 @@ public:
     bool reset();
 
     /**
+     * @brief Set the current hardware & firmware version running on the EZSP adapter
+     * 
+     * @param[in] ezspAdapterVersion The version currently running on the EZSP adapter
+     * 
+     * @note Because our instance does not parse EZSP message, this method is invoked by external code
+     *       for this object to store its own version details
+     */
+    void setFetchedVersion(const NSEZSP::EzspAdapterVersion& ezspAdapterVersion);
+
+    /**
+     * @brief Set the current hardware & firmware version running on the EZSP adapter
+     * 
+     * @param[in] ezspAdapterVersion The version currently running on the EZSP adapter
+     * 
+     * @note Because our instance does not parse EZSP message, this method is invoked by external code
+     *       for this object to store its own version details
+     */
+    NSEZSP::EzspAdapterVersion getVersion() const;
+
+    /**
      * @brief Send Ezsp Command
      */
     void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
@@ -105,6 +127,7 @@ public:
 
 private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
+    NSEZSP::EzspAdapterVersion version; /*!< The version details of this EZSP adapter (firmware and hardware) */
     CEzspDongle::Mode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */

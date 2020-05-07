@@ -64,6 +64,10 @@ void CLibEzspMain::start()
     }
 }
 
+NSEZSP::EzspAdapterVersion CLibEzspMain::getAdapterVersion() const {
+	return this->dongle.getVersion();
+}
+
 void CLibEzspMain::forceFirmwareUpgradeOnInitTimeout()
 {
     this->dongle.forceFirmwareUpgradeOnInitTimeout();
@@ -268,10 +272,19 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
         // TODO: manage this !
         clogW << __func__ << "() dongle removed\n";
     }
-    else
-    {
-        clogD << __func__ << "() dongle state "<< i_state << std::endl;
-    }
+	else if (i_state == DONGLE_VERSION_RETRIEVED) {
+		NSEZSP::EzspAdapterVersion ezspAdapterVersion = this->dongle.getVersion();
+		if (ezspAdapterVersion.xncpManufacturerId != static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND)) {
+			clogW << "EZSP adapter is not from Legrand (manufacturer " << std::hex << static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND) << " expected)\n";
+		}
+		else {
+			clogI << "Legrand EZSP adapter found with hardware version " << std::dec << ezspAdapterVersion.xncpAdapterHardwareVersion
+			      << " and firmware v" << ezspAdapterVersion.getFirmwareVersionAsString() << "\n";
+		}
+	}
+	else {
+		clogD << __func__ << "() dongle state "<< i_state << std::endl;
+	}
 }
 
 bool CLibEzspMain::clearAllGPDevices()
@@ -466,15 +479,8 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
 			clogW << "EZSP_GET_XNCP_INFO failed\n";
 		}
 		else {
-			NSEZSP::EzspAdapterVersion ezspAdapterVersion(dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]),
-			                                              dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]));
-			if (ezspAdapterVersion.xncpManufacturerId != static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND)) {
-				clogW << "EZSP adapter is not from Legrand (manufacturer " << std::hex << static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND) << " expected)\n";
-			}
-			else {
-				clogI << "Legrand EZSP adapter found with hardware version " << std::dec << ezspAdapterVersion.xncpAdapterHardwareVersion
-				      << " and firmware v" << ezspAdapterVersion.getFirmwareVersionAsString() << "\n";
-			}
+			this->dongle.setFetchedVersion(NSEZSP::EzspAdapterVersion(dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]),
+			                                                          dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3])));
 		}
 	}
 	// Now, configure and startup the adapter's embedded stack
