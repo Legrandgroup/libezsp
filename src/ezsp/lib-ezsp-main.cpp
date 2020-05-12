@@ -274,13 +274,18 @@ void CLibEzspMain::handleDongleState( EDongleState i_state )
     }
 	else if (i_state == DONGLE_VERSION_RETRIEVED) {
 		NSEZSP::EzspAdapterVersion ezspAdapterVersion = this->dongle.getVersion();
-		if (ezspAdapterVersion.xncpManufacturerId != static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND)) {
-			clogW << "EZSP adapter is not from Legrand (manufacturer " << std::hex << static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND) << " expected)\n";
-		}
-		else {
-			clogI << "Legrand EZSP adapter found with hardware version " << std::dec << ezspAdapterVersion.xncpAdapterHardwareVersion
-			      << " and firmware v" << ezspAdapterVersion.getFirmwareVersionAsString() << "\n";
-		}
+		if (ezspAdapterVersion.xncpManufacturerId != static_cast<uint16_t>(NSEZSP::EzspAdapterVersion::Manufacturer::UNKNOWN)) {
+			/* Note: here we only care about DONGLE_VERSION_RETRIEVED notifications if the manufacturer ID is known, meaning we have received both
+			 * EZSP VERSION and XNCP INFO data
+			 */
+			if (ezspAdapterVersion.xncpManufacturerId != static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND)) {
+				clogW << "EZSP adapter is not from Legrand (manufacturer " << std::hex << static_cast<unsigned int>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND) << " expected)\n";
+			}
+			else {
+				clogI << "Legrand EZSP adapter found with hardware version " << std::dec << ezspAdapterVersion.xncpAdapterHardwareVersion
+				      << " and firmware v" << ezspAdapterVersion.getFirmwareVersionAsString() << ", running EZSPv" << ezspAdapterVersion.ezspProtocolVersion << " with stack v" << ezspAdapterVersion.getStackVersionAsString() << "\n";
+			}
+        }
 	}
 	else {
 		clogD << __func__ << "() dongle state "<< i_state << std::endl;
@@ -393,33 +398,28 @@ void CLibEzspMain::handleFirmwareXModemXfr()
     clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
 }
 
-void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive)
-{
-	uint8_t ezspProtocolVersion;
-	uint8_t ezspStackType;
-	uint16_t ezspStackVersion;
+void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_receive) {
 	std::stringstream bufDump;
 	bool truncatedVersion = false;  /* Flag set to true when receiving a truncated EZSP_VERSION payload */
 	bool acceptableVersion = false; /* Flag set to true when the version received from the EZSP adapter is acceptable for us */
-	for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
-	clogD << "Got EZSP_VERSION payload:" << bufDump.str() << "\n";
+	clogD << "Got EZSP_VERSION payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
 	// Check if the wanted protocol version, and display stack version
 	if (i_msg_receive.size() == 2) {
 		clogW << "Got a truncated EZSP version frame from a buggy NCP, using only the 2 last bytes\n";
-		ezspStackVersion = dble_u8_to_u16(i_msg_receive[1], i_msg_receive[0]);
+		uint16_t ezspStackVersion = dble_u8_to_u16(i_msg_receive[1], i_msg_receive[0]);
+		this->dongle.setFetchedEzspVersionData(ezspStackVersion);
 		truncatedVersion = true;
 		/* We assume the version is acceptable when receiving a truncated version, because truncated payloads only occur at the second attempt
 		 * and this means we have already re-run dongleInit() below with the new expected version directly coming from the response of the adapter
 		 */
 		acceptableVersion = true;
-		/* The two values below are not sent on a truncated version, we thus used the cached values from a previous run */
-		ezspProtocolVersion = this->exp_ezsp_min_version;
-		ezspStackType = this->exp_stack_type;
+		/* The two values below are not sent on a truncated version, but we use the values cached inside this->dongle from a previous run */
 	}
 	if (i_msg_receive.size() == 4) {
-		ezspProtocolVersion = i_msg_receive.at(0);
-		ezspStackType = i_msg_receive.at(1);
-		ezspStackVersion = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
+		uint8_t ezspProtocolVersion = i_msg_receive.at(0);
+		uint8_t ezspStackType = i_msg_receive.at(1);
+		uint16_t ezspStackVersion = dble_u8_to_u16(i_msg_receive[3], i_msg_receive[2]);
+		this->dongle.setFetchedEzspVersionData(ezspStackVersion, ezspProtocolVersion, ezspStackType);
 		if (ezspStackType != this->exp_stack_type) {
 			clogE << "Wrong stack type: " << static_cast<unsigned int>(ezspStackType) << ", expected: " << static_cast<unsigned int>(this->exp_stack_type) << "\n";
 			clogE << "Stopping init here. Library will not work with this EZSP adapter\n";
@@ -438,24 +438,16 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	}
 	if (acceptableVersion) {
 		std::stringstream bufDump;  /* Log message container */
-		// EZSP protocol version
-		bufDump << "EZSP adapter is using EZSPv" << std::dec << static_cast<unsigned int>(ezspProtocolVersion);
-
-		// Stack type
-		bufDump << " with stack type " << static_cast<unsigned int>(ezspStackType);
-		if (ezspStackType == 2) {
-			bufDump << " (mesh)";
+		NSEZSP::EzspAdapterVersion ezspVersionDetails = this->dongle.getVersion();
+		std::string humanReadableStackType("");
+		if (ezspVersionDetails.ezspStackType == 2) {
+			humanReadableStackType = " (mesh)";
 		}
 
-		// Stack version (encoded in nibbles)
-		bufDump << ". Stack version: ";
-		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
-		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_hi_u8(ezspStackVersion))) << ".";
-		bufDump << static_cast<unsigned int>(u8_get_hi_nibble(u16_get_lo_u8(ezspStackVersion))) << ".";
-		bufDump << static_cast<unsigned int>(u8_get_lo_nibble(u16_get_lo_u8(ezspStackVersion))) << "\n";
-
 		/* Output the log message */
-		clogI << bufDump.str();
+		clogI << "EZSP adapter version is supported: EZSPv" << std::dec << static_cast<unsigned int>(ezspVersionDetails.ezspProtocolVersion)
+		      << " with stack type " << static_cast<unsigned int>(ezspVersionDetails.ezspStackType) << humanReadableStackType
+		      << ". Stack version: " << ezspVersionDetails.getStackVersionAsString() << "\n";
 
 		// Now request the XNCP version
 		this->getXncpInfo();
@@ -465,11 +457,8 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	}
 }
 
-void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive)
-{
-    std::stringstream bufDump;
-    for (unsigned int loop=0; loop<i_msg_receive.size(); loop++) { bufDump << " " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[loop]); }
-    //clogD << "Got EZSP_GET_XNCP_INFO payload:" << bufDump.str() << "\n";
+void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive) {
+	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
 
 	if (i_msg_receive.size() < 5) {
 		clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
@@ -479,8 +468,8 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
 			clogW << "EZSP_GET_XNCP_INFO failed\n";
 		}
 		else {
-			this->dongle.setFetchedVersion(NSEZSP::EzspAdapterVersion(dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]),
-			                                                          dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3])));
+			this->dongle.setFetchedXncpData(dble_u8_to_u16(i_msg_receive[2], i_msg_receive[1]),
+			                                dble_u8_to_u16(i_msg_receive[4], i_msg_receive[3]));
 		}
 	}
 	// Now, configure and startup the adapter's embedded stack

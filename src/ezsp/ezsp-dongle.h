@@ -67,25 +67,39 @@ public:
      */
     bool reset();
 
-    /**
-     * @brief Set the current hardware & firmware version running on the EZSP adapter
-     * 
-     * @param[in] ezspAdapterVersion The version currently running on the EZSP adapter
-     * 
-     * @note Because our instance does not parse EZSP message, this method is invoked by external code
-     *       for this object to store its own version details
-     */
-    void setFetchedVersion(const NSEZSP::EzspAdapterVersion& ezspAdapterVersion);
+	/**
+	 * @brief Set the current hardware & firmware XNCP version running on the EZSP adapter
+	 * 
+	 * @param xncpManufacturerId The XNCP 16-bit manufacturer ID of the firmware running on the EZSP adapter
+	 * @param xncpVersionNumber The XNCP 16-bit version number of the firmware running on the EZSP adapter
+	 * 
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 */
+	void setFetchedXncpData(uint16_t xncpManufacturerId, uint16_t xncpVersionNumber);
 
-    /**
-     * @brief Set the current hardware & firmware version running on the EZSP adapter
-     * 
-     * @param[in] ezspAdapterVersion The version currently running on the EZSP adapter
-     * 
-     * @note Because our instance does not parse EZSP message, this method is invoked by external code
-     *       for this object to store its own version details
-     */
-    NSEZSP::EzspAdapterVersion getVersion() const;
+	/**
+	 * @brief Set the current EZSP stack version running on the EZSP adapter
+	 *
+	 * @param ezspStackVersion The EZSP stack version
+	 */
+	void setFetchedEzspVersionData(uint16_t ezspStackVersion);
+
+	/**
+	 * @brief Set the current EZSP version data running on the EZSP adapter
+	 *
+	 * @param ezspStackVersion The EZSP stack version
+	 * @param ezspProtocolVersion The EZSP protocol version (EZSPv7, EZSPv8)
+	 * @param ezspStackType The EZSP stack type
+	 */
+	void setFetchedEzspVersionData(uint16_t ezspStackVersion, uint8_t ezspProtocolVersion, uint8_t ezspStackType);
+
+	/**
+	 * @brief Get the current hardware & firmware, stack and protocol version running on the EZSP adapter
+	 *
+	 * @return The current version running on the EZSP adapter
+	 */
+	NSEZSP::EzspAdapterVersion getVersion() const;
 
     /**
      * @brief Send Ezsp Command
