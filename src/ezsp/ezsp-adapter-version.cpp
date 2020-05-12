@@ -5,6 +5,7 @@
  */
 
 #include <sstream>
+#include <iomanip>
 
 #include <ezsp/ezsp-adapter-version.h>
 
@@ -60,4 +61,38 @@ std::string EzspAdapterVersion::getStackVersionAsString() const {
 	result << static_cast<unsigned int>(this->ezspStackRevisionVersion) << ".";
 	result << static_cast<unsigned int>(this->ezspStackBugfixVersion);
 	return result.str();
+}
+
+std::string EzspAdapterVersion::toString() const {
+    std::stringstream buf;
+
+    buf << "EzspAdapterVersion : { ";
+	if (this->xncpManufacturerId != static_cast<uint16_t>(Manufacturer::UNKNOWN)) {
+		buf << "[Manufacturer: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
+		if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
+			buf << " (LEGRAND)";
+		}
+		buf << "]";
+	}
+	if (this->ezspProtocolVersion) {
+		buf << "[EZSPv" << std::dec << std::setw(0) << static_cast<unsigned int>(this->ezspProtocolVersion);
+		buf << " running stack type " << static_cast<unsigned int>(this->ezspStackType);
+		if (this->ezspStackType == 2) {
+			buf << " (mesh)";
+		}
+		buf << "]";
+	}
+	if (this->ezspStackMajorVersion || this->ezspStackMinorVersion || this->ezspStackRevisionVersion || this->ezspStackBugfixVersion) {
+		buf << "[stack v" << this->getStackVersionAsString() << "]";
+	}
+	/* XNCP can only be properly decoded if manufacturer is Legrand */
+	if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
+		if (this->xncpAdapterHardwareVersion || this->xncpAdapterMajorVersion || this->xncpAdapterMinorVersion || this->xncpAdapterRevisionVersion) {
+			buf << "[hw v" << this->xncpAdapterHardwareVersion;
+			buf << ", fw v" << this->getFirmwareVersionAsString() << "]";
+		}
+	}
+    buf << " }";
+
+    return buf.str();
 }
