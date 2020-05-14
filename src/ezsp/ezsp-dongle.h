@@ -69,12 +69,13 @@ public:
 
 	/**
 	 * @brief Set the current hardware & firmware XNCP version running on the EZSP adapter
-	 * 
+	 *
 	 * @param xncpManufacturerId The XNCP 16-bit manufacturer ID of the firmware running on the EZSP adapter
 	 * @param xncpVersionNumber The XNCP 16-bit version number of the firmware running on the EZSP adapter
-	 * 
+	 *
 	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
 	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
 	 */
 	void setFetchedXncpData(uint16_t xncpManufacturerId, uint16_t xncpVersionNumber);
 
@@ -82,6 +83,10 @@ public:
 	 * @brief Set the current EZSP stack version running on the EZSP adapter
 	 *
 	 * @param ezspStackVersion The EZSP stack version
+	 *
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
 	 */
 	void setFetchedEzspVersionData(uint16_t ezspStackVersion);
 
@@ -91,6 +96,10 @@ public:
 	 * @param ezspStackVersion The EZSP stack version
 	 * @param ezspProtocolVersion The EZSP protocol version (EZSPv7, EZSPv8)
 	 * @param ezspStackType The EZSP stack type
+	 *
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
 	 */
 	void setFetchedEzspVersionData(uint16_t ezspStackVersion, uint8_t ezspProtocolVersion, uint8_t ezspStackType);
 
