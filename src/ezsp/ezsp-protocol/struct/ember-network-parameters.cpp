@@ -88,8 +88,7 @@ NSSPI::ByteBuffer CEmberNetworkParameters::getRaw() const
     return raw_message;
 }
 
-std::string CEmberNetworkParameters::String() const
-{
+std::string CEmberNetworkParameters::toString() const {
     std::stringstream buf;
 
     buf << "EmberNetworkParameters : { ";
