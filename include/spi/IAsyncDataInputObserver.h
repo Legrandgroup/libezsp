@@ -15,6 +15,8 @@ namespace NSSPI {
 
 /**
  * @brief Observer that gets asynchronous notification of input data from GenericAsyncDataInputObservable objects
+ * 
+ * @note See NSSPI::GenericAsyncDataInputObservable documentation in file spi/GenericAsyncDataInputObservable.h for details on how to use this observer/observable mechanism
  */
 class LIBEXPORT IAsyncDataInputObserver {
 public:
