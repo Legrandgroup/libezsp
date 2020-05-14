@@ -1042,6 +1042,7 @@ typedef enum
     DONGLE_READY,
     DONGLE_REMOVE,
     DONGLE_NOT_RESPONDING,
+    DONGLE_VERSION_RETRIEVED,
 }EDongleState;
 
 class CEzspEnum{

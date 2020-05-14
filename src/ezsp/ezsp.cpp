@@ -28,6 +28,10 @@ void CEzsp::start()
 	main->start();
 }
 
+NSEZSP::EzspAdapterVersion CEzsp::getAdapterVersion() const {
+	return main->getAdapterVersion();
+}
+
 void CEzsp::forceFirmwareUpgradeOnInitTimeout()
 {
 	main->forceFirmwareUpgradeOnInitTimeout();

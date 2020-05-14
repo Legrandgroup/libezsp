@@ -6,15 +6,17 @@
 #include <set>
 
 #include <ezsp/ezsp-protocol/ezsp-enum.h>
-#include "spi/IUartDriver.h"
+#include <ezsp/ezsp-adapter-version.h>
+#include <spi/IUartDriver.h>
+#include <spi/GenericAsyncDataInputObservable.h>
+#include <spi/TimerBuilder.h>
+#include <spi/IAsyncDataInputObserver.h>
+#include <spi/ByteBuffer.h>
+
 #include "ash-driver.h"
 #include "bootloader-prompt-driver.h"
-#include "ezsp-dongle-observer.h"
-#include <spi/GenericAsyncDataInputObservable.h>
-#include "spi/TimerBuilder.h"
-#include "spi/IAsyncDataInputObserver.h"
-#include "spi/ByteBuffer.h"
 #include "ezsp/enum-generator.h"
+#include "ezsp-dongle-observer.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
     typedef struct {
@@ -64,6 +66,49 @@ public:
      */
     bool reset();
 
+	/**
+	 * @brief Set the current hardware & firmware XNCP version running on the EZSP adapter
+	 *
+	 * @param xncpManufacturerId The XNCP 16-bit manufacturer ID of the firmware running on the EZSP adapter
+	 * @param xncpVersionNumber The XNCP 16-bit version number of the firmware running on the EZSP adapter
+	 *
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
+	 */
+	void setFetchedXncpData(uint16_t xncpManufacturerId, uint16_t xncpVersionNumber);
+
+	/**
+	 * @brief Set the current EZSP stack version running on the EZSP adapter
+	 *
+	 * @param ezspStackVersion The EZSP stack version
+	 *
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
+	 */
+	void setFetchedEzspVersionData(uint16_t ezspStackVersion);
+
+	/**
+	 * @brief Set the current EZSP version data running on the EZSP adapter
+	 *
+	 * @param ezspStackVersion The EZSP stack version
+	 * @param ezspProtocolVersion The EZSP protocol version (EZSPv7, EZSPv8)
+	 * @param ezspStackType The EZSP stack type
+	 *
+	 * @note Because our instance does not parse EZSP message, this method is invoked by external code, when an XNCP
+	 *       INFO EZSP message is received, so that we can our own version details
+	 * @warning Access to this method should be limited as much as possible, possibly even by design using an accesskey pattern
+	 */
+	void setFetchedEzspVersionData(uint16_t ezspStackVersion, uint8_t ezspProtocolVersion, uint8_t ezspStackType);
+
+	/**
+	 * @brief Get the current hardware & firmware, stack and protocol version running on the EZSP adapter
+	 *
+	 * @return The current version running on the EZSP adapter
+	 */
+	NSEZSP::EzspAdapterVersion getVersion() const;
+
     /**
      * @brief Send Ezsp Command
      */
@@ -104,6 +149,7 @@ public:
 
 private:
     bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
+    NSEZSP::EzspAdapterVersion version; /*!< The version details of this EZSP adapter (firmware and hardware) */
     CEzspDongle::Mode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */

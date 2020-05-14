@@ -102,6 +102,7 @@ public:
      * @brief Set internal state machine to run mode (waiting for asynchronous sensor reports)
      */
     void ezspRun() {
+        clogI << "Adapter version: " << this->libEzsp.getAdapterVersion() << "\n";
         clogI << "Preparation steps finished... switching to run state\n";
         this->currentState = MainState::RUN;
     }

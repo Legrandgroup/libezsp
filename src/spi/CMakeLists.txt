@@ -49,7 +49,7 @@ endif()
 
 if(USE_SERIALCPP)
 list(APPEND ezspspi_SOURCES serial/SerialUartDriver.cpp)
-list(APPEND ezspspi_LIBS serialcpp)
+list(APPEND ezspspi_LIBS serial)
 endif()
 
 if(USE_MOCKSERIAL)

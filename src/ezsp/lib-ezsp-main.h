@@ -87,6 +87,13 @@ public:
 	void start();
 
 	/**
+	 * @brief Get the EZSP adapter's version
+	 * 
+	 * @return The EZSP adapter version (hardware and firmware) if already known
+	 */
+	NSEZSP::EzspAdapterVersion getAdapterVersion() const;
+
+	/**
 	 * @brief Register callback on current library state
 	 *
 	 * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)

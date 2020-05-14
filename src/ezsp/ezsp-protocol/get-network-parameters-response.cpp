@@ -25,7 +25,7 @@ std::string CGetNetworkParametersResponse::String() const
     buf << "GetNetworkParametersResponse : { ";
     buf << "[status : "<< CEzspEnum::EEmberStatusToString(status) << "]";
     buf << "[modeType : "<< CEzspEnum::EmberNodeTypeToString(node_type) << "]";
-    buf << "["<< parameters.String() << "]";
+	buf << "["<< parameters.toString() << "]";
     buf << " }";
 
     return buf.str();
