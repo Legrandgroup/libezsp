@@ -18,14 +18,25 @@ using NSEZSP::BootloaderPromptDriver;
 
 DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::BootloaderPromptDriver);
 
-BootloaderPromptDriver::BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder) :
+BootloaderPromptDriver::BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable) :
+	enabled(true),
 	timer(i_timer_builder.create()),
 	accumulatedBytes(),
 	bootloaderCLIChecked(false),
 	state(BootloaderPromptDriver::Stage::RX_FLUSH),
+	serialReadObservable(serialReadObservable),
 	serialWriteFunc(nullptr),
 	promptDetectCallback(nullptr),
 	firmwareTransferStartFunc(nullptr) {
+	this->registerSerialReadObservable(this->serialReadObservable);	/* Register ourselves as an async observer if a valid serialReadObservable was provided */
+}
+
+void BootloaderPromptDriver::disable() {
+	this->enabled = false;
+}
+
+void BootloaderPromptDriver::enable() {
+	this->enabled = true;
 }
 
 std::string BootloaderPromptDriver::trim(const std::string &s) {
@@ -58,12 +69,32 @@ void BootloaderPromptDriver::registerSerialWriter(NSSPI::IUartDriverHandle uartH
 	});
 }
 
+bool BootloaderPromptDriver::hasARegisteredSerialWriter() const {
+	return (this->serialWriteFunc != nullptr);
+}
+
 void BootloaderPromptDriver::registerPromptDetectCallback(std::function<void (void)> newObsPromptDetectCallback) {
 	this->promptDetectCallback = newObsPromptDetectCallback;
 }
 
-bool BootloaderPromptDriver::hasARegisteredSerialWriter() const {
-	return (this->serialWriteFunc != nullptr);
+void BootloaderPromptDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable) {
+	if (this->serialReadObservable) {	/* First, unregister ourselves from any previous async observable */
+		serialReadObservable->unregisterObserver(this);
+	}
+	this->serialReadObservable = serialReadObservable;
+	if (serialReadObservable) {
+		serialReadObservable->registerObserver(this);	/* Register ourselves as an async observer to receive incoming bytes received from the serial port */
+	}
+}
+
+void BootloaderPromptDriver::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
+	if (this->enabled) { /* We only process incoming traffic on serial port in enabled mode */
+		NSSPI::ByteBuffer inputData(dataIn, dataLen);
+		this->appendIncoming(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
+	}
+	else {
+		clogD << "BootloaderPromptDriver ignoring incoming data in disabled mode\n";
+	}
 }
 
 void BootloaderPromptDriver::reset() {
@@ -71,20 +102,37 @@ void BootloaderPromptDriver::reset() {
 	accumulatedBytes.clear();
 	bootloaderCLIChecked = false;
 	this->firmwareTransferStartFunc = nullptr;  /* Remove any callback for image transfer */
+	if (!this->enabled) {
+		clogE << "Bootloader prompt driver reset while disabled.\n";
+	}
 	/* If we don't receive any byte after GECKO_QUIET_RX_TIMEOUT ms, assume we have flushed the RX */
 	timer->start(BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT, this);
 }
 
+bool BootloaderPromptDriver::sendBytes(const uint8_t* dataOut, size_t dataLen, BootloaderPromptDriver::Stage newState) {
+	if (!this->serialWriteFunc) {
+		clogE << "Cannot send bytes on bootloader console because no write functor is available\n";
+		return false;
+	}
+	if (!this->enabled) {
+		clogW << "Requested to write to serial port while in disabled mode\n";
+		return false;
+	}
+	size_t writtenBytes;
+	this->state = newState;
+	this->serialWriteFunc(writtenBytes, dataOut, dataLen);
+	if (writtenBytes != dataLen) {
+		clogE << "Console byte sequence not fully written to serial port\n";
+		return false;
+	}
+	return true;
+}
+
 void BootloaderPromptDriver::probe() {
 	static const uint8_t probeSeq[] = "\n";
-	this->state = BootloaderPromptDriver::Stage::PROBE;
-	if (this->serialWriteFunc) {
-		size_t writtenBytes;
-		clogD << "Starting probe\n";
-		this->serialWriteFunc(writtenBytes, probeSeq, sizeof(probeSeq) -1 );  /* We don't send the terminating '\0' of probeSeq */
-	}
-	else {
-		clogE << "Cannot start probing because no write functor is available\n";
+	clogD << "Starting probe\n";
+	if (!this->sendBytes(probeSeq, sizeof(probeSeq)-1, BootloaderPromptDriver::Stage::PROBE)) { /* We don't send the terminating '\0' of cmdSeq, thus -1*/
+		clogE << "Failed to write the probe sequence\n";
 	}
 }
 
@@ -95,16 +143,7 @@ bool BootloaderPromptDriver::selectModeRun() {
 		clogE << "Cannot type command without a valid prompt\n";
 		return false;
 	}
-	if (this->serialWriteFunc) {
-		size_t writtenBytes;
-		clogD << "Entering run command\n";
-		this->state = BootloaderPromptDriver::Stage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
-		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
-	}
-	else {
-		clogE << "Cannot type commands on CLI because no write functor is available\n";
-	}
-	return true;
+	return this->sendBytes(cmdSeq, sizeof(cmdSeq)-1, BootloaderPromptDriver::Stage::RX_FLUSH); /* We don't send the terminating '\0' of cmdSeq, thus -1*/
 }
 
 bool BootloaderPromptDriver::selectModeUpgradeFw(FFirmwareTransferStartFunc callback) {
@@ -114,24 +153,19 @@ bool BootloaderPromptDriver::selectModeUpgradeFw(FFirmwareTransferStartFunc call
 		clogE << "Cannot type command without a valid prompt\n";
 		return false;
 	}
-	if (this->serialWriteFunc) {
-		size_t writtenBytes;
-		clogD << "Entering upload ebl command\n";
-		this->state = BootloaderPromptDriver::Stage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
-		this->firmwareTransferStartFunc = callback;
-		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
+	bool success = this->sendBytes(cmdSeq, sizeof(cmdSeq)-1, BootloaderPromptDriver::Stage::XMODEM_READY_CHAR_WAIT); /* We don't send the terminating '\0' of cmdSeq, thus -1*/
+	if (!success) {
+		return false;
 	}
-	else {
-		clogE << "Cannot type commands on CLI because no write functor is available\n";
-	}
+	this->firmwareTransferStartFunc = callback;
 	return true;
 }
 
-NSEZSP::BootloaderPromptDriver::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
+void BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	uint8_t val;
 
 	if (i_data.empty()) {
-		return this->state;
+		return;
 	}
 	if (this->state == BootloaderPromptDriver::Stage::RX_FLUSH) {
 		/* We are flushing the leading bytes, discard input and restart the initial RX timer */
@@ -139,7 +173,7 @@ NSEZSP::BootloaderPromptDriver::Stage BootloaderPromptDriver::appendIncoming(NSS
 		i_data.clear();
 		timer->stop();
 		timer->start(BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT, this);
-		return state;
+		return;
 	}
 	else if (this->state == BootloaderPromptDriver::Stage::XMODEM_READY_CHAR_WAIT) {
 		/* Note: it is safe to invoke method bak() because we know that i_data is not empty from the test above */
@@ -223,7 +257,6 @@ NSEZSP::BootloaderPromptDriver::Stage BootloaderPromptDriver::appendIncoming(NSS
 	if (lastRXByteIsNUL) {
 		accumulatedBytes.clear();
 	}
-	return state;
 }
 
 const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";

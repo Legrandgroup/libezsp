@@ -27,18 +27,28 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	if (ip_observer) {
 		registerObserver(ip_observer);
 	}
+	/* By default, no parsing is done on the adapter serial port */
+	this->ash.disable();
+	this->blp.disable();
+	/* Register ourselves as an observer of EZSP frames decoded out of the ASH stream. These EZSP frames will be handled by handleInputData() */
+	this->ash.registerObserver(this);
+}
+
+CEzspDongle::~CEzspDongle() {
+	this->ash.disable();
+	this->blp.disable();
+	this->ash.unregisterObserver(this);
 }
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
 	this->uartHandle = uartHandle;
-	if (this->ash.hasARegisteredSerialWriter()) {
-		/* If ash knows a way to write to the serial port, update it writer functor to use the new uartHandle */
-		this->ash.registerSerialWriter(uartHandle);
-	}
-	if (this->blp.hasARegisteredSerialWriter()) {
-		/* If blp knows a way to write to the serial port, update it writer functor to use the new uartHandle */
-		this->blp.registerSerialWriter(uartHandle);
-	}
+	this->uartHandle->setIncomingDataHandler(&uartIncomingDataHandler); /* UART will send incoming bytes to the uartIncomingDataHandler member we hold as attribute */
+	/* Allow ash and blp objects to read to read bytes from the serial port */
+	this->ash.registerSerialReadObservable(&(this->uartIncomingDataHandler));   /* Ask ASH to observe our uartIncomingDataHandler observable so that it will be notified about incoming bytes */
+	this->blp.registerSerialReadObservable(&(this->uartIncomingDataHandler));   /* Ask BLP to observe our uartIncomingDataHandler observable so that it will be notified about incoming bytes */
+	/* Allow ash and blp objects to write to the serial port via our own uartHandle attribute */
+	this->ash.registerSerialWriter(this->uartHandle);
+	this->blp.registerSerialWriter(this->uartHandle);
 }
 
 bool CEzspDongle::reset() {
@@ -50,13 +60,9 @@ bool CEzspDongle::reset() {
 		return false;
 	}
 	else {
-		this->uartHandle->setIncomingDataHandler(&uartIncomingDataHandler); /* UART will send incoming bytes to the uartIncomingDataHandler member we hold as attribute */
-		this->ash.registerSerialReadObservable(&(this->uartIncomingDataHandler));   /* Ask ASH to observe our uartIncomingDataHandler observable so that it will be notified about incoming bytes */
-		/* Allow the blp object to write to the serial port via our own uartHandle attribute */
-		this->ash.registerSerialWriter(this->uartHandle);
-		this->ash.registerObserver(this);   /* Register ourselves as an observer of EZSP frames decoded out of the ASH stream. These EZSP frames will be handled by handleInputData() */
-
 		/* Send a ASH reset to the NCP */
+		this->blp.disable();
+		this->ash.enable();
 		if (!this->ash.sendResetNCPFrame()) {
 			clogE << "Failed sending reset frame to serial port\n";
 			return false;
@@ -163,9 +169,8 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	}
 	else {
 		clogE << "EZSP message recevied while in bootloader prompt mode... Should not reach here\n";
-		/* No ash decoding in bootloader mode */
-		/* When switching to the bootloader, we are expecting a prompt (see class BootloaderPromptDriver for more details) */
-		blp.appendIncoming(li_data);	//FIXME: now incoming serial traffic should be handled by bootloader driver directly (observer)
+		/* In bootloader parsing mode, incoming bytes are read directly by the bootloader prompt driver from the serial port */
+		/* Bootloader decoder state changes are handled by callbacks we register on the bootloader prompt driver, no data payload is received asynchronously here */
 	}
 }
 
@@ -237,16 +242,16 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
         /* We are requested to get out of the booloader */
         this->lastKnownMode = requestedMode;
 		/* Allow the blp object to write to the serial port via our own pUart attribute */
-		this->blp.registerSerialWriter(this->uartHandle);
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
 			this->ash.enable();	/* Enable ASH driver */
-			//this->blp.disable();	/* Disable BLP driver */
+			this->blp.disable();	/* Disable BLP driver */
             /* Restart the EZSP startup procedure here */
             this->reset();
         });
+		this->blp.enable();
         this->blp.reset();    /* Reset the bootloader parser until we get a valid bootloader prompt */
         return;
     }
@@ -256,9 +261,8 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
 		this->ash.disable();	/* Disable ASH driver */
-		//this->blp.enable();	/* Enable BLP driver */
+		this->blp.enable();	/* Enable BLP driver */
 		/* Allow the blp object to write to the serial port via our own pUart attribute */
-		this->blp.registerSerialWriter(this->uartHandle);
         this->blp.registerPromptDetectCallback([this]() {
             notifyObserversOfBootloaderPrompt();
             /* Note: we provide selectModeUpgradeFw() with a callback that will be invoked when the firmware image transfer over serial link can start */

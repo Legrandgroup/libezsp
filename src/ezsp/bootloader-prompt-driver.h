@@ -10,6 +10,7 @@
 #include <memory>	// For std::unique_ptr
 #include <functional>   // For std::function
 
+#include "spi/GenericAsyncDataInputObservable.h"
 #include "spi/TimerBuilder.h"
 #include "spi/ByteBuffer.h"
 #include "spi/IUartDriver.h"
@@ -26,7 +27,7 @@ namespace NSEZSP {
 	XX(XMODEM_READY_CHAR_WAIT,) /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */ \
 	XX(XMODEM_XFR,)             /*<! A firmware image transfer using X-modem is ongoing */ \
 
-class BootloaderPromptDriver : protected NSSPI::ITimerVisitor {
+class BootloaderPromptDriver : public NSSPI::IAsyncDataInputObserver, protected NSSPI::ITimerVisitor {
 public:
 	/**
 	 * @brief Internal stages for bootloader prompt detection and interaction
@@ -38,9 +39,9 @@ public:
 	 */
 	DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST);
 
-	static const std::string GECKO_BOOTLOADER_HEADER;
-	static const std::string GECKO_BOOTLOADER_PROMPT;
-	static const uint16_t GECKO_QUIET_RX_TIMEOUT;
+	static const std::string GECKO_BOOTLOADER_HEADER;	/*!< A hardcoded string to search the Gecko bootloader header */
+	static const std::string GECKO_BOOTLOADER_PROMPT;	/*!< A hardcoded string to search the Gecko bootloader prompt */
+	static const uint16_t GECKO_QUIET_RX_TIMEOUT;	/*!< A receive timeout (in ms) that allows us to decide that the bootloader has finished outputting ongoing messages to the console */
 
 	typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
 	typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
@@ -48,31 +49,46 @@ public:
 	/**
 	 * @brief Constructor
 	 *
-	 * Construction without arguments is not allowed
+	 * @warning Construction without arguments is not allowed
 	 */
-
 	BootloaderPromptDriver() = delete;
 
 	/**
 	 * @brief Constructor
 	 *
 	 * @param i_timer_builder Timer builder object used to generate timers
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
-	explicit BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder);
+	BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable = nullptr);
 
 	/**
 	 * @brief Copy constructor
 	 *
-	 * Copy construction is not allowed
+	 * @warning Copy construction is not allowed
 	 */
 	BootloaderPromptDriver(const BootloaderPromptDriver&) = delete;
 
 	/**
+	 * @brief Destructor
+	 */
+	~BootloaderPromptDriver() = default;
+
+	/**
 	 * @brief Assignment operator
 	 *
-	 * Assignment is not allowed
+	 * @warning Assignment is not allowed
 	 */
-	BootloaderPromptDriver& operator=(BootloaderPromptDriver) = delete; /* No assignment allowed */
+	BootloaderPromptDriver& operator=(BootloaderPromptDriver) = delete;
+
+	/**
+	 * @brief Disable reading/writing to the serial port
+	 */
+	void disable();
+
+	/**
+	 * @brief Enable reading/writing to the serial port
+	 */
+	void enable();
 
 	/**
 	 * @brief Register a serial writer functor
@@ -98,6 +114,20 @@ public:
 	bool hasARegisteredSerialWriter() const;
 
 	/**
+	 * @brief Set the serial async observable that will notify us of new incoming console characters
+	 * 
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
+	 */
+	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
+
+	/**
+	 * @brief Callback invoked by observable on received bytes (part of the IAsyncDataInputObserver interface)
+	 * @param dataIn The pointer to the incoming bytes buffer
+	 * @param dataLen The size of the data to read inside dataIn
+	 */
+	void handleInputData(const unsigned char* dataIn, const size_t dataLen);
+
+	/**
 	 * @brief Register a prompt detection callback
 	 *
 	 * @param newObsPromptDetectCallback A callback function of that we will invoke each time we reach a bootloader prompt (or nullptr to disable callbacks)
@@ -106,6 +136,10 @@ public:
 
 	/**
 	 * @brief Reset the bootloader parser state
+	 * 
+	 * @note We will first flush the incoming buffer, during a timeout of BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT ms.
+	 *       Then we will start probing for the console to detect a prompt
+	 * @warning Be sure to invoke enable() before reset() so that we are allowed to read/write
 	 */
 	void reset();
 
@@ -132,14 +166,25 @@ public:
 	 */
 	bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
 
+protected:
+	/**
+	 * @brief Utility function to write a specific byte stream to the bootloader console
+	 * 
+	 * @param[in] dataOut The pointer to a buffer containing the bytes to write
+	 * @param dataLen The size of the data to write from dataOut
+	 * @param newStage The internal stage BootloaderPromptDriver::Stage to assign to this->state just before writing the bytes
+	 * 
+	 * @return true if the bytes could succesfully be written
+	 */
+	bool sendBytes(const uint8_t* dataOut, size_t dataLen, BootloaderPromptDriver::Stage newState);
+
 	/**
 	 * @brief Decode new incoming bytes output by the bootloader
 	 *
 	 * @param i_data New bytes to add to the previously accumulated ones
 	 */
-	BootloaderPromptDriver::Stage appendIncoming(NSSPI::ByteBuffer& i_data);
+	void appendIncoming(NSSPI::ByteBuffer& i_data);
 
-protected:
 	/**
 	 * @brief Internal method invoked on timeouts
 	 */
@@ -152,11 +197,14 @@ protected:
 	 */
 	static std::string trim(const std::string &s);
 
+/* Attributes */
 private:
+	bool enabled;	/*!< Is this driver enabled? If not, no read/write will be performed to the serial port */
 	std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
 	NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
 	bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
 	BootloaderPromptDriver::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
+	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
 	FBootloaderWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
 	std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
 	FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */

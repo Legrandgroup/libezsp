@@ -48,9 +48,18 @@ public:
     CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    virtual ~CEzspDongle() = default;
+    
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~CEzspDongle();
 
-    CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
+	/**
+	 * @brief Assignment operator
+	 *
+	 * @warning Assignment is not allowed
+	 */
+	CEzspDongle& operator=(CEzspDongle) = delete;
 
     /**
      * @brief Set the serial port to use for communication with the EZSP adapter
