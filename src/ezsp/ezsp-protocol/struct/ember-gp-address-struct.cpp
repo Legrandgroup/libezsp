@@ -64,8 +64,7 @@ NSSPI::ByteBuffer CEmberGpAddressStruct::getRaw() const
     return lo_raw;
 }
 
-std::string CEmberGpAddressStruct::String() const
-{
+std::string CEmberGpAddressStruct::toString() const {
     std::stringstream buf;
 
     buf << "CEmberGpAddressStruct: { ";
