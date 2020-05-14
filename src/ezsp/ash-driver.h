@@ -24,7 +24,12 @@ class AshDriver : public NSSPI::GenericAsyncDataInputObservable, public NSSPI::I
 public:
 	typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FAshDriverWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
 
-	AshDriver() = delete; /* Construction without arguments is not allowed */
+	/**
+	 * @brief Default contructor
+	 * 
+	 * @warning Construction without arguments is not allowed
+	 */
+	AshDriver() = delete;
 
 	/**
 	 * @brief Constructor
@@ -33,16 +38,26 @@ public:
 	 * @param i_timer_builder Timer builder object used to generate timers
 	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
-	AshDriver(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable = nullptr);
+	AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable = nullptr);
 
-	AshDriver(const AshDriver&) = delete; /* No copy construction allowed */
+	/**
+	 * @brief Copy constructor
+	 *
+	 * @warning Copy construction is not allowed
+	 */
+	AshDriver(const AshDriver&) = delete;
 
 	/**
 	 * @brief Destructor
 	 */
 	~AshDriver();
 
-	AshDriver& operator=(AshDriver) = delete; /* No assignment allowed */
+	/**
+	 * @brief Assignment operator
+	 *
+	 * @warning Assignment is not allowed
+	 */
+	AshDriver& operator=(AshDriver) = delete;
 
 	/**
 	 * @brief Disable reading/writing to the serial port
@@ -71,18 +86,18 @@ public:
 	void registerSerialWriter(NSSPI::IUartDriverHandle uartHandle);
 
 	/**
-	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
-	 * 
-	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
-	 */
-	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
-
-	/**
 	 * @brief Check if a serial writer functor is registered
 	 *
 	 * @return true if a serial writer functor is active or false otherwise
 	 */
 	bool hasARegisteredSerialWriter() const;
+
+	/**
+	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
+	 * 
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
+	 */
+	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
 
 	/**
 	 * @brief Callback invoked by observable on received bytes (part of the IAsyncDataInputObserver interface)
@@ -151,6 +166,7 @@ protected:
 	 */
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
+/* Attributes */
 private:
 	bool enabled;	/*!< Is this driver enabled? If not, no read/write will be performed to the serial port */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
