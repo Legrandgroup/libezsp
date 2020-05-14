@@ -90,8 +90,7 @@ uint16_t CEmberGpSinkTableOption::get() const
     return o_options;
 }
 
-std::string CEmberGpSinkTableOption::String() const
-{
+std::string CEmberGpSinkTableOption::toString() const {
     std::stringstream buf;
 
     buf << "CEmberGpSinkTableOption : { ";

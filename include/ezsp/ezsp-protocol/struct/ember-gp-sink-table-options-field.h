@@ -112,7 +112,7 @@ class LIBEXPORT CEmberGpSinkTableOption
          *
          * @return The resulting string
          */
-        std::string String() const;
+	std::string toString() const;
 
         /**
          * @brief Serialize to an iostream
@@ -122,8 +122,8 @@ class LIBEXPORT CEmberGpSinkTableOption
          *
          * @return The new output stream with serialized data appended
          */
-        friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
-			out << data.String();
+	friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
+			out << data.toString();
 			return out;
 		}
 
