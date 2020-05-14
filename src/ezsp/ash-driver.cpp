@@ -107,7 +107,7 @@ void AshDriver::handleInputData(const unsigned char* dataIn, const size_t dataLe
 		this->appendIncoming(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
 	}
 	else {
-		clogD << "AshDriver ignoring incoming data in disabled mode\n";
+		//clogD << "AshDriver ignoring incoming data in disabled mode\n";
 	}
 }
 

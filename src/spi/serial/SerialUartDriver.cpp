@@ -4,7 +4,6 @@
  * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
-#define SERIAL_DEBUG
 #include <exception>
 #ifdef SERIAL_DEBUG
 # include <iomanip>

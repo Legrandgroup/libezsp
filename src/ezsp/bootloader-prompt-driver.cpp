@@ -93,7 +93,7 @@ void BootloaderPromptDriver::handleInputData(const unsigned char* dataIn, const 
 		this->appendIncoming(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
 	}
 	else {
-		clogD << "BootloaderPromptDriver ignoring incoming data in disabled mode\n";
+		//clogD << "BootloaderPromptDriver ignoring incoming data in disabled mode\n";
 	}
 }
 
