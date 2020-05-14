@@ -22,26 +22,30 @@ mainEzspTest --help
 
 ### Using libserialcpp and C++11 threads under Linux
 
-In order to compile for Linux, you will first need a working installation of [libserialcpp](https://github.com/Legrandgroup/serial).
+In order to compile for Linux, you will first need a working installation of [libserial](https://github.com/Legrandgroup/serial).
 
-Let's assume the source code for libserialcpp is checked out in directory `~/serial` (this will be the assumption in all lines below).
-In order to compile libserialcpp, type the following commands:
+Let's assume the source code for libserial is checked out in directory `~/serial` (this will be the assumption in all lines below).
+In order to compile libserial, either build it the standard way (read its REAME for this, but the build currently depends on catkin+cmake).
+Alternatively, you can use our custom Makefile for Linux (does not depend on catkin nor cmake) by typing the following commands:
 ```
 cd ~/serial
 make -f Makefile.linux-nocmake all
 ```
 
-This should result in a binary shared library built as file `~/serial/libserialcpp.so`
+Please adjust the -L and -I/-isystem flags depending on the process you used to compile:
+* Compiling using custom Makefile should result in a binary shared library built as file `~/serial/libserial.so`
+* Compiling using the official process will result in a binary shared library built as file `~/serial/build/devel/lib/libserial.so`
+Also, we are not issueing `make install` here, but rather using the comiplation results directly in the sources directory structure. -L and -I/-isystem flags will have to be updated if you install `libserial` (or if you don't compile but use your distro-provided installed binaries)
 
-Now, we have to compile libezsp pointing it to the libserialcpp library we have just generated (in the example below, we assume the sources for libezsp are located in directory `~/libezsp`).
+Now, we have to compile libezsp pointing it to the libserial library we have just generated (in the example below, we assume the sources for libezsp are located in directory `~/libezsp`).
 Issue the following commands in order to compile libezsp:
 ```
 cd ~/libezsp
-LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_RARITAN=OFF -DUSE_CPPTHREADS=ON -DUSE_SERIALCPP=ON -DUSE_AESCUSTOM=ON
+LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_RARITAN=OFF -DUSE_CPPTHREADS=ON -DUSE_SERIALCPP=ON -DUSE_MOCKSERIAL=OFF -DUSE_AESCUSTOM=ON
 make
 ```
 
-Additional environment variables tell the compiler that libserialcpp.so can be found in `$HOME/serial` and headers are in `$HOME/serial/include` (this should be the default after the libserialcpp compilation steps above).
+Additional environment variables tell the compiler that libserial.so can be found in `$HOME/serial` and headers are in `$HOME/serial/include` (this should be the case if compiling libserial from sources using the custome Makefile as detailed in the steps above).
 
 In order to run the sample code under Linux, issue the following command in a terminal:
 ```
