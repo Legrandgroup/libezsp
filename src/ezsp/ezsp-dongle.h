@@ -69,10 +69,10 @@ public:
      */
     void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
 
-    /**
-     * @brief Callback invoked on UART received bytes
-     */
-    void handleInputData(const unsigned char* dataIn, const size_t dataLen);
+	/**
+	 * @brief Callback invoked on EZSP received bytes
+	 */
+	void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
 	/**
 	 * @brief Callback invoked on ASH info
@@ -108,9 +108,9 @@ private:
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
+	NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler; /*!< The observable handler that will dispatch received incoming bytes to observers */
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
 	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
-    NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
     std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */

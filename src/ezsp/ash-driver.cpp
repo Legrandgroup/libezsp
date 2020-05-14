@@ -37,15 +37,24 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
-AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder) :
+AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable) :
 	ackTimer(i_timer_builder.create()),
 	ashCodec(ipCb),
+	serialReadObservable(serialReadObservable),
 	serialWriteFunc(nullptr) {
 	/* Tell the codec that it should invoke cancelTimer() below to cancel ACk timeoutes when a proper ASH ACK is received */
 
 	this->ashCodec.setAckTimeoutCancelFunc([this]() {
 		this->ackTimer->stop();
 	});
+	this->registerSerialReadObservable(this->serialReadObservable);	/* Register ourselves as an async observer if a valid serialReadObservable was provided */
+}
+
+AshDriver::~AshDriver() {
+	this->ashCodec.setAckTimeoutCancelFunc(nullptr);	/* Disable any timeout callback */
+	if (this->serialReadObservable) {	/* Remove ourselves from the observers */
+		this->serialReadObservable->unregisterObserver(this);
+	}
 }
 
 void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
@@ -71,6 +80,21 @@ void AshDriver::registerSerialWriter(NSSPI::IUartDriverHandle uartHandle) {
 
 bool AshDriver::hasARegisteredSerialWriter() const {
 	return (this->serialWriteFunc != nullptr);
+}
+
+void AshDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable) {
+	if (this->serialReadObservable) {	/* First, unregister ourselves from any previous async observable */
+		serialReadObservable->unregisterObserver(this);
+	}
+	this->serialReadObservable = serialReadObservable;
+	if (serialReadObservable) {
+		serialReadObservable->registerObserver(this);	/* Register ourselves as an async observer to receive incoming bytes received from the serial port */
+	}
+}
+
+void AshDriver::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
+	NSSPI::ByteBuffer inputData(dataIn, dataLen);
+	this->decode(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
 }
 
 bool AshDriver::sendAshFrame(const NSSPI::ByteBuffer& frame) {
@@ -121,8 +145,19 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 	return true;
 }
 
-NSSPI::ByteBuffer AshDriver::decode(NSSPI::ByteBuffer& i_data) {
-	return this->ashCodec.appendIncoming(i_data);
+void AshDriver::decode(NSSPI::ByteBuffer& i_data) {
+	NSSPI::ByteBuffer ezspPayload = this->ashCodec.appendIncoming(i_data);
+	if (!ezspPayload.empty()) {
+		std::size_t ezspPayloadSize = ezspPayload.size();
+		if (ezspPayloadSize>128) {	/* ASH should not carry payloads larger than 128 bytes */
+			clogE << "EZSP payload too large. Ignored\n";
+		}
+		else {
+			uint8_t ezspAsMemoryBuffer[ezspPayloadSize];
+			ezspPayload.toMemory(ezspAsMemoryBuffer);
+			this->notifyObservers(static_cast<unsigned char*>(ezspAsMemoryBuffer), ezspPayloadSize);
+		}
+	}
 }
 
 bool AshDriver::isConnected() const {

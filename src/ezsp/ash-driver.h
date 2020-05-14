@@ -18,19 +18,29 @@
 
 namespace NSEZSP {
 
-class AshDriver : public NSSPI::GenericAsyncDataInputObservable, protected NSSPI::ITimerVisitor {
+/* This class is an observer of the serial port
+it is also observable by whoever wants to receive decoded ASH frame payloads */
+class AshDriver : public NSSPI::GenericAsyncDataInputObservable, public NSSPI::IAsyncDataInputObserver, protected NSSPI::ITimerVisitor {
 public:
 	typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FAshDriverWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
 
 	AshDriver() = delete; /* Construction without arguments is not allowed */
 
 	/**
+	 * @brief Constructor
+	 * 
 	 * @param ipCb Callback invoked on ASH state change
 	 * @param i_timer_builder Timer builder object used to generate timers
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
-	AshDriver(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder);
+	AshDriver(CAshCallback *ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable = nullptr);
 
 	AshDriver(const AshDriver&) = delete; /* No copy construction allowed */
+
+	/**
+	 * @brief Destructor
+	 */
+	~AshDriver();
 
 	AshDriver& operator=(AshDriver) = delete; /* No assignment allowed */
 
@@ -51,11 +61,25 @@ public:
 	void registerSerialWriter(NSSPI::IUartDriverHandle uartHandle);
 
 	/**
+	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
+	 * 
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
+	 */
+	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
+
+	/**
 	 * @brief Check if a serial writer functor is registered
 	 *
 	 * @return true if a serial writer functor is active or false otherwise
 	 */
 	bool hasARegisteredSerialWriter() const;
+
+	/**
+	 * @brief Callback invoked by observable on received bytes (part of the IAsyncDataInputObserver interface)
+	 * @param dataIn The pointer to the incoming bytes buffer
+	 * @param dataLen The size of the data to read inside dataIn
+	 */
+	void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
 	/**
 	 * @brief Send an ASH frame via the registered serial port writer functor
@@ -93,16 +117,34 @@ public:
 	 */
 	bool sendDataFrame(const NSSPI::ByteBuffer& i_data);
 
-	NSSPI::ByteBuffer decode(NSSPI::ByteBuffer& i_data);
-
+	/**
+	 * @brief Get the current ASH connection state
+	 * 
+	 * @return true if ASH is in connected state
+	 */
 	bool isConnected() const;
 
 protected:
+	/**
+	 * @brief Append a new chunk of incoming ASH bytes and try to decode the current accumulated bytes into an EZSP message
+	 * 
+	 * @param[in] i_data The new incoming ASH bytes
+	 * 
+	 * @note If an EZSP message could be extracted out of an ASH DATA frame, then our observers will be pushed a notification containing the extracted EZSP payload
+	 */
+	void decode(NSSPI::ByteBuffer& i_data);
+
+	/**
+	 * @brief Internal callback invoked when timeouts occur
+	 * 
+	 * @param[in] triggeringTimer The timer that timed out
+	 */
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
+	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
 	FAshDriverWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
 };
 

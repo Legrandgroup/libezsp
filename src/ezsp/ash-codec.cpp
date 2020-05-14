@@ -107,9 +107,9 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 
 	uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + nextExpectedNEackNum;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec creating DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+	clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 	      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
-	      << ", seqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
+	      << ", ezspSeqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
 	this->frmNum &= 0x07;
 
@@ -297,6 +297,9 @@ NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
 			//LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
 			if (!inputError && !this->in_msg.empty()) {
 				extractedPayload = this->processInterFlagStream();
+				/* FIXME: if we got several ASH frames in a single incoming byte buffer, only the first valid ASH DATA payload will be returned here
+				 * The subequent ASH data payload won't be lost but will be parsed only next time appendIncoming() is invoked (that is to say next time we receive more bytes), which may be much later
+				*/
 			}
 			this->in_msg.clear();
 			inputError = false;
