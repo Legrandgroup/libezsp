@@ -172,8 +172,8 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 		return;
 	}
 	/* Note: this function will handle all successfully decoded incoming EZSP messages */
-	/* It won't be invoked in bootloader prompt mode, because the ASH drvier is then disabled */
-	clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+	/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
+	//clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
 	/* Got an correct incoming EZSP message... will be forwarded to the user */
 	if (ezspMessage.size() < 3) {	/* EZSP message should contain at least 1 byte for sequence, 1 byte for frame control and a message ID field (1 or 2 bytes) */

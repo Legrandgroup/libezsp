@@ -87,7 +87,7 @@ NSSPI::ByteBuffer AshCodec::forgeAckFrame(void) {
 
 	uint8_t ashControlByte = this->nextExpectedNEackNum | 0x80;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec creating ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+	//clogD << "AshCodec creating ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
 	uint16_t crc = computeCRC(lo_msg);
 	lo_msg.push_back(u16_get_hi_u8(crc));
@@ -107,9 +107,9 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 
 	uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + nextExpectedNEackNum;
 	lo_msg.push_back(ashControlByte);
-	clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
-	      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
-	      << ", ezspSeqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
+	//clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+	//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
+	//      << ", ezspSeqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
 	this->frmNum &= 0x07;
 
@@ -160,8 +160,8 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 		uint8_t remoteAckNum = ashControlByte;
 		remoteAckNum >>= 4;
 		remoteAckNum &= 0x07;
-		clogD << "AshCodec decoding DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
-		      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+		//clogD << "AshCodec decoding DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
+		//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
 		if (expectedAckNum != remoteAckNum) {
 			clogE << "Received a wrong ack num: " << +(remoteAckNum) << ", expected: " << +(expectedAckNum) << "\n";
