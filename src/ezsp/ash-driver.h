@@ -157,7 +157,7 @@ protected:
 	 * 
 	 * @note If an EZSP message could be extracted out of an ASH DATA frame, then our observers will be pushed a notification containing the extracted EZSP payload
 	 */
-	void decode(NSSPI::ByteBuffer& i_data);
+	void appendIncoming(NSSPI::ByteBuffer& i_data);
 
 	/**
 	 * @brief Internal callback invoked when timeouts occur

@@ -104,10 +104,10 @@ void AshDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObserva
 void AshDriver::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
 	if (this->enabled) { /* We only process incoming traffic on serial port in enabled mode */
 		NSSPI::ByteBuffer inputData(dataIn, dataLen);
-		this->decode(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
+		this->appendIncoming(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
 	}
 	else {
-		clogD << __func__ << "(): ignoring incoming data in disabled mode\n";
+		clogD << "AshDriver ignoring incoming data in disabled mode\n";
 	}
 }
 
@@ -163,7 +163,7 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 	return true;
 }
 
-void AshDriver::decode(NSSPI::ByteBuffer& i_data) {
+void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	NSSPI::ByteBuffer ezspPayload = this->ashCodec.appendIncoming(i_data);
 	if (!ezspPayload.empty()) {
 		std::size_t ezspPayloadSize = ezspPayload.size();
