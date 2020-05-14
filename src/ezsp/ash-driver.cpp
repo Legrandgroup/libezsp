@@ -38,6 +38,7 @@ constexpr uint8_t ASH_TIMEOUT         = -1;
 constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable) :
+	enabled(true),
 	ackTimer(i_timer_builder.create()),
 	ashCodec(ipCb),
 	serialReadObservable(serialReadObservable),
@@ -55,6 +56,14 @@ AshDriver::~AshDriver() {
 	if (this->serialReadObservable) {	/* Remove ourselves from the observers */
 		this->serialReadObservable->unregisterObserver(this);
 	}
+}
+
+void AshDriver::disable() {
+	this->enabled = false;
+}
+
+void AshDriver::enable() {
+	this->enabled = true;
 }
 
 void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
@@ -93,8 +102,13 @@ void AshDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObserva
 }
 
 void AshDriver::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
-	NSSPI::ByteBuffer inputData(dataIn, dataLen);
-	this->decode(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
+	if (this->enabled) { /* We only process incoming traffic on serial port in enabled mode */
+		NSSPI::ByteBuffer inputData(dataIn, dataLen);
+		this->decode(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
+	}
+	else {
+		clogD << __func__ << "(): ignoring incoming data in disabled mode\n";
+	}
 }
 
 bool AshDriver::sendAshFrame(const NSSPI::ByteBuffer& frame) {
@@ -102,6 +116,10 @@ bool AshDriver::sendAshFrame(const NSSPI::ByteBuffer& frame) {
 
 	if (!this->serialWriteFunc) {
 		clogE << "Cannot send NCP reset frame because no write functor is available\n";
+		return false;
+	}
+	if (!this->enabled) {
+		clogW << "Requested to write to serial port while in disabled mode\n";
 		return false;
 	}
 	if (this->serialWriteFunc(writtenBytes, frame.data(), frame.size()) < 0 ) {

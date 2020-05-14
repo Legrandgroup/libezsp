@@ -135,41 +135,38 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	NSSPI::ByteBuffer li_data(dataIn, dataLen);
     NSSPI::ByteBuffer lo_msg;
 
-	// FIXME: Refactor this to properly handle bootloader prompt now that ASH driver is an observer/observable (should to the same on blp)
+	/* Note: this function will handle all successfully decoded incoming EZSP messages */
+	/* It won't be invoked in bootloader prompt mode, because the ASH drvier is then disabled */
 	clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(li_data) << "\n";
-	//while (!li_data.empty()) {
-        if (this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN) {
-            //lo_msg = ash.decode(li_data); // Temporarily disabled... now ash directly reads the serial port
 
-            /* Got an incoming EZSP message... will be forwarded to the user */
-            if (!li_data.empty()) {
-                std::size_t l_size;
+	if (this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN) {
+		/* Got an incoming EZSP message... will be forwarded to the user */
+		if (!li_data.empty()) {
+			std::size_t l_size;
 
-                /* Extract the EZSP command and store it into l_cmd */
-                EEzspCmd l_cmd = static_cast<EEzspCmd>(li_data.at(2));
-                /* Payload will remain in buffer li_data */
-                /* Remove the leading EZSP header from the payload */
-                li_data.erase(li_data.begin(), li_data.begin()+3);  /* FIXME: make sure buffer is more than 2 bytes large */
-                /* Remove the trailing EZSP CRC16 from the payload */
-                li_data.erase(li_data.end()-2, li_data.end());  /* FIXME: make sure buffer is more than 2 bytes large */
+			/* Extract the EZSP command and store it into l_cmd */
+			EEzspCmd l_cmd = static_cast<EEzspCmd>(li_data.at(2));
+			/* Payload will remain in buffer li_data */
+			/* Remove the leading EZSP header from the payload */
+			li_data.erase(li_data.begin(), li_data.begin()+3);  /* FIXME: make sure buffer is more than 2 bytes large */
+			/* Remove the trailing EZSP CRC16 from the payload */
+			li_data.erase(li_data.end()-2, li_data.end());  /* FIXME: make sure buffer is more than 2 bytes large */
 
-                /* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
-				if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
-					this->ash.sendAckFrame();
-					this->handleResponse(l_cmd); /* Unqueue the message (and send the next one) if required */
-				}
-				/* Notify the user(s) (via observers) about this incoming EZSP message */
-				notifyObserversOfEzspRxMessage(l_cmd, li_data);
-            }
-        }
-        else
-        {
-            clogE << "Error: temporarily bootloader prompt is not supported... Should not reach here\n";
-            /* No ash decoding in bootloader mode */
-            /* When switching to the bootloader, we are expecting a prompt (see class BootloaderPromptDriver for more details) */
-			blp.appendIncoming(li_data);
-        }
-    //}
+			/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
+			if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
+				this->ash.sendAckFrame();
+				this->handleResponse(l_cmd); /* Unqueue the message (and send the next one) if required */
+			}
+			/* Notify the user(s) (via observers) about this incoming EZSP message */
+			notifyObserversOfEzspRxMessage(l_cmd, li_data);
+		}
+	}
+	else {
+		clogE << "EZSP message recevied while in bootloader prompt mode... Should not reach here\n";
+		/* No ash decoding in bootloader mode */
+		/* When switching to the bootloader, we are expecting a prompt (see class BootloaderPromptDriver for more details) */
+		blp.appendIncoming(li_data);	//FIXME: now incoming serial traffic should be handled by bootloader driver directly (observer)
+	}
 }
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )
@@ -245,6 +242,8 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
             notifyObserversOfBootloaderPrompt();
             this->blp.selectModeRun(); /* As soon as we detect a bootloader prompt, we will request to run the application (EZSP NCP mode) */
             this->lastKnownMode = CEzspDongle::Mode::EZSP_NCP;   /* After launching the run command, we are in EZSP/ZSH mode */
+			this->ash.enable();	/* Enable ASH driver */
+			//this->blp.disable();	/* Disable BLP driver */
             /* Restart the EZSP startup procedure here */
             this->reset();
         });
@@ -256,6 +255,8 @@ void CEzspDongle::setMode(CEzspDongle::Mode requestedMode) {
         clogD << "Attaching bootloader parser to serial port\n";
         /* We are requesting to switch from EZSP/ASH to bootloader parsing mode, and then perform a firmware upgrade */
         this->lastKnownMode = requestedMode;
+		this->ash.disable();	/* Disable ASH driver */
+		//this->blp.enable();	/* Enable BLP driver */
 		/* Allow the blp object to write to the serial port via our own pUart attribute */
 		this->blp.registerSerialWriter(this->uartHandle);
         this->blp.registerPromptDetectCallback([this]() {

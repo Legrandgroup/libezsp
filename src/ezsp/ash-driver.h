@@ -45,6 +45,16 @@ public:
 	AshDriver& operator=(AshDriver) = delete; /* No assignment allowed */
 
 	/**
+	 * @brief Disable reading/writing to the serial port
+	 */
+	void disable();
+
+	/**
+	 * @brief Enable reading/writing to the serial port
+	 */
+	void enable();
+
+	/**
 	 * @brief Register a serial writer functor
 	 *
 	 * @param newWriteFunc A callback function of type int func(size_t& writtenCnt, const void* buf, size_t cnt), that we will invoke to write bytes to the serial port we are decoding (or nullptr to disable callbacks)
@@ -142,6 +152,7 @@ protected:
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
 private:
+	bool enabled;	/*!< Is this driver enabled? If not, no read/write will be performed to the serial port */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
 	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
