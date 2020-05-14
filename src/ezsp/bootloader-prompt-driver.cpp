@@ -14,15 +14,15 @@
 
 #include "spi/ILogger.h"
 
-DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::EBootloader);
-
 using NSEZSP::BootloaderPromptDriver;
+
+DEFINE_ENUM(Stage, BOOTLOADER_STAGE_LIST, NSEZSP::BootloaderPromptDriver);
 
 BootloaderPromptDriver::BootloaderPromptDriver(const NSSPI::TimerBuilder& i_timer_builder) :
 	timer(i_timer_builder.create()),
 	accumulatedBytes(),
 	bootloaderCLIChecked(false),
-	state(EBootloader::Stage::RX_FLUSH),
+	state(BootloaderPromptDriver::Stage::RX_FLUSH),
 	serialWriteFunc(nullptr),
 	promptDetectCallback(nullptr),
 	firmwareTransferStartFunc(nullptr) {
@@ -67,7 +67,7 @@ bool BootloaderPromptDriver::hasARegisteredSerialWriter() const {
 }
 
 void BootloaderPromptDriver::reset() {
-	this->state = EBootloader::Stage::RX_FLUSH;
+	this->state = BootloaderPromptDriver::Stage::RX_FLUSH;
 	accumulatedBytes.clear();
 	bootloaderCLIChecked = false;
 	this->firmwareTransferStartFunc = nullptr;  /* Remove any callback for image transfer */
@@ -77,7 +77,7 @@ void BootloaderPromptDriver::reset() {
 
 void BootloaderPromptDriver::probe() {
 	static const uint8_t probeSeq[] = "\n";
-	this->state = EBootloader::Stage::PROBE;
+	this->state = BootloaderPromptDriver::Stage::PROBE;
 	if (this->serialWriteFunc) {
 		size_t writtenBytes;
 		clogD << "Starting probe\n";
@@ -91,14 +91,14 @@ void BootloaderPromptDriver::probe() {
 bool BootloaderPromptDriver::selectModeRun() {
 	static const uint8_t cmdSeq[] = "2";
 
-	if (this->state != EBootloader::Stage::TOPLEVEL_MENU_PROMPT) {
+	if (this->state != BootloaderPromptDriver::Stage::TOPLEVEL_MENU_PROMPT) {
 		clogE << "Cannot type command without a valid prompt\n";
 		return false;
 	}
 	if (this->serialWriteFunc) {
 		size_t writtenBytes;
 		clogD << "Entering run command\n";
-		this->state = EBootloader::Stage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
+		this->state = BootloaderPromptDriver::Stage::RX_FLUSH; /* Reset our internal state (not in menu anymore) */
 		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
 	}
 	else {
@@ -110,14 +110,14 @@ bool BootloaderPromptDriver::selectModeRun() {
 bool BootloaderPromptDriver::selectModeUpgradeFw(FFirmwareTransferStartFunc callback) {
 	static const uint8_t cmdSeq[] = "1";
 
-	if (this->state != EBootloader::Stage::TOPLEVEL_MENU_PROMPT) {
+	if (this->state != BootloaderPromptDriver::Stage::TOPLEVEL_MENU_PROMPT) {
 		clogE << "Cannot type command without a valid prompt\n";
 		return false;
 	}
 	if (this->serialWriteFunc) {
 		size_t writtenBytes;
 		clogD << "Entering upload ebl command\n";
-		this->state = EBootloader::Stage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
+		this->state = BootloaderPromptDriver::Stage::XMODEM_READY_CHAR_WAIT;  /* We are now waiting for the X-modem transfer ready character */
 		this->firmwareTransferStartFunc = callback;
 		this->serialWriteFunc(writtenBytes, cmdSeq, sizeof(cmdSeq) -1 );  /* We don't send the terminating '\0' of cmdSeq */
 	}
@@ -127,13 +127,13 @@ bool BootloaderPromptDriver::selectModeUpgradeFw(FFirmwareTransferStartFunc call
 	return true;
 }
 
-NSEZSP::EBootloader::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
+NSEZSP::BootloaderPromptDriver::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	uint8_t val;
 
 	if (i_data.empty()) {
 		return this->state;
 	}
-	if (this->state == EBootloader:: Stage::RX_FLUSH) {
+	if (this->state == BootloaderPromptDriver::Stage::RX_FLUSH) {
 		/* We are flushing the leading bytes, discard input and restart the initial RX timer */
 		//clogD << "Received " << i_data.size() << " bytes while in flush mode (discarding)\n";
 		i_data.clear();
@@ -141,12 +141,12 @@ NSEZSP::EBootloader::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuf
 		timer->start(BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT, this);
 		return state;
 	}
-	else if (this->state == EBootloader::Stage::XMODEM_READY_CHAR_WAIT) {
+	else if (this->state == BootloaderPromptDriver::Stage::XMODEM_READY_CHAR_WAIT) {
 		/* Note: it is safe to invoke method bak() because we know that i_data is not empty from the test above */
 		if (i_data.back() == 'C') { /* 'C' is the X-modem ready character */
 			clogD << "Got the X-modem ready character from adapter\n";
 			if (this->firmwareTransferStartFunc) {
-				this->state = EBootloader::Stage::XMODEM_XFR;
+				this->state = BootloaderPromptDriver::Stage::XMODEM_XFR;
 				this->firmwareTransferStartFunc();  /* Invoke the firmware transfer ready function that has been set in selectModeUpgradeFw() */
 				this->firmwareTransferStartFunc = nullptr;  /* Remove the callback */
 			}
@@ -185,29 +185,29 @@ NSEZSP::EBootloader::Stage BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuf
 	size_t blh = str.find(BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER);
 	if (blh != std::string::npos) {
 		/* We found the Gecko bootloader header, this is good news */
-		if (EBootloader::Stage::PROBE != state) {
+		if (BootloaderPromptDriver::Stage::PROBE != state) {
 			clogW << "Got a bootloader header while not in probe mode, we will reset to TOPLEVEL_MENU_HEADER state anyway\n";
 		}
-		state = EBootloader::Stage::TOPLEVEL_MENU_HEADER;
+		state = BootloaderPromptDriver::Stage::TOPLEVEL_MENU_HEADER;
 		clogD << "Got bootloader header at position \"" << static_cast<unsigned int>(blh) << "\"\n";
 		accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blh + BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER.length()); /* Remove all text up to (and including) the bootloader header from accumulated bytes (has been parsed) */
 		str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
 	}
-	if (EBootloader::Stage::TOPLEVEL_MENU_HEADER == state) {
+	if (BootloaderPromptDriver::Stage::TOPLEVEL_MENU_HEADER == state) {
 		size_t eolChar = str.find('\n');
 		if (eolChar != std::string::npos) {
-			state = EBootloader::Stage::TOPLEVEL_MENU_CONTENT;
+			state = BootloaderPromptDriver::Stage::TOPLEVEL_MENU_CONTENT;
 			std::string version(trim(std::string(str.begin(), str.begin() + eolChar - 1)));
 			accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + eolChar); /* Remove the version string from accumulated bytes (has been parsed) */
 			clogD << "Got version \"" << version << "\"\n";
 			str = std::string(accumulatedBytes.begin(), accumulatedBytes.end());  /* Accumulated buffer has been updated, reconstruct str */
 		}
 	}
-	if (EBootloader::Stage::TOPLEVEL_MENU_HEADER == state ||
-	        EBootloader::Stage::TOPLEVEL_MENU_CONTENT == state) {
+	if (BootloaderPromptDriver::Stage::TOPLEVEL_MENU_HEADER == state ||
+	        BootloaderPromptDriver::Stage::TOPLEVEL_MENU_CONTENT == state) {
 		size_t blPrompt = str.find(BootloaderPromptDriver::GECKO_BOOTLOADER_PROMPT);
 		if (blPrompt != std::string::npos) {
-			state = EBootloader::Stage::TOPLEVEL_MENU_PROMPT;
+			state = BootloaderPromptDriver::Stage::TOPLEVEL_MENU_PROMPT;
 			//clogD << "Got bootloader prompt at position \"" << static_cast<unsigned int>(blPrompt) << "\"\n";
 			accumulatedBytes.erase(accumulatedBytes.begin(), accumulatedBytes.begin() + blPrompt); /* Remove all text up to (and including) the bootloader prompt from accumulated bytes (has been parsed) */
 			/* Note: the line below is commented-out because there is no code that continues parsing str, so even if it is now different

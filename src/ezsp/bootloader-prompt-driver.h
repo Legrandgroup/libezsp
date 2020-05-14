@@ -26,21 +26,18 @@ namespace NSEZSP {
 	XX(XMODEM_READY_CHAR_WAIT,) /*<! Waiting for successive 'C' characters transmitted by the bootloader (this means an incoming firmware image transfer using X-modem is expected by the bootloader) */ \
 	XX(XMODEM_XFR,)             /*<! A firmware image transfer using X-modem is ongoing */ \
 
-/**
- * @brief Internal stages for bootloader prompt detection and interaction
- *
- * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
- *       In this macro, XX is a placeholder for the macro to use for building.
- *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
- * @see enum-generator.h
- */
-class EBootloader {
-public:
-	DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST);
-};
-
 class BootloaderPromptDriver : protected NSSPI::ITimerVisitor {
 public:
+	/**
+	 * @brief Internal stages for bootloader prompt detection and interaction
+	 *
+	 * @note The lines above describes all states known in order to build both an enum and enum-to-string/string-to-enum methods
+	 *       In this macro, XX is a placeholder for the macro to use for building.
+	 *       We start numbering from 1, so that 0 can be understood as value not found for enum-generator.h
+	 * @see enum-generator.h
+	 */
+	DECLARE_ENUM(Stage, BOOTLOADER_STAGE_LIST);
+
 	static const std::string GECKO_BOOTLOADER_HEADER;
 	static const std::string GECKO_BOOTLOADER_PROMPT;
 	static const uint16_t GECKO_QUIET_RX_TIMEOUT;
@@ -140,7 +137,7 @@ public:
 	 *
 	 * @param i_data New bytes to add to the previously accumulated ones
 	 */
-	EBootloader::Stage appendIncoming(NSSPI::ByteBuffer& i_data);
+	BootloaderPromptDriver::Stage appendIncoming(NSSPI::ByteBuffer& i_data);
 
 protected:
 	/**
@@ -159,7 +156,7 @@ private:
 	std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */
 	NSSPI::ByteBuffer accumulatedBytes;  /*!< The current accumulated incoming bytes (not yet parsed) */
 	bool bootloaderCLIChecked;  /*!< Did we validate that we are currently in bootloader prompt mode? */
-	EBootloader::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
+	BootloaderPromptDriver::Stage state; /*!< The current state in which we guess the bootloader is currently on the NCP */
 	FBootloaderWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
 	std::function<void (void)> promptDetectCallback;    /*!< A callback function invoked when the bootloader prompt is reached */
 	FFirmwareTransferStartFunc firmwareTransferStartFunc;  /*!< A callback function invoked when the bootloader is is waiting for an image transfer */
