@@ -18,6 +18,7 @@
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <ezsp/zbmessage/green-power-frame.h>
+#include <ezsp/ezsp-adapter-version.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
 
@@ -48,7 +49,7 @@ typedef CLibEzspPublic::State CLibEzspState;    /* Shortcut for access to public
 
 class CLibEzspMain;
 
-typedef std::function<void (CLibEzspPublic::State i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
+typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
@@ -70,6 +71,13 @@ public:
      * @note Calling this method is required after instanciation and before any data is sent to/received from the EZSP adatper
      */
     void start();
+
+	/**
+	 * @brief Get the EZSP adapter's version
+	 * 
+	 * @return The EZSP adapter version (hardware and firmware) if already known
+	 */
+	NSEZSP::EzspAdapterVersion getAdapterVersion() const;
 
     /**
      * @brief Instruct the library to directly switch to firmware upgrade mode at init if we get an EZSP timeout

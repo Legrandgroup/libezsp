@@ -108,7 +108,7 @@ class CEmberNetworkParameters
          *
          * @return The resulting string
          */
-        std::string String() const;
+		std::string toString() const;
 
         /**
          * @brief Serialize to an iostream
@@ -119,7 +119,7 @@ class CEmberNetworkParameters
          * @return The new output stream with serialized data appended
          */
         friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data){
-			out << data.String();
+			out << data.toString();
 			return out;
 		}
 
