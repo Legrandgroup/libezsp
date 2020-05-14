@@ -138,19 +138,22 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 
 	NSSPI::ByteBuffer lo_msg;
 
-	if (this->in_msg.size() < 3) {
-		clogE << "ASH fame too short";
-		return lo_msg;
-	}
+	lo_msg.append(removeByteStuffing(this->in_msg));
 
-	lo_msg.append(removeByteStuffing(this->in_msg));  /* FIXME: we are using this->in_msg here, we should pass it as arg instead */
-
-	// Check CRC
-	if (computeCRC(lo_msg) != 0) {
+	if (lo_msg.size() < 3) { /* There should be at least a Control byte and a 16-bit CRC */
 		lo_msg.clear();
-		clogD << "AshCodec::decode Wrong CRC\n";
+		clogE << "ASH frame is too short\n";
 		return lo_msg;
 	}
+	if (computeCRC(lo_msg) != 0) {	/* CRC of whole frame including CRC itself should be 0 */
+		lo_msg.clear();
+		clogE << "AshCodec::decode Wrong CRC\n";
+		return lo_msg;
+	}
+	/* Remove 2 trailing bytes (CRC16) */
+	lo_msg.pop_back();
+	lo_msg.pop_back();
+
 	uint8_t ashControlByte = lo_msg.at(0);
 	if ((ashControlByte & 0x80) == 0) {
 		uint8_t expectedAckNum = this->nextExpectedNEackNum;
@@ -173,17 +176,7 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 		this->nextExpectedNEackNum++;
 		this->nextExpectedNEackNum &= 0x07;
 
-		lo_msg = dataRandomize(lo_msg, 1);
-
-		if (lo_msg.size()<3) {
-			clogE << "EZSP data message is too short, discarding\n";
-		}
-		else {
-			if( 0xFF == lo_msg.at(2) ) { /* 0xff as frame ID means we use an extended header, where frame ID will actually be shifted 2 bytes away... so we just delete those two bytes */
-				lo_msg.erase(lo_msg.begin()+2);
-				lo_msg.erase(lo_msg.begin()+2);
-			}
-		}
+		lo_msg = dataRandomize(lo_msg, 1);	/* 1 here will skip the 1st byte (ashControlByte) from result */
 
 		/*
 		// For debugging
@@ -192,6 +185,7 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 		      << ", FrameID=" << +(static_cast<unsigned char>(lo_msg[2])) << "): "
 		      << NSSPI::Logger::byteSequenceToString(lo_msg) << "\n";
 		*/
+		return lo_msg;
 	}
 	else if ((ashControlByte & 0x60) == 0x00) {
 		// ACK

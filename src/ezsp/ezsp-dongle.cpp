@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include <ezsp/byte-manip.h>
 #include "ezsp-dongle.h"
 #include "spi/ILogger.h"
 
@@ -136,42 +137,62 @@ void CEzspDongle::ashCbInfo(AshCodec::EAshInfo info) {
 	}
 }
 
-void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen)
-{
-	NSSPI::ByteBuffer li_data(dataIn, dataLen);
-    NSSPI::ByteBuffer lo_msg;
-
-	/* Note: this function will handle all successfully decoded incoming EZSP messages */
-	/* It won't be invoked in bootloader prompt mode, because the ASH drvier is then disabled */
-	clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(li_data) << "\n";
-
-	if (this->lastKnownMode == CEzspDongle::Mode::EZSP_NCP || this->lastKnownMode == CEzspDongle::Mode::UNKNOWN) {
-		/* Got an incoming EZSP message... will be forwarded to the user */
-		if (!li_data.empty()) {
-			std::size_t l_size;
-
-			/* Extract the EZSP command and store it into l_cmd */
-			EEzspCmd l_cmd = static_cast<EEzspCmd>(li_data.at(2));
-			/* Payload will remain in buffer li_data */
-			/* Remove the leading EZSP header from the payload */
-			li_data.erase(li_data.begin(), li_data.begin()+3);  /* FIXME: make sure buffer is more than 2 bytes large */
-			/* Remove the trailing EZSP CRC16 from the payload */
-			li_data.erase(li_data.end()-2, li_data.end());  /* FIXME: make sure buffer is more than 2 bytes large */
-
-			/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
-			if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
-				this->ash.sendAckFrame();
-				this->handleResponse(l_cmd); /* Unqueue the message (and send the next one) if required */
-			}
-			/* Notify the user(s) (via observers) about this incoming EZSP message */
-			notifyObserversOfEzspRxMessage(l_cmd, li_data);
-		}
-	}
-	else {
+void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
+	if (this->lastKnownMode != CEzspDongle::Mode::EZSP_NCP && this->lastKnownMode != CEzspDongle::Mode::UNKNOWN) {
 		clogE << "EZSP message recevied while in bootloader prompt mode... Should not reach here\n";
 		/* In bootloader parsing mode, incoming bytes are read directly by the bootloader prompt driver from the serial port */
 		/* Bootloader decoder state changes are handled by callbacks we register on the bootloader prompt driver, no data payload is received asynchronously here */
+		return;
 	}
+
+	NSSPI::ByteBuffer ezspMessage(dataIn, dataLen);
+
+	if (ezspMessage.size() < 4) {	/* EZSP message should contain at least 4 bytes for legacy frames (see protocol format below) */
+		clogE << "EZSP message is too short\n";
+		return;
+	}
+
+	/* Silabs' document ug100-ezsp-reference-guide mentions, for EZSP up to v7, in section 3 Protocol Format, that the EZSP frame format is:
+	 * Sequence (1 byte) | Frame Control (1 byte) | Legacy Frame ID (1 byte, almost always 0xFF) | Extended Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
+	 * Thus, in case we get a legacy frame ID at offset 2, we just get rid of both "Legacy Frame ID" and "Extended Frame Control" and get a frame formatted as legacy frames
+	 */
+	if (ezspMessage.size() >= 3 && ezspMessage.at(2) == 0xffU) { /* 0xff as frame ID means we use an extended header, where frame ID will actually be shifted 2 bytes away... so we just delete those two bytes */
+		if (ezspMessage.size() < 4) {	/* We got Sequence+FC+Legacy indicating an extended FC... but there was nothing more! */
+			clogE << "Truncated extented header in EZSP message\n";
+			return;
+		}
+		ezspMessage.erase(ezspMessage.begin()+2, ezspMessage.begin()+4); /* Remove Legacy Frame ID + Extended Frame Control (offset+4 is kept as per begin() usage conventions)*/
+	}
+
+	/* EZSP message should now contain at least 3 bytes for all frames (reduced to legacy format):
+	 * Sequence (1 byte) | Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
+	 */
+	if (ezspMessage.size() < 3) {
+		clogE << "EZSP message is too short\n";
+		return;
+	}
+	/* Note: this function will handle all successfully decoded incoming EZSP messages */
+	/* It won't be invoked in bootloader prompt mode, because the ASH drvier is then disabled */
+	clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+
+	/* Got an correct incoming EZSP message... will be forwarded to the user */
+	if (ezspMessage.size() < 3) {	/* EZSP message should contain at least 1 byte for sequence, 1 byte for frame control and a message ID field (1 or 2 bytes) */
+		clogE << "EZSP message is too short\n";
+		return;
+	}
+	/* Extract the EZSP command (frame ID) and store it into l_cmd */
+	EEzspCmd l_cmd = static_cast<EEzspCmd>(ezspMessage.at(2));
+	/* Remove the leading EZSP header from the payload */
+	ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+3);
+	/* Payload (frame paramters in Silabs' terminology) will remain in buffer ezspMessage */
+
+	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
+	if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
+		this->ash.sendAckFrame();
+		this->handleResponse(l_cmd); /* Unqueue the message (and send the next one) if required */
+	}
+	/* Notify the user(s) (via observers) about this incoming EZSP message */
+	notifyObserversOfEzspRxMessage(l_cmd, ezspMessage);
 }
 
 void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )

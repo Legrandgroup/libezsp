@@ -73,7 +73,7 @@ void AshDriver::trigger(NSSPI::ITimer* triggeringTimer) {
 		}
 	}
 	else {
-		clogE << "ASH timeout while connected\n";
+		clogE << "ASH ACK timeout while connected\n";
 	}
 }
 
