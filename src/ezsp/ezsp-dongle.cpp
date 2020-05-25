@@ -20,6 +20,7 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	timerBuilder(i_timer_builder),
 	uartHandle(nullptr),
 	uartIncomingDataHandler(),
+	ezspSeqNum(0),
 	ash(static_cast<CAshCallback*>(this), timerBuilder),
 	blp(timerBuilder),
 	sendingMsgQueue(),
@@ -56,6 +57,7 @@ bool CEzspDongle::reset() {
 	NSSPI::ByteBuffer l_buffer;
 	size_t l_size;
 
+	this->ezspSeqNum = 0;	/* Start over using sequence number 0 */
 	if (!this->uartHandle) {
 		clogE << "No UART usable driver when invoking reset()\n";
 		return false;
@@ -224,15 +226,24 @@ void CEzspDongle::sendNextMsg( void )
     {
         SMsg l_msg = sendingMsgQueue.front();
 
-        // encode command using ash and write to uart
-        NSSPI::ByteBuffer li_data;
-        NSSPI::ByteBuffer l_enc_data;
-        size_t l_size;
+		NSSPI::ByteBuffer ezspMessage;
 
-        li_data.push_back(static_cast<uint8_t>(l_msg.i_cmd));
-        li_data.insert(li_data.end(), l_msg.payload.begin(), l_msg.payload.end() ); /* Append payload at the end of li_data */
+		// First, place the EZSP seq number byte
+		ezspMessage.push_back(this->ezspSeqNum++);
 
-		if (this->ash.sendDataFrame(li_data)) {
+		// Then, append the EZSP frame control byte (0x00)
+		ezspMessage.push_back(0x00U);
+
+		if (l_msg.i_cmd != NSEZSP::EEzspCmd::EZSP_VERSION) {
+			/* For all frames except "VersionRequest" frame, force an extended header 0xff 0x00 */
+			ezspMessage.push_back(0xFFU);
+			ezspMessage.push_back(0x00U);
+		}
+
+		ezspMessage.push_back(static_cast<uint8_t>(l_msg.i_cmd));
+		ezspMessage.append(l_msg.payload); /* Append payload at the end of li_data */
+
+		if (this->ash.sendDataFrame(ezspMessage)) {
 			this->wait_rsp = true;
 		}
     }

@@ -164,6 +164,7 @@ private:
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
 	NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler; /*!< The observable handler that will dispatch received incoming bytes to observers */
+	uint8_t ezspSeqNum;	/*!< The EZSP sequence number (wrapping 0-255 counter) */
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
 	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
     std::queue<SMsg> sendingMsgQueue;

@@ -45,7 +45,6 @@ AshCodec::AshCodec(CAshCallback* ipCb, std::function<void (void)> ackTimeoutCanc
 	nextExpectedFEAckNum(0),
 	frmNum(0),
 	lastReceivedByNEAckNum(0),
-	ezspSeqNum(0),
 	stateConnected(false),
 	in_msg() {
 }
@@ -58,7 +57,6 @@ NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
 	this->nextExpectedFEAckNum = 0;
 	this->lastReceivedByNEAckNum = 0;
 	this->frmNum = 0;
-	this->ezspSeqNum = 0;
 	this->stateConnected = false;
 	NSSPI::ByteBuffer lo_msg;
 
@@ -108,22 +106,10 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	uint8_t ashControlByte = static_cast<uint8_t>(this->frmNum << 4) | (this->lastReceivedByNEAckNum & 0x07U);
 	lo_msg.push_back(ashControlByte);
 	//clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
-	//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
-	//      << ", ezspSeqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
+	//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 	this->frmNum++;
 	this->frmNum &= 0x07U;
 	this->nextExpectedFEAckNum = this->frmNum;	/* ACK value always contain the next expected frame number */
-
-	if (i_data.at(0) != NSEZSP::EEzspCmd::EZSP_VERSION) {
-		/* For all frames except "VersionRequest" frame, prepend with the extended header 0xff 0x00 */
-		i_data.insert(i_data.begin(),0);
-		i_data.insert(i_data.begin(),0xFF);
-	}
-
-	// Prepend the frame control byte 0x00
-	i_data.insert(i_data.begin(),0);
-	// Insert EZSP seq number
-	i_data.insert(i_data.begin(),this->ezspSeqNum++);
 
 	lo_msg.append(dataRandomize(i_data));
 
