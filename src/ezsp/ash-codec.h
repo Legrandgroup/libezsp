@@ -163,9 +163,9 @@ public:
 	CAshCallback *pCb;
 private:
 	std::function<void (void)> ackTimerCancelFunc;	/*!< The function we will invoke to cancel an ack timeout */
-	uint8_t nextExpectedNEackNum; /*!< The sequence number value of the next far-end (=from remote) ACK we are expecting to receive, meaning that the remote will then acknowlegde reception of the the last frame received with sequence number nextExpectedNEackNum-1 */
+	uint8_t nextExpectedFEAckNum; /*!< The sequence number value of the next far-end (=from remote) ACK we are expecting to receive, meaning that the remote will then acknowlegde reception of the the last frame received with sequence number nextExpectedFEackNum-1 */
 	uint8_t frmNum; /*!< The sequence number of the next data frame we will send */
-	uint8_t lastReceivedNEAckNum;	/*!< The sequence number value received in the last far-end (=from remote) acknowlegdement, meaning the remote acknowlegded reception of all frames up to sequence number lastReceivedNEAckNum-1 */
+	uint8_t lastReceivedByNEAckNum;	/*!< The ACk value that the near-end (us) will send to acknowledge the last far-end (=from remote) frame, meaning we acknowlegde reception of all frames up to sequence number lastReceivedByNEAckNum-1 */
 	uint8_t ezspSeqNum;	/*!< FIXME: should be moved out of ASH, this is EZSP specific. The EZSP sequence number (wrapping 0-255 counter) */
 	bool stateConnected;	/*!< Are we currently in connected state? (meaning we have an active working ASH handshake between host and NCP) */
 	NSSPI::ByteBuffer in_msg; /*!< Currently accumulated buffer */

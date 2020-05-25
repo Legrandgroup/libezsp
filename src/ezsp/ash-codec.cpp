@@ -41,12 +41,12 @@ constexpr uint32_t ASH_MAX_LENGTH     = 131;
 
 AshCodec::AshCodec(CAshCallback* ipCb, std::function<void (void)> ackTimeoutCancelFunc) :
 	pCb(ipCb),
-	nextExpectedNEackNum(0),
+	ackTimerCancelFunc(ackTimeoutCancelFunc),
+	nextExpectedFEAckNum(0),
 	frmNum(0),
-	lastReceivedNEAckNum(0),
+	lastReceivedByNEAckNum(0),
 	ezspSeqNum(0),
 	stateConnected(false),
-	ackTimerCancelFunc(ackTimeoutCancelFunc),
 	in_msg() {
 }
 
@@ -55,8 +55,8 @@ bool AshCodec::isInConnectedState() const {
 }
 
 NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
-	this->nextExpectedNEackNum = 0;
-	this->lastReceivedNEAckNum = 0;
+	this->nextExpectedFEAckNum = 0;
+	this->lastReceivedByNEAckNum = 0;
 	this->frmNum = 0;
 	this->ezspSeqNum = 0;
 	this->stateConnected = false;
@@ -85,7 +85,7 @@ NSSPI::ByteBuffer AshCodec::forgeResetNCPFrame(void) {
 NSSPI::ByteBuffer AshCodec::forgeAckFrame(void) {
 	NSSPI::ByteBuffer lo_msg;
 
-	uint8_t ashControlByte = this->nextExpectedNEackNum | 0x80;
+	uint8_t ashControlByte = this->lastReceivedByNEAckNum | 0x80;
 	lo_msg.push_back(ashControlByte);
 	//clogD << "AshCodec creating ACK(ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
 
@@ -105,13 +105,14 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	      << ", FC=0): " << NSSPI::Logger::byteSequenceToString(li_data) << "\n"; // Note FC is hardcoded to 0 below
 	*/
 
-	uint8_t ashControlByte = static_cast<uint8_t>(frmNum << 4) + nextExpectedNEackNum;
+	uint8_t ashControlByte = static_cast<uint8_t>(this->frmNum << 4) | (this->lastReceivedByNEAckNum & 0x07U);
 	lo_msg.push_back(ashControlByte);
 	//clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 	//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U)
 	//      << ", ezspSeqNum=" << static_cast<unsigned int>(this->ezspSeqNum) << ")\n";
 	this->frmNum++;
-	this->frmNum &= 0x07;
+	this->frmNum &= 0x07U;
+	this->nextExpectedFEAckNum = this->frmNum;	/* ACK value always contain the next expected frame number */
 
 	if (i_data.at(0) != NSEZSP::EEzspCmd::EZSP_VERSION) {
 		/* For all frames except "VersionRequest" frame, prepend with the extended header 0xff 0x00 */
@@ -123,7 +124,6 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	i_data.insert(i_data.begin(),0);
 	// Insert EZSP seq number
 	i_data.insert(i_data.begin(),this->ezspSeqNum++);
-
 
 	lo_msg.append(dataRandomize(i_data));
 
@@ -156,12 +156,11 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 
 	uint8_t ashControlByte = lo_msg.at(0);
 	if ((ashControlByte & 0x80) == 0) {
-		uint8_t expectedAckNum = this->nextExpectedNEackNum;
-		uint8_t remoteAckNum = ashControlByte;
-		remoteAckNum >>= 4;
-		remoteAckNum &= 0x07;
-		//clogD << "AshCodec decoding DATA(frmNum=" << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
-		//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
+		uint8_t expectedAckNum = this->nextExpectedFEAckNum;
+		uint8_t remoteAckNum = u8_get_lo_nibble(ashControlByte) & 0x07U;
+		uint8_t remoteFrmNum = u8_get_hi_nibble(ashControlByte) & 0x07U;
+		//clogD << "AshCodec decoding DATA(frmNum=" << static_cast<unsigned int>(remoteFrmNum)
+		//      << ", ackNum=" << static_cast<unsigned int>(remoteAckNum) << ")\n";
 
 		if (expectedAckNum != remoteAckNum) {
 			clogE << "Received a wrong ack num: " << +(remoteAckNum) << ", expected: " << +(expectedAckNum) << "\n";
@@ -171,10 +170,9 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 				this->ackTimerCancelFunc();  /* Stop any possibly existing timer that was waiting for an ACK */
 			}
 		}
-		/* In any case (ACK correct or not), update increase our frame number for the next transmition */
-		this->nextExpectedNEackNum = remoteAckNum;
-		this->nextExpectedNEackNum++;
-		this->nextExpectedNEackNum &= 0x07;
+		/* In any case (ACK correct or not), update increase the value of the next ACK we will send */
+		this->lastReceivedByNEAckNum = remoteFrmNum+1;
+		this->lastReceivedByNEAckNum &= 0x07U;
 
 		lo_msg = dataRandomize(lo_msg, 1);	/* 1 here will skip the 1st byte (ashControlByte) from result */
 
