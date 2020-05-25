@@ -69,14 +69,17 @@ public:
 	}
 	
 	ByteBuffer& operator=(const ByteBuffer& other) {
-		return static_cast<ByteBuffer&>(_Base::operator=(static_cast<_Base>(other)));
+		_Base::operator=(static_cast<_Base>(other));
+		return *this;
 	}
 #if __cplusplus >= 201103L
 	ByteBuffer& operator=(_Base&& other) noexcept {
-		return static_cast<ByteBuffer&>(_Base::operator=(std::move(other)));
+		_Base::operator=(std::move(other));
+		return *this;
 	}
 	ByteBuffer& operator=(const std::initializer_list<uint8_t>& list) {
-		return static_cast<ByteBuffer&>(_Base::operator=(list));
+		_Base::operator=(list);
+		return *this;
 	}
 #endif
 	/**
