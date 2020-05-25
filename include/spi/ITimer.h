@@ -22,6 +22,7 @@ class LIBEXPORT ITimerVisitor {
 protected:
 	friend class ITimer;
 	virtual void trigger(ITimer* triggeringTimer) = 0;
+	virtual ~ITimerVisitor() = default;
 };
 
 using TimerCallback = std::function<void (ITimer* triggeringTimer)>;
@@ -34,12 +35,26 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	ITimer() : duration(0) { }
+	ITimer() : visitor(nullptr), duration(0) { }
 
 	/**
 	 * @brief Destructor
 	 */
 	virtual ~ITimer() = default;
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * @warning Copy construction is not allowed
+	 */
+	ITimer(const ITimer&) = delete;
+
+	/**
+	 * @brief Assignment operator
+	 *
+	 * @warning Assignment is not allowed
+	 */
+	ITimer& operator=(const ITimer&) = delete;
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -77,11 +92,13 @@ public:
 protected:
 	friend class ITimerVisitor;
 	static void trigg(ITimer* triggeringTimer) {
-		triggeringTimer->visitor->trigger(triggeringTimer);
+		if (triggeringTimer && triggeringTimer->visitor) {
+			triggeringTimer->visitor->trigger(triggeringTimer);
+		}
 	}
 
 public:
-	ITimerVisitor *visitor;
+	ITimerVisitor *visitor;	/*!< An external visitor class that will be invoked at timeout */
 	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
 

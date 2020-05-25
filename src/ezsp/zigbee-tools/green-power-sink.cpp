@@ -4,9 +4,7 @@
  * @brief Access to green power capabilities
  */
 
-
 #include <iostream>
-#include <sstream>
 #include <iomanip>
 #include <map>
 #include <string>
@@ -371,7 +369,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 		handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(gpf);
 	}
 	else {
-		clogD << "Ignorning GP frame\n";
+		clogD << "Ignoring GP frame\n";
 	}
 }
 
@@ -652,12 +650,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 
 	default: {
 		/* DEBUG VIEW
-		std::stringstream bufDump;
-
-		for (size_t i =0; i<i_msg_receive.size(); i++) {
-		    bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
-		}
-		clogI << "CGpSink::ezspHandler : " << bufDump.str() << std::endl;
+		clogI << "CGpSink: Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
 		*/
 	}
 	break;

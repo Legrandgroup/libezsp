@@ -435,6 +435,9 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 		else if (ezspProtocolVersion == this->exp_ezsp_min_version &&  ezspProtocolVersion <= this->exp_ezsp_max_version) {
 			acceptableVersion = true;
 		}
+		else {
+			acceptableVersion = false;
+		}
 	}
 	if (acceptableVersion) {
 		std::stringstream bufDump;  /* Log message container */
@@ -693,14 +696,9 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         default:
         {
-            /* DEBUG VIEW
-            std::stringstream bufDump;
-
-            for (size_t i =0; i<i_msg_receive.size(); i++) {
-                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
-            }
-            clogI << "CAppDemo::ezspHandler : " << bufDump.str() << std::endl;
-            */
+			/* DEBUG VIEW
+			clogI << "Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+			*/
         }
         break;
     }

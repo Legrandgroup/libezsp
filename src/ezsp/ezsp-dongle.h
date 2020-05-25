@@ -12,10 +12,10 @@
 #include <spi/TimerBuilder.h>
 #include <spi/IAsyncDataInputObserver.h>
 #include <spi/ByteBuffer.h>
-#include "ezsp/enum-generator.h"
 
-#include "ash.h"
-#include "bootloader-prompt.h"
+#include "ash-driver.h"
+#include "bootloader-prompt-driver.h"
+#include "ezsp/enum-generator.h"
 #include "ezsp-dongle-observer.h"
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
@@ -33,8 +33,7 @@ namespace NSEZSP {
     XX(BOOTLOADER_FIRMWARE_UPGRADE,)        /*<! Dongle is in bootloader prompt mode, performing a firmware upgrade */ \
     XX(BOOTLOADER_EXIT_TO_EZSP_NCP,)        /*<! Dongle is in bootloader prompt mode, requested to switch back to EZSP_NCP mode */ \
 
-class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback
-{
+class CEzspDongle : public NSSPI::IAsyncDataInputObserver, public CAshCallback {
 public:
     /**
      * @brief Requested mode for the EZSP adapter
@@ -49,9 +48,18 @@ public:
     CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
     CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
-    virtual ~CEzspDongle() = default;
+    
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~CEzspDongle();
 
-    CEzspDongle& operator=(CEzspDongle) = delete; /* No assignment allowed (pointer data members) */
+	/**
+	 * @brief Assignment operator
+	 *
+	 * @warning Assignment is not allowed
+	 */
+	CEzspDongle& operator=(CEzspDongle) = delete;
 
     /**
      * @brief Set the serial port to use for communication with the EZSP adapter
@@ -115,17 +123,17 @@ public:
      */
     void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
 
-    /**
-     * @brief Callback invoked on UART received bytes
-     */
-    void handleInputData(const unsigned char* dataIn, const size_t dataLen);
+	/**
+	 * @brief Callback invoked on EZSP received bytes
+	 */
+	void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
 	/**
 	 * @brief Callback invoked on ASH info
 	 *
 	 * @param info The new ASH state
 	 */
-	void ashCbInfo(CAsh::EAshInfo info);
+	void ashCbInfo(AshCodec::EAshInfo info);
 
     /**
      * Managing Observer of this class
@@ -155,9 +163,10 @@ private:
     bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
     const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
     NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
-    CAsh ash;   /*!< An ASH decoder instance */
-    CBootloaderPrompt blp;  /*!< A bootloader prompt decoder instance */
-    NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler;
+	NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler; /*!< The observable handler that will dispatch received incoming bytes to observers */
+	uint8_t ezspSeqNum;	/*!< The EZSP sequence number (wrapping 0-255 counter) */
+	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
+	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
     std::queue<SMsg> sendingMsgQueue;
     bool wait_rsp;
     std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
