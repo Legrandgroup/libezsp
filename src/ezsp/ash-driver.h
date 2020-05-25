@@ -14,7 +14,7 @@
 #include "spi/ByteBuffer.h"
 #include "spi/IUartDriver.h"
 #include "ezsp/enum-generator.h"
-#include "ezsp/ash-codec.h"
+#include "ezsp/ashv2-codec.h"
 
 namespace NSEZSP {
 

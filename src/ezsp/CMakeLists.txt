@@ -4,7 +4,7 @@ list(APPEND ezsp_SOURCES
 	lib-ezsp-main.cpp
 	ezsp-dongle.cpp
 	ash-driver.cpp
-	ash-codec.cpp
+	ashv2-codec.cpp
 	bootloader-prompt-driver.cpp
 	ezsp-adapter-version.cpp
 	ezsp-protocol/ezsp-enum.cpp

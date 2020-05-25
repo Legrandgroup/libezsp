@@ -1,7 +1,7 @@
 /**
- * @file ash-codec.cpp
+ * @file ashv2-codec.cpp
  *
- * @brief ASH protocol decoder/encoder
+ * @brief Protocol decoder/encoder for ASH version 2
  **/
 
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <map>
 #include <iomanip>
 
-#include "ash-codec.h"
+#include "ashv2-codec.h"
 #include "ezsp/ezsp-protocol/ezsp-enum.h"
 #include "ezsp/byte-manip.h"
 

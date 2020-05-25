@@ -1,7 +1,7 @@
 /**
- * @file ash-codec.h
+ * @file ashv2-codec.h
  *
- * @brief ASH protocol decoder/encoder
+ * @brief Protocol decoder/encoder for ASH version 2
  **/
 
 #pragma once
