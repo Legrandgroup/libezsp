@@ -152,6 +152,9 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 
 	//clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
+	/* Note: this code will handle all successfully decoded incoming EZSP messages */
+	/* It won't be run in bootloader prompt mode, because the ASH driver is then disabled */
+
 	if (this->knownEzspProtocolVersionGE(8)) {	/* EZSPv8 and higher */
 		if (ezspMessage.size() < 5) {	/* EZSPv8 message should contain at least 5 bytes for v8 frames (see protocol format below) */
 			clogE << "EZSP message is too short\n";
@@ -162,23 +165,17 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 		* Sequence (1 byte) | Frame Control Low Byte (1 byte) | Frame Control Hi Byte (1 byte) | Frame ID (2 byte) | Parameters (n bytes)
 		*/
 
-		/* Note: this function will handle all successfully decoded incoming EZSP messages */
-		/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
-
-		/* Got an correct incoming EZSP message... will be forwarded to the user */
-
 		/* Extract the EZSP command (frame ID) and store it into l_cmd */
 		if (ezspMessage.at(4) != 0) {
 			clogE << "Unsupported EZSPv8 frame ID (>0xff): 0x" << std::hex << std::setw(2) << std::setfill('0')
 			      << static_cast<unsigned int>(ezspMessage.at(4))
 			      << static_cast<unsigned int>(ezspMessage.at(3)) << "\n";
+			return;
 		}
-		else {
-			l_cmd = static_cast<EEzspCmd>(ezspMessage.at(3));
-			/* Remove the leading EZSP header from the payload */
-			ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+5);
-			/* Payload (frame parameters in Silabs' terminology) will remain in buffer ezspMessage */
-		}
+		l_cmd = static_cast<EEzspCmd>(ezspMessage.at(3));
+		/* Remove the leading EZSP header from the payload */
+		ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+5);
+		/* Payload (frame parameters in Silabs' terminology) will remain in buffer ezspMessage */
 	}
 	else {	/* Unknown EZSP version or version strictly lower than v8 */
 		if (ezspMessage.size() < 4) {	/* EZSP messages (v6 & v7) should contain at least 4 bytes for legacy frames (see protocol format below) */
@@ -201,14 +198,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 		/* EZSP message should now contain at least 3 bytes for all frames (reduced to legacy format):
 		* Sequence (1 byte) | Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
 		*/
-		if (ezspMessage.size() < 3) {
-			clogE << "EZSP message is too short\n";
-			return;
-		}
-		/* Note: this function will handle all successfully decoded incoming EZSP messages */
-		/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
 
-		/* Got an correct incoming EZSP message... will be forwarded to the user */
 		if (ezspMessage.size() < 3) {	/* EZSP message should contain at least 1 byte for sequence, 1 byte for frame control and a message ID field (1 or 2 bytes) */
 			clogE << "EZSP message is too short\n";
 			return;
@@ -219,6 +209,8 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 		ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+3);
 		/* Payload (frame parameters in Silabs' terminology) will remain in buffer ezspMessage */
 	}
+	/* Got an correct incoming EZSP message... will be forwarded to the user */
+
 	//clogD << "EZSP message payload " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
 	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
