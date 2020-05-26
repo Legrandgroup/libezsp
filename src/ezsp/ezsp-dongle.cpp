@@ -148,45 +148,78 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	}
 
 	NSSPI::ByteBuffer ezspMessage(dataIn, dataLen);
+	EEzspCmd l_cmd;
 
-	if (ezspMessage.size() < 4) {	/* EZSP message should contain at least 4 bytes for legacy frames (see protocol format below) */
-		clogE << "EZSP message is too short\n";
-		return;
-	}
-
-	/* Silabs' document ug100-ezsp-reference-guide mentions, for EZSP up to v7, in section 3 Protocol Format, that the EZSP frame format is:
-	 * Sequence (1 byte) | Frame Control (1 byte) | Legacy Frame ID (1 byte, almost always 0xFF) | Extended Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
-	 * Thus, in case we get a legacy frame ID at offset 2, we just get rid of both "Legacy Frame ID" and "Extended Frame Control" and get a frame formatted as legacy frames
-	 */
-	if (ezspMessage.size() >= 3 && ezspMessage.at(2) == 0xffU) { /* 0xff as frame ID means we use an extended header, where frame ID will actually be shifted 2 bytes away... so we just delete those two bytes */
-		if (ezspMessage.size() < 4) {	/* We got Sequence+FC+Legacy indicating an extended FC... but there was nothing more! */
-			clogE << "Truncated extented header in EZSP message\n";
-			return;
-		}
-		ezspMessage.erase(ezspMessage.begin()+2, ezspMessage.begin()+4); /* Remove Legacy Frame ID + Extended Frame Control (offset+4 is kept as per begin() usage conventions)*/
-	}
-
-	/* EZSP message should now contain at least 3 bytes for all frames (reduced to legacy format):
-	 * Sequence (1 byte) | Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
-	 */
-	if (ezspMessage.size() < 3) {
-		clogE << "EZSP message is too short\n";
-		return;
-	}
-	/* Note: this function will handle all successfully decoded incoming EZSP messages */
-	/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
 	//clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
-	/* Got an correct incoming EZSP message... will be forwarded to the user */
-	if (ezspMessage.size() < 3) {	/* EZSP message should contain at least 1 byte for sequence, 1 byte for frame control and a message ID field (1 or 2 bytes) */
-		clogE << "EZSP message is too short\n";
-		return;
+	if (this->knownEzspProtocolVersionGE(8)) {	/* EZSPv8 and higher */
+		if (ezspMessage.size() < 5) {	/* EZSPv8 message should contain at least 5 bytes for v8 frames (see protocol format below) */
+			clogE << "EZSP message is too short\n";
+			return;
+		}
+
+		/* Silabs' document ug100-ezsp-reference-guide mentions, for EZSP starting from v7, in section 3 Protocol Format, that the EZSP frame format is:
+		* Sequence (1 byte) | Frame Control Low Byte (1 byte) | Frame Control Hi Byte (1 byte) | Frame ID (2 byte) | Parameters (n bytes)
+		*/
+
+		/* Note: this function will handle all successfully decoded incoming EZSP messages */
+		/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
+
+		/* Got an correct incoming EZSP message... will be forwarded to the user */
+
+		/* Extract the EZSP command (frame ID) and store it into l_cmd */
+		if (ezspMessage.at(4) != 0) {
+			clogE << "Unsupported EZSPv8 frame ID (>0xff): 0x" << std::hex << std::setw(2) << std::setfill('0')
+			      << static_cast<unsigned int>(ezspMessage.at(4))
+			      << static_cast<unsigned int>(ezspMessage.at(3)) << "\n";
+		}
+		else {
+			l_cmd = static_cast<EEzspCmd>(ezspMessage.at(3));
+			/* Remove the leading EZSP header from the payload */
+			ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+5);
+			/* Payload (frame parameters in Silabs' terminology) will remain in buffer ezspMessage */
+		}
 	}
-	/* Extract the EZSP command (frame ID) and store it into l_cmd */
-	EEzspCmd l_cmd = static_cast<EEzspCmd>(ezspMessage.at(2));
-	/* Remove the leading EZSP header from the payload */
-	ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+3);
-	/* Payload (frame paramters in Silabs' terminology) will remain in buffer ezspMessage */
+	else {	/* Unknown EZSP version or version strictly lower than v8 */
+		if (ezspMessage.size() < 4) {	/* EZSP messages (v6 & v7) should contain at least 4 bytes for legacy frames (see protocol format below) */
+			clogE << "EZSP message is too short\n";
+			return;
+		}
+
+		/* Silabs' document ug100-ezsp-reference-guide mentions, for EZSP up to v7, in section 3 Protocol Format, that the EZSP frame format is:
+		* Sequence (1 byte) | Frame Control (1 byte) | Legacy Frame ID (1 byte, almost always 0xFF) | Extended Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
+		* Thus, in case we get a legacy frame ID at offset 2, we just get rid of both "Legacy Frame ID" and "Extended Frame Control" and get a frame formatted as legacy frames
+		*/
+		if (ezspMessage.size() >= 3 && ezspMessage.at(2) == 0xffU) { /* 0xff as frame ID means we use an extended header, where frame ID will actually be shifted 2 bytes away... so we just delete those two bytes */
+			if (ezspMessage.size() < 4) {	/* We got Sequence+FC+Legacy indicating an extended FC... but there was nothing more! */
+				clogE << "Truncated extended header in EZSP message\n";
+				return;
+			}
+			ezspMessage.erase(ezspMessage.begin()+2, ezspMessage.begin()+4); /* Remove Legacy Frame ID + Extended Frame Control (offset+4 is kept as per begin() usage conventions)*/
+		}
+
+		/* EZSP message should now contain at least 3 bytes for all frames (reduced to legacy format):
+		* Sequence (1 byte) | Frame Control (1 byte) | Frame ID (1 byte) | Parameters (n bytes)
+		*/
+		if (ezspMessage.size() < 3) {
+			clogE << "EZSP message is too short\n";
+			return;
+		}
+		/* Note: this function will handle all successfully decoded incoming EZSP messages */
+		/* It won't be invoked in bootloader prompt mode, because the ASH driver is then disabled */
+
+		/* Got an correct incoming EZSP message... will be forwarded to the user */
+		if (ezspMessage.size() < 3) {	/* EZSP message should contain at least 1 byte for sequence, 1 byte for frame control and a message ID field (1 or 2 bytes) */
+			clogE << "EZSP message is too short\n";
+			return;
+		}
+		/* Extract the EZSP command (frame ID) and store it into l_cmd */
+		l_cmd = static_cast<EEzspCmd>(ezspMessage.at(2));
+		/* Remove the leading EZSP header from the payload */
+		ezspMessage.erase(ezspMessage.begin(), ezspMessage.begin()+3);
+		/* Payload (frame parameters in Silabs' terminology) will remain in buffer ezspMessage */
+	}
+	//clogD << "EZSP message payload " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
 	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
 	if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
@@ -233,14 +266,20 @@ void CEzspDongle::sendNextMsg( void )
 
 		// Then, append the EZSP frame control byte (0x00)
 		ezspMessage.push_back(0x00U);
+		if (this->knownEzspProtocolVersionGE(8)) {
+			ezspMessage.push_back(0x01U);	/* Frame format version 1 */
+		}
 
-		if (l_msg.i_cmd != NSEZSP::EEzspCmd::EZSP_VERSION) {
-			/* For all frames except "VersionRequest" frame, force an extended header 0xff 0x00 */
+		if (l_msg.i_cmd != NSEZSP::EEzspCmd::EZSP_VERSION && this->knownEzspProtocolVersionLT(8)) {
+			/* For all EZSPv6 or EZSPv7 frames except "VersionRequest" frame, force an extended header 0xff 0x00 */
 			ezspMessage.push_back(0xFFU);
 			ezspMessage.push_back(0x00U);
 		}
 
 		ezspMessage.push_back(static_cast<uint8_t>(l_msg.i_cmd));
+		if (this->knownEzspProtocolVersionGE(8)) {
+			ezspMessage.push_back(0x00);
+		}
 		ezspMessage.append(l_msg.payload); /* Append payload at the end of li_data */
 
 		if (this->ash.sendDataFrame(ezspMessage)) {
@@ -365,4 +404,23 @@ void CEzspDongle::handleResponse( EEzspCmd i_cmd )
 			clogE << "Asynchronous received EZSP message\n";
 		}
 	}
+}
+
+bool CEzspDongle::knownEzspProtocolVersion() const {
+	/* Any value other than 0 is considered valid and a proof that we know which version is running on the adapter */
+	return (this->version.ezspProtocolVersion != 0);
+}
+
+bool CEzspDongle::knownEzspProtocolVersionGE(uint8_t minIncludedVersion) const {
+	if (!(this->knownEzspProtocolVersion())) {
+		return false;	/* If we don't know the EZSP version, always return false */
+	}
+	return (this->version.ezspProtocolVersion >= minIncludedVersion);
+}
+
+bool CEzspDongle::knownEzspProtocolVersionLT(uint8_t maxExcludedVersion) const {
+	if (!(this->knownEzspProtocolVersion())) {
+		return false;	/* If we don't know the EZSP version, always return false */
+	}
+	return (this->version.ezspProtocolVersion < maxExcludedVersion);
 }
