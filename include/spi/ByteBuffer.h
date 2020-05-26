@@ -69,7 +69,9 @@ public:
 	}
 	
 	ByteBuffer& operator=(const ByteBuffer& other) {
-		_Base::operator=(static_cast<_Base>(other));
+		if (&other != this) {
+			_Base::operator=(static_cast<_Base>(other));
+		}
 		return *this;
 	}
 #if __cplusplus >= 201103L

@@ -106,9 +106,9 @@ void MockUartDriver::scheduleIncomingChunk(const MockUartScheduledByteDelivery& 
 					this->deliveredReadBytesCount += rdcnt;
 				} /* scheduledReadQueueMutex released here */
 				if (dataInputObservable != nullptr) {
-					std::unique_ptr<unsigned char[]> readData(new unsigned char[rdcnt]());	/* readData buffer will be deallocated when going our of scope */
-					memcpy(readData.get(), &(nextChunk.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
-					this->dataInputObservable->notifyObservers(readData.get(), rdcnt);	/* Notify observers */
+					unsigned char readData[rdcnt];
+					memcpy(readData, &(nextChunk.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
+					this->dataInputObservable->notifyObservers(readData, rdcnt);	/* Notify observers */
 				}
 			}
 		});

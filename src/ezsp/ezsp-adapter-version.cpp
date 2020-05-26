@@ -82,12 +82,18 @@ std::string EzspAdapterVersion::toString() const {
 		}
 		buf << "]";
 	}
-	if (this->ezspStackMajorVersion || this->ezspStackMinorVersion || this->ezspStackRevisionVersion || this->ezspStackBugfixVersion) {
+	if (this->ezspStackMajorVersion != 0
+	    || this->ezspStackMinorVersion != 0
+	    || this->ezspStackRevisionVersion != 0
+	    || this->ezspStackBugfixVersion != 0) {
 		buf << "[stack v" << this->getStackVersionAsString() << "]";
 	}
 	/* XNCP can only be properly decoded if manufacturer is Legrand */
 	if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
-		if (this->xncpAdapterHardwareVersion || this->xncpAdapterMajorVersion || this->xncpAdapterMinorVersion || this->xncpAdapterRevisionVersion) {
+		if (this->xncpAdapterHardwareVersion != 0
+		    || this->xncpAdapterMajorVersion != 0
+		    || this->xncpAdapterMinorVersion != 0
+		    || this->xncpAdapterRevisionVersion != 0) {
 			buf << "[hw v" << this->xncpAdapterHardwareVersion;
 			buf << ", fw v" << this->getFirmwareVersionAsString() << "]";
 		}

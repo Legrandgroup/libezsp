@@ -92,7 +92,7 @@ public:
 protected:
 	friend class ITimerVisitor;
 	static void trigg(ITimer* triggeringTimer) {
-		if (triggeringTimer && triggeringTimer->visitor) {
+		if (triggeringTimer != nullptr && triggeringTimer->visitor != nullptr) {
 			triggeringTimer->visitor->trigger(triggeringTimer);
 		}
 	}
