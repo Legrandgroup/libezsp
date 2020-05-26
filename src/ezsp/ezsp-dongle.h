@@ -203,6 +203,32 @@ private:
      */
     void handleDongleState( EDongleState i_state );
     void handleResponse( EEzspCmd i_cmd );
+
+protected:
+    /**
+     * @brief Check if we know which EZSP protocol version is used by the EZSP adapter
+     * 
+     * @return true if we know the EZSP protocol version
+     */
+    bool knownEzspProtocolVersion() const;
+
+    /**
+     * @brief Check if the EZSP protocol version used by the EZSP adapter is greater or equal to a minimum value
+     * 
+     * @param minIncludedVersion Minimum acceptable version (version should be greater or equal to that value)
+     * 
+     * @return true if the EZSP protocol version matches the requirement
+     */
+    bool knownEzspProtocolVersionGE(uint8_t minIncludedVersion) const;
+
+    /**
+     * @brief Check if the EZSP protocol version used by the EZSP adapter is strictly lower than a maximum value
+     * 
+     * @param maxExcludedVersion Maximum acceptable version (version should be strictly lower than that value, not equal)
+     * 
+     * @return true if the EZSP protocol version matches the requirement
+     */
+    bool knownEzspProtocolVersionLT(uint8_t maxExcludedVersion) const;
 };
 
 } // namespace NSEZSP
