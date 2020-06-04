@@ -68,7 +68,7 @@ std::string EzspAdapterVersion::toString() const {
 
     buf << "EzspAdapterVersion : { ";
 	if (this->xncpManufacturerId != static_cast<uint16_t>(Manufacturer::UNKNOWN)) {
-		buf << "[Manufacturer: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
+		buf << "[Manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
 		if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
 			buf << " (LEGRAND)";
 		}
