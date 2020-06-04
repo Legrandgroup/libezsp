@@ -272,7 +272,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	
 	vB.setXncpData(0x1021, 0x2353); /* We compare to vA 0x2345 */
 	if (vA>=vB)
-		//~ FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
+		FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
 	if (vA<vB) {
 	}
 	else
@@ -280,7 +280,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	
 	vB.setXncpData(0x1021, 0x2256); /* We compare to vA 0x2345 */
 	if (vA<=vB)
-		//~ FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
+		FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
 	if (vA>vB) {
 	}
 	else
@@ -288,7 +288,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	
 	vB.setXncpData(0x1021, 0x2434); /* We compare to vA 0x2345 */
 	if (vA>=vB)
-		//~ FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
+		FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
 	if (vA<vB) {
 	}
 	else
@@ -366,7 +366,7 @@ TEST(ezsp_adapter_version_tests, to_ostream_no_xncp) {
 	
 	s << v;
 	std::string result = s.str();
-	std::cout << result << "Got <<()'s output: \"" << s.str() << "\"\n";
+	std::cout << "Got <<()'s output: \"" << result << "\"\n";
 	
 	if (result.find("EZSPv7 running stack type 2 (mesh)") == std::string::npos) {
 		FAILF("Failed matching EZSP protocol and stack type from operator<<()'s output on EzspAdapterVersion");
@@ -407,7 +407,7 @@ TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_not_legrand) {
 	
 	s << v;
 	std::string result = s.str();
-	std::cout << result << "Got <<()'s output: \"" << s.str() << "\"\n";
+	std::cout << "Got <<()'s output: \"" << result << "\"\n";
 	
 	if (result.find("Manufacturer: 0x0001") == std::string::npos) {
 		FAILF("Failed matching manufacturer from operator<<()'s output on EzspAdapterVersion");
@@ -431,7 +431,7 @@ TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_legrand) {
 	
 	s << v;
 	std::string result = s.str();
-	std::cout << result << "Got <<()'s output: \"" << s.str() << "\"\n";
+	std::cout << "Got <<()'s output: \"" << result << "\"\n";
 	
 	if (result.find("LEGRAND") == std::string::npos) {
 		FAILF("Failed matching manufacturer from operator<<()'s output on EzspAdapterVersion");

@@ -149,25 +149,30 @@ public:
 	 */
 	std::string toString() const;
 
+private:
+	/**
+	 * @brief Compare two EzspAdapterVersion objects
+	 * 
+	 * @param lhs The left-handle side instance to compare
+	 * @param rhs The right-handle side instance to compare
+	 * @return -1 if lhs<rhs, +1 if lhs>rhs and 0 if both instances are considered equivalent
+	 */
+	static int cmp(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+public:
 	friend std::ostream& ::operator<<(std::ostream& out, const EzspAdapterVersion& data);
 
 	friend bool ::operator==(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
-	friend bool ::operator!=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
-		return !(lhs == rhs);
-	}
+	friend bool ::operator!=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
 	friend bool ::operator>(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
-	friend bool ::operator>=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
-		return (lhs == rhs) || (lhs > rhs);
-	}
+	friend bool ::operator>=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
 	friend bool ::operator<(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
-	friend bool ::operator<=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
-		return (lhs == rhs) || (lhs < rhs);
-	}
+	friend bool ::operator<=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
 	unsigned int ezspProtocolVersion;       /*<! The EZSP protocol version EZSPv7, EZSPv8 */
 	uint8_t ezspStackType;  /*<! The EZSP stack type (2 being mesh stack) */
