@@ -48,6 +48,10 @@ void EzspAdapterVersion::setXncpData(uint16_t xncpManufacturerId, uint16_t xncpV
 	this->xncpAdapterRevisionVersion = u8_get_lo_nibble(u16_get_lo_u8(xncpVersionNumber)); /* Low nibble of LSB */
 }
 
+void EzspAdapterVersion::setXncpData(EzspAdapterVersion::Manufacturer xncpManufacturerId, uint16_t xncpVersionNumber) {
+	this->setXncpData(static_cast<uint16_t>(xncpManufacturerId), xncpVersionNumber);
+}
+
 std::string EzspAdapterVersion::getFirmwareVersionAsString() const {
 	std::stringstream result;
 	result << this->xncpAdapterMajorVersion << "." << this->xncpAdapterMinorVersion << "." << this->xncpAdapterRevisionVersion;

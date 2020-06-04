@@ -129,6 +129,14 @@ public:
 	void setXncpData(uint16_t xncpManufacturerId, uint16_t xncpVersionNumber);
 
 	/**
+	 * @brief Store EZSP XNCP data present inside an EZSP XNCP info packet
+	 *
+	 * @param xncpManufacturerId The manufacturer ID (variant using a EzspAdapterVersion::Manufacturer argument)
+	 * @param xncpVersionNumber The Legrand XNCP 16-bit encoded hardware+firmware version (encoding is proprietary from Legrand)
+	 */
+	void setXncpData(EzspAdapterVersion::Manufacturer xncpManufacturerId, uint16_t xncpVersionNumber);
+
+	/**
 	 * @brief Get a string representation of the XNCP firmware version data
 	 *
 	 * @return The firmware version as a string

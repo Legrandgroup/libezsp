@@ -204,24 +204,24 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 		FAILF("Failed getting difference for different versions");
 	
 	/* But when we set the XNCP info with the same manufacturer data 0x1234, they become equal */
-	vA.setXncpData(0x1021, 0x2345);
-	vB.setXncpData(0x1021, 0x2345);
+	vA.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2345);
 	
 	if (vA != vB)
 		FAILF("Failed getting equality for identical versions (Legrand manufacturer on both)");
 	
 	/* If only the hardware version changes, we should still have equality */
-	vB.setXncpData(0x1021, 0x1345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1345);
 	if (vA != vB)
 		FAILF("Failed getting equality for identical versions (Legrand manufacturer on both)");
 	
 	/* However, if firmware version changes, there should be a difference */
-	vB.setXncpData(0x1021, 0x2123);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2123);
 	if (vA == vB)
 		FAILF("Failed getting difference on XNCP firmware version (Legrand manufacturer on both)");
 	
-	vA.setXncpData(0x1021, 0x2345);
-	vB.setXncpData(0x1021, 0x2123);
+	vA.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2123);
 	if (vA>vB) {
 	}
 	else
@@ -234,7 +234,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2345);
 	if (vA != vB)
 		FAILF("Failed getting equality for identical versions (Legrand manufacturer on both)");
 	if (vA<=vB) { /* Equality will make us match also on <= */
@@ -246,7 +246,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Failed getting equality for identical versions (Legrand manufacturer on both)");
 	
-	vB.setXncpData(0x1021, 0x2344); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2344); /* We compare to vA 0x2345 */
 	if (vA<=vB)
 		FAILF("Got unexpected comparison result on XNCP info revision (firmware versions)");
 	if (vA>vB) {
@@ -254,7 +254,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info revision (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2346); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2346); /* We compare to vA 0x2345 */
 	if (vA>=vB)
 		FAILF("Got unexpected comparison result on XNCP info revision (firmware versions)");
 	if (vA<vB) {
@@ -262,7 +262,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info revision (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2335); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2335); /* We compare to vA 0x2345 */
 	if (vA<=vB)
 		FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
 	if (vA>vB) {
@@ -270,7 +270,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2353); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2353); /* We compare to vA 0x2345 */
 	if (vA>=vB)
 		FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
 	if (vA<vB) {
@@ -278,7 +278,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info minor (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2256); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2256); /* We compare to vA 0x2345 */
 	if (vA<=vB)
 		FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
 	if (vA>vB) {
@@ -286,7 +286,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	else
 		FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
 	
-	vB.setXncpData(0x1021, 0x2434); /* We compare to vA 0x2345 */
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x2434); /* We compare to vA 0x2345 */
 	if (vA>=vB)
 		FAILF("Got unexpected comparison result on XNCP info major (firmware versions)");
 	if (vA<vB) {
@@ -302,8 +302,8 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_tw
 	EzspAdapterVersion vB;
 	vA.setEzspVersionInfo(0x6320, 7, 2);
 	vB.setEzspVersionInfo(0x6440, 7, 2);
-	vA.setXncpData(0x1021, 0x1234);
-	vB.setXncpData(0x1021, 0x1234);
+	vA.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1234);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1234);
 	/* Even if stack is different, we only care about Legrand XNCP version, so vA and vB are equivalent */
 	
 	if (vA != vB) {
@@ -331,7 +331,7 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_an
 	vA.setEzspVersionInfo(0x6440, 7, 2);
 	vB.setEzspVersionInfo(0x6320, 7, 2);
 	vA.setXncpData(0x0001, 0x1234);
-	vB.setXncpData(0x1021, 0x1345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1345);
 	/* Stack from vA is more recent than from vB */
 	/* Even if manufacturer Legrand on vB and XNCP info is higher on vB, we should consider vA>vB */
 	if (vA <= vB) {
@@ -343,13 +343,13 @@ TEST(ezsp_adapter_version_tests, comparison_xncp_version_manufacturer_legrand_an
 	else
 		FAILF("Failed comparing a Legrand adapter with a non-Legrand by excluding XNCP");
 	
-	vB.setXncpData(0x1021, 0x1234);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1234);
 	if (vA == vB) {
 		FAILF("Failed comparing a Legrand adapter with a non-Legrand by excluding XNCP");
 	}
 	
 	vA.setEzspVersionInfo(0x6320, 7, 2);
-	vB.setXncpData(0x1021, 0x1345);
+	vB.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1345);
 	
 	if (vA != vB) {
 		FAILF("Failed comparing a Legrand adapter with a non-Legrand by excluding XNCP");
@@ -425,7 +425,7 @@ TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_not_legrand) {
 TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_legrand) {
 	EzspAdapterVersion v;
 	v.setEzspVersionInfo(0x6440, 7, 2);
-	v.setXncpData(0x1021, 0x1234);
+	v.setXncpData(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND, 0x1234);
 	
 	std::stringstream s;
 	
