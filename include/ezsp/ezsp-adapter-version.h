@@ -12,6 +12,83 @@
 
 #include <ezsp/export.h>
 
+/* Forward declaration of NSEZSP::EzspAdapterVersion */
+namespace NSEZSP {
+	class LIBEXPORT EzspAdapterVersion;
+} // namespace NSEZSP
+
+/* Declaration of friend operators belonging to :: */
+
+/**
+ * @brief Serialize an NSEZSP::EzspAdapterVersion instance to an iostream
+ *
+ * @param out The original output stream
+ * @param data The object to serialize
+ *
+ * @return The new output stream with serialized data appended
+ */
+LIBEXPORT std::ostream& operator<<(std::ostream& out, const NSEZSP::EzspAdapterVersion& data);
+
+/**
+ * @brief Compare two NSEZSP::EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if instances are considered equivalent
+ */
+LIBEXPORT bool operator==(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
+/**
+ * @brief Compare two EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if instances are considered different
+ */
+LIBEXPORT bool operator!=(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
+/**
+ * @brief Compare two NSEZSP::EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if lhs is stricly greater than rhs
+ */
+LIBEXPORT bool operator>(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
+/**
+ * @brief Compare two NSEZSP::EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if lhs is greater or equal to rhs
+ */
+LIBEXPORT bool operator>=(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
+/**
+ * @brief Compare two NSEZSP::EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if lhs is stricly lower than rhs
+ */
+LIBEXPORT bool operator<(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
+/**
+ * @brief Compare two NSEZSP::EzspAdapterVersion instances
+ *
+ * @param lhs The left-handle side instance compared
+ * @param rhs The right-handle side instance compared
+ *
+ * @return true if lhs is lower or equal to rhs
+ */
+LIBEXPORT bool operator<=(const NSEZSP::EzspAdapterVersion& lhs, const NSEZSP::EzspAdapterVersion& rhs);
+
 namespace NSEZSP {
 
 /**
@@ -52,6 +129,14 @@ public:
 	void setXncpData(uint16_t xncpManufacturerId, uint16_t xncpVersionNumber);
 
 	/**
+	 * @brief Store EZSP XNCP data present inside an EZSP XNCP info packet
+	 *
+	 * @param xncpManufacturerId The manufacturer ID (variant using a EzspAdapterVersion::Manufacturer argument)
+	 * @param xncpVersionNumber The Legrand XNCP 16-bit encoded hardware+firmware version (encoding is proprietary from Legrand)
+	 */
+	void setXncpData(EzspAdapterVersion::Manufacturer xncpManufacturerId, uint16_t xncpVersionNumber);
+
+	/**
 	 * @brief Get a string representation of the XNCP firmware version data
 	 *
 	 * @return The firmware version as a string
@@ -72,18 +157,30 @@ public:
 	 */
 	std::string toString() const;
 
+private:
 	/**
-	 * @brief Serialize to an iostream
-	 *
-	 * @param out The original output stream
-	 * @param data The object to serialize
-	 *
-	 * @return The new output stream with serialized data appended
+	 * @brief Compare two EzspAdapterVersion objects
+	 * 
+	 * @param lhs The left-handle side instance to compare
+	 * @param rhs The right-handle side instance to compare
+	 * @return -1 if lhs<rhs, +1 if lhs>rhs and 0 if both instances are considered equivalent
 	 */
-	friend std::ostream& operator<< (std::ostream& out, const EzspAdapterVersion& data){
-		out << data.toString();
-		return out;
-	}
+	static int cmp(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+public:
+	friend std::ostream& ::operator<<(std::ostream& out, const EzspAdapterVersion& data);
+
+	friend bool ::operator==(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+	friend bool ::operator!=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+	friend bool ::operator>(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+	friend bool ::operator>=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+	friend bool ::operator<(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
+
+	friend bool ::operator<=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs);
 
 	unsigned int ezspProtocolVersion;       /*<! The EZSP protocol version EZSPv7, EZSPv8 */
 	uint8_t ezspStackType;  /*<! The EZSP stack type (2 being mesh stack) */

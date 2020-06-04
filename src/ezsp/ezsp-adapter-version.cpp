@@ -48,6 +48,10 @@ void EzspAdapterVersion::setXncpData(uint16_t xncpManufacturerId, uint16_t xncpV
 	this->xncpAdapterRevisionVersion = u8_get_lo_nibble(u16_get_lo_u8(xncpVersionNumber)); /* Low nibble of LSB */
 }
 
+void EzspAdapterVersion::setXncpData(EzspAdapterVersion::Manufacturer xncpManufacturerId, uint16_t xncpVersionNumber) {
+	this->setXncpData(static_cast<uint16_t>(xncpManufacturerId), xncpVersionNumber);
+}
+
 std::string EzspAdapterVersion::getFirmwareVersionAsString() const {
 	std::stringstream result;
 	result << this->xncpAdapterMajorVersion << "." << this->xncpAdapterMinorVersion << "." << this->xncpAdapterRevisionVersion;
@@ -68,7 +72,7 @@ std::string EzspAdapterVersion::toString() const {
 
     buf << "EzspAdapterVersion : { ";
 	if (this->xncpManufacturerId != static_cast<uint16_t>(Manufacturer::UNKNOWN)) {
-		buf << "[Manufacturer: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
+		buf << "[Manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
 		if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
 			buf << " (LEGRAND)";
 		}
@@ -101,4 +105,105 @@ std::string EzspAdapterVersion::toString() const {
     buf << " }";
 
     return buf.str();
+}
+
+/* External friend operators handling EzspAdapterVersion objects */
+std::ostream& operator<<(std::ostream& out, const EzspAdapterVersion& data) {
+	out << data.toString();
+	return out;
+}
+
+int EzspAdapterVersion::cmp(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	/* EZSP protocol version order matters first */
+	if (lhs.ezspProtocolVersion > rhs.ezspProtocolVersion) {
+		return 1;
+	}
+	else if (lhs.ezspProtocolVersion < rhs.ezspProtocolVersion) {
+		return -1;
+	}
+	/* We reach here only when lhs.ezspProtocolVersion == rhs.ezspProtocolVersion */
+	if (lhs.ezspStackType > rhs.ezspStackType) {
+		//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
+		return 1;
+	}
+	else if (lhs.ezspStackType < rhs.ezspStackType) {
+		//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
+		return -1;
+	}
+	/* We reach here only when lhs.ezspStackType == rhs.ezspStackType */
+	if (lhs.xncpManufacturerId == static_cast<uint16_t>(EzspAdapterVersion::Manufacturer::LEGRAND) && rhs.xncpManufacturerId == static_cast<uint16_t>(EzspAdapterVersion::Manufacturer::LEGRAND)) {
+		/* Both adapters we compare are from Legrand... check only the XNCP versions (note: we don't compare the hardware revision, though) */
+		if (lhs.xncpAdapterMajorVersion > rhs.xncpAdapterMajorVersion) {
+			return 1;
+		}
+		else if (lhs.xncpAdapterMajorVersion < rhs.xncpAdapterMajorVersion) {
+			return -1;
+		}
+		/* We reach here only when lhs.xncpAdapterMajorVersion == rhs.xncpAdapterMajorVersion */
+		if (lhs.xncpAdapterMinorVersion > rhs.xncpAdapterMinorVersion) {
+			return 1;
+		}
+		else if (lhs.xncpAdapterMinorVersion < rhs.xncpAdapterMinorVersion) {
+			return -1;
+		}
+		/* We reach here only when lhs.xncpAdapterRevisionVersion == rhs.xncpAdapterRevisionVersion */
+		if (lhs.xncpAdapterRevisionVersion > rhs.xncpAdapterRevisionVersion) {
+			return 1;
+		}
+		else if (lhs.xncpAdapterRevisionVersion < rhs.xncpAdapterRevisionVersion) {
+			return -1;
+		}
+	}
+	else {	/* If at least one adapter is not from Legrand... */
+		/* ...compare only the stack version */
+		if (lhs.ezspStackMajorVersion > rhs.ezspStackMajorVersion) {
+			return 1;
+		}
+		else if (lhs.ezspStackMajorVersion < rhs.ezspStackMajorVersion) {
+			return -1;
+		}
+		if (lhs.ezspStackMinorVersion > rhs.ezspStackMinorVersion) {
+			return 1;
+		}
+		else if (lhs.ezspStackMinorVersion < rhs.ezspStackMinorVersion) {
+			return -1;
+		}
+		if (lhs.ezspStackRevisionVersion > rhs.ezspStackRevisionVersion) {
+			return 1;
+		}
+		else if (lhs.ezspStackRevisionVersion < rhs.ezspStackRevisionVersion) {
+			return -1;
+		}
+		if (lhs.ezspStackBugfixVersion > rhs.ezspStackBugfixVersion) {
+			return 1;
+		}
+		else if (lhs.ezspStackBugfixVersion < rhs.ezspStackBugfixVersion) {
+			return -1;
+		}
+	}
+	return 0;	/* Identity */
+}
+
+bool operator==(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) == 0);
+}
+
+bool operator!=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) != 0);
+}
+
+bool operator>(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) > 0);
+}
+
+bool operator>=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) >= 0);
+}
+
+bool operator<(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) < 0);
+}
+
+bool operator<=(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
+	return ( EzspAdapterVersion::cmp(lhs, rhs) <= 0);
 }

@@ -841,20 +841,8 @@ FILE_PATTERNS          = *.c \
                          *.php5 \
                          *.phtml \
                          *.inc \
-                         *.m \
-                         *.markdown \
-                         *.md \
-                         *.mm \
-                         *.dox \
                          *.py \
-                         *.f90 \
-                         *.f \
-                         *.for \
                          *.tcl \
-                         *.vhd \
-                         *.vhdl \
-                         *.ucf \
-                         *.qsf \
                          *.as \
                          *.js
 

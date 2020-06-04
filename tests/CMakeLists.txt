@@ -6,6 +6,7 @@ list(APPEND gptest_SOURCES mock_serial_self_tests.cpp)
 list(APPEND gptest_SOURCES logger_bytes_to_string_tests.cpp)
 list(APPEND gptest_SOURCES green_power_frame_tests.cpp)
 list(APPEND gptest_SOURCES gp_tests.cpp)
+list(APPEND gptest_SOURCES ezsp_adapter_version_tests.cpp)
 list(APPEND gptest_SOURCES test_libezsp.cpp)
 add_executable(gptest ${gptest_SOURCES})
 
