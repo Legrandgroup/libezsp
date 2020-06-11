@@ -481,6 +481,16 @@ public:
             }
             break;
 
+		case 0x20: { // Off Command (see Table 54 "Payloadless GPDF commands sent by GPD" in Green Power Specifications v1.1.1 (14-0563-18))
+			std::cout << "Received Off Command\n";
+		}
+		break;
+
+		case 0x21: { // On Command (see Table 54 "Payloadless GPDF commands sent by GPD" in Green Power Specifications v1.1.1 (14-0563-18))
+			std::cout << "Received On Command\n";
+		}
+		break;
+
             default:
                 clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
                 break;
