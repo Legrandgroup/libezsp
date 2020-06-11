@@ -10,6 +10,8 @@
 #include "ezsp/lib-ezsp-main.h"
 #include "../example/mainEzspStateMachine.h"
 
+#include "ezsp/ashv2-codec.h"
+
 #include "TestHarness.h"
 
 using NSSPI::IAsyncDataInputObserver;
@@ -26,7 +28,7 @@ using NSEZSP::CGpDevice;
 /**
  * @brief Class implementing an observer that validates state transition during a sample ezsp in/out test sequence
 **/
-class GPRecvSensorMeasurementTest : public IAsyncDataInputObserver  {
+class GPRecvSensorMeasurementTest : public IAsyncDataInputObserver {
 public:
 	/**
 	 * @brief Constructor
@@ -35,7 +37,7 @@ public:
 	 *            Because this is a pointer, you can update this vector on the fly during the test, we will use an always up-to-date vector each time bytes are written to the serial port.
 	 *            However, this also means you have to keep the vector of vector of uint8_t memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
 	 */
-	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
+	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : ash(nullptr), stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
 
 	/**
 	 * @brief Copy constructor
@@ -131,6 +133,7 @@ public:
 		this->onReadCallback(dataIn, dataLen);
 	}
 public:
+	NSEZSP::AshCodec ash;	/*!< An ASH codec to encode/decode ASH frames */
 	unsigned int stage;	/*!< Counter for the internal state machine */
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
 	unsigned int nbReadCallbacks;	/*!< How many time the onReadCallback() was executed */
@@ -497,34 +500,33 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	stageExpectedTransitions.push_back({0x83, 0x40, 0x1b, 0x7e});
 	stageExpectedTransitions.push_back({0x33, 0x71, 0x21, 0x57, 0x54, 0x3d, 0xe7, 0x8a, 0x7e});
-	stageExpectedTransitions.push_back({0x84, 0x30, 0xfc, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x23, 0x70, 0xa5, 0x57, 0x54, 0x3d, 0x15, 0x9c, 0x50, 0x7e, 0x33, 0x70, 0xb1, 0x57, 0x54, 0x33, 0x85, 0x86, 0xc1, 0x7e}));
 	UT_WAIT_MS(25);
-	UT_FAILF_UNLESS_STAGE(105);
+	UT_FAILF_UNLESS_STAGE(104);
 
 	stageExpectedTransitions.push_back({0x85, 0x20, 0xdd, 0x7e});
 	stageExpectedTransitions.push_back({0x45, 0x76, 0x21, 0x57, 0x54, 0x32, 0xb9, 0xcc, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x44, 0x71, 0xa1, 0x57, 0x54, 0x3d, 0x65, 0x84, 0x3f, 0x7e}));
 	UT_WAIT_MS(25);
-	UT_FAILF_UNLESS_STAGE(107);
+	UT_FAILF_UNLESS_STAGE(106);
 
 	stageExpectedTransitions.push_back({0x86, 0x10, 0xbe, 0x7e});
 	stageExpectedTransitions.push_back({0x56, 0x77, 0x21, 0x57, 0x54, 0x32, 0xc7, 0xf9, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x55, 0x76, 0xa1, 0x57, 0x54, 0x32, 0x17, 0x8d, 0x8f, 0x7e}));
 	UT_WAIT_MS(25);
-	UT_FAILF_UNLESS_STAGE(109);
+	UT_FAILF_UNLESS_STAGE(108);
 
 	stageExpectedTransitions.push_back({0x87, 0x00, 0x9f, 0x7e});
-	stageExpectedTransitions.push_back({0x67, 0x74, 0x21, 0x57, 0x54, 0x32, 0x43, 0x07, 0x7e});
+	stageExpectedTransitions.push_back({0x67, 0x74, 0x21, 0x57, 0x54, 0x0a, 0xf4, 0x5c, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x66, 0x77, 0xa1, 0x57, 0x54, 0x32, 0x17, 0x49, 0x20, 0x7e}));
 	UT_WAIT_MS(25);
-	UT_FAILF_UNLESS_STAGE(111);
+	UT_FAILF_UNLESS_STAGE(110);
 
 	stageExpectedTransitions.push_back({0x80, 0x70, 0x78, 0x7e});
 	stageExpectedTransitions.push_back({0x70, 0x75, 0x21, 0x57, 0x54, 0x0a, 0x8c, 0xc8, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x77, 0x74, 0xa1, 0x57, 0x54, 0x32, 0x17, 0x08, 0xda, 0x7e}));
 	UT_WAIT_MS(25);
-	UT_FAILF_UNLESS_STAGE(113);
+	UT_FAILF_UNLESS_STAGE(112);
 
 	stageExpectedTransitions.push_back({0x81, 0x60, 0x59, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x00, 0x75, 0xa1, 0x57, 0x54, 0x0a, 0x15, 0x7c, 0x21, 0x7e}));
