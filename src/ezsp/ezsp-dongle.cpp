@@ -44,13 +44,17 @@ CEzspDongle::~CEzspDongle() {
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
 	this->uartHandle = uartHandle;
-	this->uartHandle->setIncomingDataHandler(&uartIncomingDataHandler); /* UART will send incoming bytes to the uartIncomingDataHandler member we hold as attribute */
+	this->uartHandle->setIncomingDataHandler(&this->uartIncomingDataHandler); /* UART will send incoming bytes to the uartIncomingDataHandler member we hold as attribute */
 	/* Allow ash and blp objects to read to read bytes from the serial port */
 	this->ash.registerSerialReadObservable(&(this->uartIncomingDataHandler));   /* Ask ASH to observe our uartIncomingDataHandler observable so that it will be notified about incoming bytes */
 	this->blp.registerSerialReadObservable(&(this->uartIncomingDataHandler));   /* Ask BLP to observe our uartIncomingDataHandler observable so that it will be notified about incoming bytes */
 	/* Allow ash and blp objects to write to the serial port via our own uartHandle attribute */
 	this->ash.registerSerialWriter(this->uartHandle);
 	this->blp.registerSerialWriter(this->uartHandle);
+}
+
+NSSPI::GenericAsyncDataInputObservable* CEzspDongle::getSerialReadObservable() {
+	return &(this->uartIncomingDataHandler);
 }
 
 bool CEzspDongle::reset() {

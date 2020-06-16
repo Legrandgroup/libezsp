@@ -192,6 +192,18 @@ public:
      */
     bool setChannel(uint8_t channel);
 
+    /**
+     * @brief Retrieve an observable to handle bytes received on the serial port
+     * 
+     * @note This observable has been created at construction (see our constructor's uartHandler argument) and set as the observable for this uartHandler
+     * Thus, if another observable is setconfigured on uartHandler, the CEzsp instance will not receive incoming bytes anymore.
+     * To allow an external observer to attach to this observable and thus get the incoming serial bytes as well, we provide this utility
+     * method to expose the observable we created
+     * 
+     * @return An observable instance that will notify its observers when new bytes are read from the serial port
+     */
+    NSSPI::GenericAsyncDataInputObservable* getAdapterSerialReadObservable() const;
+
 private:
 	CLibEzspMain *main;
 };

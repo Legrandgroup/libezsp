@@ -37,7 +37,14 @@ public:
 	 *            Because this is a pointer, you can update this vector on the fly during the test, we will use an always up-to-date vector each time bytes are written to the serial port.
 	 *            However, this also means you have to keep the vector of vector of uint8_t memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
 	 */
-	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) : ash(nullptr), stage(0), nbWriteCalls(0), nbReadCallbacks(0), stageExpectedTransitions(stageTransitionExpectedList) { }
+	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) :
+		serialReadObservable(nullptr),
+		ash(nullptr),
+		stage(0),
+		nbWriteCalls(0),
+		nbReadCallbacks(0),
+		stageExpectedTransitions(stageTransitionExpectedList) {
+		}
 
 	/**
 	 * @brief Copy constructor
@@ -52,6 +59,13 @@ public:
 	 * @warning Assignment is not allowed on instances of this class
 	 */
 	GPRecvSensorMeasurementTest operator= (const GPRecvSensorMeasurementTest& other) = delete;
+
+	/**
+	 * @brief Destructor
+	 */
+	~GPRecvSensorMeasurementTest() {
+		this->registerSerialReadObservable(nullptr);	/* Unregister ourselves as an observer */
+	}
 
 	/**
 	 * @brief Write callback function to register to the mock serial interface
@@ -115,14 +129,8 @@ public:
 	 * It will be invoked each time a read() is done on the mock serial interface to which it has been registered
 	 */
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
-		std::cerr << "Got notification of " << std::dec << dataLen << " bytes read: ";
-		for(unsigned int loop=0; loop<dataLen; loop++) {
-			if (loop!=0) {
-				std::cout << " ";
-			}
-			std::cout << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const uint8_t*>(dataIn))[loop]);
-		}
-		std::cerr << "\n";
+		NSSPI::ByteBuffer inputBuffer(dataIn, dataLen);
+		std::cerr << "Got notification of " << std::dec << dataLen << " bytes read: " << NSSPI::Logger::byteSequenceToString(inputBuffer) << "\n";
 		this->nbReadCallbacks++;
 	}
 
@@ -130,9 +138,27 @@ public:
 	 * @brief Callback invoked on UART received bytes
 	 */
 	void handleInputData(const unsigned char* dataIn, const size_t dataLen) {
+		clogD << "Trace!!!!!!!!!!!!!!\n";
 		this->onReadCallback(dataIn, dataLen);
 	}
+
+	/**
+	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
+	 * 
+	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
+	 */
+	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable) {
+		if (this->serialReadObservable) {	/* First, unregister ourselves from any previous async observable */
+			serialReadObservable->unregisterObserver(this);
+		}
+		this->serialReadObservable = serialReadObservable;
+		if (serialReadObservable) {
+			serialReadObservable->registerObserver(this);	/* Register ourselves as an async observer to receive incoming bytes received from the serial port */
+		}
+	}
+
 public:
+	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
 	NSEZSP::AshCodec ash;	/*!< An ASH codec to encode/decode ASH frames */
 	unsigned int stage;	/*!< Counter for the internal state machine */
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
@@ -157,6 +183,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	TimerBuilder timerBuilder;
 	Logger::getInstance()->setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
 	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
+	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
 		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
@@ -194,6 +221,9 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	UT_FAILF_UNLESS_STAGE(1);
 
 	stageExpectedTransitions.push_back({0x00, 0x42, 0x21, 0xa8, 0x52, 0xcd, 0x6e, 0x7e });
+
+	serialProcessor.registerSerialReadObservable(lib_main.getAdapterSerialReadObservable());
+
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x1a, 0xc1, 0x02, 0x0b, 0x0a, 0x52, 0x7e}));
 	UT_WAIT_MS(25);
 	UT_FAILF_UNLESS_STAGE(2);
