@@ -202,7 +202,7 @@ public:
      * 
      * @return An observable instance that will notify its observers when new bytes are read from the serial port
      */
-    NSSPI::GenericAsyncDataInputObservable* getAdapterSerialReadObservable() const;
+    NSSPI::GenericAsyncDataInputObservable* getAdapterSerialReadObservable();
 
 private:
 	CLibEzspMain *main;
