@@ -71,7 +71,7 @@ public:
 	/**
 	 * @brief Destructor
 	 */
-	~BootloaderPromptDriver() = default;
+	~BootloaderPromptDriver();
 
 	/**
 	 * @brief Assignment operator

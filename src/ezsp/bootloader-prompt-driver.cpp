@@ -31,6 +31,10 @@ BootloaderPromptDriver::BootloaderPromptDriver(const NSSPI::TimerBuilder& i_time
 	this->registerSerialReadObservable(this->serialReadObservable);	/* Register ourselves as an async observer if a valid serialReadObservable was provided */
 }
 
+BootloaderPromptDriver::~BootloaderPromptDriver() {
+	this->registerSerialReadObservable(nullptr);	/* Remove ourselves from the observers */
+}
+
 void BootloaderPromptDriver::disable() {
 	this->enabled = false;
 }

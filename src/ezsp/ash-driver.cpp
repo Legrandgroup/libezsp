@@ -53,9 +53,7 @@ AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_buil
 
 AshDriver::~AshDriver() {
 	this->ashCodec.setAckTimeoutCancelFunc(nullptr);	/* Disable any timeout callback */
-	if (this->serialReadObservable) {	/* Remove ourselves from the observers */
-		this->serialReadObservable->unregisterObserver(this);
-	}
+	this->registerSerialReadObservable(nullptr);	/* Remove ourselves from the observers */
 }
 
 void AshDriver::disable() {
