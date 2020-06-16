@@ -138,7 +138,6 @@ public:
 	 * @brief Callback invoked on UART received bytes
 	 */
 	void handleInputData(const unsigned char* dataIn, const size_t dataLen) {
-		clogD << "Trace!!!!!!!!!!!!!!\n";
 		this->onReadCallback(dataIn, dataLen);
 	}
 
