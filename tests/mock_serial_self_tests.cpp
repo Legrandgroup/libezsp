@@ -136,9 +136,7 @@ TEST(mock_serial_tests, mock_serial_immediate_read_once) {
 	rBuf1.byteBuffer.push_back(0x00);
 	rBuf1.byteBuffer.push_back(0xa0);
 	rBuf1.byteBuffer.push_back(0x50);
-	auto rcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
-		return serialProcessor.onWriteCallback(writtenCnt, buf, cnt, delta);
-	};
+	
 	uartIncomingDataHandler.registerObserver(&serialProcessor);
 	uartDriver.setIncomingDataHandler(&uartIncomingDataHandler);
 
