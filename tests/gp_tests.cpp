@@ -132,6 +132,7 @@ public:
 		NSSPI::ByteBuffer inputBuffer(dataIn, dataLen);
 		std::cerr << "Got notification of " << std::dec << dataLen << " bytes read: " << NSSPI::Logger::byteSequenceToString(inputBuffer) << "\n";
 		this->nbReadCallbacks++;
+		std::cerr << "Resulting decoded ASH content: " << NSSPI::Logger::byteSequenceToString(this->ash.appendIncoming(inputBuffer)) << "\n";
 	}
 
 	/**
