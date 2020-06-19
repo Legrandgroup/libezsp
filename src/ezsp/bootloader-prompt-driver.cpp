@@ -79,7 +79,7 @@ void BootloaderPromptDriver::registerPromptDetectCallback(std::function<void (vo
 
 void BootloaderPromptDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable) {
 	if (this->serialReadObservable) {	/* First, unregister ourselves from any previous async observable */
-		serialReadObservable->unregisterObserver(this);
+		this->serialReadObservable->unregisterObserver(this);
 	}
 	this->serialReadObservable = serialReadObservable;
 	if (serialReadObservable) {
