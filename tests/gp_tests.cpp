@@ -235,6 +235,8 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	lib_main.start();
 
+	/* To get the exact trace tested below, just capture reads/writes from/to serial port when running mainEzspTest -c 11 -C 60 -r '*' -s '0x0050abcd/00112233445566778899aabbccddeeff' */
+
 	UT_WAIT_MS(50);	/* Give 50ms for libezsp's internal process to write to serial */
 	UT_FAILF_UNLESS_STAGE(1);
 
@@ -571,9 +573,12 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	UT_FAILF_UNLESS_STAGE(110);
 
 	stageExpectedTransitions.push_back({0x80, 0x70, 0x78, 0x7e});
-	stageExpectedTransitions.push_back({0x70, 0x75, 0x21, 0x57, 0x54, 0x0a, 0x8c, 0xc8, 0x7e});
 	mockUartDriverHandle->scheduleIncomingChunk(MockUartScheduledByteDelivery({0x77, 0x74, 0xa1, 0x57, 0x54, 0x32, 0x17, 0x08, 0xda, 0x7e}));
 	UT_WAIT_MS(25);
+	UT_FAILF_UNLESS_STAGE(111);
+
+	stageExpectedTransitions.push_back({0x00, 0x75, 0xa1, 0x57, 0x54, 0x0a, 0x15, 0x7c, 0x21, 0x7e});
+	UT_WAIT_MS(500);
 	UT_FAILF_UNLESS_STAGE(112);
 
 	stageExpectedTransitions.push_back({0x81, 0x60, 0x59, 0x7e});
