@@ -35,15 +35,18 @@ public:
 	 *
 	 * @param[in] stageTransitionExpectedList A pointer to an external list of expected buffer written to the serial line, that will automatically trigger a stage transition (stage++)
 	 *            Because this is a pointer, you can update this vector on the fly during the test, we will use an always up-to-date vector each time bytes are written to the serial port.
-	 *            However, this also means you have to keep the vector of vector of uint8_t memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
+	 *            However, this also means you have to keep the vector of vector of ByteBuffer memory allocated during the whole lifetime of this GPRecvSensorMeasurementTest object or you will have dereference crashes!
+	 * @param interpretTransitionsAsRawAshFormat Shall the entries in stageTransitionExpectedList be matched against raw (ASH) serial bytes.
+	 *                                           If set to false, instead, we will assume stageTransitionExpectedList contains EZSP payloads to match.
 	 */
-	explicit GPRecvSensorMeasurementTest(const std::vector< std::vector<uint8_t> >* stageTransitionExpectedList = nullptr) :
+	explicit GPRecvSensorMeasurementTest(const std::vector<NSSPI::ByteBuffer>* stageTransitionExpectedList = nullptr, bool interpretTransitionsAsRawAshFormat = true) :
 		serialReadObservable(nullptr),
 		ash(nullptr),
 		stage(0),
 		nbWriteCalls(0),
 		nbReadCallbacks(0),
-		stageExpectedTransitions(stageTransitionExpectedList) {
+		stageExpectedTransitions(stageTransitionExpectedList),
+		expectedTransitionsRawAshFormat(interpretTransitionsAsRawAshFormat) {
 		}
 
 	/**
@@ -73,7 +76,7 @@ public:
 	 * It will be invoked each time a write() is done on the mock serial interface to which it has been registered
 	 */
 	int onWriteCallback(size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) {
-		std::cout << "Request to write " << std::dec << cnt << " bytes: ";
+		std::cout << "Host->emulated NCP write of " << std::dec << cnt << " bytes: ";
 		for(unsigned int loop=0; loop<cnt; loop++) {
 			if (loop!=0) {
 				std::cout << " ";
@@ -106,7 +109,7 @@ public:
 			}
 		}
 		if (!transitionMatch) {
-			std::cerr << "Warning: Got an unexpected command written to serial port while at stage " << std::dec << this->stage << ":\n";
+			std::cerr << "Warning: Got an unexpected command written to emulated NCP while at stage " << std::dec << this->stage << ":\n";
 			std::cerr << "Received: ";
 			for (uint8_t loop=0; loop<cnt; loop++) {
 				std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned((static_cast<const unsigned char*>(buf))[loop]);
@@ -117,7 +120,7 @@ public:
 				std::cerr << " " << std::hex << std::setw(2) << std::setfill('0') << +static_cast<uint8_t>(expectedBuffer[loop]);
 			}
 			std::cerr << "\n";
-			FAILF("Unexpected command written to serial port");
+			FAILF("Unexpected command written by host to emulated NCP");
 		}
 		this->nbWriteCalls++;
 		return 0;
@@ -130,7 +133,7 @@ public:
 	 */
 	void onReadCallback(const unsigned char* dataIn, const size_t dataLen) {
 		NSSPI::ByteBuffer inputBuffer(dataIn, dataLen);
-		std::cerr << "Got notification of " << std::dec << dataLen << " bytes read: " << NSSPI::Logger::byteSequenceToString(inputBuffer) << "\n";
+		std::cerr << "Notified read on Host<-emulated NCP readof " << std::dec << dataLen << " bytes: " << NSSPI::Logger::byteSequenceToString(inputBuffer) << "\n";
 		this->nbReadCallbacks++;
 		std::cerr << "Resulting decoded ASH content: " << NSSPI::Logger::byteSequenceToString(this->ash.appendIncoming(inputBuffer)) << "\n";
 	}
@@ -157,13 +160,28 @@ public:
 		}
 	}
 
+	/**
+	 * @brief expectedTransitionsRawAshFormat setter (to true)
+	 */
+	void setExpectedTransitionsAsRawAsh() {
+		this->expectedTransitionsRawAshFormat = true;
+	}
+
+	/**
+	 * @brief expectedTransitionsRawAshFormat setter (to false)
+	 */
+	void setExpectedTransitionsAsEzsp() {
+		this->expectedTransitionsRawAshFormat = false;
+	}
+
 public:
 	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
 	NSEZSP::AshCodec ash;	/*!< An ASH codec to encode/decode ASH frames */
 	unsigned int stage;	/*!< Counter for the internal state machine */
 	unsigned int nbWriteCalls;	/*!< How many time the onWriteCallback() was executed */
 	unsigned int nbReadCallbacks;	/*!< How many time the onReadCallback() was executed */
-	const std::vector< std::vector<uint8_t> >* stageExpectedTransitions;	/*!< A pointer to an external list of expected buffer written to the serial line, that will automatically trigger a stage transition (stage++) */
+	const std::vector<NSSPI::ByteBuffer>* stageExpectedTransitions;	/*!< A pointer to an external list of expected buffer written to the serial line, that will automatically trigger a stage transition (stage++) */
+	bool expectedTransitionsRawAshFormat;	/*!< Shall stageExpectedTransitions byte buffer content be interpreted as ASH (raw serial format), if not, we will assume we compare the EZSP payload only */
 };
 
 TEST_GROUP(gp_tests) {
@@ -182,7 +200,7 @@ TEST_GROUP(gp_tests) {
 TEST(gp_tests, gp_recv_sensor_measurement) {
 	TimerBuilder timerBuilder;
 	Logger::getInstance()->setLogLevel(LOG_LEVEL::DEBUG);	/* Only display logs for debug level info and higher (up to error) */
-	std::vector< std::vector<uint8_t> > stageExpectedTransitions;
+	std::vector<NSSPI::ByteBuffer> stageExpectedTransitions;
 	GenericAsyncDataInputObservable uartIncomingDataHandler;
 	GPRecvSensorMeasurementTest serialProcessor(&stageExpectedTransitions);
 	auto wcb = [&serialProcessor](size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta) -> int {
