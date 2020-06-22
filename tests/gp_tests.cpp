@@ -192,7 +192,15 @@ TEST_GROUP(gp_tests) {
 #define UT_WAIT_MS(tms) std::this_thread::sleep_for(std::chrono::milliseconds(tms)) //NOSONAR
 #define UT_FAILF_UNLESS_STAGE(tstage) do {\
 	if (serialProcessor.stage != tstage) \
-		FAILF("Failed to transition to stage %d", tstage); \
+		FAILF("Failed to transition to stage %d. Currently at stage %d instead, and expecting %s", tstage, serialProcessor.stage, \
+		      (serialProcessor.stageExpectedTransitions==nullptr?\
+		      	"(empty transition list)":\
+		      	(serialProcessor.stage>=serialProcessor.stageExpectedTransitions->size()?\
+		      		"nothing":\
+		      		NSSPI::Logger::byteSequenceToString(serialProcessor.stageExpectedTransitions->at(serialProcessor.stage)).c_str()\
+		      	)\
+		      )\
+		     ); \
 	else \
 		std::cout << "ASH transitionned to stage " << tstage << "\n"; \
 	} while(0) //NOSONAR
@@ -217,9 +225,9 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 	stageExpectedTransitions.push_back({0x1a, 0xc0, 0x38, 0xbc, 0x7e});
 	std::vector<CGpDevice> GPDList;
 
-	//GPDList.push_back(CGpDevice(0x01510037U, GPD_KEY));
+	GPDList.push_back(CGpDevice(0x01510037U, GPD_KEY));
 	NSEZSP::CEzsp lib_main(static_cast<NSSPI::IUartDriverHandle>(mockUartDriverHandle), timerBuilder, 26);
-	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, false, 0, false, false, GPDList, std::vector<uint32_t>(), false);
+	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, false /* no -G */, 60 /* -C 60 */, false /* no -Z */, true /* -r '*' */, GPDList, std::vector<uint32_t>() /* no -r source_ID/key */, false /* no -w */);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);
