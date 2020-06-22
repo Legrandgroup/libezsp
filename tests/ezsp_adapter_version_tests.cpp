@@ -73,7 +73,7 @@ TEST(ezsp_adapter_version_tests, difference_ezsp_version_only) {
 TEST(ezsp_adapter_version_tests, difference_stack_version_vs_ezsp) {
 	EzspAdapterVersion vA;
 	EzspAdapterVersion vB;
-	vA.setEzspVersionInfo(0x6440);
+	vA.setEzspVersionInfo(0x6440, 7, 1);
 	vB.setEzspVersionInfo(0x6440, 7, 2);
 	if (vA == vB)
 		FAILF("Failed getting difference for different versions");
@@ -87,6 +87,28 @@ TEST(ezsp_adapter_version_tests, difference_stack_version_vs_ezsp) {
 		FAILF("Failed getting expected vB>vA");
 	if (vB <= vA)
 		FAILF("Failed because got unexpected vB<=vA");
+	
+	NOTIFYPASS();
+}
+
+TEST(ezsp_adapter_version_tests, ignore_ezsp_if_unknown) {
+	EzspAdapterVersion vA;
+	EzspAdapterVersion vB;
+	vA.setEzspVersionInfo(0x6440, 0, 2);
+	vB.setEzspVersionInfo(0x6440, 7, 2);
+	if (vA != vB)
+		FAILF("Expecting same version when EZSP protocol is unknown on one operand");
+	if (vB != vA)
+		FAILF("Expecting same version when EZSP protocol is unknown on one operand");
+	if (vA == vB && vB == vA) {
+	}
+	else
+		FAILF("Expecting same version when EZSP protocol is unknown on one operand");
+	
+	if (vB > vA || vA < vB)
+		FAILF("Expecting same version when EZSP protocol is unknown on one operand");
+	if (vA > vB || vB < vA)
+		FAILF("Expecting same version when EZSP protocol is unknown on one operand");
 	
 	NOTIFYPASS();
 }
@@ -109,6 +131,28 @@ TEST(ezsp_adapter_version_tests, difference_ezsp_protocol_only) {
 		FAILF("Failed getting expected vB>vA");
 	if (vB <= vA)
 		FAILF("Failed because got unexpected vB<=vA");
+	
+	NOTIFYPASS();
+}
+
+TEST(ezsp_adapter_version_tests, ignore_stack_version_if_unknown) {
+	EzspAdapterVersion vA;
+	EzspAdapterVersion vB;
+	vA.setEzspVersionInfo(0x6440, 7, 2);
+	vB.setEzspVersionInfo(0x6440, 7, 0);
+	if (vA != vB)
+		FAILF("Expecting same version when stack version is unknown on one operand");
+	if (vB != vA)
+		FAILF("Expecting same version when stack version is unknown on one operand");
+	if (vA == vB && vB == vA) {
+	}
+	else
+		FAILF("Expecting same version when stack version is unknown on one operand");
+	
+	if (vB > vA || vA < vB)
+		FAILF("Expecting same version when stack version is unknown on one operand");
+	if (vA > vB || vB < vA)
+		FAILF("Expecting same version when stack version is unknown on one operand");
 	
 	NOTIFYPASS();
 }
@@ -490,8 +534,10 @@ void unit_tests_ezsp_adapter_version() {
 	difference_stack_version_only();
 	equality_ezsp_version_only();
 	difference_ezsp_version_only();
+	ignore_ezsp_if_unknown();
 	difference_stack_version_vs_ezsp();
 	difference_ezsp_protocol_only();
+	ignore_stack_version_if_unknown();
 	ezsp_version_only_rewrite();
 	equality_with_xncp_version_unknown_manufacturer();
 	difference_with_xncp_version_unknown_manufacturer();

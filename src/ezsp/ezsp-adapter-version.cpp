@@ -108,21 +108,26 @@ std::ostream& operator<<(std::ostream& out, const EzspAdapterVersion& data) {
 }
 
 int EzspAdapterVersion::cmp(const EzspAdapterVersion& lhs, const EzspAdapterVersion& rhs) {
-	/* EZSP protocol version order matters first */
-	if (lhs.ezspProtocolVersion > rhs.ezspProtocolVersion) {
-		return 1;
+	if (lhs.ezspProtocolVersion != 0 && rhs.ezspProtocolVersion != 0) {
+		/* EZSP protocol version order matters first, but only if they are known (!=0) for both lhs and rhs */
+		if (lhs.ezspProtocolVersion > rhs.ezspProtocolVersion) {
+			return 1;
+		}
+		else if (lhs.ezspProtocolVersion < rhs.ezspProtocolVersion) {
+			return -1;
+		}
 	}
-	else if (lhs.ezspProtocolVersion < rhs.ezspProtocolVersion) {
-		return -1;
-	}
-	/* We reach here only when lhs.ezspProtocolVersion == rhs.ezspProtocolVersion */
-	if (lhs.ezspStackType > rhs.ezspStackType) {
-		//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
-		return 1;
-	}
-	else if (lhs.ezspStackType < rhs.ezspStackType) {
-		//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
-		return -1;
+	/* We reach here only when ezspProtocolVersion are assumed equivalent (or impossible to compare) */
+	if (lhs.ezspStackType != 0 && rhs.ezspStackType != 0) {
+		/* Stack type order then matters as a second step, but only if they are known (!=0) for both lhs and rhs */
+		if (lhs.ezspStackType > rhs.ezspStackType) {
+			//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
+			return 1;
+		}
+		else if (lhs.ezspStackType < rhs.ezspStackType) {
+			//clogW << "Warning: comparison between two NSEZSP::EzspAdapterVersion instances holding a different stack type is dodgy\n";
+			return -1;
+		}
 	}
 	/* We reach here only when lhs.ezspStackType == rhs.ezspStackType */
 	if (lhs.xncpManufacturerId == static_cast<uint16_t>(EzspAdapterVersion::Manufacturer::LEGRAND) && rhs.xncpManufacturerId == static_cast<uint16_t>(EzspAdapterVersion::Manufacturer::LEGRAND)) {
