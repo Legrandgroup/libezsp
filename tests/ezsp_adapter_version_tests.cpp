@@ -466,6 +466,24 @@ TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_legrand) {
 	NOTIFYPASS();
 }
 
+TEST(ezsp_adapter_version_tests, compare_dongle_with_upgrade_file) {
+	NSEZSP::EzspAdapterVersion adapterVersion;
+	adapterVersion.setEzspVersionInfo(0x6640, 7, 2);
+	adapterVersion.setXncpData(static_cast<uint16_t>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND), 0x2102);
+	
+	std::cout << "Dongle firmware version: " << adapterVersion.getFirmwareVersionAsString() << "\n";
+	std::cout << "Dongle stack version: " << adapterVersion.getStackVersionAsString() << "\n";
+	NSEZSP::EzspAdapterVersion localVersion;
+	localVersion.setXncpData(static_cast<uint16_t>(NSEZSP::EzspAdapterVersion::Manufacturer::LEGRAND), 0x2103);
+	std::cout << "Local Dongle firmware version: " << localVersion.getFirmwareVersionAsString() << "\n";
+	std::cout << "Dongle firmware version: " << adapterVersion << "\n";
+	std::cout << "Local Dongle firmware version: " << localVersion << "\n";
+	bool updateNeeded = localVersion > adapterVersion;
+	std::cout << "Zigbee dongle fw update needed: " << std::string(updateNeeded ? "true" : "false") << "\n";
+	if (!updateNeeded)
+		FAILF("Expecting comparison leading to an updated needed\n");
+}
+
 #ifndef USE_CPPUTEST
 void unit_tests_ezsp_adapter_version() {
 	equality_stack_version_only();
@@ -483,5 +501,6 @@ void unit_tests_ezsp_adapter_version() {
 	to_ostream_no_xncp();
 	to_ostream_xncp_manufacturer_not_legrand();
 	to_ostream_xncp_manufacturer_legrand();
+	compare_dongle_with_upgrade_file();
 }
 #endif	// USE_CPPUTEST
