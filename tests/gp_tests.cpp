@@ -105,14 +105,6 @@ public:
 			}
 		}
 		if (!transitionMatch) {
-			if (this->stage == 128) {	/* This stage is specific because there are parts of the buffer that come from randomness (extended PAN ID & PAN ID), thus cannot be strictly compared */
-				std::cout << "Specific exception for parsing stage 128\n";
-				this->stage++;
-				transitionMatch = true;
-				std::cout << "Trigger matched on EZSP_GET_NETWORK_PARAMETERS, transitionning to stage " << this->stage << "\n";
-			}
-		}
-		if (!transitionMatch) {
 			std::cerr << "Warning: Got an unexpected command written to emulated NCP while at stage " << std::dec << this->stage << ":\n";
 			std::cerr << "Received: " << NSSPI::Logger::byteSequenceToString(writtenBuffer) << "\n";
 			if (this->stageExpectedTransitions == nullptr) {
@@ -202,7 +194,7 @@ TEST_GROUP(gp_tests) {
 		      )\
 		     ); \
 	else \
-		std::cout << "ASH transitionned to stage " << tstage << "\n"; \
+		std::cout << "Passed stage " << tstage << " checkpoint (test running at line " << +__LINE__ << ")\n"; \
 	} while(0) //NOSONAR
 
 
