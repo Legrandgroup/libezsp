@@ -184,7 +184,7 @@ TEST_GROUP(gp_tests) {
 #define UT_WAIT_MS(tms) std::this_thread::sleep_for(std::chrono::milliseconds(tms)) //NOSONAR
 #define UT_FAILF_UNLESS_STAGE(tstage) do {\
 	if (serialProcessor.stage != tstage) \
-		FAILF("Failed to transition to stage %d. Currently at stage %d instead, and expecting %s", tstage, serialProcessor.stage, \
+		FAILF("Failed to transition to stage %u. Currently at stage %u instead, and expecting %s", tstage, serialProcessor.stage, \
 		      (serialProcessor.stageExpectedTransitions==nullptr?\
 		      	"(empty transition list)":\
 		      	(serialProcessor.stage>=serialProcessor.stageExpectedTransitions->size()?\
