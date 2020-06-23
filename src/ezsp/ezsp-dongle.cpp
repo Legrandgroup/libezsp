@@ -154,7 +154,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	NSSPI::ByteBuffer ezspMessage(dataIn, dataLen);
 	EEzspCmd l_cmd;
 
-	//clogD << "Entering handleInputData with EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+	//clogD << "NCP->host EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
 	/* Note: this code will handle all successfully decoded incoming EZSP messages */
 	/* It won't be run in bootloader prompt mode, because the ASH driver is then disabled */
@@ -277,6 +277,8 @@ void CEzspDongle::sendNextMsg( void )
 			ezspMessage.push_back(0x00);
 		}
 		ezspMessage.append(l_msg.payload); /* Append payload at the end of li_data */
+
+		//clogD << "host->NCP EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
 
 		if (this->ash.sendDataFrame(ezspMessage)) {
 			this->wait_rsp = true;
