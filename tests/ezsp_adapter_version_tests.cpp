@@ -419,24 +419,24 @@ TEST(ezsp_adapter_version_tests, to_ostream_no_xncp) {
 		FAILF("Failed matching stack version from operator<<()'s output on EzspAdapterVersion");
 	}
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::hex << v;
-	if (result != s.str())
+	std::stringstream s1;
+	s1 << std::hex << v;
+	if (result != s1.str())
 		FAILF("Discrepancy when switching ostream to hex");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::dec << v;
-	if (result != s.str())
+	std::stringstream s2;
+	s2 << std::dec << v;
+	if (result != s2.str())
 		FAILF("Discrepancy when switching ostream to dec");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::setfill('A') << v;
-	if (result != s.str())
+	std::stringstream s3;
+	s3 << std::setfill('A') << v;
+	if (result != s3.str())
 		FAILF("Discrepancy when switching ostream to setfill('A')");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::setw(16) << v;
-	if (result != s.str())
+	std::stringstream s4;
+	s4 << std::setw(16) << v;
+	if (result != s4.str())
 		FAILF("Discrepancy when switching ostream to setw(16)");
 	
 	NOTIFYPASS();
@@ -487,24 +487,24 @@ TEST(ezsp_adapter_version_tests, to_ostream_xncp_manufacturer_legrand) {
 		FAILF("Failed matching stack version from operator<<()'s output on EzspAdapterVersion");
 	}
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::hex << v;
-	if (result != s.str())
+	std::stringstream s1;
+	s1 << std::hex << v;
+	if (result != s1.str())
 		FAILF("Discrepancy when switching ostream to hex");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::dec << v;
-	if (result != s.str())
+	std::stringstream s2;
+	s2 << std::dec << v;
+	if (result != s2.str())
 		FAILF("Discrepancy when switching ostream to dec");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::setfill('A') << v;
-	if (result != s.str())
+	std::stringstream s3;
+	s3 << std::setfill('A') << v;
+	if (result != s3.str())
 		FAILF("Discrepancy when switching ostream to setfill('A')");
 	
-	s = std::stringstream();	/* Flush s */
-	s << std::setw(16) << v;
-	if (result != s.str())
+	std::stringstream s4;
+	s4 << std::setw(16) << v;
+	if (result != s4.str())
 		FAILF("Discrepancy when switching ostream to setw(16)");
 	
 	NOTIFYPASS();
