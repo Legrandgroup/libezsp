@@ -64,6 +64,10 @@ void CLibEzspMain::start()
     }
 }
 
+NSSPI::GenericAsyncDataInputObservable* CLibEzspMain::getAdapterSerialReadObservable() {
+    return this->dongle.getSerialReadObservable();
+}
+
 NSEZSP::EzspAdapterVersion CLibEzspMain::getAdapterVersion() const {
 	return this->dongle.getVersion();
 }

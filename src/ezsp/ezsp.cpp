@@ -95,3 +95,7 @@ bool CEzsp::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t dura
 bool CEzsp::setChannel(uint8_t channel) {
 	return main->setChannel(channel);
 }
+
+NSSPI::GenericAsyncDataInputObservable* CEzsp::getAdapterSerialReadObservable() {
+       return main->getAdapterSerialReadObservable();
+}
