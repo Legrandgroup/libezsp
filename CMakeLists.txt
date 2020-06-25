@@ -17,7 +17,7 @@ add_definitions("-fvisibility-inlines-hidden")
 
 option(USE_GCOV "Use GCOV coverage profiler" OFF)
 if(USE_GCOV)
-	add_definitions(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
+	add_definitions(-g -O0 --coverage -fprofile-arcs -ftest-coverage -DUNIT_TESTS -fvisibility=default)
 	link_libraries(--coverage -lgcov -fprofile-arcs)
 endif()
 

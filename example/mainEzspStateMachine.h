@@ -264,6 +264,9 @@ public:
             //         }
             //     });
             // }
+			else {
+				clogW << "Ignoring EZSP library state change\n";
+			}
             clogI << "Moving to MainState " << static_cast<int>(this->currentState) << "\n";
         }
     }

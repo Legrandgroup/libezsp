@@ -4,7 +4,6 @@
  * @brief Concrete implementation of a UART driver using libserialcpp
  */
 
-#define SERIAL_DEBUG
 #include <exception>
 #ifdef SERIAL_DEBUG
 # include <iomanip>
@@ -89,14 +88,7 @@ void SerialUartDriver::threadreader()
 			rdcnt = this->m_serial_port.read(buf, nbQueuedBytes);
 			if (this->m_data_input_observable) {
 #ifdef SERIAL_DEBUG
-				std::stringstream msg;
-				msg << "Reading from serial port:";
-				for (size_t loop=0; loop<rdcnt; loop++) {
-					msg << " " << std::hex << std::setw(2) << std::setfill('0')
-					    << +((static_cast<const unsigned char*>(buf))[loop]);
-				}
-				msg << "\n";
-				clogD << msg.str();
+				clogD << "Reading from serial port: " << NSSPI::Logger::byteSequenceToString(buf, rdcnt) << "\n";
 #endif
 				this->m_data_input_observable->notifyObservers(buf, rdcnt);
 			}
@@ -110,14 +102,7 @@ void SerialUartDriver::threadreader()
 int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	try {
 #ifdef SERIAL_DEBUG
-		std::stringstream msg;
-		msg << "Writing to serial port:";
-		for (size_t loop=0; loop<cnt; loop++) {
-			msg << " " << std::hex << std::setw(2) << std::setfill('0')
-			    << +((static_cast<const unsigned char*>(buf))[loop]);
-		}
-		msg << "\n";
-		clogE << msg.str();
+		clogE << "Writing to serial port: " << NSSPI::Logger::byteSequenceToString(buf, cnt) << "\n";
 #endif
 		writtenCnt =  this->m_serial_port.write(static_cast<const uint8_t*>(buf), cnt);
 	}

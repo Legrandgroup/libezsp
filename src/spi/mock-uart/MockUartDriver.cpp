@@ -6,6 +6,7 @@
 
 #include "MockUartDriver.h"
 
+#include "spi/ILogger.h"
 #include <exception>
 #include <cstring>	// For memcpy()
 #include <sstream>	// For std::stringstream
@@ -105,9 +106,9 @@ void MockUartDriver::scheduleIncomingChunk(const MockUartScheduledByteDelivery& 
 					this->deliveredReadBytesCount += rdcnt;
 				} /* scheduledReadQueueMutex released here */
 				if (dataInputObservable != nullptr) {
-					std::unique_ptr<unsigned char[]> readData(new unsigned char[rdcnt]());	/* readData buffer will be deallocated when going our of scope */
-					memcpy(readData.get(), &(nextChunk.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
-					this->dataInputObservable->notifyObservers(readData.get(), rdcnt);	/* Notify observers */
+					unsigned char readData[rdcnt];
+					memcpy(readData, &(nextChunk.byteBuffer[0]), rdcnt);	/* Fill-in buffer readData with the appropriate bytes */
+					this->dataInputObservable->notifyObservers(readData, rdcnt);	/* Notify observers */
 				}
 			}
 		});
@@ -129,12 +130,8 @@ std::string MockUartDriver::scheduledIncomingChunksToString() {
 			result << ", ";	/* Add a separator */
 		nextChunk = scheduledReadQueueCopy.front();
 		NSSPI::ByteBuffer bytes(nextChunk.byteBuffer);
-		for(auto it = bytes.begin(); it!=bytes.end(); ++it) {
-			if (it != bytes.begin())
-				result << " ";
-			result << std::hex << std::setw(2) << std::setfill('0') << unsigned(*it);
-		}
-	    scheduledReadQueueCopy.pop();
+		result << NSSPI::Logger::byteSequenceToString(bytes);
+		scheduledReadQueueCopy.pop();
 	}
 	return "[" + result.str() + "]";
 }

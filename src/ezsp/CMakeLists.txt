@@ -2,9 +2,10 @@ set(ezsp_SOURCES)
 list(APPEND ezsp_SOURCES
 	ezsp.cpp
 	lib-ezsp-main.cpp
-	ash.cpp
-	bootloader-prompt.cpp
 	ezsp-dongle.cpp
+	ash-driver.cpp
+	ashv2-codec.cpp
+	bootloader-prompt-driver.cpp
 	ezsp-adapter-version.cpp
 	ezsp-protocol/ezsp-enum.cpp
 	ezsp-protocol/get-network-parameters-response.cpp
@@ -55,7 +56,7 @@ add_library(ezsp SHARED ${ezsp_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-# The lines below are commented-out because preserving the directory structure for includes is not yet handlede properly by cmake
+# The lines below are commented-out because preserving the directory structure for includes is not yet handled properly by cmake
 # See for example: https://github.com/robotology/how-to-export-cpp-library/issues/8
 #set_target_properties(ezsp PROPERTIES PUBLIC_HEADER "${ezsp_PUBLIC_HEADERS}")
 #install(TARGETS ezsp LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include/ezsp)

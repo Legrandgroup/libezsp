@@ -19,21 +19,21 @@
  * Allows to define an entry named 'name' with an optional value assignment 'assign' in the enum currently built
  * For example ENUM_VALUE(blabla,=2) will create a new enum member blabla=2
  */
-#define ENUM_VALUE(name,assign) name assign,
+#define ENUM_VALUE(name,assign) name assign,    //NOSONAR
 
 /*!
  * \brief Expansion macro for enum to string conversion
  *
  * Allows to build one case entry (part of a larger switch block) converting an enum name to a string containing the name
  */
-#define ENUM_CASE(name,assign) case name: return #name;
+#define ENUM_CASE(name,assign) case name: return #name;    //NOSONAR
 
 /*!
  * \brief Expansion macro for string to enum conversion
  *
  * Allows to build one if comparison (part of a larger serie of if statements) returning an enum value if the local variable str contains a string matching with name
  */
-#define ENUM_STRCMP(name,assign) if (!strcmp(str,#name)) return name;
+#define ENUM_STRCMP(name,assign) if (!strcmp(str,#name)) return name;    //NOSONAR
 
 /*!
  * \brief Declare the access function and define enum values
@@ -45,7 +45,7 @@
     ENUM_DEF(ENUM_VALUE) \
   }; \
   static const char* get##EnumType##AsString(EnumType value); \
-  static EnumType get##EnumType##Value(const char* str)
+  static EnumType get##EnumType##Value(const char* str)    //NOSONAR
 
 /*!
  * \brief Define the access function names
@@ -67,6 +67,6 @@
   { \
     ENUM_DEF(ENUM_STRCMP) \
     throw std::range_error("String " + std::string(str) + " does not match any value"); /* handle input error */ \
-  }
+  }    //NOSONAR
 
 

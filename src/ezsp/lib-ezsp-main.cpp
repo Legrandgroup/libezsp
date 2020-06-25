@@ -24,7 +24,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
     uartHandle(uartHandle),
     timerbuilder(timerbuilder),
     exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
-    exp_ezsp_max_version(7),    /* Expect EZSP version 7 maximum */
+    exp_ezsp_max_version(8),    /* Expect EZSP version 8 maximum */
     exp_stack_type(2),  /* Expect a stack type=2 (mesh) */
     xncpManufacturerId(0),  /* 0 means unknown (yet) */
     xncpVersionNumber(0),  /* 0 means unknown (yet) */
@@ -62,6 +62,10 @@ void CLibEzspMain::start()
         this->dongle.unregisterObserver(this);
         this->gp_sink.registerObserver(this);
     }
+}
+
+NSSPI::GenericAsyncDataInputObservable* CLibEzspMain::getAdapterSerialReadObservable() {
+    return this->dongle.getSerialReadObservable();
 }
 
 NSEZSP::EzspAdapterVersion CLibEzspMain::getAdapterVersion() const {
@@ -425,15 +429,25 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 			clogE << "Stopping init here. Library will not work with this EZSP adapter\n";
 			return;
 		}
-		if (ezspProtocolVersion > this->exp_ezsp_min_version || ezspProtocolVersion <= this->exp_ezsp_max_version) {
-			clogD << "Current EZSP version supported by dongle (" << static_cast<int>(ezspProtocolVersion) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_min_version) << "). Re-initializing dongle\n";
-			this->exp_ezsp_min_version = ezspProtocolVersion;
-			acceptableVersion = false;
-			dongleInit(this->exp_ezsp_min_version);
-			return;
+		if (ezspProtocolVersion > this->exp_ezsp_min_version) {
+			if (ezspProtocolVersion > this->exp_ezsp_max_version) {
+				clogE << "Unsupported EZSP version (v" << std::dec << static_cast<int>(ezspProtocolVersion) << " is too high for this library)\n";
+				acceptableVersion = false;
+				return;
+			}
+			else {
+				clogD << "Current EZSP version supported by dongle (" << std::dec << static_cast<int>(ezspProtocolVersion) << ") is higher than our minimum (" << static_cast<int>(exp_ezsp_min_version) << "). Re-initializing dongle\n";
+				this->exp_ezsp_min_version = ezspProtocolVersion;
+				acceptableVersion = false;
+				dongleInit(this->exp_ezsp_min_version);
+				return;
+			}
 		}
 		else if (ezspProtocolVersion == this->exp_ezsp_min_version &&  ezspProtocolVersion <= this->exp_ezsp_max_version) {
 			acceptableVersion = true;
+		}
+		else {
+			acceptableVersion = false;
 		}
 	}
 	if (acceptableVersion) {
@@ -693,14 +707,9 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
         default:
         {
-            /* DEBUG VIEW
-            std::stringstream bufDump;
-
-            for (size_t i =0; i<i_msg_receive.size(); i++) {
-                bufDump << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[i]) << " ";
-            }
-            clogI << "CAppDemo::ezspHandler : " << bufDump.str() << std::endl;
-            */
+			/* DEBUG VIEW
+			clogI << "Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+			*/
         }
         break;
     }
