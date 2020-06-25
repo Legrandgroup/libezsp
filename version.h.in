@@ -1,12 +1,12 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#define VERSION "@ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@"
+#define VERSION "@ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@.@ezsp_VERSION_PATCH@"
 #define PACKAGE "ezsp"
-#define PACKAGE_VERSION "@ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@"
+#define PACKAGE_VERSION "@ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@.@ezsp_VERSION_PATCH@"
 #define PACKAGE_NAME "ezsp"
 #define PACKAGE_TARNAME "ezsp"
-#define PACKAGE_STRING "ezsp @ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@"
+#define PACKAGE_STRING "ezsp @ezsp_VERSION_MAJOR@.@ezsp_VERSION_MINOR@.@ezsp_VERSION_PATCH@"
 
 #endif
 
