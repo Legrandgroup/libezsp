@@ -187,7 +187,9 @@ protected:
 	 *
 	 * @return The character that has actually been printed out to the log
 	 */
-	virtual int overflow(int c) { return c; };
+	virtual int overflow(int c) {
+		return c;
+	};
 
 protected:
 	LOG_LEVEL logLevel;	/*!< The log level handled by this instance of the logger, set at construction, then must not be modified anymore */
@@ -246,8 +248,7 @@ public:
 		warningLogger(usedWarningLogger),
 		infoLogger(usedInfoLogger),
 		debugLogger(usedDebugLogger),
-		traceLogger(usedTraceLogger)
-	{
+		traceLogger(usedTraceLogger) {
 	}
 
 	/**

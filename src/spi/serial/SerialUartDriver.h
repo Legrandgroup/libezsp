@@ -77,7 +77,7 @@ public:
 
 private:
 	void threadreader();	/*!< The method that will read incoming bytes, running in a secondary thread */
-	
+
 	serial::Serial m_serial_port;	/*!< The serial port in use for read/writes */
 	GenericAsyncDataInputObservable *m_data_input_observable;		/*!< The observable that will notify observers when new bytes are available on the UART */
 	volatile bool m_read_thread_alive;	/*!< A boolean, indicating whether the secondary thread m_read_messages_thread is running */

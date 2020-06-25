@@ -13,51 +13,52 @@
 
 namespace NSEZSP {
 
-class CAPSFrame
-{
+class CAPSFrame {
 public:
-  CAPSFrame();
+	CAPSFrame();
 
-  /**
-   * @brief Default destructor
-   */
-  virtual ~CAPSFrame() = default;
+	/**
+	 * @brief Default destructor
+	 */
+	virtual ~CAPSFrame() = default;
 
-  // hight level
-  /**
-   * @brief SetDefaultAPS : configure a default aps
-   * @param i_profile_id  : profile to use
-   * @param i_cluster_id  : cluster concerned
-   * @param i_dest_ep     : destination endpoin
-   * @param i_grp_id      : group id if necessary
-   */
-  void SetDefaultAPS( uint16_t i_profile_id, uint16_t i_cluster_id, uint8_t i_dest_ep, uint16_t i_grp_id = 0 );
+	// hight level
+	/**
+	 * @brief SetDefaultAPS : configure a default aps
+	 * @param i_profile_id  : profile to use
+	 * @param i_cluster_id  : cluster concerned
+	 * @param i_dest_ep     : destination endpoin
+	 * @param i_grp_id      : group id if necessary
+	 */
+	void SetDefaultAPS( uint16_t i_profile_id, uint16_t i_cluster_id, uint8_t i_dest_ep, uint16_t i_grp_id = 0 );
 
-  // concatenate
-  NSSPI::ByteBuffer GetEmberAPS(void);
-  void SetEmberAPS( NSSPI::ByteBuffer i_data );
+	// concatenate
+	NSSPI::ByteBuffer GetEmberAPS(void);
+	void SetEmberAPS( NSSPI::ByteBuffer i_data );
 
-  // usefull
-  /**
-   * retrieve size in byte of APS structure
-   */
-  static uint8_t getSize(){ return 11; };
+	// usefull
+	/**
+	 * retrieve size in byte of APS structure
+	 */
+	static uint8_t getSize() {
+		return 11;
+	};
 
-  // variables
-  /** */
-  uint16_t cluster_id;
-  /** */
-  uint8_t dest_ep;
-  /** */
-  uint16_t group_id;
-  /** */
-  CAPSOption option;
-  /** */
-  uint16_t profile_id;
-  /** */
-  uint8_t sequence;
-  /** */
-  uint8_t src_ep;
+	// variables
+	/** */
+	uint16_t cluster_id;
+	/** */
+	uint8_t dest_ep;
+	/** */
+	uint16_t group_id;
+	/** */
+	CAPSOption option;
+	/** */
+	uint16_t profile_id;
+	/** */
+	uint8_t sequence;
+	/** */
+	uint8_t src_ep;
 };
 
 } // namespace NSEZSP

@@ -94,7 +94,7 @@ public:
 	 * @brief Create an ASH data frame containing i_data as payload and return it
 	 *
 	 * @param[in] i_data The EZSP payload to be carried by the ASH frame
-	 * 
+	 *
 	 * @note This buffer needs to be passed by copy because it is modified internally inside this method.
 	 *
 	 * @return The ASH frame as a buffer
@@ -107,7 +107,7 @@ public:
 	 * @param[in] i_data A stream of bytes to try to decode. If one or more messages could be extracted, then the successfully decoded bytes will be stripped from this buffer
 	 *
 	 * @note This buffer needs to be passed by copy because it is modified internally inside this method.
-	 * 
+	 *
 	 * @return The parsed data contained in the ASH frame (mainly EZSP message contained in ASH data frames)
 	 */
 	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer& i_data);
@@ -154,7 +154,7 @@ protected:
 private:
 	/**
 	 * @brief Process an ASH byte stream located between two FLAG bytes (ASH-encoded content)
-	 * 
+	 *
 	 * @return The decoded ASH payload if any
 	 */
 	NSSPI::ByteBuffer processInterFlagStream();

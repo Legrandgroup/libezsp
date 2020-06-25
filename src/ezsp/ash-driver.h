@@ -26,14 +26,14 @@ public:
 
 	/**
 	 * @brief Default contructor
-	 * 
+	 *
 	 * @warning Construction without arguments is not allowed
 	 */
 	AshDriver() = delete;
 
 	/**
 	 * @brief Constructor
-	 * 
+	 *
 	 * @param ipCb Callback invoked on ASH state change
 	 * @param i_timer_builder Timer builder object used to generate timers
 	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
@@ -80,7 +80,7 @@ public:
 	 * @brief Register a serial writer functor that writes to the given uartHandle
 	 *
 	 * @param uartHandle A UART handle to use to write to the serial port
-	 * 
+	 *
 	 * @note This is a shortcut equivalent to registering a callback using registerSerialWriter() with a FAshDriverWriteFunc argument
 	 */
 	void registerSerialWriter(NSSPI::IUartDriverHandle uartHandle);
@@ -94,7 +94,7 @@ public:
 
 	/**
 	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
-	 * 
+	 *
 	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
 	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
@@ -110,41 +110,41 @@ public:
 	 * @brief Send an ASH frame via the registered serial port writer functor
 	 *
 	 * @return true if the frame could be sent
-	 * 
+	 *
 	 * @note If no serial writer functor is registered, this method will return false
 	 */
 	bool sendAshFrame(const NSSPI::ByteBuffer& frame);
 
 	/**
 	 * @brief Send an ASH NCP reset frame
-	 * 
+	 *
 	 * This frame must be sent to re-initialize the communication with the NCP when an ASH connection is initiated, so that any previous communication state is cancelled
-	 * 
+	 *
 	 * @return true If the NCP reset frame was sent successfully (note that when we return true, we don't have any response or acknowledgment yet)
 	 */
 	bool sendResetNCPFrame(void);
 
 	/**
 	 * @brief Send an ASH ack frame
-	 * 
+	 *
 	 * The sequence number will be computed to match the last succesfully received frame
-	 * 
+	 *
 	 * @return true If the ack frame was sent successfully
 	 */
 	bool sendAckFrame(void);
 
 	/**
 	 * @brief Send an ASH data frame
-	 * 
+	 *
 	 * @param[in] i_data The data payload of the frame we are sending
-	 * 
+	 *
 	 * @return true If the data frame was sent successfully (note that when we return true, we don't have any response or acknowledgment yet)
 	 */
 	bool sendDataFrame(const NSSPI::ByteBuffer& i_data);
 
 	/**
 	 * @brief Get the current ASH connection state
-	 * 
+	 *
 	 * @return true if ASH is in connected state
 	 */
 	bool isConnected() const;
@@ -152,21 +152,21 @@ public:
 protected:
 	/**
 	 * @brief Append a new chunk of incoming ASH bytes and try to decode the current accumulated bytes into an EZSP message
-	 * 
+	 *
 	 * @param[in] i_data The new incoming ASH bytes
-	 * 
+	 *
 	 * @note If an EZSP message could be extracted out of an ASH DATA frame, then our observers will be pushed a notification containing the extracted EZSP payload
 	 */
 	void appendIncoming(NSSPI::ByteBuffer& i_data);
 
 	/**
 	 * @brief Internal callback invoked when timeouts occur
-	 * 
+	 *
 	 * @param[in] triggeringTimer The timer that timed out
 	 */
 	void trigger(NSSPI::ITimer* triggeringTimer);
 
-/* Attributes */
+	/* Attributes */
 private:
 	bool enabled;	/*!< Is this driver enabled? If not, no read/write will be performed to the serial port */
 	std::unique_ptr<NSSPI::ITimer> ackTimer;	/*!< A timer checking acknowledgement of the initial RESET (if !stateConnected) of the last ASH DATA frame (if stateConnected) */

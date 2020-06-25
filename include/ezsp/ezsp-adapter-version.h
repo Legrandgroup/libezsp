@@ -14,7 +14,7 @@
 
 /* Forward declaration of NSEZSP::EzspAdapterVersion */
 namespace NSEZSP {
-	class LIBEXPORT EzspAdapterVersion;
+class LIBEXPORT EzspAdapterVersion;
 } // namespace NSEZSP
 
 /* Declaration of friend operators belonging to :: */
@@ -152,7 +152,7 @@ public:
 
 	/**
 	 * @brief Represent the information stored by this instance as a string
-	 * 
+	 *
 	 * @result The resulting string
 	 */
 	std::string toString() const;
@@ -160,7 +160,7 @@ public:
 private:
 	/**
 	 * @brief Compare two EzspAdapterVersion objects
-	 * 
+	 *
 	 * @param lhs The left-handle side instance to compare
 	 * @param rhs The right-handle side instance to compare
 	 * @return -1 if lhs<rhs, +1 if lhs>rhs and 0 if both instances are considered equivalent

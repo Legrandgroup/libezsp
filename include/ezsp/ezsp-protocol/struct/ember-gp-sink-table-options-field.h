@@ -23,118 +23,133 @@
 
 namespace NSEZSP {
 
-class LIBEXPORT CEmberGpSinkTableOption
-{
-    public:
-        /**
-         * @brief Default constructor
-         */
-        CEmberGpSinkTableOption();
+class LIBEXPORT CEmberGpSinkTableOption {
+public:
+	/**
+	 * @brief Default constructor
+	 */
+	CEmberGpSinkTableOption();
 
-        /**
-         * @brief raw constructor
-         */
-        explicit CEmberGpSinkTableOption(const uint16_t i_options);
+	/**
+	 * @brief raw constructor
+	 */
+	explicit CEmberGpSinkTableOption(const uint16_t i_options);
 
-        /**
-         * @brief constructor from commissioning payload option and more
-         *
-         * @param i_application_id : application id meeans way to address gpd : by sourceid or ieee
-         * @param i_gpdf_commissioning_option : permit to know capability of gpd
-         */
-        CEmberGpSinkTableOption(const uint8_t i_application_id, CGpdCommissioningPayload i_gpdf_commissioning_payload);
+	/**
+	 * @brief constructor from commissioning payload option and more
+	 *
+	 * @param i_application_id : application id meeans way to address gpd : by sourceid or ieee
+	 * @param i_gpdf_commissioning_option : permit to know capability of gpd
+	 */
+	CEmberGpSinkTableOption(const uint8_t i_application_id, CGpdCommissioningPayload i_gpdf_commissioning_payload);
 
-        /**
-         * @brief Raw getter
-         *
-         * @return This option field object represented as a 16-bit word
-         */
-        uint16_t get() const;
+	/**
+	 * @brief Raw getter
+	 *
+	 * @return This option field object represented as a 16-bit word
+	 */
+	uint16_t get() const;
 
-        /**
-         * @brief Getter for the enclosed application ID
-         *
-         * @return The enclosed application ID
-         */
-        uint8_t getApplicationId() const { return application_id; }
+	/**
+	 * @brief Getter for the enclosed application ID
+	 *
+	 * @return The enclosed application ID
+	 */
+	uint8_t getApplicationId() const {
+		return application_id;
+	}
 
-        /**
-         * @brief Getter for the enclosed communication mode
-         *
-         * @return The enclosed communication mode
-         */
-        uint8_t getCommunicationMode() const { return communication_mode; }
+	/**
+	 * @brief Getter for the enclosed communication mode
+	 *
+	 * @return The enclosed communication mode
+	 */
+	uint8_t getCommunicationMode() const {
+		return communication_mode;
+	}
 
-        /**
-         * @brief Getter for the enclosed sequence number capabilities
-         *
-         * @return The enclosed sequence number capabilities
-         */
-        bool isSequenceNumberCapabilities() const { return sequence_number_capabilities; }
+	/**
+	 * @brief Getter for the enclosed sequence number capabilities
+	 *
+	 * @return The enclosed sequence number capabilities
+	 */
+	bool isSequenceNumberCapabilities() const {
+		return sequence_number_capabilities;
+	}
 
-        /**
-         * @brief Getter for the enclosed RX On capability
-         *
-         * @return true if this object contains an RX On capability
-         */
-        bool isRxOnCapability() const { return rx_on_capability; }
+	/**
+	 * @brief Getter for the enclosed RX On capability
+	 *
+	 * @return true if this object contains an RX On capability
+	 */
+	bool isRxOnCapability() const {
+		return rx_on_capability;
+	}
 
-        /**
-         * @brief Getter for the enclosed fixed location
-         *
-         * @return true if this object contains a fixed location capability
-         */
-        bool isFixedLocation() const { return fixed_location; }
+	/**
+	 * @brief Getter for the enclosed fixed location
+	 *
+	 * @return true if this object contains a fixed location capability
+	 */
+	bool isFixedLocation() const {
+		return fixed_location;
+	}
 
-        /**
-         * @brief Getter for the enclosed assigned alias
-         *
-         * @return true if this object contains an assigned alias
-         */
-        bool isAssignedAlias() const { return assigned_alias; }
+	/**
+	 * @brief Getter for the enclosed assigned alias
+	 *
+	 * @return true if this object contains an assigned alias
+	 */
+	bool isAssignedAlias() const {
+		return assigned_alias;
+	}
 
-        /**
-         * @brief Getter for the enclosed security use
-         *
-         * @return true if this object uses security
-         */
-        bool isSecurityUse() const { return security_use; }
+	/**
+	 * @brief Getter for the enclosed security use
+	 *
+	 * @return true if this object uses security
+	 */
+	bool isSecurityUse() const {
+		return security_use;
+	}
 
-        /**
-         * @brief Setter for RxOnCapability
-         *
-         * @param i_rx_on_capable
-         */
-        void setRxOnCapability(bool i_rx_on_capable){ rx_on_capability = i_rx_on_capable; }
+	/**
+	 * @brief Setter for RxOnCapability
+	 *
+	 * @param i_rx_on_capable
+	 */
+	void setRxOnCapability(bool i_rx_on_capable) {
+		rx_on_capability = i_rx_on_capable;
+	}
 
-        /**
-         * @brief Dump this instance as a string
-         *
-         * @return The resulting string
-         */
+	/**
+	 * @brief Dump this instance as a string
+	 *
+	 * @return The resulting string
+	 */
 	std::string toString() const;
 
-        /**
-         * @brief Serialize to an iostream
-         *
-         * @param out The original output stream
-         * @param data The object to serialize
-         *
-         * @return The new output stream with serialized data appended
-         */
-	friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data){
-			out << data.toString();
-			return out;
-		}
+	/**
+	 * @brief Serialize to an iostream
+	 *
+	 * @param out The original output stream
+	 * @param data The object to serialize
+	 *
+	 * @return The new output stream with serialized data appended
+	 */
+	friend std::ostream& operator<< (std::ostream& out, const CEmberGpSinkTableOption& data) {
+		out << data.toString();
+		return out;
+	}
 
-    private:
-        uint8_t application_id; /*!< The application ID contained in this sink table entry options bit field */
-        uint8_t communication_mode; /*!< The communication mode contained in this sink table entry options bit field */
-        bool sequence_number_capabilities; /*!< The sequence number capabilities contained in this sink table entry options bit field */
-        bool rx_on_capability; /*!< The RX On capavility toggle contained in this sink table entry options bit field */
-        bool fixed_location; /*!< The fixed location toggle contained in this sink table entry options bit field */
-        bool assigned_alias; /*!< The assigned alias toggle contained in this sink table entry options bit field */
-        bool security_use; /*!< The security use toggle contained in this sink table entry options bit field */
+private:
+	uint8_t application_id; /*!< The application ID contained in this sink table entry options bit field */
+	uint8_t communication_mode; /*!< The communication mode contained in this sink table entry options bit field */
+	bool sequence_number_capabilities; /*!< The sequence number capabilities contained in this sink table entry options bit field */
+	bool rx_on_capability; /*!< The RX On capavility toggle contained in this sink table entry options bit field */
+	bool fixed_location; /*!< The fixed location toggle contained in this sink table entry options bit field */
+	bool assigned_alias; /*!< The assigned alias toggle contained in this sink table entry options bit field */
+	bool security_use; /*!< The security use toggle contained in this sink table entry options bit field */
 };
 
-} //namespace NSEZSP 
+} //namespace NSEZSP

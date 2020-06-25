@@ -115,7 +115,7 @@ public:
 
 	/**
 	 * @brief Set the serial async observable that will notify us of new incoming console characters
-	 * 
+	 *
 	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
 	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable);
@@ -136,7 +136,7 @@ public:
 
 	/**
 	 * @brief Reset the bootloader parser state
-	 * 
+	 *
 	 * @note We will first flush the incoming buffer, during a timeout of BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT ms.
 	 *       Then we will start probing for the console to detect a prompt
 	 * @warning Be sure to invoke enable() before reset() so that we are allowed to read/write
@@ -169,11 +169,11 @@ public:
 protected:
 	/**
 	 * @brief Utility function to write a specific byte stream to the bootloader console
-	 * 
+	 *
 	 * @param[in] dataOut The pointer to a buffer containing the bytes to write
 	 * @param dataLen The size of the data to write from dataOut
 	 * @param newStage The internal stage BootloaderPromptDriver::Stage to assign to this->state just before writing the bytes
-	 * 
+	 *
 	 * @return true if the bytes could succesfully be written
 	 */
 	bool sendBytes(const uint8_t* dataOut, size_t dataLen, BootloaderPromptDriver::Stage newState);
@@ -197,7 +197,7 @@ protected:
 	 */
 	static std::string trim(const std::string &s);
 
-/* Attributes */
+	/* Attributes */
 private:
 	bool enabled;	/*!< Is this driver enabled? If not, no read/write will be performed to the serial port */
 	std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance */

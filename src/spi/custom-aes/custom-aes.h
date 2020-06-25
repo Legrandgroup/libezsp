@@ -61,43 +61,41 @@ constexpr uint8_t  N_MAX_ROUNDS =         14;
 
 namespace NSSPI {
 
-typedef struct
-{
-    uint8_t ksch[(N_MAX_ROUNDS + 1) * IAes::AES_BLOCK_SIZE];
-    uint8_t rnd;
-}aes_context;
+typedef struct {
+	uint8_t ksch[(N_MAX_ROUNDS + 1) * IAes::AES_BLOCK_SIZE];
+	uint8_t rnd;
+} aes_context;
 
-class CustomAes : public IAes
-{
-    public:
+class CustomAes : public IAes {
+public:
 
-        CustomAes();
+	CustomAes();
 
-        void set_key( const uint8_t key[IAes::AES_KEY_SIZE] );
-        void set_key( const NSEZSP::EmberKeyData& key );
+	void set_key( const uint8_t key[IAes::AES_KEY_SIZE] );
+	void set_key( const NSEZSP::EmberKeyData& key );
 
-        bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] );
+	bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] );
 
-        //bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
-        bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE]);
-        //bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
+	//bool decrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
+	bool cbc_encrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE]);
+	//bool cbc_decrypt(const unsigned char *in, unsigned char *out, unsigned long size, unsigned char iv[IAes::AES_BLOCK_SIZE], const aes_context ctx[1] ); // \TODO rewrite with class context
 
-        // helper functions
-    private:
-        void xor_block( void *d, const void *s );
+	// helper functions
+private:
+	void xor_block( void *d, const void *s );
 
 
-    private:
-        // context for this instance
-        aes_context context;
+private:
+	// context for this instance
+	aes_context context;
 
-        // helper functions
-        void copy_and_key( void *d, const void *s, const void *k );
-        void add_round_key( uint8_t d[IAes::AES_BLOCK_SIZE], const uint8_t k[IAes::AES_BLOCK_SIZE] );
-        void shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
-        void inv_shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
-        void mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
-        void inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
+	// helper functions
+	void copy_and_key( void *d, const void *s, const void *k );
+	void add_round_key( uint8_t d[IAes::AES_BLOCK_SIZE], const uint8_t k[IAes::AES_BLOCK_SIZE] );
+	void shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
+	void inv_shift_sub_rows( uint8_t st[IAes::AES_BLOCK_SIZE] );
+	void mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
+	void inv_mix_sub_columns( uint8_t dt[IAes::AES_BLOCK_SIZE] );
 };
 
 } // namespace NSSPI
