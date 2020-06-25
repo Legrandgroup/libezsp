@@ -53,6 +53,7 @@ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol
 list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/config.h)
 
 add_library(ezsp SHARED ${ezsp_SOURCES})
+set_target_properties(ezsp PROPERTIES VERSION 1 SOVERSION 1.0.0)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 

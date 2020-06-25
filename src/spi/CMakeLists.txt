@@ -70,6 +70,7 @@ list(APPEND ezspspi_SOURCES custom-aes/custom-aes.cpp)
 endif()
 
 add_library(ezspspi SHARED ${ezspspi_SOURCES})
+set_target_properties(ezspspi PROPERTIES VERSION 1 SOVERSION 1.0.0)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezspspi PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(ezspspi PUBLIC ${ezspspi_LIBS})
