@@ -8,6 +8,7 @@
 
 #include <map>
 #include <ctime>	// For std::time_t
+#include <fstream>
 
 #include "spi/IUartDriver.h"
 #include "spi/TimerBuilder.h"
@@ -31,12 +32,14 @@ namespace Stats {
 	class SourceIdData {
 public:
 		static constexpr std::time_t unknown = std::time_t(-1);
+		static constexpr unsigned int REPORTS_AVG_PERIOD = 130;	/* 130s in average between two reports */
 
 		SourceIdData() : lastSeenTimeStamp(unknown), offlineSequenceNo(0), nbSuccessiveMisses(0) {}
 
 		std::time_t lastSeenTimeStamp;
 		uint32_t offlineSequenceNo;
 		uint32_t nbSuccessiveMisses;
+		std::fstream outputFile;
 	};
 }
 #define CLIBEZSP_INTERNAL_STATE_LIST(XX) \
@@ -252,7 +255,7 @@ private:
 	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
-	std::map<uint32_t, NSEZSP::Stats::SourceIdData> registeredSourceIdsStats; /* For Anthony's testing */
+	std::map<uint32_t, NSEZSP::Stats::SourceIdData> registeredSourceIdsStats; /* For Anthony's testing, the current statistics per source ID */
 
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;

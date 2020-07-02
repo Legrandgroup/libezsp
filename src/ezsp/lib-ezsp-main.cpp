@@ -733,17 +733,61 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
     // Start DEBUG
     clogI << "CLibEzspMain::handleRxGpFrame gp frame : " << i_gpf << std::endl;
 
-    if (this->registeredSourceIdsStats.find(i_gpf.getSourceId()) != this->registeredSourceIdsStats.end()) {
+    uint32_t sourceId = i_gpf.getSourceId();
+    if (this->registeredSourceIdsStats.find(sourceId) != this->registeredSourceIdsStats.end()) {
         /* This source ID is registered for stats */
-        clogD << "Known source ID\n";
-        NSEZSP::Stats::SourceIdData& sourceIdStat = this->registeredSourceIdsStats[i_gpf.getSourceId()];
-        std:time_t oldTimestamp = sourceIdStat.lastSeenTimeStamp;
+        clogD << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " is known and will be logged\n";
+        NSEZSP::Stats::SourceIdData& sourceIdStat = this->registeredSourceIdsStats[sourceId];
+        std::time_t oldTimestamp = sourceIdStat.lastSeenTimeStamp;
+        std::time_t now = std::time(nullptr);
         if (oldTimestamp == NSEZSP::Stats::SourceIdData::unknown) {
-            clogD << "First time seen\n";
+            clogD << "First time seen this source ID at << " << now << "\n";
+            if (sourceIdStat.outputFile.is_open()) {
+                clogW << "Output file is already opened but no lastSeenTimeStamp is set, this is dodgy\n";
+            }
+            else {
+                std::stringstream outputFilename;
+                outputFilename << "/flashdisk/libezsp-" << std::hex << std::setw(8) << std::setfill('0') << sourceId << ".db\n";
+                sourceIdStat.outputFile.open(outputFilename.str(), std::fstream::out | std::fstream::app);
+                NSEZSP::Stats::SourceIdData startMarker;
+                /* We build a specific marker below, with nbSuccessiveMisses and offlineSequenceNo set to 0xffffffff)
+                   This allows us to differenciate it with normal data. This marker denotes the absolute timestamp of the beggining of logs */
+                startMarker.lastSeenTimeStamp = now;
+                startMarker.nbSuccessiveMisses = -1;
+                startMarker.offlineSequenceNo = -1;
+                sourceIdStat.outputFile.write((char *)(&startMarker.lastSeenTimeStamp), sizeof(startMarker.lastSeenTimeStamp));
+                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
+                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
+                /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
+            }
         }
         else {
-            
+            double elapsed = std::difftime(now, oldTimestamp);
+            clogD << "Elapsed since last seen: " << elapsed << "s\n";
+            if (elapsed<0) {
+                clogE << "Negative delta error\n";
+            }
+            else {
+                if (elapsed > (NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25)) {    /* Give 25% tolerance on reports period */
+                    /* If over this tolerance, assume we have missed at least one report */
+                    uint32_t nbMisses = (elapsed + 0.25 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD;   /* Compute the number of missed reports */
+                    sourceIdStat.nbSuccessiveMisses = nbMisses;
+                    sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
+                    sourceIdStat.outputFile.flush();
+                }
+                else {
+                    sourceIdStat.nbSuccessiveMisses = 0;    /* No successive miss */
+                    /* We won't write anything to the disk to avoid continuous write... this is the nominal situation and should occur most of the time. We'll only log failures */
+                }
+            }
         }
+        sourceIdStat.lastSeenTimeStamp = now;
+    }
+    else {
+        clogW << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " is unknown and won't be logged\n";
     }
 
     if( nullptr != obsGPFrameRecvCallback )
