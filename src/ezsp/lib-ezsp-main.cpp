@@ -757,7 +757,7 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                 startMarker.offlineSequenceNo = -1;
                 sourceIdStat.outputFile.write((char *)(&startMarker.lastSeenTimeStamp), sizeof(startMarker.lastSeenTimeStamp));
                 sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
-                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
+                sourceIdStat.outputFile.write((char *)(&startMarker.offlineSequenceNo), sizeof(startMarker.offlineSequenceNo));
                 /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
             }
         }
@@ -775,7 +775,8 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                     sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.offlineSequenceNo), sizeof(sourceIdStat.offlineSequenceNo));
+                    clogD << "Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
                     sourceIdStat.outputFile.flush();
                 }
                 else {
