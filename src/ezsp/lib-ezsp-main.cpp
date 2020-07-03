@@ -778,7 +778,7 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
             else {
                 if (elapsed > (NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25)) {    /* Give 25% tolerance on reports period */
                     /* If over this tolerance, assume we have missed at least one report */
-                    uint32_t nbMisses = (elapsed + 0.25 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD;   /* Compute the number of missed reports */
+                    uint32_t nbMisses = (elapsed * 1.25) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD - 1;   /* Compute the number of missed reports */
                     sourceIdStat.nbSuccessiveMisses = nbMisses;
                     sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
