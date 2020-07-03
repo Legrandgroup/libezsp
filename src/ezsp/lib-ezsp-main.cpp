@@ -741,13 +741,19 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
         std::time_t oldTimestamp = sourceIdStat.lastSeenTimeStamp;
         std::time_t now = std::time(nullptr);
         if (oldTimestamp == NSEZSP::Stats::SourceIdData::unknown) {
-            clogD << "First time seen this source ID at << " << now << "\n";
+            clogD << "First time seen this source ID at " << ctime(&now) << "\n";
             if (sourceIdStat.outputFile.is_open()) {
                 clogW << "Output file is already opened but no lastSeenTimeStamp is set, this is dodgy\n";
             }
             else {
                 std::stringstream outputFilename;
-                outputFilename << "/flashdisk/libezsp-" << std::hex << std::setw(8) << std::setfill('0') << sourceId << ".db\n";
+#ifdef USE_RARITAN
+                outputFilename << "/flashdisk/";
+#else
+                outputFilename << "/tmp/";
+#endif
+                outputFilename << "libezsp-" << std::hex << std::setw(8) << std::setfill('0') << sourceId << ".db";
+
                 sourceIdStat.outputFile.open(outputFilename.str(), std::fstream::out | std::fstream::app);
                 NSEZSP::Stats::SourceIdData startMarker;
                 /* We build a specific marker below, with nbSuccessiveMisses and offlineSequenceNo set to 0xffffffff)
@@ -759,13 +765,15 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                 sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
                 sourceIdStat.outputFile.write((char *)(&startMarker.offlineSequenceNo), sizeof(startMarker.offlineSequenceNo));
                 /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
+                sourceIdStat.outputFile.flush();
             }
         }
         else {
             double elapsed = std::difftime(now, oldTimestamp);
-            clogD << "Elapsed since last seen: " << elapsed << "s\n";
+            std::stringstream msg;
+            msg << "Elapsed since last seen: " << elapsed << "s";
             if (elapsed<0) {
-                clogE << "Negative delta error\n";
+                clogE << msg.str() << "=> negative delta error\n";
             }
             else {
                 if (elapsed > (NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25)) {    /* Give 25% tolerance on reports period */
@@ -776,11 +784,12 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.offlineSequenceNo), sizeof(sourceIdStat.offlineSequenceNo));
-                    clogD << "Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
+                    clogD << msg.str() << ". Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
                     sourceIdStat.outputFile.flush();
                 }
                 else {
                     sourceIdStat.nbSuccessiveMisses = 0;    /* No successive miss */
+                    clogD << msg.str() << ". No miss detected\n";
                     /* We won't write anything to the disk to avoid continuous write... this is the nominal situation and should occur most of the time. We'll only log failures */
                 }
             }
