@@ -28,15 +28,6 @@ constexpr uint32_t T_RX_ACK_INIT      = 1600;
 constexpr uint32_t T_RX_ACK_MAX       = 3200;
 constexpr uint32_t T_ACK_ASH_RESET    = 5000;
 
-constexpr uint8_t ASH_CANCEL_BYTE     = 0x1A;
-constexpr uint8_t ASH_FLAG_BYTE       = 0x7E;
-constexpr uint8_t ASH_SUBSTITUTE_BYTE = 0x18;
-constexpr uint8_t ASH_XON_BYTE        = 0x11;
-constexpr uint8_t ASH_OFF_BYTE        = 0x13;
-constexpr uint8_t ASH_TIMEOUT         = -1;
-
-constexpr uint32_t ASH_MAX_LENGTH     = 131;
-
 AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_builder, NSSPI::GenericAsyncDataInputObservable* serialReadObservable) :
 	enabled(true),
 	ackTimer(i_timer_builder.create()),
