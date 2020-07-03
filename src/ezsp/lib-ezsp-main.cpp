@@ -759,11 +759,13 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                 /* We build a specific marker below, with nbSuccessiveMisses and offlineSequenceNo set to 0xffffffff)
                    This allows us to differenciate it with normal data. This marker denotes the absolute timestamp of the beggining of logs */
                 startMarker.lastSeenTimeStamp = now;
-                startMarker.nbSuccessiveMisses = -1;
                 startMarker.offlineSequenceNo = -1;
+                startMarker.nbSuccessiveMisses = -1;
+                startMarker.nbSuccessiveRx = -1;
                 sourceIdStat.outputFile.write((char *)(&startMarker.lastSeenTimeStamp), sizeof(startMarker.lastSeenTimeStamp));
-                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
                 sourceIdStat.outputFile.write((char *)(&startMarker.offlineSequenceNo), sizeof(startMarker.offlineSequenceNo));
+                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
+                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveRx), sizeof(startMarker.nbSuccessiveRx));
                 /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
                 sourceIdStat.outputFile.flush();
             }
@@ -782,14 +784,17 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                     sourceIdStat.nbSuccessiveMisses = nbMisses;
                     sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.offlineSequenceNo), sizeof(sourceIdStat.offlineSequenceNo));
-                    clogD << msg.str() << ". Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
+                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveRx), sizeof(sourceIdStat.nbSuccessiveRx));
+                    clogD << msg.str() << ". Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after " << sourceIdStat.nbSuccessiveRx << " successive reports, due to no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
                     sourceIdStat.outputFile.flush();
+                    sourceIdStat.nbSuccessiveRx = 0;
                 }
                 else {
                     sourceIdStat.nbSuccessiveMisses = 0;    /* No successive miss */
-                    clogD << msg.str() << ". No miss detected\n";
+                    sourceIdStat.nbSuccessiveRx++;
+                    clogD << msg.str() << ". No miss detected (cumulative successive reports RX: " << std::dec << std::setw(0) << sourceIdStat.nbSuccessiveRx << ")\n";
                     /* We won't write anything to the disk to avoid continuous write... this is the nominal situation and should occur most of the time. We'll only log failures */
                 }
             }

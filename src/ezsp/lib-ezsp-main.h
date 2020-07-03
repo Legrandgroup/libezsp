@@ -34,11 +34,12 @@ public:
 		static constexpr std::time_t unknown = std::time_t(-1);
 		static constexpr unsigned int REPORTS_AVG_PERIOD = 130;	/* 130s in average between two reports */
 
-		SourceIdData() : lastSeenTimeStamp(unknown), offlineSequenceNo(0), nbSuccessiveMisses(0) {}
+		SourceIdData() : lastSeenTimeStamp(unknown), offlineSequenceNo(0), nbSuccessiveMisses(0), nbSuccessiveRx(0), outputFile() {}
 
 		std::time_t lastSeenTimeStamp;
-		uint32_t offlineSequenceNo;
-		uint32_t nbSuccessiveMisses;
+		uint16_t offlineSequenceNo;
+		uint16_t nbSuccessiveMisses;
+		uint32_t nbSuccessiveRx;
 		std::fstream outputFile;
 	};
 }
