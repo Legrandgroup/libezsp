@@ -11,6 +11,7 @@
 
 #include "ezsp/lib-ezsp-main.h"
 #include "spi/ILogger.h"
+#include "spi/ITimer.h"
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParametersResponse
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
 
@@ -738,6 +739,28 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
         /* This source ID is registered for stats */
         clogD << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " is known and will be logged\n";
         NSEZSP::Stats::SourceIdData& sourceIdStat = this->registeredSourceIdsStats[sourceId];
+        if (sourceIdStat.timer == nullptr) {
+            sourceIdStat.timer = std::move(this->timerbuilder.create());    /* Allocate a timer for this source ID record if it does not exist yet */
+        }
+        else {
+            sourceIdStat.timer->stop(); /* In case there is already a timer armed on this source ID, cancel it right away */
+        }
+        /* Arm a callback at REPORTS_AVG_PERIOD +25% to take action if the next report for this source ID does not occur in the expected timeframe */
+        clogD << "Arming a timer for source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " for "
+              << static_cast<uint16_t>(1000 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25) << "ms\n";
+        sourceIdStat.timer->start(static_cast<uint16_t>(1000 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25),  /* Note: timer duration is expressed in ms */
+                                  [this,sourceId](NSSPI::ITimer* triggeringTimer) {
+            if (this->registeredSourceIdsStats.find(sourceId) == this->registeredSourceIdsStats.end()) {
+                clogW << "Timeout triggered for watching a source ID that is not in our registered list anymore\n";
+                return;
+            }
+            clogD << "Source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " did not send a report in a timely manner. Writing a record about this.\n";
+            NSEZSP::Stats::SourceIdData& sourceIdStat = this->registeredSourceIdsStats[sourceId];
+            sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
+            sourceIdStat.nbSuccessiveMisses = 1;
+            sourceIdStat.nbSuccessiveRx = 0;
+            sourceIdStat.write();
+        });
         std::time_t oldTimestamp = sourceIdStat.lastSeenTimeStamp;
         std::time_t now = std::time(nullptr);
         if (oldTimestamp == NSEZSP::Stats::SourceIdData::unknown) {
@@ -755,20 +778,17 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                 outputFilename << "libezsp-" << std::hex << std::setw(8) << std::setfill('0') << sourceId << ".db";
 
                 sourceIdStat.outputFile.open(outputFilename.str(), std::fstream::out | std::fstream::app);
-                NSEZSP::Stats::SourceIdData startMarker;
-                /* We build a specific marker below, with nbSuccessiveMisses and offlineSequenceNo set to 0xffffffff)
+                /* We build a specific marker record below, with all bits of offlineSequenceNo, nbSuccessiveMisses and nbSuccessiveRx set to 1)
                    This allows us to differenciate it with normal data. This marker denotes the absolute timestamp of the beggining of logs */
-                startMarker.lastSeenTimeStamp = now;
-                startMarker.offlineSequenceNo = -1;
-                startMarker.nbSuccessiveMisses = -1;
-                startMarker.nbSuccessiveRx = -1;
-                sourceIdStat.outputFile.write((char *)(&startMarker.lastSeenTimeStamp), sizeof(startMarker.lastSeenTimeStamp));
-                sourceIdStat.outputFile.write((char *)(&startMarker.offlineSequenceNo), sizeof(startMarker.offlineSequenceNo));
-                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
-                sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveRx), sizeof(startMarker.nbSuccessiveRx));
-                startMarker.nbSuccessiveRx = 1; /* We can now count 1 successfull reception */
-                /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
-                sourceIdStat.outputFile.flush();
+                sourceIdStat.lastSeenTimeStamp = now;
+                sourceIdStat.offlineSequenceNo = -1;
+                sourceIdStat.nbSuccessiveMisses = -1;
+                sourceIdStat.nbSuccessiveRx = -1;
+                /* Append a restart marker record to the file, specifying the timestamp for the first packet */
+                sourceIdStat.write();
+                sourceIdStat.offlineSequenceNo = 1;
+                sourceIdStat.nbSuccessiveMisses = 0;
+                sourceIdStat.nbSuccessiveRx = 1; /* We can now count 1 successfull reception */
             }
         }
         else {
@@ -783,16 +803,13 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                     /* If over this tolerance, assume we have missed at least one report */
                     uint32_t nbMisses = (elapsed * 1.25) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD - 1;   /* Compute the number of missed reports */
                     sourceIdStat.nbSuccessiveMisses = nbMisses;
-                    sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.lastSeenTimeStamp), sizeof(sourceIdStat.lastSeenTimeStamp));
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.offlineSequenceNo), sizeof(sourceIdStat.offlineSequenceNo));
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveMisses), sizeof(sourceIdStat.nbSuccessiveMisses));
-                    sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveRx), sizeof(sourceIdStat.nbSuccessiveRx));
+                    /* The bumber of missed sequences has already been incremented at first miss (timer) */
+                    sourceIdStat.write();
                     clogD << msg.str() << ". Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after " << sourceIdStat.nbSuccessiveRx << " successive reports, due to no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
-                    sourceIdStat.outputFile.flush();
                     sourceIdStat.nbSuccessiveRx = 1;    /* We can now count the first successful reception in this sequence */
                 }
                 else {
+                    /* Received a report within the expected period */
                     sourceIdStat.nbSuccessiveMisses = 0;    /* No successive miss */
                     sourceIdStat.nbSuccessiveRx++;
                     clogD << msg.str() << ". No miss detected (cumulative successive reports RX: " << std::dec << std::setw(0) << sourceIdStat.nbSuccessiveRx << ")\n";

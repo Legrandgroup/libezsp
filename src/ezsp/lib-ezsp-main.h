@@ -32,15 +32,55 @@ namespace Stats {
 	class SourceIdData {
 public:
 		static constexpr std::time_t unknown = std::time_t(-1);
-		static constexpr unsigned int REPORTS_AVG_PERIOD = 130;	/* 130s in average between two reports */
+		static constexpr uint16_t REPORTS_AVG_PERIOD = 130;	/* 130s in average between two reports */
 
-		SourceIdData() : lastSeenTimeStamp(unknown), offlineSequenceNo(0), nbSuccessiveMisses(0), nbSuccessiveRx(0), outputFile() {}
+		SourceIdData() :
+			lastSeenTimeStamp(unknown),
+			offlineSequenceNo(0),
+			nbSuccessiveMisses(0),
+			nbSuccessiveRx(0),
+			outputFile(),
+			timer(nullptr)
+		{
+		}
 
+		/**
+		 * @brief Write this record to a binary file
+		 * 
+		 * @param[in] outputFile The output file stream to write to
+		 */
+		void writeTo(std::fstream& outputfile) {
+			std::size_t recordSz = sizeof(SourceIdData::lastSeenTimeStamp)
+			                       + sizeof(SourceIdData::offlineSequenceNo)
+			                       + sizeof(SourceIdData::nbSuccessiveMisses)
+			                       + sizeof(SourceIdData::nbSuccessiveRx);
+			char record[recordSz];	/* Allocate the buffer to write */
+			char* fillPtr = record;
+			memcpy(fillPtr, (char *)(&this->lastSeenTimeStamp), sizeof(SourceIdData::lastSeenTimeStamp));
+			fillPtr += sizeof(SourceIdData::lastSeenTimeStamp);
+			memcpy(fillPtr, (char *)(&this->offlineSequenceNo), sizeof(SourceIdData::offlineSequenceNo));
+			fillPtr += sizeof(SourceIdData::offlineSequenceNo);
+			memcpy(fillPtr, (char *)(&this->nbSuccessiveMisses), sizeof(SourceIdData::nbSuccessiveMisses));
+			fillPtr += sizeof(SourceIdData::nbSuccessiveMisses);
+			memcpy(fillPtr, (char *)(&this->nbSuccessiveRx), sizeof(SourceIdData::nbSuccessiveRx));
+			outputfile.write(record, recordSz);
+			outputfile.flush();
+		}
+
+		/**
+		 * @brief Write this record to its output file
+		 */
+		void write() {
+			this->writeTo(this->outputFile);
+		}
+
+		/* Attributes */
 		std::time_t lastSeenTimeStamp;
 		uint16_t offlineSequenceNo;
 		uint16_t nbSuccessiveMisses;
 		uint32_t nbSuccessiveRx;
-		std::fstream outputFile;
+		std::fstream outputFile;	/*!< A file handle on which to write the stats for this source ID */
+		std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance to take actions on frame reception timeouts */
 	};
 }
 #define CLIBEZSP_INTERNAL_STATE_LIST(XX) \
