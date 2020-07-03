@@ -766,6 +766,7 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                 sourceIdStat.outputFile.write((char *)(&startMarker.offlineSequenceNo), sizeof(startMarker.offlineSequenceNo));
                 sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveMisses), sizeof(startMarker.nbSuccessiveMisses));
                 sourceIdStat.outputFile.write((char *)(&startMarker.nbSuccessiveRx), sizeof(startMarker.nbSuccessiveRx));
+                startMarker.nbSuccessiveRx = 1; /* We can now count 1 successfull reception */
                 /* Append a restart marker to the file, specifying the timestamp for the fisrt packet */
                 sourceIdStat.outputFile.flush();
             }
@@ -789,7 +790,7 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
                     sourceIdStat.outputFile.write((char *)(&sourceIdStat.nbSuccessiveRx), sizeof(sourceIdStat.nbSuccessiveRx));
                     clogD << msg.str() << ". Writing report #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo << " for " << nbMisses << " missed report(s) after " << sourceIdStat.nbSuccessiveRx << " successive reports, due to no reception during " << elapsed << "s starting from " << std::string(ctime(&sourceIdStat.lastSeenTimeStamp)) << "\n";
                     sourceIdStat.outputFile.flush();
-                    sourceIdStat.nbSuccessiveRx = 0;
+                    sourceIdStat.nbSuccessiveRx = 1;    /* We can now count the first successful reception in this sequence */
                 }
                 else {
                     sourceIdStat.nbSuccessiveMisses = 0;    /* No successive miss */
