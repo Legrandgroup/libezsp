@@ -20,7 +20,7 @@ RaritanTimer::~RaritanTimer() {
 	this->stop();
 }
 
-bool RaritanTimer::start(uint16_t timeout, NSSPI::TimerCallback callBackFunction) {
+bool RaritanTimer::start(uint32_t timeout, NSSPI::TimerCallback callBackFunction) {
 	//clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {

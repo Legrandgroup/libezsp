@@ -222,7 +222,7 @@ public:
                     clogI << "Opening GP channel request window for " << std::dec << static_cast<unsigned int>(this->channelRequestAnswerTimeoutAtStartup) << "s\n";
                     libEzsp.setAnswerToGpfChannelRqstPolicy(true);
                     // start timer
-                    this->channelRequestAnswerTimer->start(static_cast<uint16_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
+                    this->channelRequestAnswerTimer->start(static_cast<uint32_t>(this->channelRequestAnswerTimeoutAtStartup*1000),
                                 [this](NSSPI::ITimer *timer) {
                                     clogI << "Closing GP channel request window\n";
                                     this->libEzsp.setAnswerToGpfChannelRqstPolicy(false);
