@@ -265,4 +265,4 @@ void BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 
 const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
 const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_PROMPT = "BL >";
-const uint16_t BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */
+const uint32_t BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */

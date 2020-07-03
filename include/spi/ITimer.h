@@ -62,7 +62,7 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
 	 */
-	virtual bool start(uint16_t timeout, TimerCallback callBackFunction) = 0;
+	virtual bool start(uint32_t timeout, TimerCallback callBackFunction) = 0;
 
 	/**
 	 * @brief Start a timer, run a callback after expiration of the configured time
@@ -70,7 +70,7 @@ public:
 	 * @param timeout The timeout (in ms)
 	 * @param visitor The object to call at expiration.
 	 */
-	virtual bool start(uint16_t timeout, ITimerVisitor *visitor) {
+	virtual bool start(uint32_t timeout, ITimerVisitor *visitor) {
 		this->visitor = visitor;
 		return this->start(timeout, trigg);
 	}

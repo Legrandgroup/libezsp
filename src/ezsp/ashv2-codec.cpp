@@ -22,14 +22,6 @@ DEFINE_ENUM(EAshInfo, ASH_INFO, NSEZSP::AshCodec);
 
 using NSEZSP::AshCodec;
 
-/**
- * The receive timeout settings - min/initial/max - defined in milliseconds
- */
-constexpr size_t T_RX_ACK_MIN = 400;
-constexpr size_t T_RX_ACK_INIT = 1600;
-constexpr size_t T_RX_ACK_MAX = 3200;
-constexpr size_t T_ACK_ASH_RESET = 5000;
-
 constexpr uint8_t ASH_CANCEL_BYTE     = 0x1A;
 constexpr uint8_t ASH_FLAG_BYTE       = 0x7E;
 constexpr uint8_t ASH_SUBSTITUTE_BYTE = 0x18;

@@ -41,7 +41,7 @@ public:
 
 	static const std::string GECKO_BOOTLOADER_HEADER;	/*!< A hardcoded string to search the Gecko bootloader header */
 	static const std::string GECKO_BOOTLOADER_PROMPT;	/*!< A hardcoded string to search the Gecko bootloader prompt */
-	static const uint16_t GECKO_QUIET_RX_TIMEOUT;	/*!< A receive timeout (in ms) that allows us to decide that the bootloader has finished outputting ongoing messages to the console */
+	static const uint32_t GECKO_QUIET_RX_TIMEOUT;	/*!< A receive timeout (in ms) that allows us to decide that the bootloader has finished outputting ongoing messages to the console */
 
 	typedef std::function<int (size_t& writtenCnt, const uint8_t* buf, size_t cnt)> FBootloaderWriteFunc;    /*!< Callback type for method registerSerialWriteFunc() */
 	typedef std::function<void (void)> FFirmwareTransferStartFunc;  /*!< Callback type for method selectModeUpgradeFw() */
