@@ -761,10 +761,9 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
 			      << std::dec << std::setw(0) << sourceIdReportTimeout
 			      << "ms). Writing a record about this.\n";
 			NSEZSP::Stats::SourceIdData& sourceIdStat = this->registeredSourceIdsStats[sourceId];
-			sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
 			sourceIdStat.nbSuccessiveMisses = 1;
-			sourceIdStat.nbSuccessiveRx = 0;
 			sourceIdStat.write();
+			sourceIdStat.nbSuccessiveRx = 0;
 		});
 		std::time_t oldTimestamp = sourceIdStat.lastSeenTimeStamp;
 		std::time_t now = std::time(nullptr);
@@ -807,14 +806,18 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
 			else {
 				if (elapsed > (NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25)) {    /* Give 25% tolerance on reports period */
 					/* If over this tolerance, assume we have missed at least one report */
-					uint32_t nbMisses = (elapsed * 1.25) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD - 1;   /* Compute the number of missed reports */
+					uint32_t nbMisses = (elapsed + (0.25 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD) / NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD - 1;   /* Compute the number of missed reports */
 					sourceIdStat.nbSuccessiveMisses = nbMisses;
 					/* The bumber of missed sequences has already been incremented at first miss (timer) */
 					sourceIdStat.write();
 					clogD << msg.str() << ". Writing record #" << std::dec << std::setw(0) << sourceIdStat.offlineSequenceNo
 					      << " for " << nbMisses << " missed report frame(s) after " << sourceIdStat.nbSuccessiveRx
 					      << " successfully received report frames, due to no reception during " << elapsed << "s starting from " << sourceIdStat.lastSeenTimeStamp << "\n";
-					sourceIdStat.nbSuccessiveRx = 1;    /* We can now count the first successful reception in this sequence */
+					sourceIdStat.offlineSequenceNo++;   /* Increment the number of missed sequences */
+					sourceIdStat.nbSuccessiveMisses = 0;    /* No miss anymore */
+					sourceIdStat.nbSuccessiveRx = 1;    /* We can now count the first new successful reception in this sequence (after missed report frames) */
+					sourceIdStat.lastSeenTimeStamp = now;
+					sourceIdStat.write();
 				}
 				else {
 					/* Received a report within the expected period */
