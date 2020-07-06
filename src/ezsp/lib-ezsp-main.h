@@ -32,7 +32,8 @@ namespace Stats {
 	class SourceIdData {
 public:
 		static constexpr std::time_t unknown = std::time_t(-1);
-		static constexpr uint16_t REPORTS_AVG_PERIOD = 130;	/* 130s in average between two reports */
+		static constexpr uint16_t REPORTS_AVG_PERIOD = 130;	/* 130s in average between two report frames */
+		static constexpr float REPORTS_PERIOD_TOLERANCE = 0.25;	/* Report frames that are 25% late compared to the previous frame + REPORTS_AVG_PERIOD are still considered OK */
 
 		SourceIdData() :
 			lastSeenTimeStamp(unknown),
