@@ -61,6 +61,8 @@ public:
 	 *
 	 * @param timeout The timeout (in ms)
 	 * @param callBackFunction The function to call at expiration of the timer (should be of type void f(ITimer*)) where argument will be a pointer to this timer object that invoked the callback
+	 * 
+	 * @return true if the timer was started successfully
 	 */
 	virtual bool start(uint32_t timeout, TimerCallback callBackFunction) = 0;
 
