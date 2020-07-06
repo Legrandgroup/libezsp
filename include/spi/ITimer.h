@@ -101,7 +101,7 @@ protected:
 
 public:
 	ITimerVisitor *visitor;	/*!< An external visitor class that will be invoked at timeout */
-	uint16_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
+	uint32_t duration;	/*!<The full duration of the timer (initial value if it is currently running) */
 };
 
 } // namespace NSSPI
