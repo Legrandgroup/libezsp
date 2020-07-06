@@ -745,10 +745,12 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf )
         else {
             sourceIdStat.timer->stop(); /* In case there is already a timer armed on this source ID, cancel it right away */
         }
+        uint32_t sourceIdReportTimeout = static_cast<uint32_t>(1000 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25);
         /* Arm a callback at REPORTS_AVG_PERIOD +25% to take action if the next report for this source ID does not occur in the expected timeframe */
         clogD << "Arming a timer for source ID " << std::hex << std::setw(8) << std::setfill('0') << sourceId << " for "
-              << std::dec << std::setw(0) << static_cast<uint32_t>(1000 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25) << "ms\n";
-        sourceIdStat.timer->start(static_cast<uint32_t>(1000 * NSEZSP::Stats::SourceIdData::REPORTS_AVG_PERIOD * 1.25),  /* Note: timer duration is expressed in ms */
+              << std::dec << std::setw(0) << sourceIdReportTimeout << "ms\n";
+
+        sourceIdStat.timer->start(sourceIdReportTimeout,  /* Note: timer duration is expressed in ms */
                                   [this,sourceId](NSSPI::ITimer* triggeringTimer) {
             if (this->registeredSourceIdsStats.find(sourceId) == this->registeredSourceIdsStats.end()) {
                 clogW << "Timeout triggered for watching a source ID that is not in our registered list anymore\n";
