@@ -153,8 +153,11 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 }
 
 void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
-	NSSPI::ByteBuffer ezspPayload = this->ashCodec.appendIncoming(i_data);
-	if (!ezspPayload.empty()) {
+	std::vector<NSSPI::ByteBuffer> ezspPayloads = this->ashCodec.appendIncoming(i_data);
+	if (ezspPayloads.size()>1) {
+		clogW << "Multiple EZSP payloads extraction from one ASH stream\n";	/* This should rarely occur except of very very slow hosts */
+	}
+	for (auto ezspPayload : ezspPayloads) {
 		std::size_t ezspPayloadSize = ezspPayload.size();
 		if (ezspPayloadSize>128) {	/* ASH should not carry payloads larger than 128 bytes */
 			clogE << "EZSP payload too large. Ignored\n";

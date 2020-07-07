@@ -236,15 +236,15 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 	return lo_msg;
 }
 
-NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
+std::vector<NSSPI::ByteBuffer> AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	/**
 	 * Specifications for the ASH frame format can be found in Silabs's document ug101-uart-gateway-protocol-reference.pdf
 	 */
 	bool inputError = false;
-	NSSPI::ByteBuffer extractedPayload;
+	std::vector<NSSPI::ByteBuffer> extractedPayloads;	/*!< A vector of extracted ASH payloads... there could be 0, 1 or more payloads extracted out of the current accumulated bytes+i_data */
 	uint8_t val;
 
-	while( !i_data.empty() && extractedPayload.empty() ) {
+	while(!i_data.empty()) {
 		val = i_data.front();
 		i_data.erase(i_data.begin());
 		switch( val ) {
@@ -261,10 +261,8 @@ NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
 			// last Flag Byte or Cancel Byte is tested to see whether it is a valid frame.
 			//LOGGER(logTRACE) << "<-- RX ASH frame: VIEW ASH_FLAG_BYTE";
 			if (!inputError && !this->in_msg.empty()) {
-				extractedPayload = this->processInterFlagStream();
-				/* FIXME: if we got several ASH frames in a single incoming byte buffer, only the first valid ASH DATA payload will be returned here
-				 * The subequent ASH data payload won't be lost but will be parsed only next time appendIncoming() is invoked (that is to say next time we receive more bytes), which may be much later
-				*/
+				extractedPayloads.push_back(this->processInterFlagStream());
+				/* Note: if we got several ASH frames in a single incoming byte buffer, we will loop and push_back all decoded payloads inside extractedPayload */
 			}
 			this->in_msg.clear();
 			inputError = false;
@@ -296,7 +294,7 @@ NSSPI::ByteBuffer AshCodec::appendIncoming(NSSPI::ByteBuffer& i_data) {
 
 	}
 
-	return extractedPayload;
+	return extractedPayloads;
 }
 
 
