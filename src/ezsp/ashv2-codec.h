@@ -108,9 +108,9 @@ public:
 	 *
 	 * @note This buffer needs to be passed by copy because it is modified internally inside this method.
 	 *
-	 * @return The parsed data contained in the ASH frame (mainly EZSP message contained in ASH data frames)
+	 * @return A vector of parsed data payload(s) contained in the ASH frame (mainly EZSP message contained in ASH data frames)
 	 */
-	NSSPI::ByteBuffer appendIncoming(NSSPI::ByteBuffer& i_data);
+	std::vector<NSSPI::ByteBuffer> appendIncoming(NSSPI::ByteBuffer& i_data);
 
 	/**
 	 * @brief Compute an ASH CRC16 on a speficied buffer
