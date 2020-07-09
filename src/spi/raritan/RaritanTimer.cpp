@@ -24,7 +24,7 @@ bool RaritanTimer::start(uint32_t timeout, NSSPI::TimerCallback callBackFunction
 	//clogD << "Starting timer " << static_cast<void *>(this) << " for " << std::dec << static_cast<unsigned int>(timeout) << "ms\n";
 
 	if (this->started) {
-		clogD << "First stopping the already existing timer " << static_cast<void *>(this) << " before starting again\n";
+		//clogD << "First stopping the already existing timer " << static_cast<void *>(this) << " before starting again\n";
 		this->stop();
 	}
 
@@ -40,7 +40,7 @@ bool RaritanTimer::start(uint32_t timeout, NSSPI::TimerCallback callBackFunction
 	}
 	else {
 		auto tcb = [this,timeout,callBackFunction](pp::Selector::TimedCbHandle&) {
-			clogD << "Timeout reached after " << std::dec << static_cast<unsigned int>(timeout) << "ms. Now running " << static_cast<void *>(this) << " timer's callback\n";
+			//clogD << "Timeout reached after " << std::dec << static_cast<unsigned int>(timeout) << "ms. Now running " << static_cast<void *>(this) << " timer's callback\n";
 			callBackFunction(this);
 		};
 		this->started = true;
@@ -50,7 +50,7 @@ bool RaritanTimer::start(uint32_t timeout, NSSPI::TimerCallback callBackFunction
 }
 
 bool RaritanTimer::stop() {
-	plogD("Stopping timer %p", this);
+	//plogD("Stopping timer %p", this);
 	if (!started) {
 		return false;
 	}
