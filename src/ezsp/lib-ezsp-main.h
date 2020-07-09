@@ -29,12 +29,18 @@
 namespace NSEZSP {
 
 namespace Stats {
+	/**
+	 * @brief Class representing received report frames statistics for one source ID
+	 */
 	class SourceIdData {
 public:
-		static constexpr std::time_t unknown = std::time_t(-1);
-		static constexpr uint16_t REPORTS_AVG_PERIOD = 130;	/* 130s in average between two report frames */
-		static constexpr float REPORTS_PERIOD_TOLERANCE = 0.25;	/* Report frames that are 25% late compared to the previous frame + REPORTS_AVG_PERIOD are still considered OK */
+		static constexpr std::time_t unknown = std::time_t(-1);	/*!< Unkown time */
+		static constexpr uint16_t REPORTS_AVG_PERIOD = 130;	/*!< 130s in average between two report frames */
+		static constexpr float REPORTS_PERIOD_TOLERANCE = 0.25;	/*!< Report frames that are 25% late compared to the previous frame + REPORTS_AVG_PERIOD are still considered OK */
 
+		/**
+		 * @brief Default constructor
+		 */
 		SourceIdData() :
 			lastSeenTimeStamp(unknown),
 			offlineSequenceNo(0),
@@ -76,10 +82,10 @@ public:
 		}
 
 		/* Attributes */
-		std::time_t lastSeenTimeStamp;
-		uint16_t offlineSequenceNo;
-		uint16_t nbSuccessiveMisses;
-		uint32_t nbSuccessiveRx;
+		std::time_t lastSeenTimeStamp;	/*!< Timestamp indicating the last time we received a report frame from this source ID */
+		uint16_t offlineSequenceNo;	/*!< Incremental count of how many sequences of missing frames we observed */
+		uint16_t nbSuccessiveMisses;	/*!< How many successive missed report frames observed in the current a sequence indicated by offlineSequenceNo */
+		uint32_t nbSuccessiveRx;	/*!< How many successive successful report frames observed in a row */
 		std::fstream outputFile;	/*!< A file handle on which to write the stats for this source ID */
 		std::unique_ptr<NSSPI::ITimer> timer;  /*!< A pointer to a timer instance to take actions on frame reception timeouts */
 	};

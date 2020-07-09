@@ -39,8 +39,8 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
     obsGPSourceIdCallback(nullptr),
     resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
     scanInProgress(false),
-    lastChannelToEnergyScan(),
-    registeredSourceIdsStats()
+	lastChannelToEnergyScan(),
+	registeredSourceIdsStats()
 {
 }
 
@@ -309,7 +309,7 @@ bool CLibEzspMain::clearAllGPDevices()
         return false; /* Probably sink is not ready */
     }
     else {
-        this->registeredSourceIdsStats.clear();
+		this->registeredSourceIdsStats.clear();
         return true;
     }
 }
@@ -325,9 +325,9 @@ bool CLibEzspMain::removeGPDevices(const std::vector<uint32_t>& sourceIdList)
         return false; /* Probably sink is not ready */
     }
 
-    for (auto it = sourceIdList.begin(); it != sourceIdList.end(); ++it) {
-        this->registeredSourceIdsStats.erase(*it);
-    }
+	for (auto it = sourceIdList.begin(); it != sourceIdList.end(); ++it) {
+		this->registeredSourceIdsStats.erase(*it);
+	}
     return true;
 }
 
@@ -342,9 +342,9 @@ bool CLibEzspMain::addGPDevices(const std::vector<CGpDevice> &gpDevicesList)
         return false; /* Probably sink is not ready */
     }
 
-    for (auto it = gpDevicesList.begin(); it != gpDevicesList.end(); ++it) {
-        this->registeredSourceIdsStats.insert(std::pair<uint32_t,NSEZSP::Stats::SourceIdData>(it->getSourceId(),NSEZSP::Stats::SourceIdData()));
-    }
+	for (auto it = gpDevicesList.begin(); it != gpDevicesList.end(); ++it) {
+		this->registeredSourceIdsStats.insert(std::pair<uint32_t,NSEZSP::Stats::SourceIdData>(it->getSourceId(),NSEZSP::Stats::SourceIdData()));
+	}
     return true;
 }
 
