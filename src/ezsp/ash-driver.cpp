@@ -33,7 +33,8 @@ AshDriver::AshDriver(CAshCallback* ipCb, const NSSPI::TimerBuilder& i_timer_buil
 	ackTimer(i_timer_builder.create()),
 	ashCodec(ipCb),
 	serialReadObservable(serialReadObservable),
-	serialWriteFunc(nullptr) {
+	serialWriteFunc(nullptr),
+	serialRWMutex() {
 	/* Tell the codec that it should invoke cancelTimer() below to cancel ACk timeoutes when a proper ASH ACK is received */
 
 	this->ashCodec.setAckTimeoutCancelFunc([this]() {
@@ -93,6 +94,7 @@ void AshDriver::registerSerialReadObservable(NSSPI::GenericAsyncDataInputObserva
 void AshDriver::handleInputData(const unsigned char* dataIn, const size_t dataLen) {
 	if (this->enabled) { /* We only process incoming traffic on serial port in enabled mode */
 		NSSPI::ByteBuffer inputData(dataIn, dataLen);
+		const std::lock_guard<std::recursive_mutex> serialRWLock(this->serialRWMutex);	/* Make sure there is no write before we handle the read data (and ack if needed) */
 		this->appendIncoming(inputData); /* Note: resulting decoded EZSP message will be notified to the caller (observer) using our observable property */
 	}
 	else {
@@ -111,10 +113,15 @@ bool AshDriver::sendAshFrame(const NSSPI::ByteBuffer& frame) {
 		clogW << "Requested to write to serial port while in disabled mode\n";
 		return false;
 	}
-	if (this->serialWriteFunc(writtenBytes, frame.data(), frame.size()) < 0 ) {
-		clogE << "Failed sending reset frame to serial port\n";
-		return false;
+	
+	{
+		const std::lock_guard<std::recursive_mutex> serialRWLock(this->serialRWMutex);
+		if (this->serialWriteFunc(writtenBytes, frame.data(), frame.size()) < 0 ) {
+			clogE << "Failed sending reset frame to serial port\n";
+			return false;
+		}
 	}
+	
 	if (frame.size() != writtenBytes) {
 		clogE << "Reset frame not fully written to serial port\n";
 		return false;

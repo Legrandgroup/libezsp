@@ -180,9 +180,14 @@ private:
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
 	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
 	std::queue<SMsg> sendingMsgQueue;
+	std::mutex sendingMsgQueueMutex;	/*!< A mutex protecting access to attribute sendingMsgQueue */
 	bool wait_rsp;
 	std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
+	std::mutex ezspWriteMutex;	/*!< Mutex allowing exclusive writes to the EZSP adapter */
 
+	/**
+	 * @brief Send the next message in the outgoing queue (if any)
+	 */
 	void sendNextMsg( void );
 
 	/**

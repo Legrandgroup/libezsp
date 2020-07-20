@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <memory>	// For std::unique_ptr
+#include <mutex>
 
 #include "spi/GenericAsyncDataInputObservable.h"
 #include "spi/TimerBuilder.h"
@@ -173,6 +174,7 @@ private:
 	NSEZSP::AshCodec ashCodec;	/*!< ASH codec utility methods */
 	NSSPI::GenericAsyncDataInputObservable* serialReadObservable;	/*!< The observable object used to be notified about new incoming bytes received on the serial port */
 	FAshDriverWriteFunc serialWriteFunc;   /*!< A function to write bytes to the serial port */
+	std::recursive_mutex serialRWMutex;	/*!< A mutex to prevent simultaneous read and writes to the serial port (recursive because we allow a reading handler to also write, for example, an ack) */
 };
 
 } // namespace NSEZSP

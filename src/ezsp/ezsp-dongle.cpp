@@ -24,8 +24,10 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	ash(static_cast<CAshCallback*>(this), timerBuilder),
 	blp(timerBuilder),
 	sendingMsgQueue(),
+	sendingMsgQueueMutex(),
 	wait_rsp(false),
-	observers() {
+	observers(),
+	ezspWriteMutex() {
 	if (ip_observer) {
 		registerObserver(ip_observer);
 	}
@@ -117,7 +119,7 @@ void CEzspDongle::ashCbInfo(AshCodec::EAshInfo info) {
 		case AshCodec::EAshInfo::ASH_NACK: {
 			clogW << "Caught an ASH NACK from NCP... resending\n";
 			wait_rsp = false;
-			sendNextMsg();
+			this->sendNextMsg();
 		}
 		break;
 		case AshCodec::EAshInfo::ASH_RESET_FAILED: {
@@ -233,9 +235,11 @@ void CEzspDongle::sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload )
     l_msg.i_cmd = i_cmd;
     l_msg.payload = i_cmd_payload;
 
-    sendingMsgQueue.push(l_msg);
-
-    sendNextMsg();
+	{
+		std::lock_guard<std::mutex> outgoingQueue(this->sendingMsgQueueMutex);
+		this->sendingMsgQueue.push(l_msg);
+	}
+	this->sendNextMsg();
 }
 
 
@@ -251,9 +255,13 @@ void CEzspDongle::sendNextMsg( void )
         clogW << "Refusing to send EZSP messages in bootloader mode\n";
         return; /* No EZSP message can be sent in bootloader mode */
     }
-    if( (!wait_rsp) && (!sendingMsgQueue.empty()) )
-    {
-        SMsg l_msg = sendingMsgQueue.front();
+	if ( (!this->wait_rsp) && (!this->sendingMsgQueue.empty()) ) {
+		SMsg l_msg;
+		{
+			std::lock_guard<std::mutex> outgoingQueueLock(this->sendingMsgQueueMutex);
+			l_msg = sendingMsgQueue.front();
+		}
+        
 
 		NSSPI::ByteBuffer ezspMessage;
 
@@ -279,9 +287,11 @@ void CEzspDongle::sendNextMsg( void )
 		ezspMessage.append(l_msg.payload); /* Append payload at the end of li_data */
 
 		//clogD << "host->NCP EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
-
-		if (this->ash.sendDataFrame(ezspMessage)) {
-			this->wait_rsp = true;
+		{
+			std::lock_guard<std::mutex> outgoingQueue(this->ezspWriteMutex);
+			if (this->ash.sendDataFrame(ezspMessage)) {
+				this->wait_rsp = true;
+			}
 		}
     }
 }
@@ -376,30 +386,30 @@ void CEzspDongle::handleDongleState( EDongleState i_state )
 	// do nothing
 }
 
-void CEzspDongle::handleResponse( EEzspCmd i_cmd )
-{
+void CEzspDongle::handleResponse(EEzspCmd i_cmd) {
 	/* Response to a command previously sent */
-	if( !sendingMsgQueue.empty() )
-	{
-		if (!wait_rsp)
-		{
+	if (!sendingMsgQueue.empty()) {
+		if (!wait_rsp) {
 			/* If wait_rsp is false, we are not expecting a response to a previous command.
 			   But sendingMsgQueue should always contain (at front) the last command sent without reply, so when sendingMsgQueue is not empty,
 			   wait_rsp should be true
 			*/
 			clogE << "Received a message with a non-empty queue while no response was expected\n";
 		}
-		SMsg l_msgQ = sendingMsgQueue.front();
-		if( l_msgQ.i_cmd == i_cmd ) /* Make sure that the EZSP message is a response to the last command we sent */
+		SMsg l_msgQ;
 		{
-			// remove waiting message and send next
-			sendingMsgQueue.pop();
-			wait_rsp = false;
-			sendNextMsg();
-		}    // response to a sending command
-		else
-		{
-			clogE << "Asynchronous received EZSP message\n";
+			std::lock_guard<std::mutex> outgoingQueue(this->sendingMsgQueueMutex);
+			l_msgQ = sendingMsgQueue.front();
+			if (l_msgQ.i_cmd == i_cmd ) { /* Make sure that the EZSP message is a response to the last command we sent */
+				this->sendingMsgQueue.pop();	/* Remove the message that was acknowledged from out queue */
+			}
+		}
+		if (l_msgQ.i_cmd == i_cmd) { /* Make sure that the EZSP message is a response to the last command we sent */
+			this->wait_rsp = false;
+			this->sendNextMsg();
+		}
+		else {
+			clogW << "Asynchronous EZSP message received\n";
 		}
 	}
 }
