@@ -36,10 +36,50 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	this->ash.registerObserver(this);
 }
 
+CEzspDongle::CEzspDongle(const CEzspDongle& other) {
+	firstStartup(other.firstStartup),
+	version(other.version),
+	lastKnownMode(other.lastKnownMode),
+	switchToFirmwareUpgradeOnInitTimeout(other.switchToFirmwareUpgradeOnInitTimeout),
+	timerBuilder(other.timerBuilder),
+	uartHandle(other.uartHandle),
+	uartIncomingDataHandler(other.uartIncomingDataHandler),
+	ezspSeqNum(other.ezspSeqNum),
+	ash(other.ash),
+	blp(other.blp),
+	sendingMsgQueue(other.sendingMsgQueue),
+	wait_rsp(other.wait_rsp),
+	observers(other.observers) {
+	/* By default, no parsing is done on the adapter serial port */
+	this->ash.disable();
+	this->blp.disable();
+	/* Register ourselves as an observer of EZSP frames decoded out of the ASH stream. These EZSP frames will be handled by handleInputData() */
+	this->ash.registerObserver(this);
+}
+
 CEzspDongle::~CEzspDongle() {
 	this->ash.disable();
 	this->blp.disable();
 	this->ash.unregisterObserver(this);
+}
+
+void swap(CEzspDongle& first, CEzspDongle& second) {
+	using std::swap;	// Enable ADL
+
+	swap(first.firstStartup, second.firstStartup);
+	swap(first.version, second.version);
+	swap(first.lastKnownMode, second.lastKnownMode);
+	swap(first.switchToFirmwareUpgradeOnInitTimeout, second.switchToFirmwareUpgradeOnInitTimeout);
+	swap(first.timerBuilder, second.timerBuilder);
+	swap(first.uartHandle, second.uartHandle);
+	swap(first.uartIncomingDataHandler, second.uartIncomingDataHandler);
+	swap(first.ezspSeqNum, second.ezspSeqNum);
+	swap(first.ash, second.ash);
+	swap(first.blp, second.blp);
+	swap(first.sendingMsgQueue, second.sendingMsgQueue);
+	swap(first.wait_rsp, second.wait_rsp);
+	swap(first.observers, second.observers);
+	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
@@ -421,4 +461,9 @@ bool CEzspDongle::knownEzspProtocolVersionLT(uint8_t maxExcludedVersion) const {
 		return false;	/* If we don't know the EZSP version, always return false */
 	}
 	return (this->version.ezspProtocolVersion < maxExcludedVersion);
+}
+
+CEzspDongle& CEzspDongle::operator=(CEzspDongle other) {
+	swap(*this, other);
+	return *this;
 }
