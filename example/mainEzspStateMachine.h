@@ -104,9 +104,9 @@ public:
     void ezspRun() {
         clogI << "Adapter version: " << this->libEzsp.getAdapterVersion() << "\n";
         clogI << "Preparation steps finished... switching to run state\n";
-        auto processNetworkKey = [this](EEmberStatus status, const NSEZSP::EmberKeyData& key) {
-            if (status == EEmberStatus::EMBER_SUCCESS) {
-                clogI << "Network key: " << key << "\n";
+        auto processNetworkKey = [this](NSEZSP::EEmberStatus status, const NSEZSP::EmberKeyData& key) {
+            if (status == NSEZSP::EEmberStatus::EMBER_SUCCESS) {
+                clogI << "Network key: " << NSSPI::Logger::byteSequenceToString(key) << "\n";
             }
         };
         libEzsp.getNetworkKey(processNetworkKey);
