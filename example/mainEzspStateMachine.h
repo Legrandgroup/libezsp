@@ -104,8 +104,15 @@ public:
     void ezspRun() {
         clogI << "Adapter version: " << this->libEzsp.getAdapterVersion() << "\n";
         clogI << "Preparation steps finished... switching to run state\n";
+        auto processNetworkKey = [this](EEmberStatus status, const NSEZSP::EmberKeyData& key) {
+            if (status == EEmberStatus::EMBER_SUCCESS) {
+                clogI << "Network key: " << key << "\n";
+            }
+        };
+        libEzsp.getNetworkKey(processNetworkKey);
         this->currentState = MainState::RUN;
     }
+
 
     /**
      * @brief Upgrade the firmware in the EZSP adapter
