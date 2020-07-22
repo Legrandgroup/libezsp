@@ -36,7 +36,7 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	this->ash.registerObserver(this);
 }
 
-CEzspDongle::CEzspDongle(const CEzspDongle& other) {
+CEzspDongle::CEzspDongle(const CEzspDongle& other) :
 	firstStartup(other.firstStartup),
 	version(other.version),
 	lastKnownMode(other.lastKnownMode),
