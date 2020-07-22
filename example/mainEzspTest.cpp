@@ -39,7 +39,7 @@ static std::mutex m;    //NOSONAR
 static void writeUsage(const std::string& progname, FILE *f) {
 	::fprintf(f, "\n");
 	::fprintf(f, "%s - sample test program for libezsp\n\n", progname.c_str());
-	::fprintf(f, "Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-C time] [-G|[-r *|-r source_id [-r source_id2...]]"\
+	::fprintf(f, "Usage: %s [-d] [-u serialport] [-w|[-c channel] [-Z] [-k] [-C time] [-G|[-r *|-r source_id [-r source_id2...]]"\
 	             "[-s source_id/key [-s source_id2/key...]]]\n", progname.c_str());
 	::fprintf(f, "Available switches:\n");
 	::fprintf(f, "-h (--help)                               : this help\n");
@@ -47,6 +47,7 @@ static void writeUsage(const std::string& progname, FILE *f) {
 	::fprintf(f, "-b (--baudrate) <baudrate>                : baudrate used to communicate over the serial port\n");
 	::fprintf(f, "-w (--firmware-upgrade)                   : put the adapter in firmware upgrade mode and return when done\n");
 	::fprintf(f, "-Z (--open-zigbee)                        : open the zigbee network at startup (for 60s)\n");
+	::fprintf(f, "-k (--show-nwk-key)                       : display the network key on the console before switching to run state\n");
 	::fprintf(f, "-G (--open-gp-commissionning)             : open the Green Power commissionning session at startup\n");
 	::fprintf(f, "-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds.\n");
 	::fprintf(f, "                                            Note: responses to MSP authenticated requests is always allowed\n");
@@ -162,6 +163,7 @@ int main(int argc, char **argv) {
     std::string serialPort("/dev/ttyUSB0");
     bool openGpCommissionningAtStartup = false;
     bool openZigbeeNetworkAtStartup = false;
+	bool displayNetworkKey = false;
     uint8_t authorizeChRqstAnswerTimeout = 0U;
     int baudrate = 115200;
 
@@ -172,6 +174,7 @@ int main(int argc, char **argv) {
         {"remove-source-id", 1, nullptr, 'r'},
         {"serial-port", 1, nullptr, 'u'},
         {"open-zigbee", 0, nullptr, 'Z'},
+		{"show-nwk-key", 0, nullptr, 'k'},
         {"open-gp-commissionning", 0, nullptr, 'G'},
         {"authorize-ch-request-answer", 1, nullptr, 'C'},
         {"firmware-upgrade", 0, nullptr, 'w'},
@@ -179,7 +182,7 @@ int main(int argc, char **argv) {
         {"help", 0, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}
     };
-    while ( (c = getopt_long(argc, argv, "dhwZGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+    while ( (c = getopt_long(argc, argv, "dhwZkGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
         switch (c) {
             case 's':
             {
@@ -215,6 +218,9 @@ int main(int argc, char **argv) {
             case 'Z':
                 openZigbeeNetworkAtStartup = true;
                 break;
+			case 'k':
+				displayNetworkKey = true;
+				break;
             case 'w':
                 switchToFirmwareUpgradeMode = true;
                 break;
@@ -251,7 +257,7 @@ int main(int argc, char **argv) {
     std::signal(SIGINT, sighandler);
 #endif
 	NSEZSP::CEzsp lib_main(uartHandle, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
-    NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, switchToFirmwareUpgradeMode);
+	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, displayNetworkKey, switchToFirmwareUpgradeMode);
     auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
         bool terminate = false; /* Shall we terminate the current process? */
         bool failure = false;   /* Shall we exit with a failure? */
