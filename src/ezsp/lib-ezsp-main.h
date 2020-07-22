@@ -266,13 +266,24 @@ public:
 	 *
 	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
 	 *
-	 * @param newObsEnergyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>)> that will be invoked when the energy scan is finished
-	 *                                 The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
+	 * @param energyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>)> that will be invoked when the energy scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
 	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
 	 *
-	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+	 * @return true if the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
 	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+
+	/**
+	 * @brief Get the value of the current network encryption key
+	 * 
+	 * @param networkKeyCallback A callback function of type void func(EEmberStatus status, const CEmberKeyStruct& key) that will be invoked with the result of the query.
+	 *                           The first argument of the callback is an EEmberStatus indicating whether the request was successful or not
+	 *                           The second argument of the callback is a CEmberKeyStruct containing the network key details (only valid if EEmberStatus is set to EEmberStatus::EMBER_SUCCESS)
+	 * 
+	 * @return true if the action was taken into account, false otherwise (adapter is not ready)
+	 */
+	bool getNetworkKey(FNetworkKeyCallback networkKeyCallback);
 
 	/**
 	 * @brief Select the 802.15.4 channel on which the EZSP adapter works
@@ -299,7 +310,8 @@ private:
 	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
-	FEnergyScanCallback obsEnergyScanCallback;  /*!< Optional user callback invoked by us each time an energy scan is finished */
+	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
+	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
 	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */

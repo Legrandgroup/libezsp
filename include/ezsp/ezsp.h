@@ -14,7 +14,8 @@
 
 #include <ezsp/export.h>
 #include <ezsp/config.h>
-#include "ezsp/enum-generator.h"
+#include <ezsp/enum-generator.h>
+#include <ezsp/ezsp-protocol/ezsp-enum.h>
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <ezsp/zbmessage/green-power-frame.h>
@@ -53,6 +54,7 @@ typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Cal
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
+typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
 
 class LIBEXPORT CEzsp {
 public:
@@ -182,6 +184,17 @@ public:
 	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
 	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+
+	/**
+	 * @brief Get the value of the current network encryption key
+	 * 
+	 * @param networkKeyCallback A callback function of type void func(EEmberStatus status, const CEmberKeyStruct& key) that will be invoked with the result of the query.
+	 *                           The first argument of the callback is an EEmberStatus indicating whether the request was successful or not
+	 *                           The second argument of the callback is a CEmberKeyStruct containing the network key details (only valid if EEmberStatus is set to EEmberStatus::EMBER_SUCCESS)
+	 * 
+	 * @return true if the action was taken into account, false otherwise (adapter is not ready)
+	 */
+	bool getNetworkKey(FNetworkKeyCallback networkKeyCallback);
 
 	/**
 	 * @brief Select the 802.15.4 channel on which the EZSP adapter works
