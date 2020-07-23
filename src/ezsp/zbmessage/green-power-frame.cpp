@@ -49,7 +49,7 @@ CGpFrame::CGpFrame(const NSSPI::ByteBuffer& raw_message):
     payload()
 {
 
-    //clogD << "Lionel: constructing CGPFrame from buffer " << NSSPI::Logger::byteSequenceToString(raw_message) << "\n";
+    //clogD << "Lionel: constructing CGPFrame from buffer " << raw_message << "\n";
     CEmberGpAddressStruct gp_address = CEmberGpAddressStruct(NSSPI::ByteBuffer(raw_message.begin()+3,raw_message.end()));
 
     this->application_id = gp_address.getApplicationId();
@@ -206,14 +206,14 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
 
     clogD << "Header: " << NSSPI::Logger::byteSequenceToString(header) << "\n";
 
-    NSSPI::ByteBuffer a(header.begin(), header.end());
+    NSSPI::ByteBuffer a(header);
 
     /* First push_back the command ID byte (it is not part of the payload attribute) */
     a.push_back(this->command_id);
     /* Append payload to header (only when security_level is 2 or 1 (see 09-5499-25, section A 1.5.4.3.1)) */
     a.append(this->payload);
 
-    clogD << "a: " << NSSPI::Logger::byteSequenceToString(a) << "\n";
+    clogD << "a: " << a << "\n";
 
     uint16_t La = a.size();
 
@@ -234,13 +234,13 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
             }
         }
     }
-    clogD << "padded_add_auth_data: " << NSSPI::Logger::byteSequenceToString(padded_add_auth_data) << " (" << std::dec << padded_add_auth_data.size() << " bytes)\n";
+    clogD << "padded_add_auth_data: " << padded_add_auth_data << " (" << std::dec << padded_add_auth_data.size() << " bytes)\n";
 
     /* Define the plain text data (this is message m in AES CCM's terminology) */
     NSSPI::ByteBuffer plain_text_data; /* AES's m is an empty string when security_level is 2 or 1 (see 09-5499-25, section A 1.5.4.3.1) */
 
     NSSPI::ByteBuffer& padded_plain_text_data = plain_text_data; /* We should pad plain_text_data to be the smallest multiple of NSSPI::IAes::AES_BLOCK_SIZE here, but we unly support security levels leading to an empty value, so we don't do any additional padding here */
-    clogD << "padded_plain_text_data: " << NSSPI::Logger::byteSequenceToString(padded_plain_text_data) << "\n";
+    clogD << "padded_plain_text_data: " << padded_plain_text_data << "\n";
     NSSPI::ByteBuffer auth_data(std::move(padded_add_auth_data));
     auth_data.append(padded_plain_text_data);
 
@@ -260,7 +260,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
     B0.push_back(u16_get_lo_u8(Lm));
     B0.push_back(u16_get_hi_u8(Lm));
 
-    clogD << "auth_data: " << NSSPI::Logger::byteSequenceToString(auth_data) << "\n";
+    clogD << "auth_data: " << auth_data << "\n";
 
     NSSPI::ByteBuffer B(std::move(auth_data));  /* Prepare a copy of auth_data that is going to be padded to align it to an exact multiple of AES block below */
     {
@@ -272,7 +272,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
         }
     }
 
-    clogD << "B: " << NSSPI::Logger::byteSequenceToString(B) << " (" << static_cast<unsigned int>(B.size()) << " bytes)\n";
+    clogD << "B: " << B << " (" << static_cast<unsigned int>(B.size()) << " bytes)\n";
 
     /* X0 contains 16 times 0x00 */
     NSSPI::ByteBuffer X0 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -284,7 +284,7 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
     {
         NSSPI::ByteBuffer Xi = CGpFrame::getLastXiAESCBC(i_gpd_key, X0, B0, B, lastIndex);
         clogD << "Got last Xi result:\n";
-        clogD << "X" << lastIndex << ": " << NSSPI::Logger::byteSequenceToString(Xi) << "\n";
+        clogD << "X" << lastIndex << ": " << Xi << "\n";
 
         T = quad_u8_to_u32(Xi.at(3), Xi.at(2), Xi.at(1), Xi.at(0));    /* Grab the first 4 bytes of Xi, and make it a 32 bit word (little-endian) */
     } /* Xi now goes out of scope */
@@ -321,8 +321,8 @@ bool CGpFrame::validateMIC(const EmberKeyData& i_gpd_key) const
     //}
     NSSPI::ByteBuffer r(EBuf, NSSPI::IAes::AES_BLOCK_SIZE);
 
-    clogD << "A0: " << NSSPI::Logger::byteSequenceToString(A0) << "\n";
-    clogD << "r(E(Key,A0)): " << NSSPI::Logger::byteSequenceToString(r) << "\n";
+    clogD << "A0: " << A0 << "\n";
+    clogD << "r(E(Key,A0)): " << r << "\n";
     clogD << "T: 0x" << std::hex << std::setw(8) << std::setfill('0') << T << "\n";
 
     if (r.size()<sizeof(T)) {
@@ -354,7 +354,7 @@ std::string CGpFrame::String() const
     buf << "[command_id: " << std::hex << std::setw(2) << std::setfill('0') << +(command_id) << "]";
     buf << "[mic: "<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(mic) << "]";
     buf << "[proxy_table_entry: 0x"<< std::hex << std::setw(2) << std::setfill('0') << +(proxy_table_entry) << "]";
-    buf << "[payload:" << NSSPI::Logger::byteSequenceToString(payload) << "]";
+    buf << "[payload:" << payload << "]";
     buf << " }";
 
     return buf.str();

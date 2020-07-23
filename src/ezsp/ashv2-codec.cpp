@@ -93,7 +93,7 @@ NSSPI::ByteBuffer AshCodec::forgeDataFrame(NSSPI::ByteBuffer i_data) {
 	lo_msg.push_back(ashControlByte);
 	//clogD << "AshCodec creating DATA(frmNum=" << std::dec << static_cast<unsigned int>(u8_get_hi_nibble(ashControlByte) & 0x07U)
 	//      << ", ackNum=" << static_cast<unsigned int>(u8_get_lo_nibble(ashControlByte) & 0x07U) << ")\n";
-	//clogD << "EZSP payload: " << NSSPI::Logger::byteSequenceToString(i_data) << "\n";
+	//clogD << "EZSP payload: " << i_data << "\n";
 	this->frmNum++;
 	this->frmNum &= 0x07U;
 	this->nextExpectedFEAckNum = this->frmNum;	/* ACK value always contain the next expected frame number */
@@ -154,7 +154,7 @@ NSSPI::ByteBuffer AshCodec::processInterFlagStream() {
 		clogD << "Received ASH message, decoded as EZSP message (seq=" << +(static_cast<unsigned char>(lo_msg[0]))
 		      << ", FC=" << +(static_cast<unsigned char>(lo_msg[1]))
 		      << ", FrameID=" << +(static_cast<unsigned char>(lo_msg[2])) << "): "
-		      << NSSPI::Logger::byteSequenceToString(lo_msg) << "\n";
+		      << lo_msg << "\n";
 		*/
 		return lo_msg;
 	}
