@@ -7,6 +7,7 @@
  */
 
 //#define TRACE_API_CALLS
+#define DYNAMIC_ALLOCATION
 
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
