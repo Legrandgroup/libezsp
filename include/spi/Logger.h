@@ -14,6 +14,7 @@
 #include <functional>
 
 #include <ezsp/export.h>
+#include <ezsp/byte-manip.h>
 #include <spi/ByteBuffer.h>
 
 namespace NSSPI {
@@ -34,6 +35,8 @@ public:
 	 * @brief Utility function to dump a byte vector to a string
 	 *
 	 * @param[in] input The vector container to dump
+	 * 
+	 * @return The instance provided in @p input as its string representation
 	 */
 	static std::string byteSequenceToString(const std::vector<uint8_t>& input);
 
@@ -42,6 +45,8 @@ public:
 	 *
 	 * @param[in] input The memory area to dump
 	 * @param size The number of bytes to dump from the @p input buffer
+	 * 
+	 * @return The instance provided in @p input as its string representation
 	 */
 	static std::string byteSequenceToString(const uint8_t* input, size_t size);
 
@@ -49,6 +54,8 @@ public:
 	 * @brief Utility function to dump a byte array to a string
 	 *
 	 * @param[in] input The array container to dump
+	 * 
+	 * @return The instance provided in @p input as its string representation
 	 */
 	template <std::size_t N>
 	static std::string byteSequenceToString(const std::array<uint8_t, N>& input) {
@@ -59,35 +66,26 @@ public:
 			if (result.tellp()>0) {
 				result << " ";
 			}
-			result << Logger::byteToHexString(*it);
+			result << NSEZSP::byteToHexString(*it);
 		}
 		return result.str();
 	}
 
-	// /**
-	//  * @brief Utility function to dump a byte buffer to a string
-	//  *
-	//  * @param[in] The byte buffer container to dump
-	//  */
-	// // This method is commented-out because NSSPI::ByteBuffer is currently inheriting from std::vector<uint8_t> that is handled above
-	// static std::string byteSequenceToString(const NSSPI::ByteBuffer& input);
+	/**
+	 * @brief Utility function to dump a byte buffer to a string
+	 *
+	 * @param[in] input The byte buffer container to dump
+	 * 
+	 * @return The instance provided in @p input as its string representation
+	 */
+	static std::string byteSequenceToString(const NSSPI::ByteBuffer& input);
 
 private:
 	Logger() = default;
 
-	/**
-	 * @brief Convert a byte to its 2-digit hexadecimal representation
-	 *
-	 * @param byte The byte to represent
-	 * @return A 2-character string contaning the hexadecimal representation of @p byte
-	 */
-	static std::string byteToHexString(uint8_t byte);
-
-	static ILoggerInstance mInstance;
+	static ILoggerInstance mInstance;	/*!< The unique (singleton) logger instance */
 };
 
 } // namespace NSSPI
-
-#include "spi/ILogger.h"
 
 #endif

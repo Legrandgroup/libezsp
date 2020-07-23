@@ -650,7 +650,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 
 	default: {
 		/* DEBUG VIEW
-		clogI << "CGpSink: Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+		clogI << "CGpSink: Unhandled EZSP message: " << bufDump << "\n";
 		*/
 	}
 	break;

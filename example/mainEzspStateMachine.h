@@ -11,7 +11,7 @@
 #include <map>
 
 #include "spi/TimerBuilder.h"
-#include "spi/Logger.h"
+#include "spi/ILogger.h"
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
@@ -45,6 +45,7 @@ enum MainState {
     ADD_GPD,
     COMMISSION_GPD,
     SCAN_CHANNELS,
+	GET_NW_KEY,
     RUN,
     FW_UPGRADE,
 };
@@ -62,6 +63,7 @@ public:
      * @param gpRemoveAllDevices A flag to remove all GP devices from monitoring
      * @param gpDevicesToAdd A list of GP devices to add to the previous monitoring
      * @param gpDevicesToRemove A list of source IDs for GP devices to remove from previous monitoring
+	 * @param displayNetworkKey Display the Zigbee network key before switching to run state
      * @param switchToFirmwareUpgradeMode Do we immediately put the EZSP adapter into firmware upgrade mode
      */
     MainStateMachine(NSSPI::TimerBuilder& timerBuilder,
@@ -72,6 +74,7 @@ public:
                      bool gpRemoveAllDevices=false,
                      const std::vector<NSEZSP::CGpDevice>& gpDevicesToAdd={},
                      const std::vector<uint32_t>& gpDevicesToRemove={},
+	                 bool displayNetworkKey=false,
                      bool switchToFirmwareUpgradeMode=false):
         initFailures(0),
         timerBuilder(timerBuilder),
@@ -82,6 +85,7 @@ public:
         removeAllGPDAtStartup(gpRemoveAllDevices),
         gpdAddList(gpDevicesToAdd),
         gpdRemoveList(gpDevicesToRemove),
+		displayNetworkKey(displayNetworkKey),
         channelRequestAnswerTimer(this->timerBuilder.create()),
         currentState(MainState::INIT_PENDING),
         startFirmwareUpgrade(switchToFirmwareUpgradeMode) {
@@ -102,10 +106,29 @@ public:
      * @brief Set internal state machine to run mode (waiting for asynchronous sensor reports)
      */
     void ezspRun() {
-        clogI << "Adapter version: " << this->libEzsp.getAdapterVersion() << "\n";
         clogI << "Preparation steps finished... switching to run state\n";
         this->currentState = MainState::RUN;
     }
+
+	/**
+	 * @brief Perform the trailing action when the library init is finished
+	 */
+	void ezspInitDone() {
+		clogI << "Adapter version: " << this->libEzsp.getAdapterVersion() << "\n";
+		if (this->displayNetworkKey) {
+			auto processNetworkKey = [this](NSEZSP::EEmberStatus status, const NSEZSP::EmberKeyData& key) {
+				if (status == NSEZSP::EEmberStatus::EMBER_SUCCESS) {
+					clogI << "Network key: " << NSSPI::Logger::byteSequenceToString(key) << "\n";
+				}
+				this->ezspRun();
+			};
+			this->currentState = MainState::GET_NW_KEY;
+			this->libEzsp.getNetworkKey(processNetworkKey);
+		}
+		else {
+			this->ezspRun();
+		}
+	}
 
     /**
      * @brief Upgrade the firmware in the EZSP adapter
@@ -172,7 +195,7 @@ public:
             clogI << "Selecting channel " << static_cast<unsigned int>(electedChannelRssi.first) << " with rssi: " << static_cast<int>(electedChannelRssi.second) << " dBm\n";
             //this->setChannel(electedChannelRssi.first);
             /* No other startup operations required... move to run state */
-            this->ezspRun();
+			this->ezspInitDone();
         };
 
         libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
@@ -507,6 +530,7 @@ private:
     bool removeAllGPDAtStartup; /*!< A flag to remove all GP devices from monitoring */
     std::vector<NSEZSP::CGpDevice> gpdAddList; /*!< A list of GP devices to add to the previous monitoring */
     std::vector<uint32_t> gpdRemoveList; /*!< A list of source IDs for GP devices to remove from previous monitoring */
+	bool displayNetworkKey; /*!< Do we display the Zigbee network key before swithcing to run state? */
     std::unique_ptr<NSSPI::ITimer> channelRequestAnswerTimer;   /*!< A timer to temporarily allow channel request */
     MainState currentState; /*!< Our current state (for the internal state machine) */
     bool startFirmwareUpgrade; /*!< Do we immediately put the EZSP adapter into firmware upgrade mode at startup */

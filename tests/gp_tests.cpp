@@ -219,7 +219,7 @@ TEST(gp_tests, gp_recv_sensor_measurement) {
 
 	GPDList.push_back(CGpDevice(0x01510037U, GPD_KEY));
 	NSEZSP::CEzsp lib_main(static_cast<NSSPI::IUartDriverHandle>(mockUartDriverHandle), timerBuilder, 26);
-	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, false /* no -G */, 60 /* -C 60 */, false /* no -Z */, true /* -r '*' */, GPDList, std::vector<uint32_t>() /* no -r source_ID/key */, false /* no -w */);
+	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, false /* no -G */, 60 /* -C 60 */, false /* no -Z */, true /* -r '*' */, GPDList, std::vector<uint32_t>() /* no -r source_ID/key */, false /* no -k */, false /* no -w */);
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		try {
 			fsm.ezspStateChangeCallback(i_state);

@@ -36,6 +36,8 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
     gp_sink(dongle, zb_messaging),
     obsGPFrameRecvCallback(nullptr),
     obsGPSourceIdCallback(nullptr),
+    energyScanCallback(nullptr),
+    networkKeyCallback(nullptr),
     resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
     scanInProgress(false),
     lastChannelToEnergyScan()
@@ -383,9 +385,15 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
     l_payload.push_back(u32_get_byte3(channelMask));
     l_payload.push_back(duration);
     this->setState(CLibEzspInternal::State::SCANNING);
-    this->obsEnergyScanCallback = energyScanCallback;
+    this->energyScanCallback = energyScanCallback;
     this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
     return true;
+}
+
+bool CLibEzspMain::getNetworkKey(FNetworkKeyCallback networkKeyCallback) {
+	this->networkKeyCallback = networkKeyCallback;
+	dongle.sendCommand(EEzspCmd::EZSP_GET_KEY, NSSPI::ByteBuffer({ EMBER_CURRENT_NETWORK_KEY }));
+	return true;
 }
 
 bool CLibEzspMain::setChannel(uint8_t channel) {
@@ -406,7 +414,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	std::stringstream bufDump;
 	bool truncatedVersion = false;  /* Flag set to true when receiving a truncated EZSP_VERSION payload */
 	bool acceptableVersion = false; /* Flag set to true when the version received from the EZSP adapter is acceptable for us */
-	clogD << "Got EZSP_VERSION payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
+	clogD << "Got EZSP_VERSION payload:" << i_msg_receive << "\n";
 	// Check if the wanted protocol version, and display stack version
 	if (i_msg_receive.size() == 2) {
 		clogW << "Got a truncated EZSP version frame from a buggy NCP, using only the 2 last bytes\n";
@@ -472,7 +480,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 }
 
 void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive) {
-	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
+	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << i_msg_receive << "\n";
 
 	if (i_msg_receive.size() < 5) {
 		clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
@@ -605,6 +613,10 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
             i_msg_receive.erase(i_msg_receive.begin());
             CEmberKeyStruct l_rsp(i_msg_receive);
             clogI << "EZSP_GET_KEY status : " << CEzspEnum::EEmberStatusToString(l_status) << ", " << l_rsp.String() << std::endl;
+			if (this->networkKeyCallback) {
+				this->networkKeyCallback(l_status, l_rsp.getKey());
+				this->networkKeyCallback = nullptr;  /* Disable callback */
+			}
         }
         break;
         // case EZSP_GET_EUI64:
@@ -696,11 +708,10 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
             this->scanInProgress = false;
             if (this->getState() == CLibEzspInternal::State::SCANNING) {
                 this->setState(CLibEzspInternal::State::READY);
-                if (this->obsEnergyScanCallback)
-                {
-                    this->obsEnergyScanCallback(this->lastChannelToEnergyScan);
-                    this->obsEnergyScanCallback = nullptr;  /* Disable callback */
-                }
+				if (this->energyScanCallback) {
+					this->energyScanCallback(this->lastChannelToEnergyScan);
+					this->energyScanCallback = nullptr;  /* Disable callback */
+				}
             }
         }
         break;
@@ -708,7 +719,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
         default:
         {
 			/* DEBUG VIEW
-			clogI << "Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+			clogI << "Unhandled EZSP message: " << bufDump << "\n";
 			*/
         }
         break;

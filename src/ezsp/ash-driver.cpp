@@ -162,7 +162,10 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	std::vector<NSSPI::ByteBuffer> ezspPayloads = this->ashCodec.appendIncoming(i_data);
 	if (ezspPayloads.size()>1) {
-		clogW << "Multiple EZSP payloads extraction from one ASH stream\n";	/* This should rarely occur except of very very slow hosts */
+		clogW << "Multiple EZSP payloads extraction from one ASH stream:\n";	/* This should rarely occur except on very very slow hosts, or when NCP sends two related EZSP messages in a row */
+		for (auto it = ezspPayloads.begin(); it != ezspPayloads.end(); ++it) {
+			clogW << *it << "\n";
+		}
 	}
 	for (auto ezspPayload : ezspPayloads) {
 		std::size_t ezspPayloadSize = ezspPayload.size();
