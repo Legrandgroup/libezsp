@@ -4,6 +4,7 @@
  * @brief Singleton logger
  */
 
+#include <sstream>
 
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
@@ -64,18 +65,8 @@ std::string Logger::byteSequenceToString(const uint8_t* input, size_t size)
 	return result.str();
 }
 
-/*
-// This method is commented-out because NSSPI::ByteBuffer is currently inheriting from std::vector<uint8_t> that is handled above
-std::string Logger::byteSequenceToString(const NSSPI::ByteBuffer& input)
-{
+std::string Logger::byteSequenceToString(const NSSPI::ByteBuffer& input) {
 	std::ostringstream result;
-
-	for(auto it=std::begin(input); it<std::end(input); it++) {
-		if (result.tellp()>0) {
-			result << " ";
-		}
-		result << Logger::byteToHexString(*it);
-	}
+	result << input;
 	return result.str();
 }
-*/
