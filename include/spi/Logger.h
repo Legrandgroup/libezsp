@@ -88,6 +88,4 @@ private:
 
 } // namespace NSSPI
 
-#include "spi/ILogger.h"
-
 #endif
