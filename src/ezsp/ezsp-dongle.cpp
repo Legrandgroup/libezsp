@@ -12,17 +12,22 @@ DEFINE_ENUM(Mode, EZSP_DONGLE_MODE_LIST, NSEZSP::CEzspDongle);
 
 using NSEZSP::CEzspDongle;
 
+/**
+ * Note: because i_timer_builder is a reference, we have the garantee that it is not pointing to null
+ * But we store it inside a pointer and not a reference because we want to be able to update the value of timerBuilder when invoking swap()
+ * and swap cannot be executed on const references but can be executed on non-const pointers to a const reference.
+ */
 CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer) :
 	firstStartup(true),
 	version(),
 	lastKnownMode(CEzspDongle::Mode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
-	timerBuilder(i_timer_builder),
+	timerBuilder(&i_timer_builder),
 	uartHandle(nullptr),
 	uartIncomingDataHandler(),
 	ezspSeqNum(0),
-	ash(static_cast<CAshCallback*>(this), timerBuilder),
-	blp(timerBuilder),
+	ash(static_cast<CAshCallback*>(this), *timerBuilder),
+	blp(*timerBuilder),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers() {
@@ -45,8 +50,8 @@ CEzspDongle::CEzspDongle(const CEzspDongle& other) :
 	uartHandle(other.uartHandle),
 	uartIncomingDataHandler(other.uartIncomingDataHandler),
 	ezspSeqNum(other.ezspSeqNum),
-	ash(other.ash),
-	blp(other.blp),
+	ash(static_cast<CAshCallback*>(this), *timerBuilder),
+	blp(*timerBuilder),
 	sendingMsgQueue(other.sendingMsgQueue),
 	wait_rsp(other.wait_rsp),
 	observers(other.observers) {
