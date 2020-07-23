@@ -130,7 +130,7 @@ std::string MockUartDriver::scheduledIncomingChunksToString() {
 			result << ", ";	/* Add a separator */
 		nextChunk = scheduledReadQueueCopy.front();
 		NSSPI::ByteBuffer bytes(nextChunk.byteBuffer);
-		result << NSSPI::Logger::byteSequenceToString(bytes);
+		result << bytes;
 		scheduledReadQueueCopy.pop();
 	}
 	return "[" + result.str() + "]";

@@ -5,7 +5,7 @@
  */
 
 #include "CppThreadsTimer.h"
-#include "spi/Logger.h"
+#include "spi/ILogger.h"
 
 #include <chrono>
 using NSSPI::CppThreadsTimer;

@@ -11,7 +11,7 @@
 #include <map>
 
 #include "spi/TimerBuilder.h"
-#include "spi/Logger.h"
+#include "spi/ILogger.h"
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
