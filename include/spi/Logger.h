@@ -14,6 +14,7 @@
 #include <functional>
 
 #include <ezsp/export.h>
+#include <ezsp/byte-manip.h>
 #include <spi/ByteBuffer.h>
 
 namespace NSSPI {
@@ -59,7 +60,7 @@ public:
 			if (result.tellp()>0) {
 				result << " ";
 			}
-			result << Logger::byteToHexString(*it);
+			result << NSEZSP::byteToHexString(*it);
 		}
 		return result.str();
 	}
@@ -74,14 +75,6 @@ public:
 
 private:
 	Logger() = default;
-
-	/**
-	 * @brief Convert a byte to its 2-digit hexadecimal representation
-	 *
-	 * @param byte The byte to represent
-	 * @return A 2-character string contaning the hexadecimal representation of @p byte
-	 */
-	static std::string byteToHexString(uint8_t byte);
 
 	static ILoggerInstance mInstance;
 };

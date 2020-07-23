@@ -4,7 +4,6 @@
  * @brief Singleton logger
  */
 
-#include <ezsp/byte-manip.h>
 
 #include "spi/Logger.h"
 #ifdef USE_RARITAN
@@ -38,26 +37,6 @@ ILogger *Logger::getInstance()
 	return mInstance.get();
 }
 
-std::string Logger::byteToHexString(uint8_t byte)
-{
-	std::string result("00");
-	uint8_t nibble = NSEZSP::u8_get_hi_nibble(byte);
-	if (nibble>=0 && nibble<=9) {
-		result[0] = nibble + '0';
-	}
-	else {
-		result[0] = nibble - 0x0a + 'a';
-	}
-	nibble = NSEZSP::u8_get_lo_nibble(byte);
-	if (nibble>=0 && nibble<=9) {
-		result[1] = nibble + '0';
-	}
-	else {
-		result[1] = nibble - 0x0a + 'a';
-	}
-	return result;
-}
-
 std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
 {
 	std::ostringstream result;
@@ -66,7 +45,7 @@ std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
 		if (result.tellp()>0) {
 			result << " ";
 		}
-		result << Logger::byteToHexString(*it);
+		result << NSEZSP::byteToHexString(*it);
 	}
 	return result.str();
 }
@@ -80,7 +59,7 @@ std::string Logger::byteSequenceToString(const uint8_t* input, size_t size)
 		if (i != 0) {
 			result << " ";
 		}
-		result << Logger::byteToHexString(input[i]);
+		result << NSEZSP::byteToHexString(input[i]);
 	}
 	return result.str();
 }
