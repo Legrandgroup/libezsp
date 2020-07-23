@@ -17,6 +17,12 @@
 #include <spi/ITimer.h>
 
 namespace NSSPI {
+	class TimerBuilder; // // Forward declaration for swap() below
+}
+
+void swap(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second); /* Declaration before qualifying ::swap() as friend for class NSSPI::TimerBuilder */
+
+namespace NSSPI {
 
 /**
  * @brief Utility class to generate ITimer objects
@@ -49,6 +55,18 @@ public:
 	 * @return The new timer created
 	 */
 	std::unique_ptr<ITimer> create() const;
+
+	/**
+	 * \brief swap function to allow implementing of copy-and-swap idiom on instances of TimerBuilder
+	 *
+	 * This function will swap all attributes of \p first and \p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * \param first The first object
+	 * \param second The second object
+	 */
+	friend void (::swap)(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second);
+
 private:
 #ifdef USE_RARITAN
 	pp::Selector& eventSelector;	/*!< The raritan event selector */
