@@ -403,3 +403,20 @@ NSSPI::ByteBuffer AshCodec::dataRandomize(const NSSPI::ByteBuffer& i_data, uint8
 
 	return result;
 }
+
+/**
+ * This method is a friend of NSEZSP::AshCodec class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(AshCodec& first, AshCodec& second) /* nothrow */ {
+	using std::swap;	// Enable ADL
+	using ::swap;
+
+	swap(first.pCb, second.pCb);
+	swap(first.ackTimerCancelFunc, second.ackTimerCancelFunc);
+	swap(first.nextExpectedFEAckNum, second.nextExpectedFEAckNum);
+	swap(first.frmNum, second.frmNum);
+	swap(first.lastReceivedByNEAckNum, second.lastReceivedByNEAckNum);
+	swap(first.stateConnected, second.stateConnected);
+	swap(first.in_msg, second.in_msg);
+}

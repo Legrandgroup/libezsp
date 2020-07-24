@@ -263,6 +263,25 @@ void BootloaderPromptDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	}
 }
 
+/**
+ * This method is a friend of NSEZSP::BootloaderPromptDriver class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(BootloaderPromptDriver& first, BootloaderPromptDriver& second) /* nothrow */ {
+	using std::swap;	// Enable ADL
+	using ::swap;
+
+	swap(first.enabled, second.enabled);
+	swap(first.timer, second.timer);
+	swap(first.accumulatedBytes, second.accumulatedBytes);
+	swap(first.bootloaderCLIChecked, second.bootloaderCLIChecked);
+	swap(first.state, second.state);
+	swap(first.serialReadObservable, second.serialReadObservable);
+	swap(first.serialWriteFunc, second.serialWriteFunc);
+	swap(first.promptDetectCallback, second.promptDetectCallback);
+	swap(first.firmwareTransferStartFunc, second.firmwareTransferStartFunc);
+}
+
 const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_HEADER = "Gecko Bootloader";
 const std::string BootloaderPromptDriver::GECKO_BOOTLOADER_PROMPT = "BL >";
 const uint32_t BootloaderPromptDriver::GECKO_QUIET_RX_TIMEOUT = 100; /* If there are more than 100ms between two RX bytes while flushing, assume RX flush is done */

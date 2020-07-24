@@ -70,6 +70,7 @@ CEzspDongle::~CEzspDongle() {
 
 void swap(CEzspDongle& first, CEzspDongle& second) {
 	using std::swap;	// Enable ADL
+	using ::swap;
 
 	swap(first.firstStartup, second.firstStartup);
 	swap(first.version, second.version);
