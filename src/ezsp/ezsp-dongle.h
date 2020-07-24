@@ -24,6 +24,11 @@ extern "C" {	/* Avoid compiler warning on member initialization for structs (in 
 		NSSPI::ByteBuffer payload;
 	} SMsg;
 }
+namespace NSEZSP {
+	class CEzspDongle; // // Forward declaration for swap() below
+}
+
+void swap(NSEZSP::CEzspDongle& first, NSEZSP::CEzspDongle& second); /* Declaration before qualifying ::swap() as friend for class NSEZSP::CEzspDongle */
 
 namespace NSEZSP {
 
@@ -47,19 +52,18 @@ public:
 
 	CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
-	CEzspDongle(const CEzspDongle&) = delete; /* No copy construction allowed (pointer data members) */
+	
+	/**
+	 * \brief Copy constructor
+	 *
+	 * \param other The object to copy from
+	 */
+	CEzspDongle(const CEzspDongle& other);
 
 	/**
 	 * @brief Destructor
 	 */
 	virtual ~CEzspDongle();
-
-	/**
-	 * @brief Assignment operator
-	 *
-	 * @warning Assignment is not allowed
-	 */
-	CEzspDongle& operator=(CEzspDongle) = delete;
 
 	/**
 	 * @brief Set the serial port to use for communication with the EZSP adapter
@@ -168,12 +172,31 @@ public:
 	 */
 	void setMode(CEzspDongle::Mode requestedMode);
 
+	/**
+	 * \brief swap function to allow implementing of copy-and-swap idiom on instances of CEzspDongle
+	 *
+	 * This function will swap all attributes of \p first and \p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * \param first The first object
+	 * \param second The second object
+	 */
+	friend void (::swap)(NSEZSP::CEzspDongle& first, NSEZSP::CEzspDongle& second);
+
+	/**
+	 * \brief Assignment operator
+	 * \param other The object to assign to the lhs
+	 *
+	 * \return The object that has been assigned the value of \p other
+	 */
+	CEzspDongle& operator=(const CEzspDongle other);
+
 private:
 	bool firstStartup;  /*!< Is this the first attempt to exchange with the dongle? If so, we will probe to check if the adapter is in EZSP or bootloader prompt mode */
 	NSEZSP::EzspAdapterVersion version; /*!< The version details of this EZSP adapter (firmware and hardware) */
 	CEzspDongle::Mode lastKnownMode;    /*!< What is the current adapter mode (bootloader, EZSP/ASH mode etc.) */
 	bool switchToFirmwareUpgradeOnInitTimeout;   /*!< Shall we directly move to firmware upgrade if we get an ASH timeout, if not, we will run the application (default behaviour) */
-	const NSSPI::TimerBuilder& timerBuilder;    /*!< A timer builder used to generate timers */
+	const NSSPI::TimerBuilder* timerBuilder;    /*!< A timer builder used to generate timers */
 	NSSPI::IUartDriverHandle uartHandle; /*!< A reference to the IUartDriver object used to send/receive serial data to the EZSP adapter */
 	NSSPI::GenericAsyncDataInputObservable uartIncomingDataHandler; /*!< The observable handler that will dispatch received incoming bytes to observers */
 	uint8_t ezspSeqNum;	/*!< The EZSP sequence number (wrapping 0-255 counter) */

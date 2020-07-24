@@ -1,4 +1,3 @@
-
 /**
  * @file ByteBuffer.h
  *
@@ -15,6 +14,7 @@
 #include <cstddef> // For size_t
 
 #include <ezsp/export.h>
+#include <ezsp/byte-manip.h>
 
 namespace NSSPI {
 
@@ -127,6 +127,28 @@ public:
 		for (auto it=this->begin(); it<this->end(); it++) {
 			*dst++ = *it;
 		}
+	}
+
+	/**
+	 * @brief Serialize to an iostream
+	 *
+	 * @param out The original output stream
+	 * @param data The object to serialize
+	 *
+	 * @return The new output stream with serialized data appended
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const ByteBuffer& data) {
+		/* As long as ByteBuffer inherits from vector<uint8_t>, conversion to a string could also be delegated to Logger::byteSequenceToString, like this:
+		   out << NSSPI::Logger::byteSequenceToString(data);
+		   But some gcc version do not handle this properly and issue a weird "error: ‘NSSPI::Logger’ has not been declared" even with the proper #include <spi/Logger.h>
+		   We'll thus stick to implementing the parsing manually below */
+		for (auto it=std::begin(data); it<std::end(data); it++) {
+			if (it != std::begin(data)) {
+				out << std::string(" ");
+			}
+			out << NSEZSP::byteToHexString(*it);
+		}
+		return out;
 	}
 };
 } // namespace NSSPI

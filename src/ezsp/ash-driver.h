@@ -17,6 +17,12 @@
 #include "ezsp/ashv2-codec.h"
 
 namespace NSEZSP {
+	class AshDriver; // Forward declaration
+}
+
+void swap(NSEZSP::AshDriver& first, NSEZSP::AshDriver& second); /* Declaration before qualifying ::swap() as friend for class NSEZSP::AshDriver */
+
+namespace NSEZSP {
 
 /* This class is an observer of the serial port
 it is also observable by whoever wants to receive decoded ASH frame payloads */
@@ -148,6 +154,17 @@ public:
 	 * @return true if ASH is in connected state
 	 */
 	bool isConnected() const;
+
+	/**
+	 * @brief Swap function
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(NSEZSP::AshDriver& first, NSEZSP::AshDriver& second);
 
 protected:
 	/**

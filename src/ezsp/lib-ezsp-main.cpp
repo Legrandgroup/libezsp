@@ -423,7 +423,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 	std::stringstream bufDump;
 	bool truncatedVersion = false;  /* Flag set to true when receiving a truncated EZSP_VERSION payload */
 	bool acceptableVersion = false; /* Flag set to true when the version received from the EZSP adapter is acceptable for us */
-	clogD << "Got EZSP_VERSION payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
+	clogD << "Got EZSP_VERSION payload:" << i_msg_receive << "\n";
 	// Check if the wanted protocol version, and display stack version
 	if (i_msg_receive.size() == 2) {
 		clogW << "Got a truncated EZSP version frame from a buggy NCP, using only the 2 last bytes\n";
@@ -489,7 +489,7 @@ void CLibEzspMain::handleEzspRxMessage_VERSION(const NSSPI::ByteBuffer& i_msg_re
 }
 
 void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffer& i_msg_receive) {
-	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << NSSPI::Logger::byteSequenceToString(i_msg_receive) << "\n";
+	//clogD << "Got EZSP_GET_XNCP_INFO payload:" << i_msg_receive << "\n";
 
 	if (i_msg_receive.size() < 5) {
 		clogE << "Wrong size for EZSP_GET_XNCP_INFO message: " << static_cast<unsigned int>(i_msg_receive.size()) << " bytes\n";
@@ -728,7 +728,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
         default:
         {
 			/* DEBUG VIEW
-			clogI << "Unhandled EZSP message: " << NSSPI::Logger::byteSequenceToString(bufDump) << "\n";
+			clogI << "Unhandled EZSP message: " << bufDump << "\n";
 			*/
         }
         break;

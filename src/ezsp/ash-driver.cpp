@@ -155,7 +155,10 @@ bool AshDriver::sendDataFrame(const NSSPI::ByteBuffer& i_data) {
 void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 	std::vector<NSSPI::ByteBuffer> ezspPayloads = this->ashCodec.appendIncoming(i_data);
 	if (ezspPayloads.size()>1) {
-		clogW << "Multiple EZSP payloads extraction from one ASH stream\n";	/* This should rarely occur except of very very slow hosts */
+		clogW << "Multiple EZSP payloads extraction from one ASH stream:\n";	/* This should rarely occur except on very very slow hosts, or when NCP sends two related EZSP messages in a row */
+		for (auto it = ezspPayloads.begin(); it != ezspPayloads.end(); ++it) {
+			clogW << *it << "\n";
+		}
 	}
 	for (auto ezspPayload : ezspPayloads) {
 		std::size_t ezspPayloadSize = ezspPayload.size();
@@ -172,4 +175,19 @@ void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 
 bool AshDriver::isConnected() const {
 	return this->ashCodec.isInConnectedState();
+}
+
+/**
+ * This method is a friend of NSEZSP::AshDriver class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(AshDriver& first, AshDriver& second) /* nothrow */ {
+	using std::swap;	// Enable ADL
+	using ::swap;
+
+	swap(first.enabled, second.enabled);
+	swap(first.ackTimer, second.ackTimer);
+	swap(first.ashCodec, second.ashCodec);
+	swap(first.serialReadObservable, second.serialReadObservable);
+	swap(first.serialWriteFunc, second.serialWriteFunc);
 }

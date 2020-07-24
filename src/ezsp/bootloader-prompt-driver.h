@@ -17,6 +17,12 @@
 #include "ezsp/enum-generator.h"
 
 namespace NSEZSP {
+	class BootloaderPromptDriver; // Forward declaration
+}
+
+void swap(NSEZSP::BootloaderPromptDriver& first, NSEZSP::BootloaderPromptDriver& second); /* Declaration before qualifying ::swap() as friend for class NSEZSP::BootloaderPromptDriver */
+
+namespace NSEZSP {
 
 #define BOOTLOADER_STAGE_LIST(XX) \
 	XX(RX_FLUSH,=1)             /*<! Initial state, first flush all incoming bytes from serial link */ \
@@ -165,6 +171,17 @@ public:
 	 * @note As this method interacts with the booloader menu prompt, we should already be waiting on the bootloader prompt
 	 */
 	bool selectModeUpgradeFw(FFirmwareTransferStartFunc callback);
+
+	/**
+	 * @brief Swap function
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(NSEZSP::BootloaderPromptDriver& first, NSEZSP::BootloaderPromptDriver& second);
 
 protected:
 	/**

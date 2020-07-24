@@ -8,7 +8,7 @@
 
 #include "spi/TimerBuilder.h"
 #include "spi/UartDriverBuilder.h"
-#include "spi/Logger.h"
+#include "spi/ILogger.h"
 #include <getopt.h>
 #include <string>
 #include <iostream>

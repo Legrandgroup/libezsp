@@ -12,17 +12,22 @@ DEFINE_ENUM(Mode, EZSP_DONGLE_MODE_LIST, NSEZSP::CEzspDongle);
 
 using NSEZSP::CEzspDongle;
 
+/**
+ * Note: because i_timer_builder is a reference, we have the garantee that it is not pointing to null
+ * But we store it inside a pointer and not a reference because we want to be able to update the value of timerBuilder when invoking swap()
+ * and swap cannot be executed on const references but can be executed on non-const pointers to a const reference.
+ */
 CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer) :
 	firstStartup(true),
 	version(),
 	lastKnownMode(CEzspDongle::Mode::UNKNOWN),
 	switchToFirmwareUpgradeOnInitTimeout(false),
-	timerBuilder(i_timer_builder),
+	timerBuilder(&i_timer_builder),
 	uartHandle(nullptr),
 	uartIncomingDataHandler(),
 	ezspSeqNum(0),
-	ash(static_cast<CAshCallback*>(this), timerBuilder),
-	blp(timerBuilder),
+	ash(static_cast<CAshCallback*>(this), *timerBuilder),
+	blp(*timerBuilder),
 	sendingMsgQueue(),
 	wait_rsp(false),
 	observers() {
@@ -36,10 +41,51 @@ CEzspDongle::CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongle
 	this->ash.registerObserver(this);
 }
 
+CEzspDongle::CEzspDongle(const CEzspDongle& other) :
+	firstStartup(other.firstStartup),
+	version(other.version),
+	lastKnownMode(other.lastKnownMode),
+	switchToFirmwareUpgradeOnInitTimeout(other.switchToFirmwareUpgradeOnInitTimeout),
+	timerBuilder(other.timerBuilder),
+	uartHandle(other.uartHandle),
+	uartIncomingDataHandler(other.uartIncomingDataHandler),
+	ezspSeqNum(other.ezspSeqNum),
+	ash(static_cast<CAshCallback*>(this), *timerBuilder),
+	blp(*timerBuilder),
+	sendingMsgQueue(other.sendingMsgQueue),
+	wait_rsp(other.wait_rsp),
+	observers(other.observers) {
+	/* By default, no parsing is done on the adapter serial port */
+	this->ash.disable();
+	this->blp.disable();
+	/* Register ourselves as an observer of EZSP frames decoded out of the ASH stream. These EZSP frames will be handled by handleInputData() */
+	this->ash.registerObserver(this);
+}
+
 CEzspDongle::~CEzspDongle() {
 	this->ash.disable();
 	this->blp.disable();
 	this->ash.unregisterObserver(this);
+}
+
+void swap(CEzspDongle& first, CEzspDongle& second) {
+	using std::swap;	// Enable ADL
+	using ::swap;
+
+	swap(first.firstStartup, second.firstStartup);
+	swap(first.version, second.version);
+	swap(first.lastKnownMode, second.lastKnownMode);
+	swap(first.switchToFirmwareUpgradeOnInitTimeout, second.switchToFirmwareUpgradeOnInitTimeout);
+	swap(first.timerBuilder, second.timerBuilder);
+	swap(first.uartHandle, second.uartHandle);
+	swap(first.uartIncomingDataHandler, second.uartIncomingDataHandler);
+	swap(first.ezspSeqNum, second.ezspSeqNum);
+	swap(first.ash, second.ash);
+	swap(first.blp, second.blp);
+	swap(first.sendingMsgQueue, second.sendingMsgQueue);
+	swap(first.wait_rsp, second.wait_rsp);
+	swap(first.observers, second.observers);
+	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
 
 void CEzspDongle::setUart(NSSPI::IUartDriverHandle uartHandle) {
@@ -154,7 +200,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	NSSPI::ByteBuffer ezspMessage(dataIn, dataLen);
 	EEzspCmd l_cmd;
 
-	//clogD << "NCP->host EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+	//clogD << "NCP->host EZSP message " << ezspMessage << "\n";
 
 	/* Note: this code will handle all successfully decoded incoming EZSP messages */
 	/* It won't be run in bootloader prompt mode, because the ASH driver is then disabled */
@@ -215,7 +261,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	}
 	/* Got an correct incoming EZSP message... will be forwarded to the user */
 
-	//clogD << "EZSP message payload " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+	//clogD << "EZSP message payload " << ezspMessage << "\n";
 
 	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
 	if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
@@ -278,7 +324,7 @@ void CEzspDongle::sendNextMsg( void )
 		}
 		ezspMessage.append(l_msg.payload); /* Append payload at the end of li_data */
 
-		//clogD << "host->NCP EZSP message " << NSSPI::Logger::byteSequenceToString(ezspMessage) << "\n";
+		//clogD << "host->NCP EZSP message " << ezspMessage << "\n";
 
 		if (this->ash.sendDataFrame(ezspMessage)) {
 			this->wait_rsp = true;
@@ -421,4 +467,9 @@ bool CEzspDongle::knownEzspProtocolVersionLT(uint8_t maxExcludedVersion) const {
 		return false;	/* If we don't know the EZSP version, always return false */
 	}
 	return (this->version.ezspProtocolVersion < maxExcludedVersion);
+}
+
+CEzspDongle& CEzspDongle::operator=(CEzspDongle other) {
+	swap(*this, other);
+	return *this;
 }

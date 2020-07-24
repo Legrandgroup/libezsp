@@ -68,6 +68,11 @@ public:
 	CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
 	/**
+	 * @brief Destructor
+	 */
+	~CEzsp();
+
+	/**
 	 * @brief Startup the EZSP adapter
 	 *
 	 * @note Calling this method is required after instanciation and before any data is sent to/received from the EZSP adatper
@@ -218,7 +223,7 @@ public:
 	NSSPI::GenericAsyncDataInputObservable* getAdapterSerialReadObservable();
 
 private:
-	CLibEzspMain *main;
+	CLibEzspMain *main; /*!< A pointer to the enclosed CLibEzspMain instance */
 };
 } //namespace NSEZSP
 
