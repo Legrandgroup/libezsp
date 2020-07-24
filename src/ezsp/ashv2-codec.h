@@ -14,6 +14,12 @@
 #include "ezsp/enum-generator.h"
 
 namespace NSEZSP {
+	class AshCodec; // Forward declaration
+}
+
+void swap(NSEZSP::AshCodec& first, NSEZSP::AshCodec& second); /* Declaration before qualifying ::swap() as friend for class NSEZSP::AshCodec */
+
+namespace NSEZSP {
 
 class CAshCallback;     /* Forward declaration */
 
@@ -147,6 +153,17 @@ public:
 	 * @return A randomized buffer for transmission over a serial link
 	 */
 	static NSSPI::ByteBuffer dataRandomize(const NSSPI::ByteBuffer& i_data, uint8_t start = 0);
+
+	/**
+	 * @brief Swap function
+	 *
+	 * This function will swap all attributes of @p first and @p second
+	 * See http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	 *
+	 * @param first The first object
+	 * @param second The second object
+	 */
+	friend void (::swap)(NSEZSP::AshCodec& first, NSEZSP::AshCodec& second);
 
 protected:
 	void trigger(NSSPI::ITimer* triggeringTimer);

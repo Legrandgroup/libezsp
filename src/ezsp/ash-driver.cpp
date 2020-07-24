@@ -183,3 +183,18 @@ void AshDriver::appendIncoming(NSSPI::ByteBuffer& i_data) {
 bool AshDriver::isConnected() const {
 	return this->ashCodec.isInConnectedState();
 }
+
+/**
+ * This method is a friend of NSEZSP::AshDriver class
+ * swap() is needed within operator=() to implement to copy and swap paradigm
+**/
+void swap(AshDriver& first, AshDriver& second) /* nothrow */ {
+	using std::swap;	// Enable ADL
+	using ::swap;
+
+	swap(first.enabled, second.enabled);
+	swap(first.ackTimer, second.ackTimer);
+	swap(first.ashCodec, second.ashCodec);
+	swap(first.serialReadObservable, second.serialReadObservable);
+	swap(first.serialWriteFunc, second.serialWriteFunc);
+}
