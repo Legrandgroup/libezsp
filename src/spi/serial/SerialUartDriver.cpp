@@ -102,7 +102,7 @@ void SerialUartDriver::threadreader()
 int SerialUartDriver::write(size_t& writtenCnt, const uint8_t* buf, size_t cnt) {
 	try {
 #ifdef SERIAL_DEBUG
-		clogE << "Writing to serial port: " << NSSPI::Logger::byteSequenceToString(buf, cnt) << "\n";
+		clogD << "Writing to serial port: " << NSSPI::Logger::byteSequenceToString(buf, cnt) << "\n";
 #endif
 		writtenCnt =  this->m_serial_port.write(static_cast<const uint8_t*>(buf), cnt);
 	}
