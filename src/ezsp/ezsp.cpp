@@ -21,7 +21,8 @@ DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic);
 
 using NSEZSP::CEzsp;
 
-CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) {
+CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) :
+	main(nullptr) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << " constructor on instance " << static_cast<void *>(this) << "\n";
 #endif

@@ -68,6 +68,20 @@ public:
 	CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
 	/**
+	 * @brief Copy constructor
+	 * 
+	 * Copy construction is not allowed
+	 */
+	CEzsp(const CEzsp& other) = delete;
+
+	/**
+	 * @brief Assignment operator
+	 * 
+	 * Copy construction is not allowed
+	 */
+	CEzsp& operator=(CEzsp) = delete;
+
+	/**
 	 * @brief Destructor
 	 */
 	~CEzsp();

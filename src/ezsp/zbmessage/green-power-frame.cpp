@@ -18,6 +18,7 @@
 using NSEZSP::CGpFrame;
 
 CGpFrame::CGpFrame():
+	application_id(0),
 	link_value(0),
 	sequence_number(0),
 	source_id(0),
