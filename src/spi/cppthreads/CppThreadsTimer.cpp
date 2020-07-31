@@ -15,7 +15,8 @@ CppThreadsTimer::CppThreadsTimer() :
 	started(false),
 	waitingThread(),
 	cv(),
-	cv_m()
+	cv_m(),
+	callback(nullptr)
 {
 }
 
