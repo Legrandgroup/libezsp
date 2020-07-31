@@ -67,7 +67,7 @@ void swap(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second) { /* nothrow 
 #ifdef USE_RARITAN
 	/* We whould use swap() here to be exception safe but pp::Selector does not implement the swap() method */
 	/* Because we are dealing with references, there is no risk of exception during the following 3 lines, which is what we must ensure in this swap() method */
-	pp::Selector& tempFirst = temp.eventSelector;
+	pp::Selector& temp = first.eventSelector;
 	first.eventSelector = second.eventSelector;
 	second.eventSelector = temp;
 #endif
