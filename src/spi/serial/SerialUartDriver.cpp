@@ -43,11 +43,11 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	this->m_serial_port.setStopbits(serial::stopbits_one);
 	this->m_serial_port.setPort(serialPortName);
 
-/*
-	serial::Timeout timeout;
-	timeout.read_timeout_constant = 1;
-	timeout.write_timeout_constant = -1;
-*/
+	/*
+		serial::Timeout timeout;
+		timeout.read_timeout_constant = 1;
+		timeout.write_timeout_constant = -1;
+	*/
 	this->m_serial_port.setTimeout(serial::Timeout::max(), 1000, 0, -1, 0);
 	//this->m_serial_port.flush();
 
@@ -71,8 +71,7 @@ int SerialUartDriver::open(const std::string& serialPortName, unsigned int baudR
 	return 0;
 }
 
-void SerialUartDriver::threadreader()
-{
+void SerialUartDriver::threadreader() {
 	unsigned char buf[64];
 	size_t rdcnt;
 

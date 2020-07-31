@@ -60,8 +60,8 @@ int main() {
 	size_t written;
 	uartDriver.write(written, buf, 5);
 
-    pp::Selector eventSelector(*pp::SelectorSingleton::getInstance())
-    eventSelector.run();
+	pp::Selector eventSelector(*pp::SelectorSingleton::getInstance())
+	eventSelector.run();
 
 	return 0;
 }

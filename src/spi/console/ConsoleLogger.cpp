@@ -19,7 +19,7 @@ using NSSPI::ConsoleDebugLogger;
 using NSSPI::ConsoleTraceLogger;
 
 ConsoleStderrLogger::ConsoleStderrLogger(const LOG_LEVEL newLogLevel) :
-		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+	ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 void ConsoleStderrLogger::logf(const char *format, ...) {
@@ -42,7 +42,7 @@ int ConsoleStderrLogger::overflow(int c) {
 }
 
 ConsoleStdoutLogger::ConsoleStdoutLogger(const LOG_LEVEL newLogLevel) :
-		ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+	ILoggerStream(newLogLevel) { /* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 void ConsoleStdoutLogger::logf(const char *format, ...) {
@@ -72,12 +72,11 @@ static ConsoleDebugLogger consoleDebugLogger;	/* Create a unique instance of the
 static ConsoleTraceLogger consoleTraceLogger;	/* Create a unique instance of the ConsoleTraceLogger that will be used to handle trace logs */
 
 ConsoleLogger::ConsoleLogger():
-	ILogger(consoleErrorLogger, consoleWarningLogger, consoleInfoLogger, consoleDebugLogger, consoleTraceLogger)
-{
+	ILogger(consoleErrorLogger, consoleWarningLogger, consoleInfoLogger, consoleDebugLogger, consoleTraceLogger) {
 }
 
 ConsoleLogger::ConsoleLogger(ILoggerStream& newErrorLogger, ILoggerStream& newWarningLogger, ILoggerStream& newInfoLogger, ILoggerStream& newDebugLogger, ILoggerStream& newTraceLogger) :
-		ILogger(newErrorLogger, newWarningLogger, newInfoLogger, newDebugLogger, newTraceLogger) {
+	ILogger(newErrorLogger, newWarningLogger, newInfoLogger, newDebugLogger, newTraceLogger) {
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */

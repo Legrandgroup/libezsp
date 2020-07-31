@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # set the project name and version
-project(ezsp VERSION 2.1.0)
+project(ezsp VERSION 2.2.0)
 
 configure_file(version.h.in version.h)
 
