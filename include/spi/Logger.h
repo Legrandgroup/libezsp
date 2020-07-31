@@ -35,7 +35,7 @@ public:
 	 * @brief Utility function to dump a byte vector to a string
 	 *
 	 * @param[in] input The vector container to dump
-	 * 
+	 *
 	 * @return The instance provided in @p input as its string representation
 	 */
 	static std::string byteSequenceToString(const std::vector<uint8_t>& input);
@@ -45,7 +45,7 @@ public:
 	 *
 	 * @param[in] input The memory area to dump
 	 * @param size The number of bytes to dump from the @p input buffer
-	 * 
+	 *
 	 * @return The instance provided in @p input as its string representation
 	 */
 	static std::string byteSequenceToString(const uint8_t* input, size_t size);
@@ -54,7 +54,7 @@ public:
 	 * @brief Utility function to dump a byte array to a string
 	 *
 	 * @param[in] input The array container to dump
-	 * 
+	 *
 	 * @return The instance provided in @p input as its string representation
 	 */
 	template <std::size_t N>
@@ -75,7 +75,7 @@ public:
 	 * @brief Utility function to dump a byte buffer to a string
 	 *
 	 * @param[in] input The byte buffer container to dump
-	 * 
+	 *
 	 * @return The instance provided in @p input as its string representation
 	 */
 	static std::string byteSequenceToString(const NSSPI::ByteBuffer& input);

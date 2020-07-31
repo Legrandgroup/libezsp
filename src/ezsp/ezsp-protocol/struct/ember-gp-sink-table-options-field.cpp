@@ -22,14 +22,13 @@
 using NSEZSP::CEmberGpSinkTableOption;
 
 CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
-        application_id(),
-        communication_mode(),
-        sequence_number_capabilities(),
-        rx_on_capability(),
-        fixed_location(),
-        assigned_alias(),
-        security_use()
-{
+	application_id(),
+	communication_mode(),
+	sequence_number_capabilities(),
+	rx_on_capability(),
+	fixed_location(),
+	assigned_alias(),
+	security_use() {
 
 }
 
@@ -45,14 +44,13 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption() :
  *              - bit 10..15 : Reserved
  */
 CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint16_t i_options) :
-        application_id(static_cast<uint8_t>(i_options&0x7)),
-        communication_mode((static_cast<uint8_t>(i_options>>3)&0x3)),
-        sequence_number_capabilities((i_options&0x20)!=0),
-        rx_on_capability((i_options&0x40)!=0),
-        fixed_location((i_options&0x80)!=0),
-        assigned_alias((i_options&0x100)!=0),
-        security_use((i_options&0x200)!=0)
-{
+	application_id(static_cast<uint8_t>(i_options&0x7)),
+	communication_mode((static_cast<uint8_t>(i_options>>3)&0x3)),
+	sequence_number_capabilities((i_options&0x20)!=0),
+	rx_on_capability((i_options&0x40)!=0),
+	fixed_location((i_options&0x80)!=0),
+	assigned_alias((i_options&0x100)!=0),
+	security_use((i_options&0x200)!=0) {
 }
 
 /**
@@ -62,46 +60,44 @@ CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint16_t i_options) :
  * @param i_gpdf_commissioning_payload : permit to know capability of gpd
  */
 CEmberGpSinkTableOption::CEmberGpSinkTableOption(const uint8_t i_application_id, CGpdCommissioningPayload i_gpdf_commissioning_payload) :
-        application_id(i_application_id),
-        communication_mode(1),
-        sequence_number_capabilities(i_gpdf_commissioning_payload.isMACsequenceNumberCapability()),
-        rx_on_capability(i_gpdf_commissioning_payload.isRxOnCapability()),
-        fixed_location(i_gpdf_commissioning_payload.isFixedLocation()),
-        assigned_alias(0),
-        security_use(i_gpdf_commissioning_payload.isExtendedOptionsFieldPresent())
-{
+	application_id(i_application_id),
+	communication_mode(1),
+	sequence_number_capabilities(i_gpdf_commissioning_payload.isMACsequenceNumberCapability()),
+	rx_on_capability(i_gpdf_commissioning_payload.isRxOnCapability()),
+	fixed_location(i_gpdf_commissioning_payload.isFixedLocation()),
+	assigned_alias(0),
+	security_use(i_gpdf_commissioning_payload.isExtendedOptionsFieldPresent()) {
 
 }
 
 /**
  * raw getter
  */
-uint16_t CEmberGpSinkTableOption::get() const
-{
-    uint16_t o_options;
-    o_options = static_cast<uint16_t>(static_cast<uint16_t>(application_id) << 0);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(communication_mode) << 3);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(sequence_number_capabilities) << 5);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(rx_on_capability) << 6);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(fixed_location) << 7);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(assigned_alias) << 8);
-    o_options |= static_cast<uint16_t>(static_cast<uint16_t>(security_use) << 9);
+uint16_t CEmberGpSinkTableOption::get() const {
+	uint16_t o_options;
+	o_options = static_cast<uint16_t>(static_cast<uint16_t>(application_id) << 0);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(communication_mode) << 3);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(sequence_number_capabilities) << 5);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(rx_on_capability) << 6);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(fixed_location) << 7);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(assigned_alias) << 8);
+	o_options |= static_cast<uint16_t>(static_cast<uint16_t>(security_use) << 9);
 
-    return o_options;
+	return o_options;
 }
 
 std::string CEmberGpSinkTableOption::toString() const {
-    std::stringstream buf;
+	std::stringstream buf;
 
-    buf << "CEmberGpSinkTableOption : { ";
-    buf << "[application_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(application_id) << "]";
-    buf << "[communication_mode : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(communication_mode) << "]";
-    buf << "[sequence_number_capabilities : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(sequence_number_capabilities) << "]";
-    buf << "[rx_on_capability : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(rx_on_capability) << "]";
-    buf << "[fixed_location : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(fixed_location) << "]";
-    buf << "[assigned_alias : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(assigned_alias) << "]";
-    buf << "[security_use : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security_use) << "]";
-    buf << " }";
+	buf << "CEmberGpSinkTableOption : { ";
+	buf << "[application_id : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(application_id) << "]";
+	buf << "[communication_mode : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(communication_mode) << "]";
+	buf << "[sequence_number_capabilities : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(sequence_number_capabilities) << "]";
+	buf << "[rx_on_capability : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(rx_on_capability) << "]";
+	buf << "[fixed_location : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(fixed_location) << "]";
+	buf << "[assigned_alias : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(assigned_alias) << "]";
+	buf << "[security_use : "<< std::hex << std::setw(2) << std::setfill('0') << unsigned(security_use) << "]";
+	buf << " }";
 
-    return buf.str();
+	return buf.str();
 }

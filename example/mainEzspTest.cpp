@@ -151,98 +151,96 @@ static int appendSourceIdToRemovedDevList(const char* devSpecs, std::vector<uint
 }
 
 int main(int argc, char **argv) {
-    NSSPI::TimerBuilder timerBuilder;
-    int optionIndex=0;
-    int c;
-    bool debugEnabled = false;
-    bool switchToFirmwareUpgradeMode = false;
-    std::vector<NSEZSP::CGpDevice> gpAddedDevDataList;
-    std::vector<uint32_t> gpRemovedDevDataList;
-    bool removeAllGpDevs = false;
-    unsigned int resetToChannel = 0;
-    std::string serialPort("/dev/ttyUSB0");
-    bool openGpCommissionningAtStartup = false;
-    bool openZigbeeNetworkAtStartup = false;
+	NSSPI::TimerBuilder timerBuilder;
+	int optionIndex=0;
+	int c;
+	bool debugEnabled = false;
+	bool switchToFirmwareUpgradeMode = false;
+	std::vector<NSEZSP::CGpDevice> gpAddedDevDataList;
+	std::vector<uint32_t> gpRemovedDevDataList;
+	bool removeAllGpDevs = false;
+	unsigned int resetToChannel = 0;
+	std::string serialPort("/dev/ttyUSB0");
+	bool openGpCommissionningAtStartup = false;
+	bool openZigbeeNetworkAtStartup = false;
 	bool displayNetworkKey = false;
-    uint8_t authorizeChRqstAnswerTimeout = 0U;
-    int baudrate = 115200;
+	uint8_t authorizeChRqstAnswerTimeout = 0U;
+	int baudrate = 115200;
 
-    static struct option longOptions[] = {
-        {"reset-to-channel", 1, nullptr, 'c'},
-        {"source-id", 1, nullptr, 's'},
-        {"baudrate", 1, nullptr, 'b'},
-        {"remove-source-id", 1, nullptr, 'r'},
-        {"serial-port", 1, nullptr, 'u'},
-        {"open-zigbee", 0, nullptr, 'Z'},
+	static struct option longOptions[] = {
+		{"reset-to-channel", 1, nullptr, 'c'},
+		{"source-id", 1, nullptr, 's'},
+		{"baudrate", 1, nullptr, 'b'},
+		{"remove-source-id", 1, nullptr, 'r'},
+		{"serial-port", 1, nullptr, 'u'},
+		{"open-zigbee", 0, nullptr, 'Z'},
 		{"show-nwk-key", 0, nullptr, 'k'},
-        {"open-gp-commissionning", 0, nullptr, 'G'},
-        {"authorize-ch-request-answer", 1, nullptr, 'C'},
-        {"firmware-upgrade", 0, nullptr, 'w'},
-        {"debug", 0, nullptr, 'd'},
-        {"help", 0, nullptr, 'h'},
-        {nullptr, 0, nullptr, 0}
-    };
-    while ( (c = getopt_long(argc, argv, "dhwZkGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
-        switch (c) {
-            case 's':
-            {
-                int result = appendSourceIdToAddedDevList(::optarg, gpAddedDevDataList);
-                if (result != 0) {
-                    return result;
-                }
-            }
-            break;
-            case 'r':
-            {
-                int result = appendSourceIdToRemovedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
-                if (result != 0) {
-                    return result;
-                }
-            }
-            break;
-            case 'b':
-                baudrate = strtol(::optarg, nullptr, 10);
-                break;
-            case 'u':
-                serialPort = ::optarg;
-                break;
-            case 'c':
-                std::stringstream(::optarg) >> resetToChannel;
-                break;
-            case 'G':
-                openGpCommissionningAtStartup = true;
-                break;
-            case 'C':
-                authorizeChRqstAnswerTimeout = std::stoi(::optarg);
-                break;
-            case 'Z':
-                openZigbeeNetworkAtStartup = true;
-                break;
-			case 'k':
-				displayNetworkKey = true;
-				break;
-            case 'w':
-                switchToFirmwareUpgradeMode = true;
-                break;
-            case 'd':
-                debugEnabled = true;
-                break;
-            case 'h':
-                writeUsage(std::string(argv[0]), stdout);
-                return 0;
-            case '?':
-            default:
-                std::cerr << "Unsupported command-line option. Exitting\n";
-                writeUsage(std::string(argv[0]), stdout);
-                return 1;
-        }
-    }
+		{"open-gp-commissionning", 0, nullptr, 'G'},
+		{"authorize-ch-request-answer", 1, nullptr, 'C'},
+		{"firmware-upgrade", 0, nullptr, 'w'},
+		{"debug", 0, nullptr, 'd'},
+		{"help", 0, nullptr, 'h'},
+		{nullptr, 0, nullptr, 0}
+	};
+	while ( (c = getopt_long(argc, argv, "dhwZkGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+		switch (c) {
+		case 's': {
+			int result = appendSourceIdToAddedDevList(::optarg, gpAddedDevDataList);
+			if (result != 0) {
+				return result;
+			}
+		}
+		break;
+		case 'r': {
+			int result = appendSourceIdToRemovedDevList(::optarg, gpRemovedDevDataList, removeAllGpDevs);
+			if (result != 0) {
+				return result;
+			}
+		}
+		break;
+		case 'b':
+			baudrate = strtol(::optarg, nullptr, 10);
+			break;
+		case 'u':
+			serialPort = ::optarg;
+			break;
+		case 'c':
+			std::stringstream(::optarg) >> resetToChannel;
+			break;
+		case 'G':
+			openGpCommissionningAtStartup = true;
+			break;
+		case 'C':
+			authorizeChRqstAnswerTimeout = std::stoi(::optarg);
+			break;
+		case 'Z':
+			openZigbeeNetworkAtStartup = true;
+			break;
+		case 'k':
+			displayNetworkKey = true;
+			break;
+		case 'w':
+			switchToFirmwareUpgradeMode = true;
+			break;
+		case 'd':
+			debugEnabled = true;
+			break;
+		case 'h':
+			writeUsage(std::string(argv[0]), stdout);
+			return 0;
+		case '?':
+		default:
+			std::cerr << "Unsupported command-line option. Exitting\n";
+			writeUsage(std::string(argv[0]), stdout);
+			return 1;
+		}
+	}
 
-    NSSPI::Logger::getInstance()->setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
+	NSSPI::Logger::getInstance()->setLogLevel(debugEnabled ? NSSPI::LOG_LEVEL::DEBUG : NSSPI::LOG_LEVEL::INFO);
 
-    clogI << "Starting ezsp test program (info)\n";
+	clogI << "Starting ezsp test program (info)\n";
 
-    NSSPI::IUartDriverHandle uartHandle = NSSPI::UartDriverBuilder().create();
+	NSSPI::IUartDriverHandle uartHandle = NSSPI::UartDriverBuilder().create();
 
 	if (uartHandle->open(serialPort, baudrate) != 0) {
 		clogE << "Failed opening serial port. Aborting\n";
@@ -250,62 +248,63 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef USE_CPPTHREADS
-    auto sighandler = [](int signalCaught) {
-      stop = true;
-      cv.notify_one();
-    };
-    std::signal(SIGINT, sighandler);
+	auto sighandler = [](int signalCaught) {
+		stop = true;
+		cv.notify_one();
+	};
+	std::signal(SIGINT, sighandler);
 #endif
 	NSEZSP::CEzsp lib_main(uartHandle, timerBuilder, resetToChannel);	/* If a channel was provided, reset the network and recreate it on the provided channel */
 	NSMAIN::MainStateMachine fsm(timerBuilder, lib_main, openGpCommissionningAtStartup, authorizeChRqstAnswerTimeout, openZigbeeNetworkAtStartup, removeAllGpDevs, gpAddedDevDataList, gpRemovedDevDataList, displayNetworkKey, switchToFirmwareUpgradeMode);
-    auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
-        bool terminate = false; /* Shall we terminate the current process? */
-        bool failure = false;   /* Shall we exit with a failure? */
-        if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR) {
-            terminate = true;
-            failure = false;
-        }
-        try {
-                fsm.ezspStateChangeCallback(i_state);
-        } catch (const std::exception& e) {
-            clogE << "Aborting\n";
-            terminate = true;
-            failure = true;
-        }
-        if (terminate) {
+	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
+		bool terminate = false; /* Shall we terminate the current process? */
+		bool failure = false;   /* Shall we exit with a failure? */
+		if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR) {
+			terminate = true;
+			failure = false;
+		}
+		try {
+			fsm.ezspStateChangeCallback(i_state);
+		}
+		catch (const std::exception& e) {
+			clogE << "Aborting\n";
+			terminate = true;
+			failure = true;
+		}
+		if (terminate) {
 #ifdef USE_RARITAN
-            exit(failure?1:0);
+			exit(failure?1:0);
 #endif
 #ifdef USE_CPPTHREADS
-            stop = true;
-            cv.notify_one();
+			stop = true;
+			cv.notify_one();
 #endif
-        }
-    };
-    lib_main.registerLibraryStateCallback(clibobs);
+		}
+	};
+	lib_main.registerLibraryStateCallback(clibobs);
 
-    auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
-            fsm.onReceivedGPFrame(i_gpf);
-    };
-    lib_main.registerGPFrameRecvCallback(gprecvobs);
+	auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
+		fsm.onReceivedGPFrame(i_gpf);
+	};
+	lib_main.registerGPFrameRecvCallback(gprecvobs);
 
-    // Sample incoming greenpower sourceId callback
-    // auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
-    //     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
-    //              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
-    //              "\n";
-    // };
-    // lib_main.registerGPSourceIdCallback(cgpidobs);
-    lib_main.start();
+	// Sample incoming greenpower sourceId callback
+	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
+	//     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<
+	//              ", known: " << (i_gpd_known?"true":"false") << ", key status: " <<  std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpd_key_status) <<
+	//              "\n";
+	// };
+	// lib_main.registerGPSourceIdCallback(cgpidobs);
+	lib_main.start();
 
 #ifdef USE_RARITAN
-    pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
-    eventSelector.run();
+	pp::Selector& eventSelector(*pp::SelectorSingleton::getInstance());
+	eventSelector.run();
 #endif
 #ifdef USE_CPPTHREADS
-    std::unique_lock<std::mutex> lk(m);
-    cv.wait(lk, []{return stop;});
+	std::unique_lock<std::mutex> lk(m);
+	cv.wait(lk, [] {return stop;});
 #endif
-    clogI << "goodbye" << std::endl;
-    return 0;
+	clogI << "goodbye" << std::endl;
+	return 0;
 }

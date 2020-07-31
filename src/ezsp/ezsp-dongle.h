@@ -52,7 +52,7 @@ public:
 
 	CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
 	CEzspDongle() = delete; // Construction without arguments is not allowed
-	
+
 	/**
 	 * \brief Copy constructor
 	 *

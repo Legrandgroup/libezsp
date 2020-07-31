@@ -1,6 +1,6 @@
 /**
  * @file Logger.cpp
- * 
+ *
  * @brief Singleton logger
  */
 
@@ -25,21 +25,18 @@ using NSSPI::ILogger;
 
 NSSPI::ILoggerInstance Logger::mInstance;
 
-ILogger *Logger::getInstance()
-{
+ILogger *Logger::getInstance() {
 	static NSSPI::LoggerInstance logger;
 
 	static bool static_init = []()->bool {
-		mInstance = NSSPI::ILoggerInstance(&logger, [](ILogger* ptr)
-        {
-        });
+		mInstance = NSSPI::ILoggerInstance(&logger, [](ILogger* ptr) {
+		});
 		return true;
 	}();
 	return mInstance.get();
 }
 
-std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
-{
+std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input) {
 	std::ostringstream result;
 
 	for(auto it=std::begin(input); it<std::end(input); it++) {
@@ -51,8 +48,7 @@ std::string Logger::byteSequenceToString(const std::vector<uint8_t>& input)
 	return result.str();
 }
 
-std::string Logger::byteSequenceToString(const uint8_t* input, size_t size)
-{
+std::string Logger::byteSequenceToString(const uint8_t* input, size_t size) {
 
 	std::ostringstream result;
 

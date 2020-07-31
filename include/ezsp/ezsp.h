@@ -192,11 +192,11 @@ public:
 
 	/**
 	 * @brief Get the value of the current network encryption key
-	 * 
+	 *
 	 * @param networkKeyCallback A callback function of type void func(EEmberStatus status, const CEmberKeyStruct& key) that will be invoked with the result of the query.
 	 *                           The first argument of the callback is an EEmberStatus indicating whether the request was successful or not
 	 *                           The second argument of the callback is a CEmberKeyStruct containing the network key details (only valid if EEmberStatus is set to EEmberStatus::EMBER_SUCCESS)
-	 * 
+	 *
 	 * @return true if the action was taken into account, false otherwise (adapter is not ready)
 	 */
 	bool getNetworkKey(FNetworkKeyCallback networkKeyCallback);

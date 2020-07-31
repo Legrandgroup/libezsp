@@ -19,8 +19,8 @@ using NSSPI::MockUartScheduledByteDelivery;
 using NSSPI::GenericAsyncDataInputObservable;
 
 MockUartScheduledByteDelivery::MockUartScheduledByteDelivery(const NSSPI::ByteBuffer& scheduledBuffer, const std::chrono::milliseconds& scheduleDelay) :
-delay(scheduleDelay),
-byteBuffer(scheduledBuffer) { }
+	delay(scheduleDelay),
+	byteBuffer(scheduledBuffer) { }
 
 MockUartDriver::MockUartDriver(std::function<int (size_t& writtenCnt, const void* buf, size_t cnt, std::chrono::duration<double, std::milli> delta)> onWriteCallback) :
 	readBytesThread(),

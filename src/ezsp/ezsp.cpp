@@ -1,8 +1,8 @@
 /**
  * @file ezsp.cpp
- * 
+ *
  * @brief Facade for NSEZSP::CLibEzspMain, hiding its internals from the published headers
- * 
+ *
  * @note In order to verbosely trace all API calls, use compiler directive TRACE_API_CALLS when compiling this code
  */
 
@@ -120,7 +120,7 @@ bool CEzsp::addGPDevices(const std::vector<CGpDevice> &gpDevicesList) {
 	return main->addGPDevices(gpDevicesList);
 }
 
-bool CEzsp::openCommissioningSession(){
+bool CEzsp::openCommissioningSession() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
 #endif

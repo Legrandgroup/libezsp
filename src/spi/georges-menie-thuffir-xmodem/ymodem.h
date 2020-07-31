@@ -36,13 +36,13 @@
  * YMODEM Transmit (Single file)
  **********************************************************************************************************************/
 int YmodemTransmit(
-  /* File Name */
-  char *fileName,
-  /* Function pointer for fetching the data chunks to be sent or NULL*/
-  FetchChunkType fetchChunk,
-  /* If fetchChunk is NULL, pointer to the buffer to be sent, else function context pointer to pass to fetchChunk() */
-  void *ctx,
-  /* Number of bytes to send */
-  int size);
+    /* File Name */
+    char *fileName,
+    /* Function pointer for fetching the data chunks to be sent or NULL*/
+    FetchChunkType fetchChunk,
+    /* If fetchChunk is NULL, pointer to the buffer to be sent, else function context pointer to pass to fetchChunk() */
+    void *ctx,
+    /* Number of bytes to send */
+    int size);
 
 #endif // YMODEM_H_

@@ -10,20 +10,17 @@ using NSEZSP::CGpDevice;
 using NSEZSP::EmberKeyData;
 
 CGpDevice::CGpDevice(uint32_t i_source_id, const EmberKeyData& i_key) :
-    source_id(i_source_id),
+	source_id(i_source_id),
 	key(i_key),
 	option(0x02A8),
-	security_option(0x12)
-{
+	security_option(0x12) {
 }
 
-uint32_t CGpDevice::getSourceId() const
-{
+uint32_t CGpDevice::getSourceId() const {
 	return this->source_id;
 }
 
-EmberKeyData CGpDevice::getKey() const
-{
+EmberKeyData CGpDevice::getKey() const {
 	return this->key;
 }
 

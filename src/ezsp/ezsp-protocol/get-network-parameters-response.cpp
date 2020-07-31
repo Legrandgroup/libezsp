@@ -18,15 +18,14 @@ CGetNetworkParametersResponse::CGetNetworkParametersResponse(const NSSPI::ByteBu
 {
 }
 
-std::string CGetNetworkParametersResponse::String() const
-{
-    std::stringstream buf;
+std::string CGetNetworkParametersResponse::String() const {
+	std::stringstream buf;
 
-    buf << "GetNetworkParametersResponse : { ";
-    buf << "[status : "<< CEzspEnum::EEmberStatusToString(status) << "]";
-    buf << "[modeType : "<< CEzspEnum::EmberNodeTypeToString(node_type) << "]";
+	buf << "GetNetworkParametersResponse : { ";
+	buf << "[status : "<< CEzspEnum::EEmberStatusToString(status) << "]";
+	buf << "[modeType : "<< CEzspEnum::EmberNodeTypeToString(node_type) << "]";
 	buf << "["<< parameters.toString() << "]";
-    buf << " }";
+	buf << " }";
 
-    return buf.str();
+	return buf.str();
 }
