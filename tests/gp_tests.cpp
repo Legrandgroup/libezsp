@@ -47,7 +47,7 @@ public:
 		nbReadCallbacks(0),
 		stageExpectedTransitions(stageTransitionExpectedList),
 		expectedTransitionsRawAshFormat(interpretTransitionsAsRawAshFormat) {
-		}
+	}
 
 	/**
 	 * @brief Copy constructor
@@ -150,7 +150,7 @@ public:
 
 	/**
 	 * @brief Set the serial async observable that will notify us of new incoming ASH bytes
-	 * 
+	 *
 	 * @param serialReadObservable An optional observable object used to be notified about new incoming bytes received on the serial port (or nullptr to disable read)
 	 */
 	void registerSerialReadObservable(NSSPI::GenericAsyncDataInputObservable* serialReadObservable) {
