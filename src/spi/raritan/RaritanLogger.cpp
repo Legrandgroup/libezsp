@@ -17,9 +17,9 @@ using NSSPI::RaritanDebugLogger;
 using NSSPI::RaritanLogger;
 
 RaritanGenericLogger::RaritanGenericLogger(const LOG_LEVEL newLogLevel) :
-		ILoggerStream(newLogLevel),
-		m_buffer()	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
-{ /* Set the parent classes' logger's level to what has been provided as constructor's argument */
+	ILoggerStream(newLogLevel),
+	m_buffer() {	/* TODO: pre-allocate the buffer to a default size to avoid reallocs on the fly */
+	/* Set the parent classes' logger's level to what has been provided as constructor's argument */
 }
 
 int RaritanGenericLogger::overflow(int c) {
@@ -80,12 +80,11 @@ static RaritanDebugLogger raritanDebugLogger;	/* Create a unique instance of the
 //static RaritanTraceLogger raritanTraceLogger;	/* Create a unique instance of the RaritanTraceLogger that will be used to handle trace logs */
 
 RaritanLogger::RaritanLogger():
-	ILogger(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanDebugLogger, raritanDebugLogger)
-{
+	ILogger(raritanErrorLogger, raritanWarningLogger, raritanInfoLogger, raritanDebugLogger, raritanDebugLogger) {
 }
 
 RaritanLogger::RaritanLogger(ILoggerStream& usedErrorLogger, ILoggerStream& usedWarningLogger, ILoggerStream& usedInfoLogger, ILoggerStream& usedDebugLogger, ILoggerStream& usedTraceLogger) :
-		ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
+	ILogger(usedErrorLogger, usedWarningLogger, usedInfoLogger, usedDebugLogger, usedTraceLogger) {
 }
 
 /* Create unique (global) instances of each logger type, and store them inside the ILogger (singleton)'s class static attribute */

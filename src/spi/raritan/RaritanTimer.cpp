@@ -5,7 +5,7 @@
  */
 
 #include "RaritanTimer.h"
-#include "spi/Logger.h"
+#include "spi/ILogger.h"
 
 using NSSPI::RaritanTimer;
 using NSSPI::ITimer;

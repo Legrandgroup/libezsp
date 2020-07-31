@@ -1,5 +1,5 @@
 # libezsp
-[![Build Status](https://travis-ci.org/Legrandgroup/libezsp.svg?branch=release)](https://travis-ci.org/Legrandgroup/libezsp)
+[![Build Status](https://travis-ci.org/Legrandgroup/libezsp.svg?branch=master)](https://travis-ci.org/Legrandgroup/libezsp)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=legrandgroup_libezsp&metric=alert_status)](https://sonarcloud.io/dashboard?id=legrandgroup_libezsp)
 
 C++ library to send/receive wireless traffic to/from a UART transceiver using the EZSP protocol from Silicon Labs.

@@ -68,9 +68,9 @@ std::string EzspAdapterVersion::getStackVersionAsString() const {
 }
 
 std::string EzspAdapterVersion::toString() const {
-    std::stringstream buf;
+	std::stringstream buf;
 
-    buf << "EzspAdapterVersion : { ";
+	buf << "EzspAdapterVersion : { ";
 	if (this->xncpManufacturerId != static_cast<uint16_t>(Manufacturer::UNKNOWN)) {
 		buf << "[Manufacturer: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->xncpManufacturerId);
 		if (this->xncpManufacturerId == static_cast<uint16_t>(Manufacturer::LEGRAND)) {
@@ -102,9 +102,9 @@ std::string EzspAdapterVersion::toString() const {
 			buf << ", fw v" << this->getFirmwareVersionAsString() << "]";
 		}
 	}
-    buf << " }";
+	buf << " }";
 
-    return buf.str();
+	return buf.str();
 }
 
 /* External friend operators handling EzspAdapterVersion objects */

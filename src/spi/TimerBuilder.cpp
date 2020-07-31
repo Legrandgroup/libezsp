@@ -61,7 +61,7 @@ std::unique_ptr<ITimer> TimerBuilder::create() const {
 /**
  * This method is a friend of NSSPI::TimerBuilder class
 **/
-void swap(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second) /* nothrow */ {
+void swap(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second) { /* nothrow */
 	using std::swap;	// Enable ADL
 
 #ifdef USE_RARITAN

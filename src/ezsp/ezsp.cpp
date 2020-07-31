@@ -1,8 +1,8 @@
 /**
  * @file ezsp.cpp
- * 
+ *
  * @brief Facade for NSEZSP::CLibEzspMain, hiding its internals from the published headers
- * 
+ *
  * @note In order to verbosely trace all API calls, use compiler directive TRACE_API_CALLS when compiling this code
  */
 
@@ -21,7 +21,8 @@ DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic);
 
 using NSEZSP::CEzsp;
 
-CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) {
+CEzsp::CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) :
+	main(nullptr) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << " constructor on instance " << static_cast<void *>(this) << "\n";
 #endif
@@ -120,7 +121,7 @@ bool CEzsp::addGPDevices(const std::vector<CGpDevice> &gpDevicesList) {
 	return main->addGPDevices(gpDevicesList);
 }
 
-bool CEzsp::openCommissioningSession(){
+bool CEzsp::openCommissioningSession() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
 #endif

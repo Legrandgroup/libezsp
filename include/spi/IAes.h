@@ -23,6 +23,8 @@ public:
 
 	IAes() = default;
 
+	virtual ~IAes() = default;
+
 	virtual void set_key( const uint8_t key[IAes::AES_KEY_SIZE] ) = 0;
 	virtual void set_key( const NSEZSP::EmberKeyData& key ) = 0;
 	virtual bool encrypt( const unsigned char in[IAes::AES_BLOCK_SIZE], unsigned char out[IAes::AES_BLOCK_SIZE] ) = 0;

@@ -1,0 +1,64 @@
+v2.2.0 - Improving ASH decoding and forcing dynamic allocation for libezsp instances by default
+31 Jul 2020
+
+Fixing ITimer's timeout value from type uint16_t to uint32_t
+Using dynamic allocation for libezsp instances rather than a singleton pattern. This allows to re-init the library or support more than one dongle (in theory)
+Supporting multiple EZSP payload extracts from one ash stream
+Adding libEzsp.getNetworkKey() to API (accessible via mainEzspTest's -k switch)
+Implementing operator<<() on a few classes, including ByteBuffer to allow for easier buffer dump to logs.
+Implementing swap operator on main classes.
+
+---
+
+v2.1.0 - Access to dongle hw/sw/stack versions
+14 May 2020
+
+Example on how to do this can be found here:
+https://github.com/Legrandgroup/libezsp/blob/8571574085160bc71177f68795f09b17b3c2ad7f/example/mainEzspStateMachine.h#L105
+
+Note you should check that the libezsp library exports its NSEZSP::CLibEzspState state as NSEZSP::CLibEzspState::READY before you invoke NSEZSP::CEzsp::getAdapterVersion() or you might get an empty or incomplete version returned.
+
+--
+
+v2.0.0 - Library major re-architecture and full Green Power support
+23 Apr 2020
+
+Main re-architecture for file structure and classes, using a facade pattern to hide libezsp's internal from the user code.
+Switching to cmake for build auto-configuration.
+Building a shared libezsp library (also with an internal library for SPIs libezspspi), and adding a make install target also publishing header files.
+Adding support for secure MSP channel request from GPDs, allowing channel request support with sensors (proprietary, secure, exchange).
+Allowing to remove GPDs from mainEzspTest command-line arguments.
+Adding an AES SPI (for a future compatibility with other third-party AES crypto libs).
+Adding firmware upgrade mode feature and bootloader prompt escape capability.
+Supporting full GP, including MIC validation.
+Also adding CI using travils+sonarcloud and coverage checking using gcov.
+Updating unit tests, using a mock serial SPI.
+Added many command-line options to sample mainEzspTest.
+Supports custom baudrates on adapter (including 115200 which is now the default)
+Allowing on-host or offloaded (on-adapter) MIC calculation.
+
+---
+
+v1.1.0 - Support for GP filtering embedded in the dongle and over the air or offline commissionning
+22 Nov 2019
+
+Adding support for Green Power devices filtering on source IDs directly inside the EZSP firmware embedded in the dongle.
+Also checking MIC against GP keys and only forwarding valid messages to the caller.
+
+Manual GP commissionning is functional.
+Offline (preset of source ID and keys) commissionning is function also.
+
+---
+
+v1.0.1 - Support for sample GPD sensors
+25 Jul 2019
+
+Adding support for Green Power devices (currently hacked to force filtering inside the lib because of a bug in the dongle's firmware)
+Adding command-line options for sample executable
+
+---
+
+v1.0.0 - Support for Zigbee 3.0 and build for a sample executable
+5 Jun 2019
+
+Support for Zigbee 3.0 and build for a sample executable.
