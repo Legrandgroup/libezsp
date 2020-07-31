@@ -1,3 +1,15 @@
+v2.2.0 - Improving ASH decoding and forcing dynamic allocation for libezsp instances by default
+31 Jul 2020
+
+Fixing ITimer's timeout value from type uint16_t to uint32_t
+Using dynamic allocation for libezsp instances rather than a singleton pattern. This allows to re-init the library or support more than one dongle (in theory)
+Supporting multiple EZSP payload extracts from one ash stream
+Adding libEzsp.getNetworkKey() to API (accessible via mainEzspTest's -k switch)
+Implementing operator<<() on a few classes, including ByteBuffer to allow for easier buffer dump to logs.
+Implementing swap operator on main classes.
+
+---
+
 v2.1.0 - Access to dongle hw/sw/stack versions
 14 May 2020
 
