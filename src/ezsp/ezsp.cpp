@@ -100,7 +100,7 @@ bool CEzsp::removeGPDevices(const std::vector<uint32_t>& sourceIdList) {
 		if (it != sourceIdList.begin()) {
 			sourceIdListAsStr << ",";
 		}
-		sourceIdListAsStr << *it;
+		sourceIdListAsStr << "0x" << std::hex << std::setw(8) << std::setfill('0') << *it;
 	}
 	clogD << "->API call " << __func__ << "([" << sourceIdListAsStr.str() << "])\n";
 #endif
