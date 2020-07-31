@@ -65,7 +65,11 @@ void swap(NSSPI::TimerBuilder& first, NSSPI::TimerBuilder& second) { /* nothrow 
 	using std::swap;	// Enable ADL
 
 #ifdef USE_RARITAN
-	swap(first.eventSelector, second.eventSelector);
+	/* We whould use swap() here to be exception safe but pp::Selector does not implement the swap() method */
+	/* Because we are dealing with references, there is no risk of exception during the following 3 lines, which is what we must ensure in this swap() method */
+	pp::Selector& tempFirst = temp.eventSelector;
+	first.eventSelector = second.eventSelector;
+	second.eventSelector = temp;
 #endif
 	/* Once we have swapped the members of the two instances... the two instances have actually been swapped */
 }
