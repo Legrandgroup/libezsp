@@ -22,7 +22,6 @@
 #include <ezsp/ezsp-adapter-version.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
-#include "ezsp/ezsp-protocol/struct/ember-zigbee-network.h"	// For CEmberZigbeeNetwork
 
 namespace NSMAIN {
     class MainStateMachine;
@@ -30,12 +29,26 @@ namespace NSMAIN {
 
 namespace NSEZSP {
 
+class CEmberZigbeeNetwork;	// Forward declaration of this class that is internal and thus should remain opaque
+
 class ZigbeeNetworkScanResult {
 public:
 	/**
 	 * @brief Constructor
 	 */
 	ZigbeeNetworkScanResult(NSEZSP::CEmberZigbeeNetwork& networkDetails, uint8_t lastHopLqi, int8_t lastHopRssi);
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * @param other The object to copy from
+	 */
+	ZigbeeNetworkScanResult(const ZigbeeNetworkScanResult& other);
+
+	/**
+	 * @brief Destructor
+	 */
+	~ZigbeeNetworkScanResult();
 
 	/**
 	 * @brief Dump this instance as a string
@@ -58,7 +71,7 @@ public:
 	}
 
 /* Attributes */
-	NSEZSP::CEmberZigbeeNetwork networkDetails;	/*!< The data describing a discovered zigbee network */
+	NSEZSP::CEmberZigbeeNetwork* networkDetails;	/*!< The data describing a discovered zigbee network */
 	uint8_t lastHopLqi;	/*!< The LQI of the last hop to the discovered network */
 	int8_t lastHopRssi;	/*!< The RSSI of the last hop to the discovered network */
 };

@@ -6,38 +6,51 @@
  * @note In order to verbosely trace all API calls, use compiler directive TRACE_API_CALLS when compiling this code
  */
 
-//#define TRACE_API_CALLS
+#define TRACE_API_CALLS
 #define DYNAMIC_ALLOCATION
+
+#include <sstream>
+#include <iomanip>
 
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
 #ifdef TRACE_API_CALLS
-#include <sstream>
-#include <iomanip>
 #include "spi/ILogger.h"
 #endif
+
+#include "ezsp/ezsp-protocol/struct/ember-zigbee-network.h"	// For CEmberZigbeeNetwork
 
 DEFINE_ENUM(State, CLIBEZSP_STATE_LIST, NSEZSP::CLibEzspPublic);
 
 using NSEZSP::ZigbeeNetworkScanResult;
 
 ZigbeeNetworkScanResult::ZigbeeNetworkScanResult(NSEZSP::CEmberZigbeeNetwork& networkDetails, uint8_t lastHopLqi, int8_t lastHopRssi) :
-	networkDetails(networkDetails),
+	networkDetails(new NSEZSP::CEmberZigbeeNetwork(networkDetails)),
 	lastHopLqi(lastHopLqi),
 	lastHopRssi(lastHopRssi) {
+}
+
+ZigbeeNetworkScanResult::ZigbeeNetworkScanResult(const ZigbeeNetworkScanResult& other) :
+	networkDetails(new NSEZSP::CEmberZigbeeNetwork(*(other.networkDetails))),
+	lastHopLqi(other.lastHopLqi),
+	lastHopRssi(other.lastHopRssi) {
+}
+
+ZigbeeNetworkScanResult::~ZigbeeNetworkScanResult() {
+	delete this->networkDetails;
 }
 
 std::string ZigbeeNetworkScanResult::toString() const {
 	std::stringstream buf;
 
 	buf << "ZigbeeNetworkScanResult: { ";
-	buf << "[channel: " << std::dec << std::setw(0) << static_cast<unsigned int>(this->networkDetails.channel) << "]";
+	buf << "[channel: " << std::dec << std::setw(0) << static_cast<unsigned int>(this->networkDetails->channel) << "]";
 	buf << "[lastHop: LQI="  << std::dec << std::setw(0) << static_cast<unsigned int>(this->lastHopLqi) << ", rssi=" << static_cast<int>(this->lastHopRssi) << "]";
-	buf << "[panId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails.panId) << "]";
-	buf << "[extendedPanId: " << NSSPI::ByteBuffer(this->networkDetails.extendedPanId) << "]";
-	buf << "[allowingJoin: " << std::string(this->networkDetails.allowingJoin?"true":"false") << "]";
-	buf << "[stackProfile: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails.stackProfile) << "]";
-	buf << "[nwkUpdateId: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails.nwkUpdateId) << "]";
+	buf << "[panId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->panId) << "]";
+	buf << "[extendedPanId: " << NSSPI::ByteBuffer(this->networkDetails->extendedPanId) << "]";
+	buf << "[allowingJoin: " << std::string(this->networkDetails->allowingJoin?"true":"false") << "]";
+	buf << "[stackProfile: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->stackProfile) << "]";
+	buf << "[nwkUpdateId: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->nwkUpdateId) << "]";
 	buf << " }";
 
 	return buf.str();
