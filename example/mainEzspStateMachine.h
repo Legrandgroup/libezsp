@@ -187,6 +187,7 @@ public:
 	void scanChannelsThenRun() {
 		this->currentState = MainState::SCAN_CHANNELS;
 
+		clogD << "Now scanning channels\n";
 		auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
 			std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, 20};
 			for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {
@@ -201,7 +202,20 @@ public:
 			this->ezspInitDone();
 		};
 
-		libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+		auto processActiveScanResults = [this](std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > channelToZigbeeNetwork) {
+			for (std::pair<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > scannedChannel : channelToZigbeeNetwork) {
+				uint8_t channel = scannedChannel.first;
+				const std::vector<NSEZSP::ZigbeeNetworkScanResult>& zigbeeNetworksOnChannel = scannedChannel.second;
+				clogI << static_cast<unsigned int>(zigbeeNetworksOnChannel.size()) << " zigbee network(s) found on channel " << std::dec << static_cast<unsigned int>(channel) << ":\n";
+				for (auto it = zigbeeNetworksOnChannel.begin(); it != zigbeeNetworksOnChannel.end(); ++it) {
+					clogI << "Network:" << *it << "\n";
+				}
+			}
+			/* No other startup operations required... move to run state */
+			this->ezspInitDone();
+		};
+		//libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+		libEzsp.startActiveScan(processActiveScanResults, 10, 1<<16);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
 		/* Switching to run state will be performed once scanning is done, in the processEnergyScanResults() callback above */
 	}
 

@@ -22,8 +22,46 @@
 #include <ezsp/ezsp-adapter-version.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
+#include "ezsp/ezsp-protocol/struct/ember-zigbee-network.h"	// For CEmberZigbeeNetwork
+
+namespace NSMAIN {
+    class MainStateMachine;
+}
 
 namespace NSEZSP {
+
+class ZigbeeNetworkScanResult {
+public:
+	/**
+	 * @brief Constructor
+	 */
+	ZigbeeNetworkScanResult(NSEZSP::CEmberZigbeeNetwork& networkDetails, uint8_t lastHopLqi, int8_t lastHopRssi);
+
+	/**
+	 * @brief Dump this instance as a string
+	 *
+	 * @return The resulting string
+	 */
+	std::string toString() const;
+
+	/**
+	 * @brief Serialize to an iostream
+	 *
+	 * @param out The original output stream
+	 * @param data The object to serialize
+	 *
+	 * @return The new output stream with serialized data appended
+	 */
+	friend std::ostream& operator<< (std::ostream& out, const ZigbeeNetworkScanResult& data) {
+		out << data.toString();
+		return out;
+	}
+
+/* Attributes */
+	NSEZSP::CEmberZigbeeNetwork networkDetails;	/*!< The data describing a discovered zigbee network */
+	uint8_t lastHopLqi;	/*!< The LQI of the last hop to the discovered network */
+	int8_t lastHopRssi;	/*!< The RSSI of the last hop to the discovered network */
+};
 
 #define CLIBEZSP_STATE_LIST(XX) \
 	XX(UNINITIALIZED,=1)                    /*<! Initial state, before starting. */ \
@@ -54,6 +92,7 @@ typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Cal
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
+typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
 typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
 
 class LIBEXPORT CEzsp {
@@ -197,12 +236,29 @@ public:
 	 *
 	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
 	 *
+	 * @param energyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>) that will be invoked when the energy scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
+	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
+	 *
+	 * @return true if the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+	 */
+	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
+
+	/**
+	 * @brief Start an active scan on the EZSP adapter
+	 *
+	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+	 *
+	 * @param activeScanCallback A callback function of type void func(std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScan>>) that will be invoked when the active scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (std::set<NSEZSP::ZigbeeNetworkScan>) being at set with descriptions of all zigbee networks found on that channel
 	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
 	 *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
 	 *
 	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
-	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+	bool startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
 
 	/**
 	 * @brief Get the value of the current network encryption key

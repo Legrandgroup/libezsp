@@ -261,7 +261,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	}
 	/* Got an correct incoming EZSP message... will be forwarded to the user */
 
-	//clogD << "EZSP message payload " << ezspMessage << "\n";
+	//clogD << "Received EZSP message payload " << ezspMessage << "\n";
 
 	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
 	if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
@@ -295,9 +295,11 @@ void CEzspDongle::sendNextMsg( void ) {
 		clogW << "Refusing to send EZSP messages in bootloader mode\n";
 		return; /* No EZSP message can be sent in bootloader mode */
 	}
+
 	if( (!wait_rsp) && (!sendingMsgQueue.empty()) ) {
 		SMsg l_msg = sendingMsgQueue.front();
 
+		clogD << "Sending to NCP EZSP command: " << l_msg.payload << "\n";
 		NSSPI::ByteBuffer ezspMessage;
 
 		// First, place the EZSP seq number byte
