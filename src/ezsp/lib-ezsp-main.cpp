@@ -393,7 +393,7 @@ void CLibEzspMain::setFirmwareUpgradeMode() {
 }
 
 bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration, uint32_t requestedChannelMask) {
-	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
@@ -416,7 +416,7 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
 }
 
 bool CLibEzspMain::startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration, uint32_t requestedChannelMask) {
-	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}

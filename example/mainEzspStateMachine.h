@@ -187,7 +187,7 @@ public:
 	void scanChannelsThenRun() {
 		this->currentState = MainState::SCAN_CHANNELS;
 
-		clogD << "Now scanning channels\n";
+		clogD << "Now scanning spectrum for clearest channel\n";
 		auto processEnergyScanResults = [this](std::map<uint8_t, int8_t> channelToEnergyScan) {
 			std::pair<uint8_t, int8_t> electedChannelRssi = {0xFF, 20};
 			for (std::pair<uint8_t, int8_t> scannedChannel : channelToEnergyScan) {

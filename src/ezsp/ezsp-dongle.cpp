@@ -299,7 +299,7 @@ void CEzspDongle::sendNextMsg( void ) {
 	if( (!wait_rsp) && (!sendingMsgQueue.empty()) ) {
 		SMsg l_msg = sendingMsgQueue.front();
 
-		clogD << "Sending to NCP EZSP command: " << l_msg.payload << "\n";
+		clogD << "Sending to NCP EZSP command: " << CEzspEnum::EEzspCmdToString(l_msg.i_cmd) << " with payload " << l_msg.payload << "\n";
 		NSSPI::ByteBuffer ezspMessage;
 
 		// First, place the EZSP seq number byte

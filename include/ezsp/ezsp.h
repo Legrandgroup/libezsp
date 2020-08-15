@@ -51,6 +51,20 @@ public:
 	~ZigbeeNetworkScanResult();
 
 	/**
+	 * @brief Get the network's PAN identifier
+	 *
+	 * @return The PAN ID
+	 */
+	uint16_t getPanId() const;
+
+	/**
+	 * @brief Get the network's extended PAN identifier
+	 *
+	 * @return The 64-bit extended PAN ID
+	 */
+	uint64_t getExtendedPanId() const;
+
+	/**
 	 * @brief Dump this instance as a string
 	 *
 	 * @return The resulting string

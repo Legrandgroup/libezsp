@@ -14,6 +14,7 @@
 
 #include "ezsp/ezsp.h"
 #include "ezsp/lib-ezsp-main.h"
+#include "ezsp/byte-manip.h"
 #ifdef TRACE_API_CALLS
 #include "spi/ILogger.h"
 #endif
@@ -40,6 +41,14 @@ ZigbeeNetworkScanResult::~ZigbeeNetworkScanResult() {
 	delete this->networkDetails;
 }
 
+uint16_t ZigbeeNetworkScanResult::getPanId() const {
+	return this->networkDetails->panId;
+}
+
+uint64_t ZigbeeNetworkScanResult::getExtendedPanId() const {
+	return this->networkDetails->extendedPanId;
+}
+
 std::string ZigbeeNetworkScanResult::toString() const {
 	std::stringstream buf;
 
@@ -47,7 +56,9 @@ std::string ZigbeeNetworkScanResult::toString() const {
 	buf << "[channel: " << std::dec << std::setw(0) << static_cast<unsigned int>(this->networkDetails->channel) << "]";
 	buf << "[lastHop: LQI="  << std::dec << std::setw(0) << static_cast<unsigned int>(this->lastHopLqi) << ", rssi=" << static_cast<int>(this->lastHopRssi) << "]";
 	buf << "[panId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->panId) << "]";
-	buf << "[extendedPanId: " << NSSPI::ByteBuffer(this->networkDetails->extendedPanId) << "]";
+	buf << "[extendedPanId: 0x" << std::hex
+	    << std::setw(8) << std::setfill('0') << u64_get_hi_u32(this->networkDetails->extendedPanId)
+	    << std::setw(8) << std::setfill('0') << u64_get_lo_u32(this->networkDetails->extendedPanId) << "]";
 	buf << "[allowingJoin: " << std::string(this->networkDetails->allowingJoin?"true":"false") << "]";
 	buf << "[stackProfile: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->stackProfile) << "]";
 	buf << "[nwkUpdateId: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->networkDetails->nwkUpdateId) << "]";
