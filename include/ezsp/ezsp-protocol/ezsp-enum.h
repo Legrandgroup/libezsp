@@ -370,6 +370,9 @@ typedef enum {
 	// A message cannot be sent because the network is currently overloaded
 	EMBER_NETWORK_BUSY = 0xA1U,
 
+	// There was an attempt to form or join a network with security without calling emberSetInitialSecurityState() first
+	EMBER_SECURITY_STATE_NOT_SET = 0xA8U,
+
 	// An attempt to join or rejoin the network failed because
 	// no router beacons could be heard by the joining node.
 	EMBER_NO_BEACONS = 0xABU,
