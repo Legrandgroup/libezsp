@@ -452,6 +452,14 @@ bool CLibEzspMain::setChannel(uint8_t channel) {
 	return true;
 }
 
+bool CLibEzspMain::joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams) {
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_nwk.joinNetwork(nwkParams);
+	return true;
+}
+
 void CLibEzspMain::handleFirmwareXModemXfr() {
 	this->setState(CLibEzspInternal::State::IN_XMODEM_XFR);
 	clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";

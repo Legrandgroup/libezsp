@@ -247,6 +247,16 @@ public:
 	 */
 	bool setChannel(uint8_t channel);
 
+	/**
+	 * @brief Join a zigbee network
+	 *
+	 * Causes the stack to associate with the network using the specified network parameters. It can take several seconds for the stack
+	 * to associate with the local network. Do not send messages until the stack is up.
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
+
 private:
 	NSSPI::IUartDriverHandle uartHandle; /*!< A handle to the UART driver */
 	const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
