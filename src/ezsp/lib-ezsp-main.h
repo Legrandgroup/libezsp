@@ -37,6 +37,7 @@ namespace NSEZSP {
 	XX(LEAVE_NWK_IN_PROGRESS,)              /*<! We are currently leaving the Zigbee network we previously joined */ \
 	XX(READY,)                              /*<! Library is ready to work and process new command */ \
 	XX(SCANNING,)                           /*<! An network scan in currently being run */ \
+	XX(JOINING,)                            /*<! A network join is pending */ \
 	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
 	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
 	XX(SWITCHING_TO_BOOTLOADER_MODE,)       /*<! Switch to bootloader is pending */ \

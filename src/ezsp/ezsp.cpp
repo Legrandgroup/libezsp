@@ -234,6 +234,31 @@ bool CEzsp::setChannel(uint8_t channel) {
 	return main->setChannel(channel);
 }
 
+bool CEzsp::joinNetwork(const uint64_t extendedPanId,
+                        const uint16_t panId,
+						const uint8_t channel,
+					    const NSEZSP::EmberJoinMethod joinMethod,
+						const uint32_t allowedChannels,
+						const uint8_t radioTxPower,
+						const NSEZSP::EmberNodeId nwkManagerId,
+						const uint8_t nwkUpdateId) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "(" << std::hex << std::setfill('0') << std::setw(16) << extendedPanId << ", " << std::setw(4) << panId << ", ...)\n";
+#endif
+	NSEZSP::CEmberNetworkParameters nwkParams;
+
+	nwkParams.setExtendPanId(extendedPanId);
+	nwkParams.setPanId(panId);
+	nwkParams.setJoinMethod(joinMethod);
+	nwkParams.setRadioChannel(channel);
+	nwkParams.setChannels(allowedChannels);
+	nwkParams.setRadioTxPower(radioTxPower);
+	nwkParams.setNwkManagerId(nwkManagerId);
+	nwkParams.setNwkUpdateId(nwkUpdateId);
+	
+	return main->joinNetwork(nwkParams);
+}
+
 NSSPI::GenericAsyncDataInputObservable* CEzsp::getAdapterSerialReadObservable() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
