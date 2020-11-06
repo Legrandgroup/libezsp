@@ -38,6 +38,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	obsGPSourceIdCallback(nullptr),
 	energyScanCallback(nullptr),
 	networkKeyCallback(nullptr),
+	leavePreviousNetworkAtInit(requestZbNetworkResetToChannel != 0),
 	resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
 	scanInProgress(false),
 	lastChannelToEnergyScan() {
@@ -119,6 +120,9 @@ void CLibEzspMain::setState(CLibEzspInternal::State i_new_state) {
 			break;
 		case CLibEzspInternal::State::IN_XMODEM_XFR:
 			obsStateCallback(CLibEzspPublic::State::IN_XMODEM_XFR);
+			break;
+		case CLibEzspInternal::State::TERMINATING:
+			obsStateCallback(CLibEzspPublic::State::TERMINATING);
 			break;
 		default:
 			clogE << "Internal state can not be translated to public state\n";
@@ -518,30 +522,37 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
 }
 
 void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive) {
-	if (this->getState() != CLibEzspInternal::State::STACK_INIT) {
-		clogW << "Got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT state... assuming stack has been initialized\n";
+	if (this->getState() != CLibEzspInternal::State::STACK_INIT
+	    && this->getState() != CLibEzspInternal::State::FORM_NWK_IN_PROGRESS
+	    && this->getState() != CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS) {
+		clogW << "Unexpectedly got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT or FORM_NWK_IN_PROGRESS or LEAVE_NWK_IN_PROGRESS state... assuming stack has been initialized. Ignoring...\n";
 	}
 	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << static_cast<unsigned int>(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getStateAsString(this->getState()) << "\n";
 	if (i_msg_receive.at(0) == EMBER_NO_NETWORK) {
 		/* No network exists on the dongle */
 		clogD << "No pre-existing network on the EZSP adapter\n";
-		if (this->resetDot154ChannelAtInit == 0) {
-			clogE << "No channel value has been provided and no network is configured in the adapter at init. Cannot continue initialization\n";
-			this->setState(CLibEzspInternal::State::INIT_FAILED);
+		if (this->resetDot154ChannelAtInit == static_cast<unsigned int>(-1)) {
+			/* We are outside of a network and we were actually asked to leave... just terminate now */
+			clogI << "Adapter is not in any network as requested. Terminating\n";
+			this->setState(CLibEzspInternal::State::TERMINATING);
+			return;
 		}
-		else {
-			/* We create a network on the required channel */
-			if (this->getState() == CLibEzspInternal::State::STACK_INIT) {
-				clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
-				zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
-				/* Update our internal state, we are now waiting for a network creation success (EZSP_STACK_STATUS_HANDLER with status==EMBER_NETWORK_UP */
-				this->setState(CLibEzspInternal::State::FORM_NWK_IN_PROGRESS);
-				this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
-			}
+		if (this->resetDot154ChannelAtInit == 0) {
+			clogE << "No channel value has been provided and the adapter has not currently joined any network. Cannot continue initialization\n";
+			this->setState(CLibEzspInternal::State::INIT_FAILED);
+			return;
+		}
+		/* We create a network on the required channel */
+		if (this->getState() == CLibEzspInternal::State::STACK_INIT) {
+			clogI << "Creating new network on channel " << static_cast<unsigned int>(this->resetDot154ChannelAtInit) << "\n";
+			zb_nwk.formHaNetwork(static_cast<uint8_t>(this->resetDot154ChannelAtInit));
+			/* Update our internal state, we are now waiting for a network creation success (EZSP_STACK_STATUS_HANDLER with status==EMBER_NETWORK_UP */
+			this->setState(CLibEzspInternal::State::FORM_NWK_IN_PROGRESS);
+			this->resetDot154ChannelAtInit = 0; /* Prevent any subsequent network re-creation */
 		}
 	}
 	else {
-		if ((this->getState() == CLibEzspInternal::State::STACK_INIT) && (this->resetDot154ChannelAtInit != 0)) {
+		if ((this->getState() == CLibEzspInternal::State::STACK_INIT) && this->resetDot154ChannelAtInit) {
 			clogI << "Zigbee reset requested... Leaving current network\n";
 			// leave current network
 			zb_nwk.leaveNetwork();

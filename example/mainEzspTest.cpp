@@ -52,7 +52,8 @@ static void writeUsage(const std::string& progname, FILE *f) {
 	::fprintf(f, "-C (--authorize-ch-request-answer) <time> : Allow answers to unauthenticated (maintenance) channel requests for 0<time<255 seconds.\n");
 	::fprintf(f, "                                            Note: responses to MSP authenticated requests is always allowed\n");
 	::fprintf(f, "-u (--serial-port) <port>                 : use a specific serial port (default: '/dev/ttyUSB0')\n");
-	::fprintf(f, "-c (--reset-to-channel) <channel>         : force re-creation of a network on the specified channel (discards previously existing network)\n");
+	::fprintf(f, "-l (--leave)                              : leave any potential previously joined network\n");
+	::fprintf(f, "-c (--create-on-channel) <channel>        : force re-creation of a network on the specified channel (discards previously existing network, so implies -l)\n");
 	::fprintf(f, "-r (--remove-source-id) <source_id>       : remove a specific device from the monitored list, based on its source-id, use * to remove all\n");
 	::fprintf(f, "                                            Note: repeated -r options are allowed\n");
 	::fprintf(f, "-s (--source-id) <source_id/key>          : adds a device to the monitored list, based on its source-id & key\n");
@@ -168,7 +169,8 @@ int main(int argc, char **argv) {
 	int baudrate = 115200;
 
 	static struct option longOptions[] = {
-		{"reset-to-channel", 1, nullptr, 'c'},
+		{"create-on-channel", 1, nullptr, 'c'},
+		{"leave", 0, nullptr, 'l'},
 		{"source-id", 1, nullptr, 's'},
 		{"baudrate", 1, nullptr, 'b'},
 		{"remove-source-id", 1, nullptr, 'r'},
@@ -182,7 +184,7 @@ int main(int argc, char **argv) {
 		{"help", 0, nullptr, 'h'},
 		{nullptr, 0, nullptr, 0}
 	};
-	while ( (c = getopt_long(argc, argv, "dhwZkGs:b:r:u:c:C:", longOptions, &optionIndex)) != -1) {
+	while ( (c = getopt_long(argc, argv, "dhwZkGs:b:r:u:lc:C:", longOptions, &optionIndex)) != -1) {
 		switch (c) {
 		case 's': {
 			int result = appendSourceIdToAddedDevList(::optarg, gpAddedDevDataList);
@@ -206,6 +208,10 @@ int main(int argc, char **argv) {
 			break;
 		case 'c':
 			std::stringstream(::optarg) >> resetToChannel;
+			break;
+		case 'l':
+			if (resetToChannel == 0)	/* Only force leave network (-1) if there is no -c option, otherwise, it is implied by channel creation */
+				resetToChannel = static_cast<unsigned int>(-1);
 			break;
 		case 'G':
 			openGpCommissionningAtStartup = true;
@@ -259,7 +265,7 @@ int main(int argc, char **argv) {
 	auto clibobs = [&fsm, &lib_main](NSEZSP::CLibEzspState i_state) {
 		bool terminate = false; /* Shall we terminate the current process? */
 		bool failure = false;   /* Shall we exit with a failure? */
-		if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR) {
+		if (i_state == NSEZSP::CLibEzspState::IN_XMODEM_XFR || i_state == NSEZSP::CLibEzspState::TERMINATING) {
 			terminate = true;
 			failure = false;
 		}

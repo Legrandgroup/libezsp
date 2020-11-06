@@ -31,6 +31,7 @@ namespace NSEZSP {
 	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
 	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
 	XX(IN_XMODEM_XFR,)                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */ \
+	XX(TERMINATING,)                      /*<! Library is shutting down */ \
 
 /**
  * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
@@ -63,7 +64,7 @@ public:
 	 *
 	 * @param uartHandle A handle on a IUartDriver instance to send/receive EZSP message over a serial line
 	 * @param timerbuilder A timer builder object used to generate timers
-	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
+	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number, set this to -1 if we should just leave any previously joined network
 	 */
 	CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
