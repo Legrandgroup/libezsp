@@ -317,13 +317,13 @@ public:
 	 * @return true If the join action could be started
 	 */
 	bool joinNetwork(const uint64_t extendedPanId,
-                     const uint16_t panId,
-                     const uint8_t channel,
-                     const NSEZSP::EmberJoinMethod joinMethod = EMBER_USE_MAC_ASSOCIATION,
-                     const uint32_t channels = 0,
-                     const uint8_t radioTxPower = 3,
-                     const NSEZSP::EmberNodeId nwkManagerId = 0,
-                     const uint8_t nwkUpdateId = 0);
+	                 const uint16_t panId,
+	                 const uint8_t channel,
+	                 const NSEZSP::EmberJoinMethod joinMethod = EMBER_USE_MAC_ASSOCIATION,
+	                 const uint32_t channels = 0,
+	                 const uint8_t radioTxPower = 3,
+	                 const NSEZSP::EmberNodeId nwkManagerId = 0,
+	                 const uint8_t nwkUpdateId = 0);
 
 	/**
 	 * @brief Retrieve an observable to handle bytes received on the serial port
