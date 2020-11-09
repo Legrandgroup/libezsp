@@ -23,7 +23,72 @@
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
 
+namespace NSMAIN {
+    class MainStateMachine;
+}
+
 namespace NSEZSP {
+
+class CEmberZigbeeNetwork;	// Forward declaration of this class that is internal and thus should remain opaque
+
+class LIBEXPORT ZigbeeNetworkScanResult {
+public:
+	/**
+	 * @brief Constructor
+	 */
+	ZigbeeNetworkScanResult(NSEZSP::CEmberZigbeeNetwork& networkDetails, uint8_t lastHopLqi, int8_t lastHopRssi);
+
+	/**
+	 * @brief Copy constructor
+	 *
+	 * @param other The object to copy from
+	 */
+	ZigbeeNetworkScanResult(const ZigbeeNetworkScanResult& other);
+
+	/**
+	 * @brief Destructor
+	 */
+	~ZigbeeNetworkScanResult();
+
+	/**
+	 * @brief Get the network's PAN identifier
+	 *
+	 * @return The PAN ID
+	 */
+	uint16_t getPanId() const;
+
+	/**
+	 * @brief Get the network's extended PAN identifier
+	 *
+	 * @return The 64-bit extended PAN ID
+	 */
+	uint64_t getExtendedPanId() const;
+
+	/**
+	 * @brief Dump this instance as a string
+	 *
+	 * @return The resulting string
+	 */
+	std::string toString() const;
+
+	/**
+	 * @brief Serialize to an iostream
+	 *
+	 * @param out The original output stream
+	 * @param data The object to serialize
+	 *
+	 * @return The new output stream with serialized data appended
+	 */
+	friend std::ostream& operator<< (std::ostream& out, const ZigbeeNetworkScanResult& data) {
+		out << data.toString();
+		return out;
+	}
+
+/* Attributes */
+	NSEZSP::CEmberZigbeeNetwork* networkDetails;	/*!< The data describing a discovered zigbee network */
+	uint8_t lastHopLqi;	/*!< The LQI of the last hop to the discovered network */
+	int8_t lastHopRssi;	/*!< The RSSI of the last hop to the discovered network */
+};
 
 #define CLIBEZSP_STATE_LIST(XX) \
 	XX(UNINITIALIZED,=1)                    /*<! Initial state, before starting. */ \
@@ -31,6 +96,7 @@ namespace NSEZSP {
 	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
 	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
 	XX(IN_XMODEM_XFR,)                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */ \
+	XX(TERMINATING,)                        /*<! Library is shutting down */ \
 
 /**
  * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
@@ -54,6 +120,7 @@ typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Cal
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
+typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
 typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
 
 class LIBEXPORT CEzsp {
@@ -63,7 +130,7 @@ public:
 	 *
 	 * @param uartHandle A handle on a IUartDriver instance to send/receive EZSP message over a serial line
 	 * @param timerbuilder A timer builder object used to generate timers
-	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
+	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number, set this to -1 if we should just leave any previously joined network
 	 */
 	CEzsp(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel=0);
 
@@ -197,12 +264,29 @@ public:
 	 *
 	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
 	 *
+	 * @param energyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>) that will be invoked when the energy scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
+	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
+	 *
+	 * @return true if the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+	 */
+	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
+
+	/**
+	 * @brief Start an active scan on the EZSP adapter
+	 *
+	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+	 *
+	 * @param activeScanCallback A callback function of type void func(std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScan>>) that will be invoked when the active scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (std::set<NSEZSP::ZigbeeNetworkScan>) being at set with descriptions of all zigbee networks found on that channel
 	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
 	 *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
 	 *
 	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
-	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+	bool startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
 
 	/**
 	 * @brief Get the value of the current network encryption key
@@ -223,6 +307,23 @@ public:
 	 * @return true If the channel could be set
 	 */
 	bool setChannel(uint8_t channel);
+
+	/**
+	 * @brief Join a zigbee network
+	 *
+	 * Causes the stack to associate with the network using the specified network parameters. It can take several seconds for the stack
+	 * to associate with the local network. Do not send messages until the stack is up.
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool joinNetwork(const uint64_t extendedPanId,
+	                 const uint16_t panId,
+	                 const uint8_t channel,
+	                 const NSEZSP::EmberJoinMethod joinMethod = EMBER_USE_MAC_ASSOCIATION,
+	                 const uint32_t channels = 0,
+	                 const uint8_t radioTxPower = 3,
+	                 const NSEZSP::EmberNodeId nwkManagerId = 0,
+	                 const uint8_t nwkUpdateId = 0);
 
 	/**
 	 * @brief Retrieve an observable to handle bytes received on the serial port

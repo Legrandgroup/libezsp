@@ -18,6 +18,7 @@
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
 #include "ezsp/zbmessage/green-power-device.h"
+#include "ezsp/ezsp-protocol/struct/ember-zigbee-network.h"	// For CEmberZigbeeNetwork
 #include "spi/ByteBuffer.h"
 
 #include "ezsp/ezsp-dongle-observer.h"
@@ -36,6 +37,7 @@ namespace NSEZSP {
 	XX(LEAVE_NWK_IN_PROGRESS,)              /*<! We are currently leaving the Zigbee network we previously joined */ \
 	XX(READY,)                              /*<! Library is ready to work and process new command */ \
 	XX(SCANNING,)                           /*<! An network scan in currently being run */ \
+	XX(JOINING,)                            /*<! A network join is pending */ \
 	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
 	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
 	XX(SWITCHING_TO_BOOTLOADER_MODE,)       /*<! Switch to bootloader is pending */ \
@@ -71,7 +73,7 @@ public:
 	 *
 	 * @param uartHandle A handle on a IUartDriver instance to send/receive EZSP message over a serial line
 	 * @param timerbuilder An ITimerFactory used to generate ITimer objects
-	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
+	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number, set this to -1 if we should just leave any previously joined network
 	 */
 	CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
@@ -202,13 +204,29 @@ public:
 	 *
 	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
 	 *
-	 * @param energyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>)> that will be invoked when the energy scan is finished.
+	 * @param energyScanCallback A callback function of type void func(std::map<uint8_t, int8_t>) that will be invoked when the energy scan is finished.
 	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (int8_t) being the measured RSSI on this channel
 	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
 	 *
 	 * @return true if the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
-	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3);
+	bool startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
+
+	/**
+	 * @brief Start an active scan on the EZSP adapter
+	 *
+	 * When the scan is complete, a EZSP_ENERGY_SCAN_RESULT_HANDLER EZSP message will be received from the adapter
+	 *
+	 * @param activeScanCallback A callback function of type void func(std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScan>>) that will be invoked when the active scan is finished.
+	 *                           The map provided to the callback contains entries with the key (uint8_t) being the 802.15.4 channel, and the value (std::set<NSEZSP::ZigbeeNetworkScan>) being at set with descriptions of all zigbee networks found on that channel
+	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	 *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
+	 *
+	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
+	 */
+	bool startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
 
 	/**
 	 * @brief Get the value of the current network encryption key
@@ -230,6 +248,16 @@ public:
 	 */
 	bool setChannel(uint8_t channel);
 
+	/**
+	 * @brief Join a zigbee network
+	 *
+	 * Causes the stack to associate with the network using the specified network parameters. It can take several seconds for the stack
+	 * to associate with the local network. Do not send messages until the stack is up.
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
+
 private:
 	NSSPI::IUartDriverHandle uartHandle; /*!< A handle to the UART driver */
 	const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
@@ -247,10 +275,13 @@ private:
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
+	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
 	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
-	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
+	bool leavePreviousNetworkAtInit;	/*!< Shall we leave any previously Zigbee network joined by the adapter, at startup? */
+	unsigned int resetDot154ChannelAtInit;    /*!< If non 0, this will indicate the value of the new 802.15.4 channel on which to create a network at startup */
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
+	std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > lastChannelToZigbeeNetworkScan; /*!< Map containing channel to nearby zigbee network mapping for the last active scan */
 
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;

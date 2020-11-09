@@ -299,6 +299,7 @@ void CEzspDongle::sendNextMsg( void ) {
 		clogW << "Refusing to send EZSP messages in bootloader mode\n";
 		return; /* No EZSP message can be sent in bootloader mode */
 	}
+
 	if ( (!this->wait_rsp) && (!this->sendingMsgQueue.empty()) ) {
 		SMsg l_msg;
 		{
@@ -306,7 +307,7 @@ void CEzspDongle::sendNextMsg( void ) {
 			l_msg = sendingMsgQueue.front();
 		}
 
-
+		//clogD << "Sending to NCP EZSP command: " << CEzspEnum::EEzspCmdToString(l_msg.i_cmd) << " with payload " << l_msg.payload << "\n";
 		NSSPI::ByteBuffer ezspMessage;
 
 		// First, place the EZSP seq number byte

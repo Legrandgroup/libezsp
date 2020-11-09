@@ -11,6 +11,7 @@
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zbmessage/zigbee-message.h"
+#include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
 #include "spi/ByteBuffer.h"
 
 namespace NSEZSP {
@@ -28,6 +29,41 @@ public:
 
 	void stackInit(const std::vector<SEzspConfig>& l_config, const std::vector<SEzspPolicy>& l_policy);
 
+	/**
+	 * @brief Set the characteristics of a network to join
+	 * 
+	 * @note A call to this method is required if joinNetwork() is invoked without any argument, but it can be
+	 *       avoided if the network parameters are directly provided as argument for joinNetwork()
+	 *
+	 * @param nwkParams The network parameters describing the network to join
+	 */
+	void setNetworkToJoin(NSEZSP::CEmberNetworkParameters& nwkParams);
+
+	/**
+	 * @brief Join a zigbee network
+	 *
+	 * Causes the stack to associate with the network using the specified network parameters. It can take several seconds for the stack
+	 * to associate with the local network. Do not send messages until the stack is up.
+	 * 
+	 * @param nwkParams The network description parameters
+	 */
+	void joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
+
+	/**
+	 * @brief Join a zigbee network
+	 *
+	 * Causes the stack to associate with the network using the specified network parameters. It can take several seconds for the stack
+	 * to associate with the local network. Do not send messages until the stack is up.
+	 * 
+	 * @note The description of the network to join should be provided before calling this version of joinNetwork() as it has no parameter.
+	 */
+	void joinNetwork();
+
+	/**
+	 * @brief Form/create a Zigbee HA 1.2 network
+	 * 
+	 * @param channel The channel on which to create the network
+	 */
 	void formHaNetwork(uint8_t channel=DEFAULT_RADIO_CHANNEL);
 
 	/**
@@ -65,7 +101,8 @@ private:
 	CZigbeeMessaging &zb_messaging;
 	uint8_t child_idx;
 	std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> discoverCallbackFct;
-	uint8_t form_channel; // radio channel to form network
+	uint8_t form_channel; /*!< Radio channel on which to form a network */
+	NSEZSP::CEmberNetworkParameters joinNwkParams;	/*!< Network parameters preset for network to join */
 };
 
 } // namespace NSEZSP

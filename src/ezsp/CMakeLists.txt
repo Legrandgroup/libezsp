@@ -17,6 +17,7 @@ list(APPEND ezsp_SOURCES
 	ezsp-protocol/struct/ember-key-struct.cpp
 	ezsp-protocol/struct/ember-network-parameters.cpp
 	ezsp-protocol/struct/ember-process-gp-pairing-parameter.cpp
+	ezsp-protocol/struct/ember-zigbee-network.cpp
 	zbmessage/aps.cpp
 	zbmessage/apsoption.cpp
 	zbmessage/gpd-commissioning-command-payload.cpp
@@ -53,7 +54,7 @@ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol
 list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/config.h)
 
 add_library(ezsp SHARED ${ezsp_SOURCES})
-set_target_properties(ezsp PROPERTIES VERSION 1 SOVERSION 1.1.0)
+set_target_properties(ezsp PROPERTIES VERSION 1 SOVERSION 1.1.1)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 target_include_directories(ezsp PRIVATE ${PROJECT_SOURCE_DIR}/src)
 

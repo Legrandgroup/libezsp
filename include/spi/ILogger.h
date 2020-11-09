@@ -27,7 +27,7 @@
 /**
  * @brief Generic logger instance getter
  */
-#define getLogger SINGLETON_LOGGER_CLASS_NAME::getInstance
+#define getLogger Logger::getInstance
 
 /**
  * @brief Generic logger getter (uses debug level)
