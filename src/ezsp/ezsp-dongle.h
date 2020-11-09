@@ -229,8 +229,10 @@ private:
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
 	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
 	std::queue<SMsg> sendingMsgQueue;	/*!< The EZSP messages queued to be sent to the adapter */
+	std::mutex sendingMsgQueueMutex;	/*!< A mutex protecting access to attribute sendingMsgQueue */
 	bool wait_rsp;	/*!< Are we currently waiting for an EZSP response to an EZSP command we have sent? */
 	std::set<CEzspDongleObserver*> observers;	/*!< List of observers of this instance */
+	std::mutex ezspWriteMutex;	/*!< Mutex allowing exclusive writes to the EZSP adapter */
 
 	/**
 	 * @brief Send the next message in our EZSP message queue (sendingMsgQueue)
