@@ -236,12 +236,12 @@ bool CEzsp::setChannel(uint8_t channel) {
 
 bool CEzsp::joinNetwork(const uint64_t extendedPanId,
                         const uint16_t panId,
-						const uint8_t channel,
-					    const NSEZSP::EmberJoinMethod joinMethod,
-						const uint32_t allowedChannels,
-						const uint8_t radioTxPower,
-						const NSEZSP::EmberNodeId nwkManagerId,
-						const uint8_t nwkUpdateId) {
+                        const uint8_t channel,
+                        const NSEZSP::EmberJoinMethod joinMethod,
+                        const uint32_t allowedChannels,
+                        const uint8_t radioTxPower,
+                        const NSEZSP::EmberNodeId nwkManagerId,
+                        const uint8_t nwkUpdateId) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "(" << std::hex << std::setfill('0') << std::setw(16) << extendedPanId << ", " << std::setw(4) << panId << ", ...)\n";
 #endif

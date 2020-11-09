@@ -81,11 +81,11 @@ public:
 
 	/**
 	 * @brief Get the enclosed 802.15.4 channel associated with the network
-	 * 
+	 *
 	 * @return The enclosed 802.15.4 channel associated with the network
 	 */
 	uint8_t getChannel() const {
-	 	return this->channel;
+		return this->channel;
 	}
 
 	// /**

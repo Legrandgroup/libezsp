@@ -649,11 +649,11 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 }
 
 void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive) {
-	clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd);
-	if (i_msg_receive.size()>0) {
-		clogD << " with payload " << i_msg_receive;
-	}
-	clogD << "\n";
+	//clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd);
+	//if (i_msg_receive.size()>0) {
+	//	clogD << " with payload " << i_msg_receive;
+	//}
+	//clogD << "\n";
 
 	switch( i_cmd ) {
 	case EZSP_STACK_STATUS_HANDLER: {
@@ -780,9 +780,9 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 	break;
 
 	default: {
-		///* DEBUG VIEW
+		/* DEBUG VIEW
 		clogI << "Unhandled EZSP message " << CEzspEnum::EEzspCmdToString(i_cmd) << ": " << i_msg_receive << "\n";
-		//*/
+		*/
 	}
 	break;
 	}
