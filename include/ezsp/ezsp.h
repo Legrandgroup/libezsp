@@ -31,7 +31,7 @@ namespace NSEZSP {
 
 class CEmberZigbeeNetwork;	// Forward declaration of this class that is internal and thus should remain opaque
 
-class ZigbeeNetworkScanResult {
+class LIBEXPORT ZigbeeNetworkScanResult {
 public:
 	/**
 	 * @brief Constructor
