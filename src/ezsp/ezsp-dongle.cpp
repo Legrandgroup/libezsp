@@ -263,7 +263,7 @@ void CEzspDongle::handleInputData(const unsigned char* dataIn, const size_t data
 	}
 	/* Got an correct incoming EZSP message... will be forwarded to the user */
 
-	//clogD << "EZSP message payload " << ezspMessage << "\n";
+	//clogD << "Received EZSP message payload " << ezspMessage << "\n";
 
 	/* Send an EZSP ACK and unqueue messages, except for EZSP_LAUNCH_STANDALONE_BOOTLOADER that should not lead to any additional byte sent */
 	if (l_cmd != EEzspCmd::EZSP_LAUNCH_STANDALONE_BOOTLOADER) {
