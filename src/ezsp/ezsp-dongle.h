@@ -1,3 +1,9 @@
+/**
+ * @file ezsp-dongle.h
+ *
+ * @brief Handles EZSP communication with an adapter over a serial link
+ */
+
 #pragma once
 
 #include <string>
@@ -20,8 +26,8 @@
 
 extern "C" {	/* Avoid compiler warning on member initialization for structs (in -Weffc++ mode) */
 	typedef struct {
-		NSEZSP::EEzspCmd i_cmd;
-		NSSPI::ByteBuffer payload;
+		NSEZSP::EEzspCmd i_cmd;	/*!< The EZSP command to send */
+		NSSPI::ByteBuffer payload;	/*!< The payload for the EZSP command (as a byte buffer) */
 	} SMsg;
 }
 namespace NSEZSP {
@@ -50,8 +56,22 @@ public:
 	 */
 	DECLARE_ENUM(Mode, EZSP_DONGLE_MODE_LIST);
 
+	/**
+	 * @brief Constructor
+	 *
+	 * @param[in] i_timer_builder A timer builder used to build timer objects
+	 * @param[in] ip_observer An optional observer that will be notified when dongle state changes and when a EZSP message is received
+	 *
+	 * @note Observers can also be registered later on using method registerObserver()
+	 */
 	CEzspDongle(const NSSPI::TimerBuilder& i_timer_builder, CEzspDongleObserver* ip_observer = nullptr);
-	CEzspDongle() = delete; // Construction without arguments is not allowed
+
+	/**
+	 * @brief Default constructor
+	 *
+	 * @warning Construction without arguments is not allowed
+	 */
+	CEzspDongle() = delete;
 
 	/**
 	 * \brief Copy constructor
@@ -135,12 +155,18 @@ public:
 	NSEZSP::EzspAdapterVersion getVersion() const;
 
 	/**
-	 * @brief Send Ezsp Command
+	 * @brief Send an EZSP command to the EZSP adapter
+	 *
+	 * @param i_cmd The EZSP command to send
+	 * @param i_cmd_payload The payload
 	 */
 	void sendCommand(EEzspCmd i_cmd, NSSPI::ByteBuffer i_cmd_payload = NSSPI::ByteBuffer() );
 
 	/**
 	 * @brief Callback invoked on EZSP received bytes
+	 *
+	 * @param[in] dataIn A buffer pointing to the received bytes
+	 * @param[in] dataLen The number of bytes stored in @p dataIn
 	 */
 	void handleInputData(const unsigned char* dataIn, const size_t dataLen);
 
@@ -202,11 +228,14 @@ private:
 	uint8_t ezspSeqNum;	/*!< The EZSP sequence number (wrapping 0-255 counter) */
 	NSEZSP::AshDriver ash;   /*!< An ASH encoder/decoder instance */
 	NSEZSP::BootloaderPromptDriver blp;  /*!< A bootloader prompt decoder instance */
-	std::queue<SMsg> sendingMsgQueue;
-	bool wait_rsp;
-	std::set<CEzspDongleObserver*> observers;   /*!< List of observers of this instance */
+	std::queue<SMsg> sendingMsgQueue;	/*!< The EZSP messages queued to be sent to the adapter */
+	bool wait_rsp;	/*!< Are we currently waiting for an EZSP response to an EZSP command we have sent? */
+	std::set<CEzspDongleObserver*> observers;	/*!< List of observers of this instance */
 
-	void sendNextMsg( void );
+	/**
+	 * @brief Send the next message in our EZSP message queue (sendingMsgQueue)
+	 */
+	void sendNextMsg();
 
 	/**
 	 * @brief Notify all observers of this instance that the dongle state has changed

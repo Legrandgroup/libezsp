@@ -73,7 +73,7 @@ public:
 	 *
 	 * @param uartHandle A handle on a IUartDriver instance to send/receive EZSP message over a serial line
 	 * @param timerbuilder An ITimerFactory used to generate ITimer objects
-	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number
+	 * @param requestZbNetworkResetToChannel Set this to non 0 if we should destroy any pre-existing Zigbee network in the EZSP adapter and recreate a new Zigbee network on the specified 802.15.4 channel number, set this to -1 if we should just leave any previously joined network
 	 */
 	CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel);
 
@@ -277,7 +277,8 @@ private:
 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
 	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
 	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
-	unsigned int resetDot154ChannelAtInit;    /*!< Do we destroy any pre-existing Zigbee network in the adapter at startup (!=0), if so this will contain the value of the new 802.15.4 channel to use */
+	bool leavePreviousNetworkAtInit;	/*!< Shall we leave any previously Zigbee network joined by the adapter, at startup? */
+	unsigned int resetDot154ChannelAtInit;    /*!< If non 0, this will indicate the value of the new 802.15.4 channel on which to create a network at startup */
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
 	std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > lastChannelToZigbeeNetworkScan; /*!< Map containing channel to nearby zigbee network mapping for the last active scan */

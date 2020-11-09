@@ -1,5 +1,7 @@
 /**
  * @file ezsp-dongle.cpp
+ *
+ * @brief Handles EZSP communication with an adapter over a serial link
  */
 #include <sstream>
 #include <iomanip>
