@@ -6,7 +6,7 @@
  * @note In order to verbosely trace all API calls, use compiler directive TRACE_API_CALLS when compiling this code
  */
 
-#define TRACE_API_CALLS
+//#define TRACE_API_CALLS
 #define DYNAMIC_ALLOCATION
 
 #include <sstream>

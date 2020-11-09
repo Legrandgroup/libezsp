@@ -203,19 +203,27 @@ public:
 		};
 
 		auto processActiveScanResults = [this](std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > channelToZigbeeNetwork) {
-			for (std::pair<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > scannedChannel : channelToZigbeeNetwork) {
-				uint8_t channel = scannedChannel.first;
-				const std::vector<NSEZSP::ZigbeeNetworkScanResult>& zigbeeNetworksOnChannel = scannedChannel.second;
-				clogI << static_cast<unsigned int>(zigbeeNetworksOnChannel.size()) << " zigbee network(s) found on channel " << std::dec << static_cast<unsigned int>(channel) << ":\n";
-				for (auto it = zigbeeNetworksOnChannel.begin(); it != zigbeeNetworksOnChannel.end(); ++it) {
-					clogI << "Network:" << *it << "\n";
+			if (channelToZigbeeNetwork.size() == 0) {
+				clogI << "Active scan returned no nearby network\n";
+			}
+			else {
+				for (std::pair<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > scannedChannel : channelToZigbeeNetwork) {
+					uint8_t channel = scannedChannel.first;
+					const std::vector<NSEZSP::ZigbeeNetworkScanResult>& zigbeeNetworksOnChannel = scannedChannel.second;
+					clogI << static_cast<unsigned int>(zigbeeNetworksOnChannel.size()) << " zigbee network(s) found on channel " << std::dec << static_cast<unsigned int>(channel) << ":\n";
+					for (auto it = zigbeeNetworksOnChannel.begin(); it != zigbeeNetworksOnChannel.end(); ++it) {
+						clogI << "Network:" << *it << "\n";
+					}
 				}
 			}
 			/* No other startup operations required... move to run state */
 			this->ezspInitDone();
 		};
-		//libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+#ifdef ACTIVE_SCAN
 		libEzsp.startActiveScan(processActiveScanResults, 10, 1<<16);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+#else
+		libEzsp.startEnergyScan(processEnergyScanResults);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
+#endif
 		/* Switching to run state will be performed once scanning is done, in the processEnergyScanResults() callback above */
 	}
 
