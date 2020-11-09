@@ -31,7 +31,7 @@ namespace NSEZSP {
 	XX(INIT_FAILED,)                        /*<! Initialisation failed, Library is out of work */ \
 	XX(SINK_BUSY,)                          /*<! Enclosed sink is busy executing commands */ \
 	XX(IN_XMODEM_XFR,)                      /*<! Adapter is ready to perform a firmware upgrade via X-modem */ \
-	XX(TERMINATING,)                      /*<! Library is shutting down */ \
+	XX(TERMINATING,)                        /*<! Library is shutting down */ \
 
 /**
  * @brief Possible  states of class CLibEzspMain as visible from the outside (these are much simpler than the real internal states defined in CLibEzspInternalState)
