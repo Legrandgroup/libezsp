@@ -120,6 +120,26 @@ inline uint8_t u32_get_byte3(const uint32_t word32) {
 }
 
 /**
+ * @brief Get bits 31 to 0 of a 64-bit value
+ *
+ * @param word64 The 64-bit input value
+ * @return The result as a 32-bit word (uint32_t)
+**/
+inline uint32_t u64_get_lo_u32(const uint64_t word64) {
+	return static_cast<uint32_t>(word64 & 0xFFFFFFFF);
+}
+
+/**
+ * @brief Get bits 63 to 32 of a 64-bit value
+ *
+ * @param word64 The 64-bit input value
+ * @return The result as a 32-bit word (uint32_t)
+**/
+inline uint32_t u64_get_hi_u32(const uint64_t word64) {
+	return static_cast<uint32_t>((word64>>32) & 0xFFFFFFFF);
+}
+
+/**
  * @brief Convert a byte to its 2-digit hexadecimal representation
  *
  * @param byte The byte to represent

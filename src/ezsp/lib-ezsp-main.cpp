@@ -41,7 +41,8 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	leavePreviousNetworkAtInit(requestZbNetworkResetToChannel != 0),
 	resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
 	scanInProgress(false),
-	lastChannelToEnergyScan() {
+	lastChannelToEnergyScan(),
+	lastChannelToZigbeeNetworkScan() {
 }
 
 void CLibEzspMain::start() {
@@ -395,20 +396,48 @@ void CLibEzspMain::setFirmwareUpgradeMode() {
 	/* We should now receive an EZSP_LAUNCH_STANDALONE_BOOTLOADER in the handleEzspRxMessage() handler below, and only then, issue a carriage return to get the bootloader prompt */
 }
 
-bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration) {
-	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8_t duration, uint32_t requestedChannelMask) {
+	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
 	NSSPI::ByteBuffer l_payload = { EZSP_ENERGY_SCAN };
-	uint32_t channelMask = 0x07FFF800; // Range from channel 11 to 26 (inclusive)
+	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
+	if (requestedChannelMask != 0) {
+		channelMask = requestedChannelMask;
+	}
 	l_payload.push_back(u32_get_byte0(channelMask));
 	l_payload.push_back(u32_get_byte1(channelMask));
 	l_payload.push_back(u32_get_byte2(channelMask));
 	l_payload.push_back(u32_get_byte3(channelMask));
 	l_payload.push_back(duration);
+	this->lastChannelToEnergyScan.clear();
 	this->setState(CLibEzspInternal::State::SCANNING);
 	this->energyScanCallback = energyScanCallback;
+	this->activeScanCallback = nullptr;	/* Discard any conflicting active scan callback */
+	this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
+	return true;
+}
+
+bool CLibEzspMain::startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration, uint32_t requestedChannelMask) {
+	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
+		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
+		return false;
+	}
+	NSSPI::ByteBuffer l_payload = { EZSP_ACTIVE_SCAN };
+	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
+	if (requestedChannelMask != 0) {
+		channelMask = requestedChannelMask;
+	}
+	l_payload.push_back(u32_get_byte0(channelMask));
+	l_payload.push_back(u32_get_byte1(channelMask));
+	l_payload.push_back(u32_get_byte2(channelMask));
+	l_payload.push_back(u32_get_byte3(channelMask));
+	l_payload.push_back(duration);
+	this->lastChannelToZigbeeNetworkScan.clear();
+	this->setState(CLibEzspInternal::State::SCANNING);
+	this->activeScanCallback = activeScanCallback;
+	this->energyScanCallback = nullptr;	/* Discard any conflicting energy scan callback */
 	this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
 	return true;
 }
@@ -424,6 +453,14 @@ bool CLibEzspMain::setChannel(uint8_t channel) {
 		return false;
 	}
 	this->dongle.sendCommand(EZSP_SET_RADIO_CHANNEL, { channel });
+	return true;
+}
+
+bool CLibEzspMain::joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams) {
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_nwk.joinNetwork(nwkParams);
 	return true;
 }
 
@@ -612,7 +649,11 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 }
 
 void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive) {
-	clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd) << std::endl;
+	//clogD << "CLibEzspMain::handleEzspRxMessage " << CEzspEnum::EEzspCmdToString(i_cmd);
+	//if (i_msg_receive.size()>0) {
+	//	clogD << " with payload " << i_msg_receive;
+	//}
+	//clogD << "\n";
 
 	switch( i_cmd ) {
 	case EZSP_STACK_STATUS_HANDLER: {
@@ -684,8 +725,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		}
 		this->scanInProgress = (EMBER_SUCCESS == i_msg_receive.at(0));
 		if (this->scanInProgress) {
-			clogD << "Scan started\n";
-			this->lastChannelToEnergyScan.clear(); // clean previous energy scan result
+			clogD << "Scan succesfully started\n";
 		}
 	}
 	break;
@@ -698,6 +738,22 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		int8_t rssi = static_cast<int8_t>(i_msg_receive.at(1));
 		this->lastChannelToEnergyScan.emplace(channel, rssi);
 		clogD << "EZSP_ENERGY_SCAN_RESULT_HANDLER: channel: " << std::dec << static_cast<unsigned int>(channel) << " rssi: " << static_cast<int>(rssi) << " dBm\n";
+	}
+	break;
+
+	case EZSP_NETWORK_FOUND_HANDLER: {
+		if (this->getState() != CLibEzspInternal::State::SCANNING) {
+			clogW << "Got a EZSP_NETWORK_FOUND_HANDLER message while not in SCANNING state\n";
+		}
+		NSEZSP::CEmberZigbeeNetwork networkFound(i_msg_receive);
+		uint8_t lastHopLqi = static_cast<uint8_t>(i_msg_receive.at(14));
+		int8_t lastHopRssi = static_cast<int8_t>(i_msg_receive.at(15));
+		uint8_t channel = networkFound.getChannel();
+		NSEZSP::ZigbeeNetworkScanResult networkScan(networkFound, lastHopLqi, lastHopRssi);	/* Create a new network scan containing this scan result */
+
+		std::vector<NSEZSP::ZigbeeNetworkScanResult>& zigbeeActiveNetworkScanResults = this->lastChannelToZigbeeNetworkScan[channel];
+		zigbeeActiveNetworkScanResults.push_back(networkScan);	/* Add to the set for this channel, an entry with the new network scan inside */
+		clogW << "EZSP_NETWORK_FOUND_HANDLER: New network found: " << networkFound << "\n";
 	}
 	break;
 
@@ -715,13 +771,17 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 				this->energyScanCallback(this->lastChannelToEnergyScan);
 				this->energyScanCallback = nullptr;  /* Disable callback */
 			}
+			if (this->activeScanCallback) {
+				this->activeScanCallback(this->lastChannelToZigbeeNetworkScan);
+				this->activeScanCallback = nullptr;  /* Disable callback */
+			}
 		}
 	}
 	break;
 
 	default: {
 		/* DEBUG VIEW
-		clogI << "Unhandled EZSP message: " << bufDump << "\n";
+		clogI << "Unhandled EZSP message " << CEzspEnum::EEzspCmdToString(i_cmd) << ": " << i_msg_receive << "\n";
 		*/
 	}
 	break;

@@ -96,6 +96,11 @@ void CZigbeeNetworking::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_
 		clogD << "EZSP_FORM_NETWORK status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
 	}
 	break;
+	case EZSP_JOIN_NETWORK: {
+		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		clogD << "EZSP_JOIN_NETWORK status : " << CEzspEnum::EEmberStatusToString(l_status) << "\n";
+	}
+	break;
 	case EZSP_LEAVE_NETWORK: {
 		clogD << "EZSP_LEAVE_NETWORK status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(0))) << std::endl;
 	}
@@ -156,6 +161,22 @@ void CZigbeeNetworking::stackInit(const std::vector<SEzspConfig>& l_config, cons
 		l_payload.push_back(0);
 		dongle.sendCommand(EZSP_ADD_ENDPOINT, l_payload);
 	}
+}
+
+void CZigbeeNetworking::setNetworkToJoin(NSEZSP::CEmberNetworkParameters& nwkParams) {
+	this->joinNwkParams = nwkParams;
+}
+
+void CZigbeeNetworking::joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams) {
+	clogD << "Running " << __func__ << "()\n";
+	NSSPI::ByteBuffer payload;
+	payload.push_back(EMBER_ROUTER);
+	payload.append(nwkParams.getRaw());
+	this->dongle.sendCommand(EZSP_JOIN_NETWORK, payload);
+}
+
+void CZigbeeNetworking::joinNetwork() {
+	this->joinNetwork(this->joinNwkParams);
 }
 
 void CZigbeeNetworking::formHaNetwork(uint8_t channel) {

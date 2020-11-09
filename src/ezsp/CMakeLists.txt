@@ -17,6 +17,7 @@ list(APPEND ezsp_SOURCES
 	ezsp-protocol/struct/ember-key-struct.cpp
 	ezsp-protocol/struct/ember-network-parameters.cpp
 	ezsp-protocol/struct/ember-process-gp-pairing-parameter.cpp
+	ezsp-protocol/struct/ember-zigbee-network.cpp
 	zbmessage/aps.cpp
 	zbmessage/apsoption.cpp
 	zbmessage/gpd-commissioning-command-payload.cpp

@@ -89,7 +89,9 @@ std::string CEmberNetworkParameters::toString() const {
 	std::stringstream buf;
 
 	buf << "EmberNetworkParameters : { ";
-	buf << "[extend_pan_id : "<< std::hex << std::setw(16) << std::setfill('0') << unsigned(extend_pan_id) << "]";
+	buf << "[extend_pan_id: 0x" << std::hex
+	    << std::setw(8) << std::setfill('0') << u64_get_hi_u32(this->extend_pan_id)
+	    << std::setw(8) << std::setfill('0') << u64_get_lo_u32(this->extend_pan_id) << "]";
 	buf << "[pan_id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(pan_id) << "]";
 	buf << "[radio_tx_power : "<< std::dec << unsigned(radio_tx_power) << "]";
 	buf << "[radio_channel : "<< std::dec << unsigned(radio_channel) << "]";
