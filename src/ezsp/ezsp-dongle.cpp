@@ -333,7 +333,7 @@ void CEzspDongle::sendNextMsg( void ) {
 
 		//clogD << "host->NCP EZSP message " << ezspMessage << "\n";
 		{
-			std::lock_guard<std::mutex> outgoingQueue(this->ezspWriteMutex);
+			std::lock_guard<std::mutex> ezspWriteLock(this->ezspWriteMutex);
 			if (this->ash.sendDataFrame(ezspMessage)) {
 				this->wait_rsp = true;
 			}
