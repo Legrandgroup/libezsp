@@ -522,18 +522,22 @@ void CLibEzspMain::handleEzspRxMessage_EZSP_GET_XNCP_INFO(const NSSPI::ByteBuffe
 }
 
 void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_msg_receive) {
+	//clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << static_cast<unsigned int>(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getStateAsString(this->getState()) << "\n";
+	if (this->getState() == CLibEzspInternal::State::FORM_NWK_IN_PROGRESS && i_msg_receive.at(0) == EMBER_NO_NETWORK) {
+		clogD << "Adapter is not yet in a network (while forming is in progress)... still waiting for EMBER_NETWORK_UP\n";
+		return;
+	}
 	if (this->getState() != CLibEzspInternal::State::STACK_INIT
 	    && this->getState() != CLibEzspInternal::State::FORM_NWK_IN_PROGRESS
 	    && this->getState() != CLibEzspInternal::State::LEAVE_NWK_IN_PROGRESS) {
 		clogW << "Unexpectedly got EZSP_NETWORK_STATE with value " << static_cast<unsigned int>(i_msg_receive.at(0)) << " while not in STACK_INIT or FORM_NWK_IN_PROGRESS or LEAVE_NWK_IN_PROGRESS state... assuming stack has been initialized. Ignoring...\n";
 	}
-	clogI << "handleEzspRxMessage_NETWORK_STATE getting EZSP_NETWORK_STATE=" << static_cast<unsigned int>(i_msg_receive.at(0)) << " while CLibEzspInternal::State=" << CLibEzspInternal::getStateAsString(this->getState()) << "\n";
 	if (i_msg_receive.at(0) == EMBER_NO_NETWORK) {
 		/* No network exists on the dongle */
 		clogD << "No pre-existing network on the EZSP adapter\n";
 		if (this->resetDot154ChannelAtInit == static_cast<unsigned int>(-1)) {
 			/* We are outside of a network and we were actually asked to leave... just terminate now */
-			clogI << "Adapter is not in any network as requested. Terminating\n";
+			clogI << "Adapter is not part of any network as requested. Terminating\n";
 			this->setState(CLibEzspInternal::State::TERMINATING);
 			return;
 		}
