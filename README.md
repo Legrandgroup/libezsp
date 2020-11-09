@@ -41,7 +41,7 @@ Now, we have to compile libezsp pointing it to the libserial library we have jus
 Issue the following commands in order to compile libezsp:
 ```
 cd ~/libezsp
-LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_RARITAN=OFF -DUSE_CPPTHREADS=ON -DUSE_SERIALCPP=ON -DUSE_MOCKSERIAL=OFF -DUSE_AESCUSTOM=ON
+LDFLAGS=-L$HOME/serial cmake -DCMAKE_CXX_FLAGS=-isystem\ $HOME/serial/include/ -DUSE_RARITAN=OFF -DUSE_CPPTHREADS=ON -DUSE_SERIALCPP=ON -DUSE_MOCKSERIAL=OFF -DUSE_AESCUSTOM=ON .
 make
 ```
 
