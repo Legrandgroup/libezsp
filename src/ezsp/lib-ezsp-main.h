@@ -259,30 +259,6 @@ public:
 	bool joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
 
 private:
-	NSSPI::IUartDriverHandle uartHandle; /*!< A handle to the UART driver */
-	const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
-	uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
-	uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
-	uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
-	uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
-	uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
-	CLibEzspInternal::State lib_state;    /*!< Current state for our internal state machine */
-	FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
-	CEzspDongle dongle; /*!< Dongle manipulation handler */
-	CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
-	CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
-	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
-	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
-	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
-	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
-	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
-	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
-	bool leavePreviousNetworkAtInit;	/*!< Shall we leave any previously Zigbee network joined by the adapter, at startup? */
-	unsigned int resetDot154ChannelAtInit;    /*!< If non 0, this will indicate the value of the new 802.15.4 channel on which to create a network at startup */
-	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
-	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
-	std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > lastChannelToZigbeeNetworkScan; /*!< Map containing channel to nearby zigbee network mapping for the last active scan */
-
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;
 	void dongleInit( uint8_t ezsp_version);
@@ -332,6 +308,32 @@ private:
 	 * @param[in] i_msg_receive The incoming EZSP message
 	 */
 	void handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuffer& i_msg_receive);
+
+/* Attributes */
+private:
+	NSSPI::IUartDriverHandle uartHandle; /*!< A handle to the UART driver */
+	const NSSPI::TimerBuilder& timerbuilder;	/*!< A builder to create timer instances */
+	uint8_t exp_ezsp_min_version;   /*!< Minimum acceptable EZSP version from the EZSP adapter (should be equal or higher), at initial state then, updated with the actual version of the adapter if it is satisfactory */
+	uint8_t exp_ezsp_max_version;   /*!< Maximum acceptable EZSP version from the EZSP adapter (should be equal or lower) */
+	uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
+	uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
+	uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
+	CLibEzspInternal::State lib_state;    /*!< Current state for our internal state machine */
+	FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
+	CEzspDongle dongle; /*!< Dongle manipulation handler */
+	CZigbeeMessaging zb_messaging;  /*!< Zigbee messages utility */
+	CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
+	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
+	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
+	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
+	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
+	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
+	bool leavePreviousNetworkAtInit;	/*!< Shall we leave any previously Zigbee network joined by the adapter, at startup? */
+	unsigned int resetDot154ChannelAtInit;    /*!< If non 0, this will indicate the value of the new 802.15.4 channel on which to create a network at startup */
+	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
+	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
+	std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > lastChannelToZigbeeNetworkScan; /*!< Map containing channel to nearby zigbee network mapping for the last active scan */
 };
 
 } // namespace NSEZSP
