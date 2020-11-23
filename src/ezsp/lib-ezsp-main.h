@@ -71,8 +71,9 @@ public:
 	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
 	 *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
 	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
+	 * @param nbScanRetries How many times the scan should be repeated (0 means it will run only once)
 	 */
-	ScanContext(uint32_t requestedChannelMask = 0, uint8_t requestedDuration = 3, unsigned int nbScanRetries = 1) :
+	ScanContext(uint32_t requestedChannelMask = 0, uint8_t requestedDuration = 3, unsigned int nbScanRetries = 0) :
 		channelMask(requestedChannelMask),
 		duration(requestedDuration),
 		scanRetriesRemaining(nbScanRetries)
@@ -82,7 +83,7 @@ public:
 	uint8_t duration;	/*!< The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
 	                         *   A value of 3 allows for quite a fast scan. Values above 6 may result in longer scan duration. */
 	uint32_t channelMask;	/*!< A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels */
-	unsigned int scanRetriesRemaining;	/*!< The number of scan loops that we will subsequently perform to collect an exhaustive survey */
+	unsigned int scanRetriesRemaining;	/*!< The number of additional scan loops that we will subsequently perform to collect an exhaustive survey */
 };
 
 /**
@@ -249,6 +250,15 @@ public:
 	 * @return true If the scan could be started, false otherwise (adapter is not ready, maybe a scan is already ongoing)
 	 */
 	bool startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration = 3, uint32_t requestedChannelMask = 0);
+
+	/**
+	 * @brief Re-run a the previous active scan on the EZSP adapter
+	 *
+	 * The context of the previous scan is the argument provided during the last call to startActiveScan()
+	 *
+	 * @return true if the scan could successfully be re-started or false otherwise
+	 */
+	bool activeScanRedo();
 
 	/**
 	 * @brief Get the value of the current network encryption key

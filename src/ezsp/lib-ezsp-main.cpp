@@ -402,12 +402,12 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
-	this->currentScanContext = ScanContext(duration, requestedChannelMask, 1);
-	NSSPI::ByteBuffer l_payload = { EZSP_ENERGY_SCAN };
-	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
-	if (requestedChannelMask != 0) {
-		channelMask = requestedChannelMask;
+	if (requestedChannelMask == 0) {
+		requestedChannelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
 	}
+	this->currentScanContext = ScanContext(requestedChannelMask, duration, 0);
+	NSSPI::ByteBuffer l_payload = { EZSP_ENERGY_SCAN };
+	uint32_t &channelMask = this->currentScanContext.channelMask;
 	l_payload.push_back(u32_get_byte0(channelMask));
 	l_payload.push_back(u32_get_byte1(channelMask));
 	l_payload.push_back(u32_get_byte2(channelMask));
@@ -423,15 +423,13 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
 
 bool CLibEzspMain::startActiveScan(FActiveScanCallback activeScanCallback, uint8_t duration, uint32_t requestedChannelMask) {
 	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
-		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
+		clogE << "Ignoring request for active scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
-	this->currentScanContext = ScanContext(duration, requestedChannelMask, 3);	/* Perform a triple scan to be sure not to miss networks */
+	this->currentScanContext = ScanContext(requestedChannelMask, duration, 2);	/* Perform a triple scan to be sure not to miss networks */
 	NSSPI::ByteBuffer l_payload = { EZSP_ACTIVE_SCAN };
-	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
-	if (requestedChannelMask != 0) {
-		channelMask = requestedChannelMask;
-	}
+	uint32_t &channelMask = this->currentScanContext.channelMask;
+	clogD << "Channel mask " << std::hex << static_cast<unsigned int>(channelMask) << "\n";
 	l_payload.push_back(u32_get_byte0(channelMask));
 	l_payload.push_back(u32_get_byte1(channelMask));
 	l_payload.push_back(u32_get_byte2(channelMask));
@@ -441,6 +439,29 @@ bool CLibEzspMain::startActiveScan(FActiveScanCallback activeScanCallback, uint8
 	this->setState(CLibEzspInternal::State::SCANNING);
 	this->activeScanCallback = activeScanCallback;
 	this->energyScanCallback = nullptr;	/* Discard any conflicting energy scan callback */
+	this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
+	return true;
+}
+
+bool CLibEzspMain::activeScanRedo() {
+	if (this->getState() == CLibEzspInternal::State::SCANNING || this->scanInProgress) {
+	}
+	else {
+		clogE << "Ignoring redo for active scan because we're not in a scan state\n";
+		return false;
+	}
+	if (this->activeScanCallback == nullptr) {
+		clogE << "Ignoring redo for active scan because there is no callback registered\n";
+		return false;
+	}
+	NSSPI::ByteBuffer l_payload = { EZSP_ACTIVE_SCAN };
+	uint32_t &channelMask = this->currentScanContext.channelMask;
+	clogD << "Channel mask " << std::hex << static_cast<unsigned int>(channelMask) << "\n";
+	l_payload.push_back(u32_get_byte0(channelMask));
+	l_payload.push_back(u32_get_byte1(channelMask));
+	l_payload.push_back(u32_get_byte2(channelMask));
+	l_payload.push_back(u32_get_byte3(channelMask));
+	l_payload.push_back(this->currentScanContext.duration);
 	this->dongle.sendCommand(EZSP_START_SCAN, l_payload);
 	return true;
 }
@@ -730,6 +751,9 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		if (this->scanInProgress) {
 			clogD << "Scan succesfully started\n";
 		}
+		else {
+			clogE << "Scan start error: " << static_cast<unsigned int>(i_msg_receive.at(0)) << "\n";
+		}
 	}
 	break;
 
@@ -769,14 +793,24 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		}
 		this->scanInProgress = false;
 		if (this->getState() == CLibEzspInternal::State::SCANNING) {
-			this->setState(CLibEzspInternal::State::READY);
 			if (this->energyScanCallback) {
+				this->setState(CLibEzspInternal::State::READY);
 				this->energyScanCallback(this->lastChannelToEnergyScan);
 				this->energyScanCallback = nullptr;  /* Disable callback */
 			}
 			if (this->activeScanCallback) {
-				this->activeScanCallback(this->lastChannelToZigbeeNetworkScan);
-				this->activeScanCallback = nullptr;  /* Disable callback */
+				if (this->currentScanContext.scanRetriesRemaining != 0) {
+					clogD << "Re-running active scan (" << std::dec << static_cast<unsigned int>(this->currentScanContext.scanRetriesRemaining) << " loop(s) remaining)\n";
+					this->currentScanContext.scanRetriesRemaining--;
+					if (!this->activeScanRedo()) {
+						this->setState(CLibEzspInternal::State::READY);
+					}
+				}
+				else {
+					this->activeScanCallback(this->lastChannelToZigbeeNetworkScan);
+					this->activeScanCallback = nullptr;  /* Disable callback */
+					this->setState(CLibEzspInternal::State::READY);
+				}
 			}
 		}
 	}
