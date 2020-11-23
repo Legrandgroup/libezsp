@@ -219,6 +219,7 @@ public:
 			/* No other startup operations required... move to run state */
 			this->ezspInitDone();
 		};
+#define ACTIVE_SCAN
 #ifdef ACTIVE_SCAN
 		libEzsp.startActiveScan(processActiveScanResults, 10, 1<<16);  /* This will make the underlying CEzspMain object move away from READY state until scan is finished */
 #else

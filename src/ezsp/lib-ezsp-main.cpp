@@ -41,6 +41,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	leavePreviousNetworkAtInit(requestZbNetworkResetToChannel != 0),
 	resetDot154ChannelAtInit(requestZbNetworkResetToChannel),
 	scanInProgress(false),
+	currentScanContext(),
 	lastChannelToEnergyScan(),
 	lastChannelToZigbeeNetworkScan() {
 }
@@ -401,6 +402,7 @@ bool CLibEzspMain::startEnergyScan(FEnergyScanCallback energyScanCallback, uint8
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
+	this->currentScanContext = ScanContext(duration, requestedChannelMask, 1);
 	NSSPI::ByteBuffer l_payload = { EZSP_ENERGY_SCAN };
 	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
 	if (requestedChannelMask != 0) {
@@ -424,6 +426,7 @@ bool CLibEzspMain::startActiveScan(FActiveScanCallback activeScanCallback, uint8
 		clogE << "Ignoring request for energy scan because we're still waiting for a previous scan to finish\n";
 		return false;
 	}
+	this->currentScanContext = ScanContext(duration, requestedChannelMask, 3);	/* Perform a triple scan to be sure not to miss networks */
 	NSSPI::ByteBuffer l_payload = { EZSP_ACTIVE_SCAN };
 	uint32_t channelMask = 0x07FFF800; // Default range from channel 11 to 26 (inclusive)
 	if (requestedChannelMask != 0) {

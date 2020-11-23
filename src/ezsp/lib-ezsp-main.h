@@ -63,6 +63,28 @@ public:
 	DECLARE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST);
 };
 
+class ScanContext {
+public:
+	/**
+	 * @brief Constructor
+	 *
+	 * @param duration The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	 *                 The default value (3) allows for a quite fast scan. Values above 6 may result in longer scan duration.
+	 * @param requestedChannelMask A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels
+	 */
+	ScanContext(uint32_t requestedChannelMask = 0, uint8_t requestedDuration = 3, unsigned int nbScanRetries = 1) :
+		channelMask(requestedChannelMask),
+		duration(requestedDuration),
+		scanRetriesRemaining(nbScanRetries)
+		{ }
+
+/* Attributes */
+	uint8_t duration;	/*!< The exponent of the number of scan periods, where a scan period is 960 symbols. The scan will occur for ((2^duration) + 1) scan periods((2^duration) + 1) scan periods
+	                         *   A value of 3 allows for quite a fast scan. Values above 6 may result in longer scan duration. */
+	uint32_t channelMask;	/*!< A mask of channels to scan (for example, to scan channels 11, 16 and 25, the mask would be 1<<11|1<<16|1<<25, providing 0 here means all channels */
+	unsigned int scanRetriesRemaining;	/*!< The number of scan loops that we will subsequently perform to collect an exhaustive survey */
+};
+
 /**
  * @brief Class allowing sending commands and receiving events from an EZSP interface
  */
@@ -332,6 +354,7 @@ private:
 	bool leavePreviousNetworkAtInit;	/*!< Shall we leave any previously Zigbee network joined by the adapter, at startup? */
 	unsigned int resetDot154ChannelAtInit;    /*!< If non 0, this will indicate the value of the new 802.15.4 channel on which to create a network at startup */
 	bool scanInProgress;    /*!< Is there a currently ongoing network scan? */
+	ScanContext currentScanContext;	/*!< If scanInProgress is true, this contains the context (parameters) of the current scan */
 	std::map<uint8_t, int8_t> lastChannelToEnergyScan; /*!< Map containing channel to RSSI mapping for the last energy scan */
 	std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> > lastChannelToZigbeeNetworkScan; /*!< Map containing channel to nearby zigbee network mapping for the last active scan */
 };
