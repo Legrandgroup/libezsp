@@ -712,8 +712,10 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option) {
 	l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
 
 	//
-	clogD << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option : " <<  std::hex << std::setw(2) << std::setfill('0') << i_option << std::endl;
-	zb_messaging.SendUnicast(0,l_gp_comm_msg);
+	clogD << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option: "
+	      << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_option)
+	      << "\n";
+	zb_messaging.SendUnicast(0, l_gp_comm_msg);
 }
 
 /*
