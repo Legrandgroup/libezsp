@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#include <cmath>	// For abs()
 
 #include "spi/TimerBuilder.h"
 #include "spi/ILogger.h"
@@ -392,7 +393,7 @@ public:
 				}
 				else {
 					int16_t value = static_cast<int16_t>(NSEZSP::dble_u8_to_u16(payload.at(6), payload.at(5)));
-					std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << value%100 << "°C\n";
+					std::cout << "Temperature: " << value/100 << "." << std::setw(2) << std::setfill('0') << abs(value%100) << "°C\n"; /* Note: we padd with 0 and only use the absolute value for the decimals in order to properly display the extracted decimal part */
 					usedBytes = 7;
 					return true;
 				}
