@@ -367,6 +367,10 @@ typedef enum {
 	// After moving, a mobile node's attempt to re-establish contact with the
 	// network failed
 	EMBER_MOVE_FAILED = 0x96U,
+	// The network has been opened for joining.
+	EMBER_NETWORK_OPENED = 0x9CU,
+	// The network has been closed for joining.
+	EMBER_NETWORK_CLOSED = 0x9DU,
 	// A message cannot be sent because the network is currently overloaded
 	EMBER_NETWORK_BUSY = 0xA1U,
 

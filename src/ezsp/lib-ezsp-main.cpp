@@ -639,8 +639,13 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 			gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
 		}
 		else {
-			clogD << "Call EZSP_NETWORK_STATE\n";
-			dongle.sendCommand(EZSP_NETWORK_STATE);
+			if (155 == status) {
+				clogD << "Got undocumented status 155, ignoring\n";
+			}
+			else {
+				clogD << "Call EZSP_NETWORK_STATE\n";
+				dongle.sendCommand(EZSP_NETWORK_STATE);
+			}
 		}
 	}
 	else {

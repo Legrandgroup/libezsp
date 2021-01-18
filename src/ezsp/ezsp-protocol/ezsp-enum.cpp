@@ -18,7 +18,7 @@ std::string CEzspEnum::EmberNodeTypeToString( EmberNodeType in ) {
 		{ EMBER_SLEEPY_END_DEVICE, "EMBER_SLEEPY_END_DEVICE" },
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
+	return it == MyEnumStrings.end() ? "unknown value" : it->second;
 }
 
 std::string CEzspEnum::EEmberStatusToString( EEmberStatus in ) {
@@ -38,6 +38,8 @@ std::string CEzspEnum::EEmberStatusToString( EEmberStatus in ) {
 		{ EMBER_NETWORK_DOWN, "EMBER_NETWORK_DOWN" },
 		{ EMBER_NOT_JOINED, "EMBER_NOT_JOINED" },
 		{ EMBER_JOIN_FAILED, "EMBER_JOIN_FAILED" },
+		{ EMBER_NETWORK_OPENED, "EMBER_NETWORK_OPENED" },
+		{ EMBER_NETWORK_CLOSED, "EMBER_NETWORK_CLOSED" },
 		{ EMBER_MOVE_FAILED, "EMBER_MOVE_FAILED" },
 		{ EMBER_NETWORK_BUSY, "EMBER_NETWORK_BUSY" },
 		{ EMBER_SECURITY_STATE_NOT_SET, "EMBER_SECURITY_STATE_NOT_SET" },
@@ -48,7 +50,7 @@ std::string CEzspEnum::EEmberStatusToString( EEmberStatus in ) {
 		{ UNDOCUMENTED_UNKNOWN_KEY_FOR_SOURCE_ID, "UNDOCUMENTED_UNKNOWN_KEY_FOR_SOURCE_ID" },
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE : " + std::to_string(in) : it->second;
+	return it == MyEnumStrings.end() ? std::to_string(in) + "(unknown)": it->second;
 }
 
 std::string CEzspEnum::EmberJoinMethodToString( EmberJoinMethod in ) {
@@ -59,7 +61,7 @@ std::string CEzspEnum::EmberJoinMethodToString( EmberJoinMethod in ) {
 		{ EMBER_USE_NWK_COMMISSIONING, "EMBER_USE_NWK_COMMISSIONING" }
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
+	return it == MyEnumStrings.end() ? "unknown value" : it->second;
 }
 
 std::string CEzspEnum::EEzspCmdToString( EEzspCmd in ) {
@@ -285,7 +287,7 @@ std::string CEzspEnum::EEzspCmdToString( EEzspCmd in ) {
 		/* --- */
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
+	return it == MyEnumStrings.end() ? "unknown value" : it->second;
 }
 
 std::string CEzspEnum::EmberKeyTypeToString( EmberKeyType in ) {
@@ -296,7 +298,7 @@ std::string CEzspEnum::EmberKeyTypeToString( EmberKeyType in ) {
 		{ EMBER_APPLICATION_LINK_KEY, "EMBER_APPLICATION_LINK_KEY" }
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
+	return it == MyEnumStrings.end() ? "unknown value" : it->second;
 }
 
 
@@ -311,5 +313,5 @@ std::string CEzspEnum::EmberIncomingMessageTypeToString( EmberIncomingMessageTyp
 		{ EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST, "EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST" }
 	};
 	auto   it  = MyEnumStrings.find(in);
-	return it == MyEnumStrings.end() ? "OUT_OF_RANGE" : it->second;
+	return it == MyEnumStrings.end() ? "unknown value" : it->second;
 }
