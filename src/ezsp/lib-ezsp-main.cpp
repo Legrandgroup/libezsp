@@ -639,8 +639,10 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 			gp_sink.init(); /* When sink is ready, callback clibobs will invoke setState() */
 		}
 		else {
-			if (155 == status) {
-				clogD << "Got undocumented status 155, ignoring\n";
+			if (155 == status) {	/* We receive status 155 just after having done a channel change */
+				clogD << "Got channel change feedback. Retrieving new network parameters\n";
+				/* In such case, we must retrieve again the network parameters, amongst other, to update the GP sink with the correct new channel */
+				dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
 			}
 			else {
 				clogD << "Call EZSP_NETWORK_STATE\n";

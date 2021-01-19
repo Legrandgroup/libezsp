@@ -226,16 +226,17 @@ bool CGpSink::removeGpds(std::vector<uint32_t> gpd) {
 void CGpSink::handleEzspRxMessage_GET_NETWORK_PARAMETERS(const NSSPI::ByteBuffer& i_msg_receive) {
 	CGetNetworkParametersResponse l_rsp(i_msg_receive);
 	if( EEmberStatus::EMBER_SUCCESS == l_rsp.getStatus() ) {
-		nwk_parameters = l_rsp.getParameters();
+		this->nwk_parameters = l_rsp.getParameters();
 	}
 }
 
 void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGpFrame& gpf) {
 	// do action only if we are in commissioning mode
+	uint32_t remoteGpdSourceId = gpf.getSourceId();
 	if (CGpSink::State::SINK_COM_OPEN == sink_state) {
 		if (GPF_COMMISSIONING_CMD == gpf.getCommandId()) {
 			// find entry in sink table
-			gpSinkTableFindOrAllocateEntry(gpf.getSourceId());
+			gpSinkTableFindOrAllocateEntry(remoteGpdSourceId);
 
 			// save incomming message
 			gpf_comm_frame = gpf;
@@ -244,13 +245,15 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGp
 			setSinkState(CGpSink::State::SINK_COM_IN_PROGRESS);
 		}
 	}
-	if( authorizeGpfChannelRqst && (GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId()) ) {
-		// response only if next attempt is on same channel as us
+	if (authorizeGpfChannelRqst && (GPF_CHANNEL_REQUEST_CMD == gpf.getCommandId())) {
+		// respond only if next attempt is on same channel as us
 		uint8_t l_next_channel_attempt = static_cast<uint8_t>(gpf.getPayload().at(0)&0x0F);
-		if( l_next_channel_attempt == (nwk_parameters.getRadioChannel()-11U) ) {
+		uint8_t targetDot154Channel = this->nwk_parameters.getRadioChannel();
+		clogD << "Will steer requesting source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel) << "\n";
+		uint8_t channelByte = targetDot154Channel - 11U;
+		if (l_next_channel_attempt == channelByte) {
 			// send channel configuration with timeout of 500ms
-			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-			gpSend(true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10|l_next_channel_attempt) }, 2000);
+			gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 2000);
 
 			// \todo is it necessary to let SINK open for commissioning ?
 		}
@@ -258,38 +261,43 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGp
 }
 
 void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFrame& gpf) {
-	// manage channel request
 	if( (GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId()) && (gpf.getPayload().size() > 6) ) {
-		// verify that no message is waiting to send
-		bool l_found = false;
+		/* Handle the MSP channel request. This message is a MSP extension of the GP commissioning */
+		/* However, it has the advantage of sending the new channel authenticated for the specific GP device, this type of message cannot be forged by an attacker that would not know the GP OOB encryption key */
+
+		uint32_t remoteGpdSourceId = gpf.getSourceId();
+		/* Verify that there is no message pending for transmission to this source ID */
+		bool messagePendingForThisSourceId = false;
 		for (auto it : gpd_send_list) {
-			if( it.second == gpf.getSourceId() ) {
-				l_found = true;
+			if (it.second == remoteGpdSourceId) {
+				messagePendingForThisSourceId = true;
 				break;
 			}
 		}
 
-		// assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
+		// Assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
 		uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
 		uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
 		uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
 		uint8_t l_type_id = gpf.getPayload().at(6);
 		//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
-		if( (0x1021 == l_manufacturer_id ) &&
-		        (0==l_cluster_id) &&
-		        (0x5000==l_attribute_id) &&
-		        (0x20==l_type_id) &&
-		        !l_found) {
+		if ((0x1021 == l_manufacturer_id) &&
+		    (0 == l_cluster_id) &&
+		    (0x5000 == l_attribute_id) &&
+		    (0x20 == l_type_id) &&
+		    !messagePendingForThisSourceId) {
 			static uint8_t l_handle_counter = 0;
 
-			// response on same channel, attribute contain device_id of gpd
+			// Response is on the same channel, attribute contain device_id of gpd
 			// \todo use to update sink table entry
 
 			// send channel configuration with timeout of 1000ms
-			CEmberGpAddressStruct l_gp_addr(gpf.getSourceId());
-			uint8_t channelSpec = nwk_parameters.getRadioChannel() - 11U;
-			gpSend( true, true, l_gp_addr, GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelSpec) }, 1000, l_handle_counter );
-			gpd_send_list.insert({ l_handle_counter++, gpf.getSourceId() });
+			uint8_t targetDot154Channel = this->nwk_parameters.getRadioChannel();
+			clogD << "Will send proprietary steering requesting source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel) << "\n";
+			uint8_t channelByte = targetDot154Channel - 11U;
+
+			gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 1000, l_handle_counter);
+			gpd_send_list.insert({ l_handle_counter++, remoteGpdSourceId });
 		}
 	}
 
