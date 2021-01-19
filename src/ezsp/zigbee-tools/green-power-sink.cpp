@@ -251,7 +251,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGp
 		// respond only if next attempt is on same channel as us
 		uint8_t l_next_channel_attempt = static_cast<uint8_t>(gpf.getPayload().at(0)&0x0F);
 		uint8_t targetDot154Channel = this->nwk_parameters.getRadioChannel();
-		clogD << "Will steer requesting source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel) << "\n";
+		clogI << "Will steer requesting source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel) << "\n";
 		uint8_t channelByte = targetDot154Channel - 11U;
 		if (l_next_channel_attempt == channelByte) {
 			// send channel configuration with timeout of 500ms
@@ -295,7 +295,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFra
 				this->gpdSentLastHandlerNb++;	/* This transmission will be done using an incremented handler number */
 				this->sentChannelSwitchSourceId = remoteGpdSourceId;
 
-				clogD << "Will steering source ID 0x"
+				clogI << "Will steering source ID 0x"
 				      << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId
 				      << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel)
 				      << " using proprietary channel switch command"
