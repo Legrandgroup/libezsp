@@ -313,8 +313,9 @@ private:
 	CEmberGpSinkTableEntryStruct sink_table_entry;
 	uint8_t proxy_table_index;
 	std::vector<uint32_t> gpds_to_remove;    /*!< A list of GP source IDs to remove from the adapter's GP sink */
-	// gpdf send list
-	std::map<uint8_t, uint32_t> gpd_send_list;
+	std::mutex gpdSentStateMutex;	/*!< Mutex allowing exclusive accesses to gpdSentPendingAckList and gpdSentLastHandlerNb */
+	uint8_t gpdSentLastHandlerNb;	/*!< The value of the last handler number used when invoking to dGpSend(), this will be returned by the adapter when the frame is acknowledged as sent */
+	uint32_t sentChannelSwitchSourceId;	/*!< If non-0, this attribute contains the source ID of an MSP channel switch request already sent but not yet successfully acknowledged by the adapter */
 	std::set<CGpObserver*> observers;   /*!< List of observers of this class */
 #ifdef USE_BUILTIN_MIC_PROCESSING
 	NSEZSP::CGPDeviceDb gp_dev_db;    /*!< A database of known Green Power devices */

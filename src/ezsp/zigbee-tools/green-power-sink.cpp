@@ -87,7 +87,9 @@ CGpSink::CGpSink( CEzspDongle &i_dongle, CZigbeeMessaging &i_zb_messaging ) :
 	sink_table_entry(),
 	proxy_table_index(),
 	gpds_to_remove(),
-	gpd_send_list(),
+	gpdSentStateMutex(),
+	gpdSentLastHandlerNb(-1),
+	sentChannelSwitchSourceId(0),
 	observers() {
 	dongle.registerObserver(this);
 }
@@ -253,7 +255,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_NO_SECURITY(const CGp
 		uint8_t channelByte = targetDot154Channel - 11U;
 		if (l_next_channel_attempt == channelByte) {
 			// send channel configuration with timeout of 500ms
-			gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 2000);
+			this->gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 2000);
 
 			// \todo is it necessary to let SINK open for commissioning ?
 		}
@@ -264,40 +266,42 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFra
 	if( (GPF_MANUFACTURER_ATTRIBUTE_REPORTING == gpf.getCommandId()) && (gpf.getPayload().size() > 6) ) {
 		/* Handle the MSP channel request. This message is a MSP extension of the GP commissioning */
 		/* However, it has the advantage of sending the new channel authenticated for the specific GP device, this type of message cannot be forged by an attacker that would not know the GP OOB encryption key */
-
+		
 		uint32_t remoteGpdSourceId = gpf.getSourceId();
-		/* Verify that there is no message pending for transmission to this source ID */
-		bool messagePendingForThisSourceId = false;
-		for (auto it : gpd_send_list) {
-			if (it.second == remoteGpdSourceId) {
-				messagePendingForThisSourceId = true;
-				break;
-			}
+		std::lock_guard<std::mutex> gpdSentStateLock(this->gpdSentStateMutex);
+		if (this->sentChannelSwitchSourceId != 0) {	/* There is already a channel switch ongoing... EZSP adapters cannot handle two requests simultaneously */
+			clogE << "Discarding channel switch request from source ID 0x"
+			      << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId
+			      << " because another previous channel switch request is being processed for source ID 0x"
+			      << std::hex << std::setw(8) << std::setfill('0') << this->sentChannelSwitchSourceId << "\n";
 		}
+		else {
+			// Assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
+			uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
+			uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
+			uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
+			uint8_t l_type_id = gpf.getPayload().at(6);
+			//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
+			if ((0x1021 == l_manufacturer_id) &&
+			    (0 == l_cluster_id) &&
+			    (0x5000 == l_attribute_id) &&
+			    (0x20 == l_type_id)) {
+				// Response is on the same channel, attribute contain device_id of gpd
+				// \todo use to update sink table entry
 
-		// Assume manufacturing 0x1021 attribute 0x5000 of cluster 0x0000 is a secure channel request
-		uint16_t l_manufacturer_id = dble_u8_to_u16(gpf.getPayload().at(1), gpf.getPayload().at(0));
-		uint16_t l_cluster_id = dble_u8_to_u16(gpf.getPayload().at(3), gpf.getPayload().at(2));
-		uint16_t l_attribute_id = dble_u8_to_u16(gpf.getPayload().at(5), gpf.getPayload().at(4));
-		uint8_t l_type_id = gpf.getPayload().at(6);
-		//uint8_t l_device_id = gpf.getPayload().at(7);	// Unused for now
-		if ((0x1021 == l_manufacturer_id) &&
-		    (0 == l_cluster_id) &&
-		    (0x5000 == l_attribute_id) &&
-		    (0x20 == l_type_id) &&
-		    !messagePendingForThisSourceId) {
-			static uint8_t l_handle_counter = 0;
+				// send channel configuration with timeout of 1000ms
+				uint8_t targetDot154Channel = this->nwk_parameters.getRadioChannel();
+				uint8_t channelByte = targetDot154Channel - 11U;
+				this->gpdSentLastHandlerNb++;	/* This transmission will be done using an incremented handler number */
+				this->sentChannelSwitchSourceId = remoteGpdSourceId;
 
-			// Response is on the same channel, attribute contain device_id of gpd
-			// \todo use to update sink table entry
-
-			// send channel configuration with timeout of 1000ms
-			uint8_t targetDot154Channel = this->nwk_parameters.getRadioChannel();
-			clogD << "Will send proprietary steering requesting source ID 0x" << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel) << "\n";
-			uint8_t channelByte = targetDot154Channel - 11U;
-
-			gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 1000, l_handle_counter);
-			gpd_send_list.insert({ l_handle_counter++, remoteGpdSourceId });
+				clogD << "Will steering source ID 0x"
+				      << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId
+				      << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel)
+				      << " using proprietary channel switch command"
+				      << " (using handler #" << static_cast<unsigned int>(this->gpdSentLastHandlerNb) << ")\n";
+				this->gpSend(true, true, CEmberGpAddressStruct(remoteGpdSourceId), GPF_CHANNEL_CONFIGURATION, { static_cast<uint8_t>(0x10U | channelByte) }, 1000, this->gpdSentLastHandlerNb);
+			}
 		}
 	}
 
@@ -630,9 +634,26 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 
 	case EZSP_D_GP_SENT_HANDLER: {
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
+		uint8_t gpepHandle = i_msg_receive.at(1); // The handle of the GPDF transmission
 
-		if( EMBER_SUCCESS == l_status ) {
-			gpd_send_list.erase(i_msg_receive.at(1));
+		if (EMBER_SUCCESS == l_status) {
+			std::lock_guard<std::mutex> gpdSentStateLock(this->gpdSentStateMutex);
+			if (gpepHandle != this->gpdSentLastHandlerNb) {
+				clogW << "Got a success for GPDF transmission that we don't know about (handle #" << std::dec << static_cast<unsigned int>(gpepHandle) << "). Discarding\n";
+			}
+			else if (this->sentChannelSwitchSourceId == 0) {
+				clogW << "Got a success for GPDF transmission at handle #"
+				      << std::dec << static_cast<unsigned int>(gpepHandle)
+				      << " but we have not stored its source ID. This is a bug. Discarding\n";
+			}
+			else {
+				clogD << "Got a success for GPDF transmission at handle #"
+				      << std::dec << static_cast<unsigned int>(gpepHandle)
+				      << " (pending response to source ID 0x"
+				      << std::hex << std::setw(8) << std::setfill('0') << this->sentChannelSwitchSourceId << ")\n";
+				this->sentChannelSwitchSourceId = 0;	/* Forget about the source ID that we were waiting for */
+				this->gpdSentLastHandlerNb--;
+			}
 		}
 
 		// debug

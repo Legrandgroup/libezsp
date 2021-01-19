@@ -505,7 +505,8 @@ public:
 			std::cout << "Received On Command\n";
 		}
 		break;
-
+		
+		case 0xa1: break; // Channel request
 		default:
 			clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
 			break;
