@@ -298,7 +298,7 @@ int
 	offset = 0;
 	while (!done) {
 		/* ... and read the tag content */
-		debugX(2,"Reading at offset %u/%u\n", offset, fw_image_file_sz);
+		debugX(2,"Reading at offset %lu/%lu\n", (unsigned long)offset, (unsigned long)fw_image_file_sz);
 		if (hooked_read(fw_fd, &gbl_tag, sizeof(gbl_tag)) != sizeof(gbl_tag)) {
 			fprintf(stderr, "Failed reading next GBL tag from firmware image\n");
 			return EXIT_FAILURE;
@@ -318,7 +318,7 @@ int
 			case EBL_TAG_ID_APPLICATION:
 				debugX(2,"Found GBL info tag of length %u\n", gbl_tag_length);
 				if (gbl_tag_length>64) {
-					fprintf(stderr, "Error GBL info tag is too large: %u\n", gbl_tag_length, strerror);
+					fprintf(stderr, "Error GBL info tag is too large: %u\n", gbl_tag_length);
 					return EXIT_FAILURE;
 				}
 				else {
@@ -332,11 +332,11 @@ int
 						hexdump_buffer(stderr, (unsigned char *)(&gbl_info_tag_buf), gbl_tag_length);
 					}
 					if (gbl_tag_length<sizeof(gbl_app_info)) {
-						fprintf(stderr, "GBL application data (%u bytes) in firmware image is too short (min %u bytes expected)\n", gbl_tag_length, sizeof(gbl_app_info));
+						fprintf(stderr, "GBL application data (%u bytes) in firmware image is too short (min %lu bytes expected)\n", gbl_tag_length, sizeof(gbl_app_info));
 						return EXIT_FAILURE;
 					}
 					if (gbl_tag_length>sizeof(gbl_app_info)) {
-						fprintf(stderr, "GBL application data (%u bytes) in firmware image is larger than expected (%u bytes). Truncating\n", gbl_tag_length, sizeof(gbl_app_info));
+						fprintf(stderr, "GBL application data (%u bytes) in firmware image is larger than expected (%lu bytes). Truncating\n", gbl_tag_length, sizeof(gbl_app_info));
 					}
 					memcpy(&gbl_app_info, &gbl_info_tag_buf, sizeof(gbl_app_info));
 					printf(/*"GBL version: */"0x%08"PRIx32"\n", letohl(gbl_app_info.version));
@@ -347,7 +347,7 @@ int
 			default:
 				offset = hooked_lseek(fw_fd, (off_t)(gbl_tag_length), SEEK_CUR);
 				if (offset<0) {
-					fprintf(stderr, "Error %d while seeking to end of TAG %u: %s\n", errno, gbl_tag_id, strerror);
+					fprintf(stderr, "Error %d while seeking to end of TAG %u: %s\n", errno, gbl_tag_id, strerror(errno));
 					return EXIT_FAILURE;
 				}
 		}
