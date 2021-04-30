@@ -70,8 +70,10 @@ FILE *unit_test_hooked_stdout;	/* Stream where stdout is redirected in unit test
 
 static char *progname; /*!< The command name under which we were called (for logging) */
 
+typedef uint32_t gbl_tag_id_t;
+
 struct gbl_tl_tag {
-	uint32_t gbl_tag_id;	/*!< Tag ID for this section */
+	gbl_tag_id_t gbl_tag_id;	/*!< Tag ID for this section */
 	uint32_t gbl_tag_length;	/*!< Length of this section */
 	/* Following this entry, we will find the tag payload itself, starting with the first byte, for a length of gbl_tag_length */
 };
@@ -83,7 +85,7 @@ typedef struct ApplicationData {
 	uint8_t productId[16];	/*!< Unique ID (UUID or GUID) of the product that this application was built for */
 } ApplicationData_t;
 
-#define GBL_APPLICATION_INFO_TAG 0xF40A0AF4U
+#define EBL_TAG_ID_APPLICATION 0xF40A0AF4U
 
 /* debugX() is used for compatibility with the equivalent macros in U-Boot code */
 #ifndef debugX
@@ -165,6 +167,53 @@ uint16_t letohs(uint16_t le_u16) {
 	result |= *bp;
 	
 	return result;
+}
+
+char* gbl_tag_id_to_str(gbl_tag_id_t tag_id) {
+	switch (tag_id) {
+		case 0xE35050E3UL:
+			return "EBL_IMAGE_MAGIC_WORD";
+		case 0x03000000UL:
+			return "EBL_COMPATIBILITY_MAJOR_VERSION";
+		case 0x00000200UL:
+			return "EBLV2_COMPATIBILITY_MAJOR_VERSION";
+		case 0x03A617EBUL:
+			return "EBL_TAG_ID_HEADER_V3";
+		case 0xF50909F5UL:
+			return "EBL_TAG_ID_BOOTLOADER";
+		case EBL_TAG_ID_APPLICATION:
+			return "EBL_TAG_ID_APPLICATION";
+		case 0xF60808F6UL:
+			return "EBL_TAG_ID_METADATA";
+		case 0xFE0101FEUL:
+			return "EBL_TAG_ID_PROG";
+		case 0xFD0303FDUL:
+			return "EBL_TAG_ID_ERASEPROG";
+		case 0xFC0404FCUL:
+			return "EBL_TAG_ID_END";
+		case 0x5EA617EBUL:
+			return "EBL_TAG_ID_SE_UPGRADE";
+		case 0xFB0505FBUL:
+			return "EBL_TAG_ID_ENC_HEADER";
+		case 0xFA0606FAUL:
+			return "EBL_TAG_ID_ENC_INIT";
+		case 0xF90707F9UL:
+			return "EBL_TAG_ID_ENC_EBL_DATA";
+		case 0xF70909F7UL:
+			return "EBL_TAG_ID_ENC_MAC";
+		case 0xF70A0AF7UL:
+			return "EBL_TAG_ID_SIGNATURE_ECDSA_P256";
+		case 0xF30B0BF3UL:
+			return "EBL_TAG_ID_CERTIFICATE_ECDSA_P256";
+		case 0x00000000UL:
+			return "EBL_TYPE_NONE";
+		case 0x00000001UL:
+			return "EBL_TYPE_ENCRYPTION_AESCCM";
+		case 0x00000100UL:
+			return "EBL_TYPE_SIGNATURE_ECDSA";
+		default:
+			return "(unknown)";
+	}
 }
 
 /**
@@ -249,7 +298,7 @@ int
 	offset = 0;
 	while (!done) {
 		/* ... and read the tag content */
-		debugX(2,"Reading at offset %u/%u\n", offset, fw_image_file_sz);
+		debugX(2,"Reading at offset %lu/%lu\n", (unsigned long)offset, (unsigned long)fw_image_file_sz);
 		if (hooked_read(fw_fd, &gbl_tag, sizeof(gbl_tag)) != sizeof(gbl_tag)) {
 			fprintf(stderr, "Failed reading next GBL tag from firmware image\n");
 			return EXIT_FAILURE;
@@ -264,12 +313,12 @@ int
 		uint32_t gbl_tag_id = letohl(gbl_tag.gbl_tag_id);
 		uint32_t gbl_tag_length = letohl(gbl_tag.gbl_tag_length);
 		
-		debugX(2,"Read tag 0x%"PRIx32"\n", gbl_tag_id);
+		debugX(2,"Read tag 0x%"PRIx32" (%s)\n", gbl_tag_id, gbl_tag_id_to_str(gbl_tag_id));
 		switch(gbl_tag_id) {
-			case GBL_APPLICATION_INFO_TAG:
+			case EBL_TAG_ID_APPLICATION:
 				debugX(2,"Found GBL info tag of length %u\n", gbl_tag_length);
 				if (gbl_tag_length>64) {
-					fprintf(stderr, "Error GBL info tag is too large: %u\n", gbl_tag_length, strerror);
+					fprintf(stderr, "Error GBL info tag is too large: %u\n", gbl_tag_length);
 					return EXIT_FAILURE;
 				}
 				else {
@@ -283,11 +332,11 @@ int
 						hexdump_buffer(stderr, (unsigned char *)(&gbl_info_tag_buf), gbl_tag_length);
 					}
 					if (gbl_tag_length<sizeof(gbl_app_info)) {
-						fprintf(stderr, "GBL application data (%u bytes) in firmware image is too short (min %u bytes expected)\n", gbl_tag_length, sizeof(gbl_app_info));
+						fprintf(stderr, "GBL application data (%u bytes) in firmware image is too short (min %lu bytes expected)\n", gbl_tag_length, sizeof(gbl_app_info));
 						return EXIT_FAILURE;
 					}
 					if (gbl_tag_length>sizeof(gbl_app_info)) {
-						fprintf(stderr, "GBL application data (%u bytes) in firmware image is larger than expected (%u bytes). Truncating\n", gbl_tag_length, sizeof(gbl_app_info));
+						fprintf(stderr, "GBL application data (%u bytes) in firmware image is larger than expected (%lu bytes). Truncating\n", gbl_tag_length, sizeof(gbl_app_info));
 					}
 					memcpy(&gbl_app_info, &gbl_info_tag_buf, sizeof(gbl_app_info));
 					printf(/*"GBL version: */"0x%08"PRIx32"\n", letohl(gbl_app_info.version));
@@ -298,7 +347,7 @@ int
 			default:
 				offset = hooked_lseek(fw_fd, (off_t)(gbl_tag_length), SEEK_CUR);
 				if (offset<0) {
-					fprintf(stderr, "Error %d while seeking to end of TAG %u: %s\n", errno, gbl_tag_id, strerror);
+					fprintf(stderr, "Error %d while seeking to end of TAG %u: %s\n", errno, gbl_tag_id, strerror(errno));
 					return EXIT_FAILURE;
 				}
 		}
