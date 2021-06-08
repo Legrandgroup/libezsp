@@ -203,7 +203,7 @@ TEST_GROUP(gp_tests) {
 		      )\
 		     ); \
 	else \
-		std::cout << "Passed stage " << tstage << " checkpoint (test running at line " << +__LINE__ << ")\n"; \
+		std::cout << "Passed stage " << std::dec << tstage << " checkpoint (test running at line " << +__LINE__ << ")\n"; \
 	} while(0) //NOSONAR
 
 
