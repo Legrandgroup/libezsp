@@ -139,7 +139,7 @@ When run as standalone, an executable named `test_runner` will be compiled and w
 
 In order to both compile and run unit tests, using -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_SERIALCPP=OFF -DUSE_MOCKSERIAL=ON options when running cmake:
 ```
-cmake -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_SERIALCPP=OFF -DUSE_MOCKSERIAL=ON
+cmake -DUSE_CPPTHREADS=ON -DUSE_GCOV=y -DUSE_SERIALCPP=OFF -DUSE_MOCKSERIAL=ON .
 make
 ./tests/gptest
 ```
