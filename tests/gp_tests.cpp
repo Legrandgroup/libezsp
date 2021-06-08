@@ -97,7 +97,7 @@ public:
 			}
 		}
 		if (!transitionMatch) {
-			if (this->stage == 121 | this->stage == 122 || this->stage == 123) {	/* These stages are specific because there are parts of the buffer that come from randomness, thus cannot be strictly compared */
+			if (this->stage == 121 || this->stage == 122 || this->stage == 123) {	/* These stages are specific because there are parts of the buffer that come from randomness, thus cannot be strictly compared */
 				std::cout << "Specific exception for parsing stage 119 to 121\n";
 				//~ /* Slicing expected transition buffer to only the first 11 bytes */
 				//~ std::vector<uint8_t> expectedTransitionLeading11 = (*this->stageExpectedTransitions)[this->stage];

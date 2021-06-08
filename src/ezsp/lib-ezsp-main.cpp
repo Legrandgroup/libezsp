@@ -593,7 +593,7 @@ void CLibEzspMain::handleEzspRxMessage_NETWORK_STATE(const NSSPI::ByteBuffer& i_
 		}
 	}
 	else {
-		if ((this->getState() == CLibEzspInternal::State::STACK_INIT) && this->resetDot154ChannelAtInit) {
+		if ((this->getState() == CLibEzspInternal::State::STACK_INIT) && (this->resetDot154ChannelAtInit != 0)) {
 			clogI << "Zigbee reset requested... Leaving current network\n";
 			// leave current network
 			zb_nwk.leaveNetwork();
