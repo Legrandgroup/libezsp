@@ -6,8 +6,12 @@
  * Reference: docs-14-0563-16-batt-green-power-spec_ProxyBasic.pdf
  */
 
-#include "ezsp/byte-manip.h"
+#include <sstream>
+#include <iomanip>
+
 #include "ember-process-gp-pairing-parameter.h"
+#include "ezsp/byte-manip.h"
+#include "spi/ILogger.h"
 
 using NSEZSP::CProcessGpPairingParam;
 using NSEZSP::CEmberGpSinkTableOption;
@@ -78,4 +82,23 @@ NSSPI::ByteBuffer CProcessGpPairingParam::get() const {
 	lo_out.push_back(forwardingRadius);
 
 	return lo_out;
+}
+
+std::string CProcessGpPairingParam::toString() const {
+	std::stringstream buf;
+
+	buf << "ProcessGpPairingParam: { ";
+	buf << "[options: 0x"<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(this->options.get()) << "]";
+	buf << "[addr: " << this->addr << "]";
+	buf << "[commMode: 0x"<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->commMode) << "]";
+	buf << "[sinkNetworkAddress: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->sinkNetworkAddress) << "]";
+	buf << "[sinkGroupId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->sinkGroupId) << "]";
+	buf << "[assignedAlias: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(this->assignedAlias) << "]";
+	buf << "[sinkIeeeAddress: " << NSSPI::Logger::byteSequenceToString(this->sinkIeeeAddress) << "]";
+	buf << "[gpdKey: " << NSSPI::Logger::byteSequenceToString(this->gpdKey) << "]";
+	buf << "[gpdSecurityFrameCounter: 0x"<< std::hex << std::setw(8) << std::setfill('0') << static_cast<unsigned int>(this->gpdSecurityFrameCounter) << "]";
+	buf << "[forwardingRadius: 0x"<< std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(this->forwardingRadius) << "]";
+	buf << " }";
+
+	return buf.str();
 }

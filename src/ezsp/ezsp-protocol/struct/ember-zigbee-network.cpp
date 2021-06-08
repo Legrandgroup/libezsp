@@ -8,7 +8,6 @@
 #include <iomanip>
 
 #include "ezsp/ezsp-protocol/struct/ember-zigbee-network.h"
-
 #include "ezsp/byte-manip.h"
 
 using NSEZSP::CEmberZigbeeNetwork;

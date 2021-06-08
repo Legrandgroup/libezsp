@@ -51,6 +51,25 @@ public:
 	 */
 	NSSPI::ByteBuffer get() const;
 
+	/**
+	 * @brief Dump this instance as a string
+	 *
+	 * @return The resulting string
+	 */
+	std::string toString() const;
+
+	/**
+	 * @brief Serialize to an iostream
+	 *
+	 * @param out The original output stream
+	 * @param data The object to serialize
+	 *
+	 * @return The new output stream with serialized data appended
+	 */
+	friend std::ostream& operator<< (std::ostream& out, const CProcessGpPairingParam& data) {
+		out << data.toString();
+		return out;
+	}
 
 private:
 	CGpPairingCommandOption options;        /*!< The options field of the GP Pairing command (see A.3.3.5.2 GP Pairing command for more details) */
