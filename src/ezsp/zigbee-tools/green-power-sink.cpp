@@ -295,7 +295,7 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER_SECURITY(const CGpFra
 				this->gpdSentLastHandlerNb++;	/* This transmission will be done using an incremented handler number */
 				this->sentChannelSwitchSourceId = remoteGpdSourceId;
 
-				clogI << "Will steering source ID 0x"
+				clogI << "Will steer source ID 0x"
 				      << std::hex << std::setw(8) << std::setfill('0') << remoteGpdSourceId
 				      << " to channel " << std::dec << static_cast<unsigned int>(targetDot154Channel)
 				      << " using proprietary channel switch command"
@@ -399,7 +399,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY(const NSSPI:
 		}
 	}
 	else {
-		clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY : sink_state " << sink_state << std::endl;
+		clogD << "EZSP_GP_SINK_TABLE_FIND_OR_ALLOCATE_ENTRY: sink_state " << NSEZSP::CGpSink::getStateAsString(this->sink_state) << "\n";
 	}
 }
 
@@ -427,7 +427,7 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_GET_ENTRY(const NSSPI::ByteBuffer& 
 	CEmberGpAddressStruct l_gp_addr;
 
 	// debug
-	clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status: " <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry : " << l_entry << std::endl;
+	clogD << "EZSP_GP_SINK_TABLE_GET_ENTRY Response status: " <<  CEzspEnum::EEmberStatusToString(l_status) << ", table entry: " << l_entry << "\n";
 
 	if (CGpSink::State::SINK_COM_IN_PROGRESS == sink_state) { /* Create new state to parse each entry sequentially, check l_status, if SUCCESS, we found an entry, otherwise out-of-bounds */
 		/* If valid, notify the caller, if invalid, continue progressing (issue a new gpSinkGetEntry() on the next index until out-of-bounds) */
@@ -485,11 +485,11 @@ void CGpSink::handleEzspRxMessage_SINK_TABLE_SET_ENTRY(const NSSPI::ByteBuffer& 
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
 		// debug
-		clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+		clogD << "EZSP_GP_SINK_TABLE_SET_ENTRY Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << "\n";
 
 		if( EMBER_SUCCESS != l_status ) {
 			// error
-			clogD << "ERROR, Stop commissioning process !!" << std::endl;
+			clogD << "ERROR, Stop commissioning process !!\n";
 			setSinkState(CGpSink::State::SINK_READY);
 		}
 		else {
@@ -546,13 +546,13 @@ void CGpSink::handleEzspRxMessage_PROXY_TABLE_GET_ENTRY(const NSSPI::ByteBuffer&
 
 void CGpSink::handleEzspRxMessage_PROXY_TABLE_PROCESS_GP_PAIRING(const NSSPI::ByteBuffer& i_msg_receive) {
 	if (CGpSink::State::SINK_COM_IN_PROGRESS == sink_state) {
-		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << "\n";
 
 		// close commissioning session
 		closeCommissioningSession();
 	}
 	else if (CGpSink::State::SINK_COM_OFFLINE_IN_PROGRESS == sink_state) {
-		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << std::endl;
+		clogD << "CGpSink::ezspHandler EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING gpPairingAdded : " << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_msg_receive[0]) << "\n";
 
 		gpds_to_register.pop_back();
 
@@ -628,7 +628,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
 		// debug
-		clogD << "EZSP_D_GP_SEND Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+		clogD << "EZSP_D_GP_SEND Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << "\n";
 	}
 	break;
 
@@ -657,7 +657,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 		}
 
 		// debug
-		clogD << "EZSP_D_GP_SENT_HANDLER Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+		clogD << "EZSP_D_GP_SENT_HANDLER Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << "\n";
 	}
 	break;
 
@@ -665,7 +665,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
 		// debug
-		clogD << "EZSP_SEND_RAW_MESSAGE Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+		clogD << "EZSP_SEND_RAW_MESSAGE Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << "\n";
 	}
 	break;
 
@@ -673,7 +673,7 @@ void CGpSink::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receiv
 		EEmberStatus l_status = static_cast<EEmberStatus>(i_msg_receive.at(0));
 
 		// debug
-		clogD << "EZSP_RAW_TRANSMIT_COMPLETE_HANDLER Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << std::endl;
+		clogD << "EZSP_RAW_TRANSMIT_COMPLETE_HANDLER Response status :" <<  CEzspEnum::EEmberStatusToString(l_status) << "\n";
 	}
 	break;
 
@@ -741,7 +741,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option) {
 	l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
 
 	//
-	clogD << "SEND UNICAST : OPEN/CLOSE GP COMMISSIONING option: "
+	clogD << "SEND UNICAST: OPEN/CLOSE GP COMMISSIONING option: "
 	      << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_option)
 	      << "\n";
 	zb_messaging.SendUnicast(0, l_gp_comm_msg);
