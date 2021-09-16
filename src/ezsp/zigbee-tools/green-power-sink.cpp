@@ -904,9 +904,10 @@ void CGpSink::gpSinkSetEntry( uint8_t i_index, CEmberGpSinkTableEntryStruct& i_e
 }
 
 
-void CGpSink::gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param ) {
+void CGpSink::gpProxyTableProcessGpPairing(const CProcessGpPairingParam& i_param) {
 	clogD << "EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING\n";
-	dongle.sendCommand(EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING,i_param.get());
+	//clogD << "Sending EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING with payload " << i_param << "\n";
+	dongle.sendCommand(EZSP_GP_PROXY_TABLE_PROCESS_GP_PAIRING, i_param.get());
 }
 
 void CGpSink::gpSend(bool i_action, bool i_use_cca, CEmberGpAddressStruct i_gp_addr,

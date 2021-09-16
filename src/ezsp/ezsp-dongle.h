@@ -74,9 +74,9 @@ public:
 	CEzspDongle() = delete;
 
 	/**
-	 * \brief Copy constructor
+	 * @brief Copy constructor
 	 *
-	 * \param other The object to copy from
+	 * @param other The object to copy from
 	 */
 	CEzspDongle(const CEzspDongle& other);
 

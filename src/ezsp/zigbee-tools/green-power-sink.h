@@ -196,7 +196,7 @@ private:
 	/**
 	 * @brief Update the GP Proxy table based on a GP pairing.
 	 */
-	void gpProxyTableProcessGpPairing( CProcessGpPairingParam& i_param );
+	void gpProxyTableProcessGpPairing(const CProcessGpPairingParam& i_param);
 
 	/**
 	 * @brief
