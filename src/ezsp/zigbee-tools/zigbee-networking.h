@@ -75,8 +75,6 @@ public:
 
 	/**
 	 * @brief Close the zigbee network
-	 *
-	 * @param i_timeout A timeout for the network to open (in seconds)
 	 */
 	void closeNetwork();
 

@@ -26,36 +26,39 @@ public:
 
 	/**
 	 * @brief Build a basic cluster specific message
-	 * @param i_msp_nwk     : indicate if it's an msp or public message
-	 * @param i_endpoint    : destination endpoint
-	 * @param i_cluster_id  : concerned cluster
-	 * @param i_cmd_id      : command
-	 * @param i_direction   : model side
-	 * @param i_payload     : payload of command
-	 * @param i_src_ieee    : address ieee to use as source of message
-	 * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
+	 *
+	 * @param i_profile_id
+	 * @param i_manufacturer_code
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_cmd_id Command ID
+	 * @param i_direction Model side
+	 * @param i_transaction_number
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 */
-	void SetSpecific(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-	                 const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload, const uint64_t i_src_ieee,
-	                 const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0);
+	void SetSpecific(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
+					 const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
+					 const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
 
 	/**
 	 * @brief Build a basic cluster general message
-	 * @param i_msp_nwk     : indicate if it's an msp or public message
-	 * @param i_endpoint    : destination endpoint
-	 * @param i_cluster_id  : concerned cluster
-	 * @param i_cmd_id      : command
-	 * @param i_direction   : model side
-	 * @param i_payload     : payload of command
-	 * @param i_src_ieee    : address ieee to use as source of message
-	 * @param i_grp_id      : multicast group address to use (0 is assume as unicast/broadcast)
+	 *
+	 * @param i_profile_id
+	 * @param i_manufacturer_code
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_cmd_id Command ID
+	 * @param i_direction Model side
+	 * @param i_transaction_number
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 */
-	void SetGeneral(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
-	                const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload, const uint64_t i_src_ieee,
-	                const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0 );
+	void SetGeneral( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
+					 const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
+					 const uint8_t i_transaction_number, const uint16_t i_grp_id );
 
 	/**
 	 * @brief Fill a ZDO message
+	 *
 	 * @param i_cmd_id : ZDO command
 	 * @param i_payload : payload for command
 	 * @param i_transaction_number : transaction sequence number
@@ -91,6 +94,7 @@ public:
 
 	/**
 	 * @brief Parse an incomming raw EZSP message
+	 *
 	 * @param i_aps : aps data
 	 * @param i_msg : message data included header (ZCL and/or MSP)
 	 */
@@ -98,12 +102,14 @@ public:
 
 	/**
 	 * @brief Get : format zigbee message frame with header
+	 *
 	 * @return Zigbee message with header
 	 */
 	NSSPI::ByteBuffer Get() const;
 
 	/* FIXME: make the atribute below private as create getter/setter methods */
 	CAPSFrame aps;        /*!< Enclosed APS frame */
+
 private:
 	CZCLHeader zcl_header;        /*!< Enclosed ZCL header */
 	bool use_zcl_header;  /*!< Do we have a valid content in attribute zcl_header? */

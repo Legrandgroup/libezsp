@@ -15,6 +15,7 @@
 #include "ezsp/enum-generator.h"
 #include "ezsp/ezsp-dongle.h"
 #include "ezsp/zigbee-tools/zigbee-networking.h"
+#include "ezsp/zbmessage/zdp-enum.h"
 #include "ezsp/zigbee-tools/zigbee-messaging.h"
 #include "ezsp/zigbee-tools/green-power-sink.h"
 #include "ezsp/zbmessage/green-power-device.h"
@@ -113,6 +114,8 @@ public:
 	 * @param newObsGPFrameRecvCallback A callback function that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable this callback)
 	 */
 	void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
+
+	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
 
 	/**
 	 * @brief Register callback to receive all authenticated incoming green power frames
@@ -258,6 +261,45 @@ public:
 	 */
 	bool joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
 
+	/**
+	 * @brief Open the zigbee network for a defined period so other products can join the zigbee network
+	 *
+	 * @param i_timeout The time during the network is open
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool openNetwork(uint8_t i_timeout);
+
+	/**
+	 * @brief Send a ZDO unicast command
+	 *
+	 * @param i_node_id Short address of destination
+	 * @param i_cmd_id Command
+	 * @param[in] payload Payload for the ZDO unicast
+	 *
+	 * @return true if message can be send
+	 */
+	bool SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload);
+
+	/**
+	 * @brief Send a ZCL unicast command
+	 *
+	 * @param i_node_id Short address of destination
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_cmd_id Command ID
+	 * @param i_direction Message direction (client to sorver or server to client)
+	 * @param i_payload Payload of the command
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 *
+	 * @return true if message can be send
+	 */
+	bool SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+						const NSEZSP::EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
+						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
+						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
 private:
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;
@@ -274,9 +316,9 @@ private:
 	 */
 	void handleDongleState( EDongleState i_state );
 	void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );
+	void handleRxGpFrame( CGpFrame &i_gpf );
 	void handleBootloaderPrompt();
 	void handleFirmwareXModemXfr();
-	void handleRxGpFrame( CGpFrame &i_gpf );
 	void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
 	/**
@@ -318,6 +360,7 @@ private:
 	uint8_t exp_stack_type; /*!< Expected EZSP stack type from the EZSP adapter, 2=mesh */
 	uint16_t xncpManufacturerId;    /*!< The XNCP manufacturer ID read from the EZSP adatper (or 0 if unknown) */
 	uint16_t xncpVersionNumber;    /*!< The XNCP version number read from the EZSP adatper (or 0 if unknown) */
+	std::vector<uint8_t> dongleEUI64;    /*!< The dongle EUI64 MAC address */
 	CLibEzspInternal::State lib_state;    /*!< Current state for our internal state machine */
 	FLibStateCallback obsStateCallback;	/*!< Optional user callback invoked by us each time library state change */
 	CEzspDongle dongle; /*!< Dongle manipulation handler */
@@ -325,6 +368,7 @@ private:
 	CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
 	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
+	FZclFrameRecvCallback obsZclFrameRecvCallback;
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
 	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */

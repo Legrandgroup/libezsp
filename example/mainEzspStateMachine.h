@@ -16,6 +16,7 @@
 
 #include <ezsp/ezsp.h>
 #include <ezsp/byte-manip.h>
+#include <ezsp/zbmessage/cluster-attribute.h>
 
 namespace NSMAIN {
 
@@ -281,38 +282,32 @@ public:
 
 				this->scanChannelsThenRun();
 			}
-			// else if (this->openZigbeeCommissionningAtStartup) {
-			//     // If requested to do so, open the zigbee network for a specific duration, so new devices can join
-			//     zb_nwk.openNetwork(60);
+			else if (this->openZigbeeCommissionningAtStartup) {
+				libEzsp.openNetwork(60);
 
-			//     // we retrieve network information and key and eui64 of dongle (can be done before)
-			//     dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
-			//     dongle.sendCommand(EZSP_GET_EUI64);
-			//     dongle.sendCommand(EZSP_GET_KEY, { EMBER_CURRENT_NETWORK_KEY });
+				//start discover of existing product inside network
+				/*libEzsp.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
+					clogI << " Is it a new product ";
+					//clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
+					clogI << "[eui64 :";
+					for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
+					clogI << "]";
+					clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
+					clogI << " ?" << std::endl;
 
-			//     // start discover of existing product inside network
-			//     zb_nwk.startDiscoverProduct([&](EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id){
-			//         clogI << " Is it a new product ";
-			//         clogI << "[type : "<< CEzspEnum::EmberNodeTypeToString(i_type) << "]";
-			//         clogI << "[eui64 :";
-			//         for(uint8_t loop=0; loop<i_eui64.size(); loop++){ clogI << " " << std::hex << std::setw(2) << std::setfill('0') << unsigned(i_eui64[loop]); }
-			//         clogI << "]";
-			//         clogI << "[id : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(i_id) << "]";
-			//         clogI << " ?" << std::endl;
+					if( libEzsp.addProduct( i_eui64, i_id ) )
+					{
+						clogI << "YES !! Retrieve information for binding" << std::endl;
 
-			//         if( db.addProduct( i_eui64, i_id ) )
-			//         {
-			//             clogI << "YES !! Retrieve information for binding" << std::endl;
+						// retrieve information about device, starting by discover list of active endpoint
+						NSSPI::ByteBuffer payload;
+						payload.push_back(u16_get_lo_u8(i_id));
+						payload.push_back(u16_get_hi_u8(i_id));
 
-			//             // retrieve information about device, starting by discover list of active endpoint
-			//             NSSPI::ByteBuffer payload;
-			//             payload.push_back(u16_get_lo_u8(i_id));
-			//             payload.push_back(u16_get_hi_u8(i_id));
-
-			//             zb_messaging.SendZDOCommand( i_id, ZDP_ACTIVE_EP, payload );
-			//         }
-			//     });
-			// }
+						libEzsp.SendZDOCommand( i_id, 0x05, payload );
+					}
+				});*/
+			}
 			else {
 				clogW << "Ignoring EZSP library state change\n";
 			}
@@ -510,6 +505,73 @@ public:
 		default:
 			clogW << "Unknown command ID: 0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(i_gpf.getCommandId()) << "\n";
 			break;
+		}
+	}
+
+void handleElectricalMesurementAttribute(const uint16_t id, const int data){
+	for(std::map<int32_t, std::string>::iterator it = NSEZSP::ELECTRICAL_MESUREMENT_ATTRIBUTE.begin(); it != NSEZSP::ELECTRICAL_MESUREMENT_ATTRIBUTE.end(); ++it) {
+		if(id == it->first){
+			clogI << NSEZSP::ELECTRICAL_MESUREMENT_ATTRIBUTE[id] << data << "\n";
+		}
+	}
+}
+
+	/**
+	 * @brief Handler to be invoked when a new ZCL frame is received
+	 *
+	 * It will take the appropriate actions
+	 *
+	 * @param[in] i_zclf The frame received
+	 */
+	void onReceivedZclFrame(NSEZSP::CZclFrame &i_zclf) {
+		clogI << i_zclf.String() << std::endl;
+
+		if( 0 == i_zclf.getType() ) {
+			// to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
+			if( 0x0A == i_zclf.getCommand() ) {
+				//uint8_t data_type = zbMsg.GetPayload().at(2);
+				if( 0x0402 == i_zclf.getCluster() ) {
+					uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(1), i_zclf.getPayload().at(0));
+					if( 0x00 == attr_id ) {
+						uint16_t value_raw = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(4), i_zclf.getPayload().at(3));
+						clogI << ">>> Temperature : " << static_cast<float>(value_raw) / 100 << "°C\n";
+					}
+				}
+				else if( 0x0405 == i_zclf.getCluster() ) {
+					uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(1), i_zclf.getPayload().at(0));
+					if( 0x00 == attr_id ) {
+						uint16_t value_raw = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(4), i_zclf.getPayload().at(3));
+						clogI << ">>> Relative Humidity : " << static_cast<float>(value_raw) / 100 << "%\n";
+					}
+				}
+				else if( 0x0b04 == i_zclf.getCluster() ) {
+					for(int i = 0; i < i_zclf.getPayload().size()-2; i++){
+						if(i_zclf.getPayload().at(i+2) == NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE || i_zclf.getPayload().at(i+2) == NSEZSP::ZCL_INT16S_ATTRIBUTE_TYPE) {
+							uint16_t data_type = i_zclf.getPayload().at(i+2);
+							uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(i+1), i_zclf.getPayload().at(i));
+							uint16_t data = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(i+4), i_zclf.getPayload().at(i+3));
+							handleElectricalMesurementAttribute(attr_id, data);
+							i += 2;
+						}
+						else if(i_zclf.getPayload().at(i+2) == NSEZSP::ZCL_INT8S_ATTRIBUTE_TYPE) {
+							uint16_t data_type = i_zclf.getPayload().at(i+2);
+							uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(i+1), i_zclf.getPayload().at(i));
+							uint8_t data = i_zclf.getPayload().at(i+3);
+							handleElectricalMesurementAttribute(attr_id, data);
+							i += 1;
+						}
+					}
+				}
+				else if( 0x0006 == i_zclf.getCluster() ) {
+					uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(1), i_zclf.getPayload().at(0));
+					/* Send ZCL Command example */
+					//libEzsp.SendZCLCommand(0x01, 0x0006, 0x02, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSSPI::ByteBuffer(), 0xf791);
+					if( 0x0000 == attr_id ) {
+						uint16_t value_raw = i_zclf.getPayload().at(3);
+						clogI << "State of led is on : " << static_cast<bool>(value_raw) << "\n";
+					}
+				}
+			}
 		}
 	}
 

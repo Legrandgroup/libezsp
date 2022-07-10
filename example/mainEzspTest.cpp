@@ -294,6 +294,11 @@ int main(int argc, char **argv) {
 	};
 	lib_main.registerGPFrameRecvCallback(gprecvobs);
 
+	auto zclrecvobs = [&fsm](NSEZSP::CZclFrame &i_zclf) {
+		fsm.onReceivedZclFrame(i_zclf);
+	};
+	lib_main.registerZclFrameRecvCallback(zclrecvobs);
+
 	// Sample incoming greenpower sourceId callback
 	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {
 	//     clogI << "greenpower sourcedId: 0x" << std::hex << std::setw(4) << std::setfill('0') << static_cast<unsigned int>(i_gpd_id) <<

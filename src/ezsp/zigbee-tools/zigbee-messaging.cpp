@@ -22,21 +22,11 @@ void CZigbeeMessaging::handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_
 		clogD << "EZSP_MESSAGE_SENT_HANDLER return status : " << CEzspEnum::EEmberStatusToString(static_cast<EEmberStatus>(i_msg_receive.at(16))) << std::endl;
 	}
 	break;
-
-
 	default:
 		break;
 	}
-
 }
 
-/**
- * @brief SendBroadcast : send broadcast zigbee message
- * @param i_destination : type of node concern by broadcast
- * @param radius : The message will be delivered to all nodes within radius hops of the sender.
- *                  A radius of zero is converted to EMBER_MAX_HOPS.
- * @param i_msg : meassge to send
- */
 void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, uint8_t i_radius, CZigBeeMsg i_msg) {
 	NSSPI::ByteBuffer l_payload;
 	NSSPI::ByteBuffer l_zb_msg = i_msg.Get();
@@ -65,11 +55,6 @@ void CZigbeeMessaging::SendBroadcast( EOutBroadcastDestination i_destination, ui
 	dongle.sendCommand(EZSP_SEND_BROADCAST, l_payload);
 }
 
-/**
- * @brief SendUnicast : send direct unicast zigbee message
- * @param i_node_id : destination short address
- * @param i_msg : meassge to send
- */
 void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg ) {
 	NSSPI::ByteBuffer l_payload;
 	NSSPI::ByteBuffer l_zb_msg = i_msg.Get();
@@ -94,21 +79,27 @@ void CZigbeeMessaging::SendUnicast( EmberNodeId i_node_id, CZigBeeMsg i_msg ) {
 	// message content
 	l_payload.insert(l_payload.end(), l_zb_msg.begin(), l_zb_msg.end());
 
-
 	dongle.sendCommand(EZSP_SEND_UNICAST, l_payload);
 }
 
-/**
- * @brief SendSpecificCommand : Permit to send a ZDO unicast command
- * @param i_node_id     : short address of destination
- * @param i_cmd_id      : command
- * @param payload       : payload of command
- * @return true if message can be send
- */
 void CZigbeeMessaging::SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload) {
 	CZigBeeMsg l_msg;
-
 	l_msg.SetZdo( i_cmd_id, payload, 0/*network.GetNextTransactionNb(i_node_id, 0)*/ );
+	SendUnicast( i_node_id, l_msg );
+}
 
+void CZigbeeMessaging::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+									  const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
+									  const uint16_t i_node_id, const uint8_t i_transaction_number,
+									  const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+	CZigBeeMsg l_msg;
+	uint16_t l_profile;
+	if( 242 == i_endpoint ) {
+		l_profile = 0xA1E0; // Green Power
+	}
+	else {
+		l_profile = 0x0104; // 0xFFFFU;
+	}
+	l_msg.SetSpecific( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_node_id, i_transaction_number, i_grp_id);
 	SendUnicast( i_node_id, l_msg );
 }
