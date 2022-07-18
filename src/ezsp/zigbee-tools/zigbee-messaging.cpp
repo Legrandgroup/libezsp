@@ -100,6 +100,6 @@ void CZigbeeMessaging::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i
 	else {
 		l_profile = 0x0104; // 0xFFFFU;
 	}
-	l_msg.SetSpecific( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_node_id, i_transaction_number, i_grp_id);
+	l_msg.SetSpecific( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_transaction_number, i_grp_id);
 	SendUnicast( i_node_id, l_msg );
 }

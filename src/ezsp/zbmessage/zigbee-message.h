@@ -33,12 +33,13 @@ public:
 	 * @param i_cluster_id Concerned cluster
 	 * @param i_cmd_id Command ID
 	 * @param i_direction Model side
+	 * @param i_payload Payload of the command
 	 * @param i_transaction_number
 	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 */
 	void SetSpecific(const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
 					 const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
-					 const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
+					 const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number, const uint16_t i_grp_id );
 
 	/**
 	 * @brief Build a basic cluster general message
@@ -49,12 +50,13 @@ public:
 	 * @param i_cluster_id Concerned cluster
 	 * @param i_cmd_id Command ID
 	 * @param i_direction Model side
+	 * @param i_payload Payload of the command
 	 * @param i_transaction_number
 	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 */
 	void SetGeneral( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
 					 const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
-					 const uint8_t i_transaction_number, const uint16_t i_grp_id );
+					 const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number, const uint16_t i_grp_id );
 
 	/**
 	 * @brief Fill a ZDO message

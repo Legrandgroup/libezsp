@@ -17,20 +17,22 @@ CZigBeeMsg::CZigBeeMsg() :
 
 void CZigBeeMsg::SetSpecific( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
 							  const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
-							  const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
+							  const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
 	aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
 	zcl_header = CZCLHeader();
 	use_zcl_header = true;
 	zcl_header.SetPublicSpecific( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
+	payload = i_payload;
 }
 
 void CZigBeeMsg::SetGeneral( const uint16_t i_profile_id, const uint16_t i_manufacturer_code, const uint8_t i_endpoint,
 							 const uint16_t i_cluster_id, const uint8_t i_cmd_id, const EZCLFrameCtrlDirection i_direction,
-							 const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
+							 const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number, const uint16_t i_grp_id ) {
 	aps.SetDefaultAPS( i_profile_id, i_cluster_id, i_endpoint, i_grp_id );
 	zcl_header = CZCLHeader();
 	use_zcl_header = true;
 	zcl_header.SetPublicGeneral( i_manufacturer_code, i_cmd_id, i_direction, i_transaction_number );
+	payload = i_payload;
 }
 
 void CZigBeeMsg::SetZdo(const uint16_t i_cmd_id, const NSSPI::ByteBuffer& i_payload, const uint8_t i_transaction_number) {

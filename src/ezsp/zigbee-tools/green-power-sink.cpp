@@ -735,7 +735,7 @@ void CGpSink::sendLocalGPProxyCommissioningMode(uint8_t i_option) {
 	// create message sending from ep242 to ep242 using green power profile
 	l_gp_comm_msg.SetSpecific(GP_PROFILE_ID, PUBLIC_CODE, GP_ENDPOINT,
 	                          GP_CLUSTER_ID, GP_PROXY_COMMISIONING_MODE_CLIENT_CMD_ID,
-	                          E_DIR_SERVER_TO_CLIENT, l_gp_comm_payload, 0, 0, 0);
+	                          E_DIR_SERVER_TO_CLIENT, l_gp_comm_payload, 0, 0);
 
 	// WARNING use ep 242 as sources
 	l_gp_comm_msg.aps.src_ep = GP_ENDPOINT;
