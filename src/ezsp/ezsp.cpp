@@ -134,6 +134,13 @@ void CEzsp::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallb
 	main->registerGPSourceIdCallback(newObsGPSourceIdCallback);
 }
 
+void CEzsp::registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerZclFrameRecvCallback(newObsZclFrameRecvCallback);
+}
+
 bool CEzsp::clearAllGPDevices() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
@@ -257,6 +264,30 @@ bool CEzsp::joinNetwork(const uint64_t extendedPanId,
 	nwkParams.setNwkUpdateId(nwkUpdateId);
 	
 	return main->joinNetwork(nwkParams);
+}
+
+bool CEzsp::openNetwork(uint8_t i_timeout) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "(" << std::dec << static_cast<unsigned int>(i_timeout) << ")\n";
+#endif
+	return main->openNetwork(i_timeout);
+}
+
+bool CEzsp::SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->SendZDOCommand(i_node_id, i_cmd_id, payload);
+}
+
+bool CEzsp::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+						   const NSEZSP::EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
+						   const uint16_t i_node_id, const uint8_t i_transaction_number,
+						   const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->SendZCLCommand(i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 }
 
 NSSPI::GenericAsyncDataInputObservable* CEzsp::getAdapterSerialReadObservable() {

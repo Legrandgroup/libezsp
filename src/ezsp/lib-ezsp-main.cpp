@@ -11,6 +11,7 @@
 
 #include "ezsp/lib-ezsp-main.h"
 #include "spi/ILogger.h"
+#include <ezsp/zbmessage/zcl-frame.h>
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParametersResponse
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
 
@@ -20,6 +21,9 @@ using NSEZSP::CLibEzspMain;
 using NSEZSP::CLibEzspPublic;
 using NSEZSP::CLibEzspInternal;
 
+// Dirty hack! Since we don't have a database to store discovered product, we use this variable to store its EUI64 MAC address
+std::vector<uint8_t> discoverdDeviceEUI64;
+
 CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::TimerBuilder& timerbuilder, unsigned int requestZbNetworkResetToChannel) :
 	uartHandle(uartHandle),
 	timerbuilder(timerbuilder),
@@ -28,6 +32,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	exp_stack_type(2),  /* Expect a stack type=2 (mesh) */
 	xncpManufacturerId(0),  /* 0 means unknown (yet) */
 	xncpVersionNumber(0),  /* 0 means unknown (yet) */
+	dongleEUI64(),
 	lib_state(CLibEzspInternal::State::UNINITIALIZED),
 	obsStateCallback(nullptr),
 	dongle(timerbuilder, this),
@@ -36,6 +41,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	gp_sink(dongle, zb_messaging),
 	obsGPFrameRecvCallback(nullptr),
 	obsGPSourceIdCallback(nullptr),
+	obsZclFrameRecvCallback(nullptr),
 	energyScanCallback(nullptr),
 	networkKeyCallback(nullptr),
 	leavePreviousNetworkAtInit(requestZbNetworkResetToChannel != 0),
@@ -80,6 +86,10 @@ void CLibEzspMain::forceFirmwareUpgradeOnInitTimeout() {
 
 void CLibEzspMain::registerLibraryStateCallback(FLibStateCallback newObsStateCallback) {
 	this->obsStateCallback = newObsStateCallback;
+}
+
+void CLibEzspMain::registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback) {
+	this->obsZclFrameRecvCallback = newObsZclFrameRecvCallback;
 }
 
 void CLibEzspMain::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback) {
@@ -153,25 +163,25 @@ void CLibEzspMain::stackInit() {
 	std::vector<SEzspConfig> l_config;
 
 	l_config.push_back({.id = EZSP_CONFIG_NEIGHBOR_TABLE_SIZE,
-	                    .value = 32
+	                    .value = 16
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_APS_UNICAST_MESSAGE_COUNT,
 	                    .value = 10
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_BINDING_TABLE_SIZE,
-	                    .value = 0
+	                    .value = 20
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_ADDRESS_TABLE_SIZE,
-	                    .value = 64
+	                    .value = 16
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_MULTICAST_TABLE_SIZE,
-	                    .value = 8
+	                    .value = 16
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_ROUTE_TABLE_SIZE,
-	                    .value = 32
+	                    .value = 16
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_DISCOVERY_TABLE_SIZE,
-	                    .value = 16
+	                    .value = 8
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_STACK_PROFILE,
 	                    .value = 2
@@ -180,23 +190,23 @@ void CLibEzspMain::stackInit() {
 	                    .value = 5
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_MAX_HOPS,
-	                    .value = 15
+	                    .value = 30
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_MAX_END_DEVICE_CHILDREN,
 	                    .value = 32
 	                   }); // define number of sleepy end device directly attached to dongle
 	l_config.push_back({.id = EZSP_CONFIG_INDIRECT_TRANSMISSION_TIMEOUT,
-	                    .value = 3000
+	                    .value = 7680
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT,
-	                    .value = 5
+	                    .value = 8
 	                   });
-	l_config.push_back({.id = EZSP_CONFIG_MOBILE_NODE_POLL_TIMEOUT,
+	/*l_config.push_back({.id = EZSP_CONFIG_MOBILE_NODE_POLL_TIMEOUT,
 	                    .value = 20
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_RESERVED_MOBILE_CHILD_ENTRIES,
 	                    .value = 0
-	                   });
+	                   });*/
 	l_config.push_back({.id = EZSP_CONFIG_TX_POWER_MODE,
 	                    .value = 0
 	                   });
@@ -204,16 +214,16 @@ void CLibEzspMain::stackInit() {
 	                    .value = 0
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_TRUST_CENTER_ADDRESS_CACHE_SIZE,
-	                    .value = 0
+	                    .value = 2
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_SOURCE_ROUTE_TABLE_SIZE,
-	                    .value = 0
+	                    .value = 16
 	                   });
-	l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT,
+	/*l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT,
 	                    .value = 6
-	                   });
+	                   });*/
 	l_config.push_back({.id = EZSP_CONFIG_FRAGMENT_WINDOW_SIZE,
-	                    .value = 0
+	                    .value = 1
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_FRAGMENT_DELAY_MS,
 	                    .value = 0
@@ -231,15 +241,16 @@ void CLibEzspMain::stackInit() {
 	                    .value = 60
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_PAN_ID_CONFLICT_REPORT_THRESHOLD,
-	                    .value = 1
+	                    .value = 2
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_REQUEST_KEY_TIMEOUT,
 	                    .value = 0
 	                   });
-	/*l_config.push_back({.id = EZSP_CONFIG_CERTIFICATE_TABLE_SIZE,
-	                    .value = 1});*/
+	l_config.push_back({.id = EZSP_CONFIG_CERTIFICATE_TABLE_SIZE,
+	                    .value = 0
+	                   });
 	l_config.push_back({.id = EZSP_CONFIG_APPLICATION_ZDO_FLAGS,
-	                    .value =0
+	                    .value = 3
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_BROADCAST_TABLE_SIZE,
 	                    .value = 15
@@ -254,30 +265,31 @@ void CLibEzspMain::stackInit() {
 	                    .value = 0
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_ZLL_GROUP_ADDRESSES,
-	                    .value = 0
+	                    .value = 1
 	                   });
-	/*l_config.push_back({.id = EZSP_CONFIG_ZLL_RSSI_THRESHOLD,
-	                    .value = -128});*/
+	l_config.push_back({.id = EZSP_CONFIG_ZLL_RSSI_THRESHOLD,
+	                    .value = 128
+	                   });
 	l_config.push_back({.id = EZSP_CONFIG_MTORR_FLOW_CONTROL,
 	                    .value = 1
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_RETRY_QUEUE_SIZE,
-	                    .value = 8
+	                    .value = 16
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_NEW_BROADCAST_ENTRY_THRESHOLD,
-	                    .value = 10
+	                    .value = 9
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_TRANSIENT_KEY_TIMEOUT_S,
 	                    .value = 300
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_BROADCAST_MIN_ACKS_NEEDED,
-	                    .value = 1
+	                    .value = 255
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_TC_REJOINS_USING_WELL_KNOWN_KEY_TIMEOUT_S,
-	                    .value = 600
+	                    .value = 300
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_PACKET_BUFFER_COUNT,
-	                    .value = 0xFF
+	                    .value = 75
 	                   }); // use all remain memory for in/out radio packets
 
 	std::vector<SEzspPolicy> l_policy;
@@ -464,6 +476,33 @@ bool CLibEzspMain::joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams) {
 	return true;
 }
 
+bool CLibEzspMain::openNetwork(uint8_t i_timeout){
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_nwk.openNetwork(i_timeout);
+	return true;
+}
+
+bool CLibEzspMain::SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload) {
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_messaging.SendZDOCommand(i_node_id, i_cmd_id, payload);
+	return true;
+}
+
+bool CLibEzspMain::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+								  const NSEZSP::EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
+								  const uint16_t i_node_id, const uint8_t i_transaction_number,
+								  const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_messaging.SendZCLCommand(i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	return true;
+}
+
 void CLibEzspMain::handleFirmwareXModemXfr() {
 	this->setState(CLibEzspInternal::State::IN_XMODEM_XFR);
 	clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
@@ -624,6 +663,9 @@ void CLibEzspMain::handleEzspRxMessage_STACK_STATUS_HANDLER(const NSSPI::ByteBuf
 		* Indeed, if the Zigbee network needs to be reset, we will first have to leave and re-create a network in the EZSP_NETWORK_STATE case below, and only then
 		* will we get called again with EMBER_NETWORK_UP once the Zigbee network has been re-created */
 		if ((EMBER_NETWORK_UP == status) && (this->resetDot154ChannelAtInit == 0)) {
+			/* Retrieve dongle's EUI64 MAC address */
+			dongle.sendCommand(EZSP_GET_EUI64);
+
 			this->setState(CLibEzspInternal::State::SINK_BUSY);
 			/* Create a sink state change callback to find out when the sink is ready */
 			/* When the sink becomes ready, then libezsp will also switch to ready state */
@@ -683,16 +725,13 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		}
 	}
 	break;
-	// case EZSP_GET_EUI64:
-	// {
-	//     // put eui64 on database for later use
-	//     db.dongleEui64.clear();
-	//     for( uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++ )
-	//     {
-	//         db.dongleEui64.push_back(i_msg_receive.at(loop));
-	//     }
-	// }
-	// break;
+	case EZSP_GET_EUI64:
+	{
+		for( uint8_t loop=0; loop<EMBER_EUI64_BYTE_SIZE; loop++ ) {
+			dongleEUI64.push_back(i_msg_receive.at(loop));
+		}
+	}
+	break;
 	case EEzspCmd::EZSP_VERSION: {
 		handleEzspRxMessage_VERSION(i_msg_receive);
 	}
@@ -786,6 +825,318 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 	}
 	break;
 
+	case EZSP_INCOMING_MESSAGE_HANDLER:
+	{
+		//using namespace NSEZSP;
+		// the most important function where all zigbee incomming message arrive
+		EmberIncomingMessageType type = static_cast<EmberIncomingMessageType>(i_msg_receive.at(0));
+		NSSPI::ByteBuffer l_aps_raw;
+		for(uint8_t loop = 0; loop < CAPSFrame::getSize(); loop++) {
+			l_aps_raw.push_back(i_msg_receive.at(1U+loop));
+		}
+		uint8_t last_hop_lqi = i_msg_receive.at(1U+CAPSFrame::getSize());
+		uint8_t last_hop_rssi = i_msg_receive.at(2U+CAPSFrame::getSize());
+		EmberNodeId sender = static_cast<EmberNodeId>(dble_u8_to_u16(i_msg_receive.at(4U+CAPSFrame::getSize()), i_msg_receive.at(3U+CAPSFrame::getSize())));
+		uint8_t binding_idx = i_msg_receive.at(5U+CAPSFrame::getSize());
+		uint8_t address_idx = i_msg_receive.at(6U+CAPSFrame::getSize());
+		uint8_t msg_length = i_msg_receive.at(7U+CAPSFrame::getSize());
+		NSSPI::ByteBuffer l_msg_raw;
+		for(uint8_t loop = 0; loop < msg_length; loop++) {
+			l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrame::getSize()+loop));
+		}
+
+		clogI << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) <<
+			", last hop rssi : " << unsigned(last_hop_rssi) <<
+			", from : "<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << std::endl;
+
+		// Don't process some type of messages
+		if( !((EMBER_INCOMING_BROADCAST_LOOPBACK==type) || (EMBER_INCOMING_MULTICAST_LOOPBACK==type) || (EMBER_INCOMING_MANY_TO_ONE_ROUTE_REQUEST==type)) ) {
+			// Build a zigbee message to simplify process
+			CZigBeeMsg zbMsg;
+			zbMsg.Set(l_aps_raw,l_msg_raw);
+			//clogI << std::hex << std::setw(2) << std::setfill('0') << zbMsg.GetAps().GetEmberAPS();
+			if( 0 == zbMsg.GetAps().src_ep ) {
+				EZdpLowByte zdp_low = static_cast<EZdpLowByte>(u16_get_lo_u8(zbMsg.GetAps().cluster_id));
+
+				// ZDO (Zigbee Device Object)
+				if( ZDP_HIGHT_BYTE_RESPONSE == u16_get_hi_u8(zbMsg.GetAps().cluster_id)) {
+					switch(zdp_low) {
+						case ZDP_ACTIVE_EP: {
+							// byte 0 is for sequence number, ignore it!
+							uint8_t status = zbMsg.GetPayload().at(1U);
+							EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+							uint8_t ep_count = zbMsg.GetPayload().at(4U);
+
+							std::vector<uint8_t> ep_list;
+							for(uint8_t loop = 0; loop < ep_count; loop++) {
+								ep_list.push_back(zbMsg.GetPayload().at(5U+loop));
+							}
+
+							// DEBUG
+							clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
+								std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
+
+							// For each active endpoint send Simple_Desciptor_Req
+							NSSPI::ByteBuffer payload;
+							for(uint8_t loop = 0; loop < ep_list.size(); loop++) {
+								payload.clear();
+								payload.push_back(u16_get_lo_u8(address));
+								payload.push_back(u16_get_hi_u8(address));
+								payload.push_back(ep_list.at(loop));
+								zb_messaging.SendZDOCommand(address,ZDP_SIMPLE_DESC,payload);
+							}
+						}
+						break;
+						case ZDP_SIMPLE_DESC: {
+							// for this simple example when we receive a simple descriptor we loop on cluster server and we bind each cluster who is interresting for us.
+							// byte 0 is for sequence number, ignore it!
+							uint8_t status = zbMsg.GetPayload().at(1U);
+
+							if( 0 == status ) {
+								EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+								uint8_t lentgh = zbMsg.GetPayload().at(4U);
+								uint8_t endpoint = zbMsg.GetPayload().at(5U);
+								uint16_t profile_id = dble_u8_to_u16(zbMsg.GetPayload().at(7U), zbMsg.GetPayload().at(6U));
+								uint16_t device_id = dble_u8_to_u16(zbMsg.GetPayload().at(9U), zbMsg.GetPayload().at(8U));
+								uint8_t version = zbMsg.GetPayload().at(10U);
+								uint8_t in_count = zbMsg.GetPayload().at(11U);
+								uint8_t out_count = zbMsg.GetPayload().at(12U+(2U*in_count));
+
+								std::vector<uint16_t> in_list;
+								for(uint8_t loop = 0; loop < in_count; loop++) {
+									in_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(13U+(2U*loop)), zbMsg.GetPayload().at(12U+(2U*loop))));
+								}
+
+								std::vector<uint16_t> out_list;
+								for(uint8_t loop=0; loop<out_count; loop++) {
+									out_list.push_back(dble_u8_to_u16(zbMsg.GetPayload().at(14U+(2U*in_count)+(2U*loop)), zbMsg.GetPayload().at(13U+(2U*in_count)+(2U*loop))));
+								}
+
+								// For now device desciption is only printed here. This description should be pass to an observer to trigger a callback in applicative code.
+								// The callback should also perform all bindings that are made here
+								// Refactor this part in next release!
+								std::stringstream buf;
+								buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
+									"[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]" <<
+									"[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(address) << "]" <<
+									"[ lentgh : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(lentgh) << "]" <<
+									"[ endpoint : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(endpoint) << "]" <<
+									"[ profile_id : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(profile_id) << "]" <<
+									"[ device_id : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(device_id) << "]" <<
+									"[ version : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(version) << "]" <<
+									"[ in_count : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(in_count) << "]" <<
+									"[ in : ";
+								for(uint8_t loop = 0; loop < in_list.size(); loop++) {
+									buf << std::hex << std::setw(4) << std::setfill('0') << unsigned(in_list.at(loop)) << ", ";
+								}
+								buf << "][ out_count : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(out_count) << "]" <<
+									"[ out : ";
+								for(uint8_t loop = 0; loop < out_list.size(); loop++) {
+									buf << std::hex << std::setw(4) << std::setfill('0') << unsigned(out_list.at(loop)) << ", ";
+								}
+								buf << "]";
+								clogI << buf.str() << std::endl;
+
+								// Search in server [in] cluster list
+								for(uint8_t loop = 0; loop < in_list.size(); loop++) {
+									// If we know one cluster we bind to it
+									if( /* Temperature Measurement */ 0x0402 == in_list.at(loop) ) {
+										clogI << "<<< Binding Temperature Measurement Cluster" << std::endl;
+										NSSPI::ByteBuffer payload;
+										// source (product)
+										// eui64
+										payload.insert(payload.begin(), discoverdDeviceEUI64.begin(), discoverdDeviceEUI64.end());
+										// epEZSP_GET_EUI64
+										payload.push_back(endpoint);
+										// cluster
+										payload.push_back(0x02);
+										payload.push_back(0x04);
+										// destination type (long address)
+										payload.push_back(0x03);
+										// destination (dongle)
+										// eui64
+										payload.insert(payload.end(),dongleEUI64.begin(),dongleEUI64.end());
+										// ep
+										payload.push_back(1);
+										zb_messaging.SendZDOCommand(address,ZDP_BIND,payload);
+									}
+									else if( /* Electrical Measurement */ 0x0B04 == in_list.at(loop) ) {
+										clogI << "<<< Binding Electrical Measurement Cluster" << std::endl;
+										NSSPI::ByteBuffer payload;
+										// source (product)
+										// eui64
+										payload.insert(payload.begin(),discoverdDeviceEUI64.begin(),discoverdDeviceEUI64.end());
+										// ep
+										payload.push_back(endpoint);
+										// cluster
+										payload.push_back(0x04);
+										payload.push_back(0x0B);
+										// destination type (long address)
+										payload.push_back(0x03);
+										// destination (dongle)
+										// eui64
+										payload.insert(payload.end(),dongleEUI64.begin(), dongleEUI64.end());
+										// ep
+										payload.push_back(1);
+										zb_messaging.SendZDOCommand(address,ZDP_BIND,payload);
+									}
+									else if( /* Smartenergy Metering */ 0x0702 == in_list.at(loop) ) {
+										clogI << "<<< Binding Smartenergy Metering Cluster" << std::endl;
+										NSSPI::ByteBuffer payload;
+										// source (product)
+										// eui64
+										payload.insert(payload.begin(),discoverdDeviceEUI64.begin(),discoverdDeviceEUI64.end());
+										// ep
+										payload.push_back(endpoint);
+										// cluster
+										payload.push_back(0x02);
+										payload.push_back(0x07);
+										// destination type (long address)
+										payload.push_back(0x03);
+										// destination (dongle)
+										// eui64
+										payload.insert(payload.end(),dongleEUI64.begin(), dongleEUI64.end());
+										// ep
+										payload.push_back(1);
+										zb_messaging.SendZDOCommand(address,ZDP_BIND,payload);
+									}
+									else if( /* On/Off */ 0x0006 == in_list.at(loop) ) {
+										clogI << "<<< Binding On/Off CLuster" << std::endl;
+										NSSPI::ByteBuffer payload;
+										// source (product)
+										// eui64
+										payload.insert(payload.begin(),discoverdDeviceEUI64.begin(),discoverdDeviceEUI64.end());
+										// ep
+										payload.push_back(endpoint);
+										// cluster
+										payload.push_back(0x06);
+										payload.push_back(0x00);
+										// destination type (long address)
+										payload.push_back(0x03);
+										// destination (dongle)
+										// eui64
+										payload.insert(payload.end(),dongleEUI64.begin(), dongleEUI64.end());
+										// ep
+										payload.push_back(1);
+										zb_messaging.SendZDOCommand(address,ZDP_BIND,payload);
+									}
+									else if( /* Relative Humidity Measurement */ 0x0405 == in_list.at(loop) ) {
+										clogI << "<<< Binding Relative Humidity Measurement Cluster" << std::endl;
+										NSSPI::ByteBuffer payload;
+										// source (product)
+										// eui64
+										payload.insert(payload.begin(),discoverdDeviceEUI64.begin(),discoverdDeviceEUI64.end());
+										// ep
+										payload.push_back(endpoint);
+										// cluster
+										payload.push_back(0x05);
+										payload.push_back(0x04);
+										// destination type (long address)
+										payload.push_back(3);
+										// destination (dongle)
+										// eui64
+										payload.insert(payload.end(),dongleEUI64.begin(),dongleEUI64.end());
+										// ep
+										payload.push_back(1);
+										zb_messaging.SendZDOCommand(address,ZDP_BIND,payload);
+									}
+								}
+							}
+							else {
+								clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
+									std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
+							}
+						}
+						case ZDP_NWK_ADDR: {
+							uint8_t status = zbMsg.GetPayload().at(1U);
+
+							if( 0 == status ) {
+								EmberNodeId address = static_cast<EmberNodeId>(dble_u8_to_u16(zbMsg.GetPayload().at(3U), zbMsg.GetPayload().at(2U)));
+								std::stringstream buf;
+								buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
+									"[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]" <<
+									"[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(address) << "]";
+								clogI << buf.str() << std::endl;
+							}
+							else {
+								clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
+									std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
+							}
+							break;
+						}
+						break;
+						case ZDP_BIND: {
+							uint8_t status = zbMsg.GetPayload().at(1U);
+							if( 0 == status ){
+								std::stringstream buf;
+								buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
+									"[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]";
+								clogI << buf.str() << std::endl;
+							}
+							else{
+								clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
+									std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
+							}
+							break;
+						}
+						default: {
+							// DEBUG
+							clogI << "ZDO Response : " << CZdpEnum::ToString(zdp_low) << std::endl;
+						}
+						break;
+					}
+				}
+				else {
+					if( ZDP_DEVICE_ANNOUNCE == zdp_low ) {
+						clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
+
+						/* Dirty! Store announcing device address as global variable to able to use this value in binding request for example
+						** Next step is to create Device, Enpoint, (Cluster ?) class to store all the dicovered info about product
+						*/
+						EmberEUI64 eui64;
+						for(uint8_t loop=0; loop < 8; loop++) {
+							discoverdDeviceEUI64.push_back(zbMsg.GetPayload().at(3U+loop));
+						}
+
+						// We receive a device announce because a child join or rejoin network, start a discover endpoint process
+						// byte 0 is for sequence number, ignore it!
+						EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload().at(2U), zbMsg.GetPayload().at(1U));
+
+						NSSPI::ByteBuffer payload;
+						payload.push_back(u16_get_lo_u8(address));
+						payload.push_back(u16_get_hi_u8(address));
+						zb_messaging.SendZDOCommand( address, ZDP_ACTIVE_EP, payload );
+					}
+					if (ZDP_NWK_ADDR == zdp_low) {
+						std::stringstream buf;
+						buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
+							"[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << "]";
+						clogI << buf.str() << std::endl;
+					}
+					else {
+						// DEBUG
+						clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
+					}
+				}
+			}
+			else {
+				// Applicative zigbee message
+				NSSPI::ByteBuffer data;
+
+				uint8_t type = zbMsg.GetZCLHeader().GetFrmCtrl().convertEZCLFrameCtrlFrameTypeToInt8();
+				for(uint8_t loop = 0; loop < zbMsg.GetPayload().size(); loop++) {
+					data.push_back(zbMsg.GetPayload().at(loop));
+					//buf << std::hex << std::setw(2) << std::setfill('0') << unsigned(zbMsg.GetPayload().at(loop)) << ", ";
+				}
+				NSEZSP::CZclFrame zcl_frame(zbMsg.GetAps().src_ep, zbMsg.GetAps().cluster_id, type, zbMsg.GetZCLHeader().GetCmdId(), data);
+
+				if( nullptr != obsZclFrameRecvCallback ) {
+					obsZclFrameRecvCallback(zcl_frame);
+				}
+			}
+		}
+	}
+	break;
 	default: {
 		/* DEBUG VIEW
 		clogI << "Unhandled EZSP message " << CEzspEnum::EEzspCmdToString(i_cmd) << ": " << i_msg_receive << "\n";

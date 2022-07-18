@@ -241,13 +241,12 @@ void CZigbeeNetworking::formHaNetwork(uint8_t channel) {
 }
 
 void CZigbeeNetworking::openNetwork(uint8_t i_timeout) {
+	dongle.sendCommand(EZSP_SET_POLICY, { EZSP_TC_KEY_REQUEST_POLICY, 0x51U /* EZSP_ALLOW_TC_KEY_REQUESTS_AND_SEND_CURRENT_KEY */});
 	dongle.sendCommand(EZSP_PERMIT_JOINING, { i_timeout });
 
-	// use zdp frame
+	// Send Permit_Joining_Req
 	CZigBeeMsg l_msg;
-
 	l_msg.SetZdo( 0x0036, { i_timeout, 1 });
-
 	zb_messaging.SendBroadcast( E_OUT_MSG_BR_DEST_ALL_DEVICES, 0, l_msg );
 }
 
@@ -264,13 +263,4 @@ void CZigbeeNetworking::closeNetwork() {
 
 void CZigbeeNetworking::leaveNetwork() {
 	dongle.sendCommand(EZSP_LEAVE_NETWORK);
-}
-
-void CZigbeeNetworking::startDiscoverProduct(std::function<void (EmberNodeType i_type, EmberEUI64 i_eui64, EmberNodeId i_id)> i_discoverCallbackFct) {
-	// pour l'exemple on ne lit que la table enfant du dongle, on assume qu'il n'y a pas d'autre routeur dans le réseau
-	// lire table enfant du dongle
-	this->child_idx = 0;
-	dongle.sendCommand(EZSP_GET_CHILD_DATA, { this->child_idx });
-
-	discoverCallbackFct = i_discoverCallbackFct;
 }

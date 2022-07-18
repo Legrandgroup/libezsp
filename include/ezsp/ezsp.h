@@ -19,6 +19,8 @@
 #include <ezsp/gpd.h>
 #include <ezsp/zbmessage/green-power-device.h>
 #include <ezsp/zbmessage/green-power-frame.h>
+#include <ezsp/zbmessage/zcl-frame.h>
+#include <ezsp/zbmessage/zclframecontrol.h>
 #include <ezsp/ezsp-adapter-version.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
@@ -119,6 +121,7 @@ class CLibEzspMain;
 typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
+typedef std::function<void (CZclFrame &i_zclf)> FZclFrameRecvCallback; /*!< Callback type for method registerZclFrameRecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
 typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
 typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
@@ -188,6 +191,7 @@ public:
 	 * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
 	 */
 	void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
+	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
 
 	/**
 	 * @brief Register callback to receive all incoming greenpower sourceId
@@ -324,6 +328,45 @@ public:
 	                 const uint8_t radioTxPower = 3,
 	                 const NSEZSP::EmberNodeId nwkManagerId = 0,
 	                 const uint8_t nwkUpdateId = 0);
+
+	/**
+	 * @brief Open the zigbee network for a defined period so other products can join the zigbee network
+	 *
+	 * @param i_timeout The time during the network is open
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool openNetwork(uint8_t i_timeout);
+
+	/**
+	 * @brief Send a ZDO unicast command
+	 *
+	 * @param i_node_id Short address of destination
+	 * @param i_cmd_id Command
+	 * @param[in] payload Payload for the ZDO unicast
+	 *
+	 * @return true if message can be send
+	 */
+	bool SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload);
+
+	/**
+	 * @brief Send a ZCL unicast command
+	 *
+	 * @param i_node_id Short address of destination
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_cmd_id Command ID
+	 * @param i_direction Message direction (client to sorver or server to client)
+	 * @param i_payload Payload of the command
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 *
+	 * @return true if message can be send
+	 */
+	bool SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
+						const NSEZSP::EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
+						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
+						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
 	 * @brief Retrieve an observable to handle bytes received on the serial port

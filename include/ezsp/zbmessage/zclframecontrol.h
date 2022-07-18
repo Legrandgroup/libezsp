@@ -51,6 +51,7 @@ public:
 	EZCLFrameCtrlDirection GetDirection(void) const {
 		return direction;
 	}
+
 	void SetDirection( const EZCLFrameCtrlDirection i_direction ) {
 		direction = i_direction;
 	}
@@ -59,6 +60,7 @@ public:
 	bool GetDisableDefaultRspState(void) const {
 		return disable_default_rsp;
 	}
+
 	void SetDisableDefaultRspState( const bool i_disable ) {
 		disable_default_rsp = i_disable;
 	}
@@ -67,6 +69,16 @@ public:
 	EZCLFrameCtrlFrameType GetFrmType(void) const {
 		return frame_type;
 	}
+
+	uint8_t convertEZCLFrameCtrlFrameTypeToInt8(void) {
+		if(this->frame_type == EZCLFrameCtrlFrameType::E_FRM_TYPE_GENERAL){
+			return uint8_t(0x00);
+		}
+		else {
+			return uint8_t(0x01);
+		}
+	}
+
 	void SetFrameType( const EZCLFrameCtrlFrameType i_type ) {
 		frame_type = i_type;
 	}
@@ -75,6 +87,7 @@ public:
 	bool IsManufacturerCodePresent(void) const {
 		return manufacturer_code_present;
 	}
+
 	void SetManufacturerCodePresent( const bool i_present ) {
 		manufacturer_code_present = i_present;
 	}
@@ -83,6 +96,7 @@ public:
 	EZCLFrameCtrlSoftwareCode GetSwVersion( void ) const {
 		return software_code;
 	}
+
 	void SetSwVersion( const EZCLFrameCtrlSoftwareCode i_version ) {
 		software_code = i_version;
 	}

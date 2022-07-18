@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-#include "zclframecontrol.h"
+#include <ezsp/zbmessage/zclframecontrol.h>
 #include "spi/ByteBuffer.h"
 
 // manufacturer code
