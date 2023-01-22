@@ -503,6 +503,17 @@ bool CLibEzspMain::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_clu
 	return true;
 }
 
+bool CLibEzspMain::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+									  const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
+									  const uint16_t i_node_id, const uint8_t i_transaction_number,
+									  const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_messaging.WriteAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_datatype, i_data, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	return true;
+}
+
 void CLibEzspMain::handleFirmwareXModemXfr() {
 	this->setState(CLibEzspInternal::State::IN_XMODEM_XFR);
 	clogW << "EZSP adapter is now ready to receive a firmware image (.gbl) via X-modem\n";
@@ -831,18 +842,19 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 		// the most important function where all zigbee incomming message arrive
 		EmberIncomingMessageType type = static_cast<EmberIncomingMessageType>(i_msg_receive.at(0));
 		NSSPI::ByteBuffer l_aps_raw;
-		for(uint8_t loop = 0; loop < CAPSFrame::getSize(); loop++) {
+		uint8_t CAPSFrameSize = CAPSFrame::getSize();
+		for(uint8_t loop = 0; loop < CAPSFrameSize; loop++) {
 			l_aps_raw.push_back(i_msg_receive.at(1U+loop));
 		}
-		uint8_t last_hop_lqi = i_msg_receive.at(1U+CAPSFrame::getSize());
-		uint8_t last_hop_rssi = i_msg_receive.at(2U+CAPSFrame::getSize());
-		EmberNodeId sender = static_cast<EmberNodeId>(dble_u8_to_u16(i_msg_receive.at(4U+CAPSFrame::getSize()), i_msg_receive.at(3U+CAPSFrame::getSize())));
-		uint8_t binding_idx = i_msg_receive.at(5U+CAPSFrame::getSize());
-		uint8_t address_idx = i_msg_receive.at(6U+CAPSFrame::getSize());
-		uint8_t msg_length = i_msg_receive.at(7U+CAPSFrame::getSize());
+		uint8_t last_hop_lqi = i_msg_receive.at(1U+CAPSFrameSize);
+		uint8_t last_hop_rssi = i_msg_receive.at(2U+CAPSFrameSize);
+		EmberNodeId sender = static_cast<EmberNodeId>(dble_u8_to_u16(i_msg_receive.at(4U+CAPSFrameSize), i_msg_receive.at(3U+CAPSFrameSize)));
+		uint8_t binding_idx = i_msg_receive.at(5U+CAPSFrameSize);
+		uint8_t address_idx = i_msg_receive.at(6U+CAPSFrameSize);
+		uint8_t msg_length = i_msg_receive.at(7U+CAPSFrameSize);
 		NSSPI::ByteBuffer l_msg_raw;
 		for(uint8_t loop = 0; loop < msg_length; loop++) {
-			l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrame::getSize()+loop));
+			l_msg_raw.push_back(i_msg_receive.at(8U+CAPSFrameSize+loop));
 		}
 
 		clogI << "EZSP_INCOMING_MESSAGE_HANDLER type : " << CEzspEnum::EmberIncomingMessageTypeToString(type) <<
@@ -1131,7 +1143,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 				NSEZSP::CZclFrame zcl_frame(zbMsg.GetAps().src_ep, zbMsg.GetAps().cluster_id, type, zbMsg.GetZCLHeader().GetCmdId(), data);
 
 				if( nullptr != obsZclFrameRecvCallback ) {
-					obsZclFrameRecvCallback(zcl_frame);
+					obsZclFrameRecvCallback(sender, zcl_frame);
 				}
 			}
 		}

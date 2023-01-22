@@ -523,12 +523,13 @@ void handleElectricalMesurementAttribute(const uint16_t id, const int data){
 	 *
 	 * @param[in] i_zclf The frame received
 	 */
-	void onReceivedZclFrame(NSEZSP::CZclFrame &i_zclf) {
+	void onReceivedZclFrame(NSEZSP::EmberNodeId &sender, NSEZSP::CZclFrame &i_zclf) {
+		clogI <<"Receive ZCL Frame from device 0x"<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << " - ";
 		clogI << i_zclf.String() << std::endl;
 
 		if( 0 == i_zclf.getType() ) {
 			// to be inprove : report attribute general command, be carrefull if they are two repport of same cluster in the frame
-			if( 0x0A == i_zclf.getCommand() ) {
+			if( 0x0A == i_zclf.getCommand() ) { // GENERIC_COMMAND_REPORT_ATTRIBUTES
 				//uint8_t data_type = zbMsg.GetPayload().at(2);
 				if( 0x0402 == i_zclf.getCluster() ) {
 					uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(1), i_zclf.getPayload().at(0));
@@ -566,10 +567,17 @@ void handleElectricalMesurementAttribute(const uint16_t id, const int data){
 					uint16_t attr_id = NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(1), i_zclf.getPayload().at(0));
 					/* Send ZCL Command example */
 					//libEzsp.SendZCLCommand(0x01, 0x0006, 0x02, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSSPI::ByteBuffer(), 0xf791);
+					/* Write Attribute example */
+					libEzsp.WriteAttribute(0x01, 0x0006, 0x4002, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE, NSSPI::ByteBuffer({0xff, 0xff}), 0x235b);
 					if( 0x0000 == attr_id ) {
 						uint16_t value_raw = i_zclf.getPayload().at(3);
 						clogI << "State of led is on : " << static_cast<bool>(value_raw) << "\n";
 					}
+				}
+			}
+			else if( 0x04 == i_zclf.getCommand() ) { // GENERIC_COMMAND_WRITE_ATTRIBUTES_RESPONSE
+				if( 0x0000 == i_zclf.getPayload().at(0) ) {
+					clogI << "Write attribute SUCCESS\n";
 				}
 			}
 		}

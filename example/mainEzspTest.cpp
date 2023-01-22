@@ -294,8 +294,8 @@ int main(int argc, char **argv) {
 	};
 	lib_main.registerGPFrameRecvCallback(gprecvobs);
 
-	auto zclrecvobs = [&fsm](NSEZSP::CZclFrame &i_zclf) {
-		fsm.onReceivedZclFrame(i_zclf);
+	auto zclrecvobs = [&fsm](NSEZSP::EmberNodeId &sender, NSEZSP::CZclFrame &i_zclf) {
+		fsm.onReceivedZclFrame(sender, i_zclf);
 	};
 	lib_main.registerZclFrameRecvCallback(zclrecvobs);
 

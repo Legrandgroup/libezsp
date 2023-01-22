@@ -300,6 +300,26 @@ public:
 						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
 						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
+	/**
+	 * @brief Send a WriteAttribute command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute to write
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_datatype Type of data to be written
+	 * @param i_data Data to write
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 *
+	 * @return true if message can be send
+	 */
+	bool WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+						const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
+						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
+						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
 private:
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;

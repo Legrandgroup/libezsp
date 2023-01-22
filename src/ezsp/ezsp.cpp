@@ -290,6 +290,16 @@ bool CEzsp::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_cluster_id
 	return main->SendZCLCommand(i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 }
 
+bool CEzsp::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+									  const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
+									  const uint16_t i_node_id, const uint8_t i_transaction_number,
+									  const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->WriteAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_datatype, i_data, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+}
+
 NSSPI::GenericAsyncDataInputObservable* CEzsp::getAdapterSerialReadObservable() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";

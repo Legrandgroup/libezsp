@@ -44,7 +44,7 @@ public:
 	 * @param i_endpoint Destination endpoint
 	 * @param i_cluster_id Concerned cluster
 	 * @param i_cmd_id Command ID
-	 * @param i_direction Message direction (client to sorver or server to client)
+	 * @param i_direction Message direction (client to server or server to client)
 	 * @param i_payload Payload of the command
 	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 * @param i_manufacturer_code Manufacturer code
@@ -52,6 +52,24 @@ public:
 	void SendZCLCommand( const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint8_t i_cmd_id,
 						 const EZCLFrameCtrlDirection i_direction, const NSSPI::ByteBuffer& i_payload,
 						 const uint16_t i_node_id, const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
+	/**
+	 * @brief Send a WriteAttribute command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute to write
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_datatype Type of data to be written
+	 * @param i_data Data to write
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	void WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+						const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
+						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
+						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
 	 * Observer
