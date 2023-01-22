@@ -1143,7 +1143,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 				NSEZSP::CZclFrame zcl_frame(zbMsg.GetAps().src_ep, zbMsg.GetAps().cluster_id, type, zbMsg.GetZCLHeader().GetCmdId(), data);
 
 				if( nullptr != obsZclFrameRecvCallback ) {
-					obsZclFrameRecvCallback(sender, zcl_frame);
+					obsZclFrameRecvCallback(sender, zcl_frame, last_hop_lqi);
 				}
 			}
 		}

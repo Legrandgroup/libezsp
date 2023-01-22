@@ -523,7 +523,7 @@ void handleElectricalMesurementAttribute(const uint16_t id, const int data){
 	 *
 	 * @param[in] i_zclf The frame received
 	 */
-	void onReceivedZclFrame(NSEZSP::EmberNodeId &sender, NSEZSP::CZclFrame &i_zclf) {
+	void onReceivedZclFrame(NSEZSP::EmberNodeId &sender, NSEZSP::CZclFrame &i_zclf, uint8_t last_hop_lqi) {
 		clogI <<"Receive ZCL Frame from device 0x"<< std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << " - ";
 		clogI << i_zclf.String() << std::endl;
 
