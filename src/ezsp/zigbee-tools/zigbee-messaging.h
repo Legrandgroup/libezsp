@@ -72,6 +72,26 @@ public:
 						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
+	 * @brief Send a Configure Reporting command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute id
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_datatype Attribute type
+	 * @param i_min Minimum reporting interval
+	 * @param i_max Maximum reporting interval
+	 * @param i_reportable Reportable change
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	void ConfigureReporting(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+							const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const uint16_t i_min,
+							const uint16_t i_max, const uint16_t i_reportable, const uint16_t i_node_id,
+							const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
+	/**
 	 * Observer
 	 */
 	void handleEzspRxMessage( EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_receive );

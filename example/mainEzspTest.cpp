@@ -14,6 +14,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <chrono>
+#include <thread>
 
 #include <ezsp/ezsp.h>
 
@@ -289,6 +291,7 @@ int main(int argc, char **argv) {
 	};
 	lib_main.registerLibraryStateCallback(clibobs);
 
+	// All observer to receive CGpFrame, CZclFrame, ZdpDeviceAnnounce, ZdpActiveEp, ZdpSimpleDesc and DongleEUI64.
 	auto gprecvobs = [&fsm](NSEZSP::CGpFrame &i_gpf) {
 		fsm.onReceivedGPFrame(i_gpf);
 	};
@@ -298,6 +301,26 @@ int main(int argc, char **argv) {
 		fsm.onReceivedZclFrame(sender, i_zclf, last_hop_lqi);
 	};
 	lib_main.registerZclFrameRecvCallback(zclrecvobs);
+
+	auto zdpdeviceannouncerecvobs = [&fsm](NSEZSP::EmberNodeId &sender, NSEZSP::EmberEUI64 &deviceEui64) {
+		fsm.onReceivedZdpDeviceAnnounce(sender, deviceEui64);
+	};
+	lib_main.registerZdpDeviceAnnounceRecvCallback(zdpdeviceannouncerecvobs);
+
+	auto zdpactiveeprecvobs = [&fsm](uint8_t status, NSEZSP::EmberNodeId &address, uint8_t ep_count, std::vector<uint8_t> &ep_list) {
+		fsm.onReceivedZdpActiveEp(status, address, ep_count, ep_list);
+	};
+	lib_main.registerZdpActiveEpRecvCallback(zdpactiveeprecvobs);
+
+	auto zdpsimpledescrecvobs = [&fsm](uint8_t status, NSEZSP::EmberNodeId &address, uint8_t &endpoint, uint16_t &profile_id, uint16_t &device_id, uint8_t version, uint8_t in_count, uint8_t out_count, std::vector<uint16_t> &in_list, std::vector<uint16_t> &out_list) {
+		fsm.onReceivedZdpSimpleDesc(status, address, endpoint, profile_id, device_id, version, in_count, out_count, in_list, out_list);
+	};
+	lib_main.registerZdpSimpleDescRecvCallback(zdpsimpledescrecvobs);
+
+	auto zdpdeviceeui64recvobs = [&fsm](std::vector<uint8_t> &dongleEUI64) {
+		fsm.onReceivedDongleEUI64(dongleEUI64);
+	};
+	lib_main.registerDongleEUI64RecvCallback(zdpdeviceeui64recvobs);
 
 	// Sample incoming greenpower sourceId callback
 	// auto cgpidobs = [](uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status) {

@@ -122,9 +122,17 @@ typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Cal
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (EmberNodeId &sender, CZclFrame &i_zclf, uint8_t &last_hop_lqi)> FZclFrameRecvCallback; /*!< Callback type for method registerZclFrameRecvCallback() */
+typedef std::function<void (uint8_t status, EmberNodeId &address, EmberEUI64 &eui64)> FTrustCenterJoinHandlerCallBack; /*!< Callback type for method registerTrustCenterJoinHandlerCallback() */
+typedef std::function<void (EmberNodeId &sender, EmberEUI64 &deviceEui64)> FZdpDeviceAnnounceCallBack; /*!< Callback type for method registerZdpDeviceAnnounceRecvCallback() */
+typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t ep_count, std::vector<uint8_t> &ep_list)> FZdpActiveEpCallBack; /*!< Callback type for method registerZdpActiveEpRecvCallback() */
+typedef std::function<void (std::vector<uint8_t> &dongleEUI64)> FDongleEUI64CallBack; /*!< Callback type for method registerDongleEUI64RecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
 typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
 typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
+typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t &endpoint,
+							uint16_t &profile_id, uint16_t &device_id, uint8_t version,
+							uint8_t in_count, uint8_t out_count, std::vector<uint16_t> &in_list,
+							std::vector<uint16_t> &out_list)> FZdpSimpleDescCallBack; /*!< Callback type for method registerZdpSimpleDescRecvCallback() */
 
 class LIBEXPORT CEzsp {
 public:
@@ -191,7 +199,48 @@ public:
 	 * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
 	 */
 	void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
+
+	/**
+	 * @brief Register callback to receive all zcl incoming frames
+	 *
+	 * @param newObsZclFrameRecvCallback A callback function that will be invoked each time a new zcl frame is received from a known source ID
+	 */
 	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
+
+	/**
+	 * @brief Register callback to receive active endpoint on specific node id
+	 *
+	 * @param newObsTrustCenterJoinHandlerCallback A callback function that will be invoked each time a EZSP_TRUST_CENTER_JOIN_HANDLER is received
+	 */
+	void registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBack newObsTrustCenterJoinHandlerCallback);
+
+	/**
+	 * @brief Register callback to receive new node id in network
+	 *
+	 * @param newObsZdpDeviceAnnounceRecvCallback A callback function that will be invoked each time a new device join the network
+	 */
+	void registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback);
+
+	/**
+	 * @brief Register callback to receive active endpoint on specific node id
+	 *
+	 * @param newObsZdpActiveEpRecvCallback A callback function that will be invoked each time a ZDP_ACTIVE_ENDPOINT is received
+	 */
+	void registerZdpActiveEpRecvCallback(FZdpActiveEpCallBack newObsZdpActiveEpRecvCallback);
+
+	/**
+	 * @brief Register callback to get EUI64 dongle
+	 *
+	 * @param newObsDongleEUI64RecvCallback A callback function that will be invoked each time a EZSP_GET_EUI64 is received
+	 */
+	void registerDongleEUI64RecvCallback(FDongleEUI64CallBack newObsDongleEUI64RecvCallback);
+
+	/**
+	 * @brief Register callback to receive simple descriptor on specific endpoint
+	 *
+	 * @param newObsZdpSimpleDescRecvCallback A callback function that will be invoked each time a ZDP_SIMPLE_DESC is received
+	 */
+	void registerZdpSimpleDescRecvCallback(FZdpSimpleDescCallBack newObsZdpSimpleDescRecvCallback);
 
 	/**
 	 * @brief Register callback to receive all incoming greenpower sourceId
@@ -199,6 +248,13 @@ public:
 	 * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
 	 */
 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
+
+	/**
+	 * @brief Get EUI64 dongle
+	 *
+	 * @return true if the action is going to be run in the background, false if the sink is busy
+	 */
+	bool getEUI64();
 
 	/**
 	 * @brief Remove GP all devices from sink
@@ -387,6 +443,26 @@ public:
 						const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
 						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
 						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
+	/**
+	 * @brief Send a Configure Reporting command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute id
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_datatype Attribute type
+	 * @param i_min Minimum reporting interval
+	 * @param i_max Maximum reporting interval
+	 * @param i_reportable Reportable change
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	bool ConfigureReporting(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+							const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const uint16_t i_min,
+							const uint16_t i_max, const uint16_t i_reportable, const uint16_t i_node_id,
+							const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
 	 * @brief Retrieve an observable to handle bytes received on the serial port

@@ -3,7 +3,7 @@
  */
 #include <map>
 
-#include "zdp-enum.h"
+#include <ezsp/zbmessage/zdp-enum.h>
 
 using NSEZSP::CZdpEnum;
 

@@ -115,7 +115,47 @@ public:
 	 */
 	void registerLibraryStateCallback(FLibStateCallback newObsStateCallback);
 
+	/**
+	 * @brief Register callback to receive all zcl incoming frames
+	 *
+	 * @param newObsZclFrameRecvCallback A callback function that will be invoked each time a new zcl frame is received from a known source ID
+	 */
 	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
+
+	/**
+	 * @brief Register callback to receive join/leave network
+	 *
+	 * @param newObsTrustCenterJoinHandlerCallback A callback function that will be invoked each time a EZSP_TRUST_CENTER_JOIN_HANDLER is received
+	 */
+	void registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBack newObsTrustCenterJoinHandlerCallback);
+
+	/**
+	 * @brief Register callback to receive new node id in network
+	 *
+	 * @param newObsZdpDeviceAnnounceRecvCallback A callback function that will be invoked each time a new device join the network
+	 */
+	void registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback);
+
+	/**
+	 * @brief Register callback to receive simple descriptor on specific endpoint
+	 *
+	 * @param newObsZdpSimpleDescRecvCallback A callback function that will be invoked each time a ZDP_SIMPLE_DESC is received
+	 */
+	void registerZdpSimpleDescRecvCallback(FZdpSimpleDescCallBack newObsZdpSimpleDescRecvCallback);
+
+	/**
+	 * @brief Register callback to get EUI64 dongle
+	 *
+	 * @param newObsDongleEUI64RecvCallback A callback function that will be invoked each time a EZSP_GET_EUI64 is received
+	 */
+	void registerDongleEUI64RecvCallback(FDongleEUI64CallBack newObsDongleEUI64RecvCallback);
+
+	/**
+	 * @brief Register callback to receive active endpoint on specific node id
+	 *
+	 * @param newObsZdpActiveEpRecvCallback A callback function that will be invoked each time a ZDP_ACTIVE_ENDPOINT is received
+	 */
+	void registerZdpActiveEpRecvCallback(FZdpActiveEpCallBack newObsZdpActiveEpRecvCallback);
 
 	/**
 	 * @brief Register callback to receive all authenticated incoming green power frames
@@ -130,6 +170,13 @@ public:
 	 * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable this callback)
 	 */
 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
+
+	/**
+	 * @brief Get EUI64 dongle
+	 *
+	 * @return true if the action is going to be run in the background, false if the sink is busy
+	 */
+	bool getEUI64();
 
 	/**
 	 * @brief Remove GP all devices from sink
@@ -320,6 +367,26 @@ public:
 						const uint16_t i_node_id, const uint8_t i_transaction_number = 0,
 						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
+	/**
+	 * @brief Send a Configure Reporting command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute id
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_datatype Attribute type
+	 * @param i_min Minimum reporting interval
+	 * @param i_max Maximum reporting interval
+	 * @param i_reportable Reportable change
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	bool ConfigureReporting(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+							const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const uint16_t i_min,
+							const uint16_t i_max, const uint16_t i_reportable, const uint16_t i_node_id, 
+							const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
 private:
 	void setState(CLibEzspInternal::State i_new_state);
 	CLibEzspInternal::State getState() const;
@@ -388,7 +455,12 @@ private:
 	CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
 	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
-	FZclFrameRecvCallback obsZclFrameRecvCallback;
+	FZclFrameRecvCallback obsZclFrameRecvCallback;	 /*!< Optional user callback invoked by us each time a zcl frame is received */
+	FZdpDeviceAnnounceCallBack obsZdpDeviceAnnounceRecvCallback; /*!< Optional user callback invoked by us each time a new device join the network */
+	FZdpActiveEpCallBack obsZdpActiveEpRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_ACTIVE_ENDPOINT is received */
+	FTrustCenterJoinHandlerCallBack obsTrustCenterJoinHandlerCallback; /*!< Optional user callback invoked by us each time a EZSP_TRUST_CENTER_JOIN_HANDLER is received */
+	FZdpSimpleDescCallBack obsZdpSimpleDescRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_SIMPLE_DESC is received */
+	FDongleEUI64CallBack obsDongleEUI64RecvCallback; /*!< Optional user callback invoked by us each time a EZSP_GET_EUI64 is received */
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
 	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
