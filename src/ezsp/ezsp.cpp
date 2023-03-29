@@ -141,6 +141,48 @@ void CEzsp::registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRec
 	main->registerZclFrameRecvCallback(newObsZclFrameRecvCallback);
 }
 
+void CEzsp::registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerZdpDeviceAnnounceRecvCallback(newObsZdpDeviceAnnounceRecvCallback);
+}
+
+void CEzsp::registerZdpActiveEpRecvCallback(FZdpActiveEpCallBack newObsZdpActiveEpRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerZdpActiveEpRecvCallback(newObsZdpActiveEpRecvCallback);
+}
+
+void CEzsp::registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBack newObsTrustCenterJoinHandlerCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerTrustCenterJoinHandlerCallback(newObsTrustCenterJoinHandlerCallback);
+}
+
+void CEzsp::registerDongleEUI64RecvCallback(FDongleEUI64CallBack newObsDongleEUI64RecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerDongleEUI64RecvCallback(newObsDongleEUI64RecvCallback);
+}
+
+void CEzsp::registerZdpSimpleDescRecvCallback(FZdpSimpleDescCallBack newObsZdpSimpleDescRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerZdpSimpleDescRecvCallback(newObsZdpSimpleDescRecvCallback);
+}
+
+bool CEzsp::getEUI64() {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->getEUI64();
+}
+
 bool CEzsp::clearAllGPDevices() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
@@ -298,6 +340,16 @@ bool CEzsp::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id
 	clogD << "->API call " << __func__ << "()\n";
 #endif
 	return main->WriteAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_datatype, i_data, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+}
+
+bool CEzsp::ConfigureReporting(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+							   const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const uint16_t i_min,
+							   const uint16_t i_max, const uint16_t i_reportable, const uint16_t i_node_id,
+							   const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->ConfigureReporting(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_datatype, i_min, i_max, i_reportable, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 }
 
 NSSPI::GenericAsyncDataInputObservable* CEzsp::getAdapterSerialReadObservable() {
