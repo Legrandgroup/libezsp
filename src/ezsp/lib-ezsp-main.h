@@ -25,7 +25,6 @@
 #include "ezsp/ezsp-dongle-observer.h"
 #include "ezsp/green-power-observer.h"
 
-
 namespace NSEZSP {
 
 #define CLIBEZSP_INTERNAL_STATE_LIST(XX) \
@@ -121,6 +120,13 @@ public:
 	 * @param newObsZclFrameRecvCallback A callback function that will be invoked each time a new zcl frame is received from a known source ID
 	 */
 	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
+
+	/**	
+	 * @brief Register callback to receive the bindings table on specific node id
+	 *
+	 * @param newObsBindingTableRecvCallback A callback function that will be invoked each time a new bindings table is received from a known source ID
+	 */
+	void registerBindingTableRecvCallback(FBindingTableRecvCallback newObsBindingTableRecvCallback);
 
 	/**
 	 * @brief Register callback to receive join/leave network
@@ -309,6 +315,15 @@ public:
 	bool joinNetwork(NSEZSP::CEmberNetworkParameters& nwkParams);
 
 	/**
+	 * @brief Create a zigbee network
+	 *
+	 * @param channel The 802.15.4 channel (valid values are 11 to 26, inclusive)
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool createNetwork(uint8_t channel);
+
+	/**
 	 * @brief Open the zigbee network for a defined period so other products can join the zigbee network
 	 *
 	 * @param i_timeout The time during the network is open
@@ -456,6 +471,7 @@ private:
 	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
 	FZclFrameRecvCallback obsZclFrameRecvCallback;	 /*!< Optional user callback invoked by us each time a zcl frame is received */
+	FBindingTableRecvCallback obsBindingTableRecvCallback;  /*!< Optional user callback invoked by us each time a binding table is received */
 	FZdpDeviceAnnounceCallBack obsZdpDeviceAnnounceRecvCallback; /*!< Optional user callback invoked by us each time a new device join the network */
 	FZdpActiveEpCallBack obsZdpActiveEpRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_ACTIVE_ENDPOINT is received */
 	FTrustCenterJoinHandlerCallBack obsTrustCenterJoinHandlerCallback; /*!< Optional user callback invoked by us each time a EZSP_TRUST_CENTER_JOIN_HANDLER is received */
