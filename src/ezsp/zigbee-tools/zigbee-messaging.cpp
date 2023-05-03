@@ -8,6 +8,7 @@
 
 #include "spi/ILogger.h"
 
+#define GENERIC_COMMAND_READ_ATTRIBUTES                         0x00
 #define GENERIC_COMMAND_WRITE_ATTRIBUTES                        0x02
 #define GENERIC_COMMAND_CONFIGURE_ATTRIBUTES                    0x06
 
@@ -105,6 +106,28 @@ void CZigbeeMessaging::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i
 	}
 	l_msg.SetSpecific( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, i_cmd_id, i_direction, i_payload, i_transaction_number, i_grp_id);
 	SendUnicast( i_node_id, l_msg );
+}
+
+void CZigbeeMessaging::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+				   					 const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
+				   					 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
+	CZigBeeMsg l_msg;
+	uint16_t l_profile;
+	if( 242 == i_endpoint )
+	{
+		l_profile = 0xA1E0; // Green Power
+	}
+	else
+	{
+		l_profile = 0x0104; // 0xFFFFU;
+	}
+
+	NSSPI::ByteBuffer l_payload;
+	l_payload.push_back( i_attribute_id&0xFF );
+	l_payload.push_back( (i_attribute_id>>8)&0xFF );
+
+	l_msg.SetGeneral( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, GENERIC_COMMAND_READ_ATTRIBUTES, i_direction, l_payload, i_transaction_number, i_grp_id);
+	SendUnicast( i_node_id, l_msg );	
 }
 
 void CZigbeeMessaging::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,

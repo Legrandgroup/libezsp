@@ -25,7 +25,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	uartHandle(uartHandle),
 	timerbuilder(timerbuilder),
 	exp_ezsp_min_version(6),    /* Expect EZSP version 6 minimum */
-	exp_ezsp_max_version(8),    /* Expect EZSP version 8 maximum */
+	exp_ezsp_max_version(9),    /* Expect EZSP version 8 maximum */
 	exp_stack_type(2),  /* Expect a stack type=2 (mesh) */
 	xncpManufacturerId(0),  /* 0 means unknown (yet) */
 	xncpVersionNumber(0),  /* 0 means unknown (yet) */
@@ -547,6 +547,16 @@ bool CLibEzspMain::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_clu
 	return true;
 }
 
+bool CLibEzspMain::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+				   				 const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
+				   				 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code){
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_messaging.ReadAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	return true;
+}
+
 bool CLibEzspMain::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
 								  const EZCLFrameCtrlDirection i_direction, const uint8_t i_datatype, const NSSPI::ByteBuffer& i_data,
 								  const uint16_t i_node_id, const uint8_t i_transaction_number,
@@ -997,7 +1007,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 								buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
 									"[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]" <<
 									"[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(address) << "]";
-								clogI << buf.str() << std::endl;
+								//clogI << buf.str() << std::endl;
 							}
 							else {
 								clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<

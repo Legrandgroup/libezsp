@@ -48,6 +48,7 @@
  */
 
 #include "custom-aes.h"
+#include <stdexcept>
 
 #include <cstring>
 

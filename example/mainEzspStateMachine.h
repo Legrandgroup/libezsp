@@ -706,12 +706,26 @@ public:
 					/* Write Attribute example */
 					//libEzsp.WriteAttribute(0x01, 0x0006, 0x4002, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_INT16U_ATTRIBUTE_TYPE, NSSPI::ByteBuffer({0xff, 0xff}), 0x235b);
 					/* Configure reporting example */
-					libEzsp.ConfigureReporting(0x01, 0x0702, 0x0200, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_BITMAP8_ATTRIBUTE_TYPE, 0x0010, 0x0030, 0x0000, sender);
+					//libEzsp.ConfigureReporting(0x01, 0x0702, 0x0200, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_BITMAP8_ATTRIBUTE_TYPE, 0x0010, 0x0030, 0x0000, sender);
+					/* Read attribute example */
+					libEzsp.ReadAttribute(0x01, 0x0006, 0x0000, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
 
 					if( 0x0000 == attr_id ) {
 						uint16_t value_raw = i_zclf.getPayload().at(3);
 						clogI << "State of led is on : " << static_cast<bool>(value_raw) << "\n";
 					}
+				}
+			}
+			else if( 0x01 == i_zclf.getCommand() ) { // GENERIC_COMMAND_READ_ATTRIBUTES_RESPONSE
+				if( 0x0000 == i_zclf.getPayload().at(2) ) {
+					clogI << "Read attribute SUCCESS\n";
+
+					clogI << "Value : " ;
+					for(uint8_t loop = 4; loop<i_zclf.getPayload().size(); loop++){
+						clogI << unsigned(i_zclf.getPayload().at(loop)); 
+					}
+
+					clogI << std::endl;
 				}
 			}
 			else if( 0x04 == i_zclf.getCommand() ) { // GENERIC_COMMAND_WRITE_ATTRIBUTES_RESPONSE
