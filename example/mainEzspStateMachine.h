@@ -708,7 +708,13 @@ public:
 					/* Configure reporting example */
 					//libEzsp.ConfigureReporting(0x01, 0x0702, 0x0200, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_BITMAP8_ATTRIBUTE_TYPE, 0x0010, 0x0030, 0x0000, sender);
 					/* Read attribute example */
-					libEzsp.ReadAttribute(0x01, 0x0006, 0x0000, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
+					//libEzsp.ReadAttribute(0x01, 0x0006, 0x0000, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
+
+					/* Discover attributes for a non specific manufacturer code, if cluster < 0xFC00 */
+					//libEzsp.DiscoverAttributes(0x01, 0x0006, 0x0000, 0xFF, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
+
+					/* Discover attributes for a specific manufacturer code, if cluster >= 0xFC00 */
+					libEzsp.DiscoverAttributes(0x01, 0xFC01, 0x0000, 0xFF, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender, 0, 0, 0x1021 /* Legrand manufacturer code */);
 
 					if( 0x0000 == attr_id ) {
 						uint16_t value_raw = i_zclf.getPayload().at(3);
@@ -739,6 +745,20 @@ public:
 				}else{
 					clogI << "Configure attribute FAILED\n";
 				}
+			}
+			else if( 0x0d == i_zclf.getCommand() ) { // GENERIC_COMMAND_DISCOVER_ATTRIBUTES_RESPONSE
+				if( 0x0001 == i_zclf.getPayload().at(0) ) {
+					clogI << "There are no more attributes to be discovered.\n";
+				}else{
+					clogI << "There are more attributes to be discovered that have an attribute identifier value greater than the last attribute\n";
+				}
+
+				for(uint8_t loop = 1; loop<i_zclf.getPayload().size(); loop++){
+					clogI << "Attribute ID : " << unsigned(NSEZSP::dble_u8_to_u16(i_zclf.getPayload().at(loop+1), i_zclf.getPayload().at(loop))) << std::endl;
+					clogI << "Data type : " << unsigned(i_zclf.getPayload().at(loop + 2)) << std::endl;
+					loop += 2;
+				}
+				//clogI << i_zclf.String();
 			}
 		}
 	}

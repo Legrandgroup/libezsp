@@ -547,6 +547,16 @@ bool CLibEzspMain::SendZCLCommand(const uint8_t i_endpoint, const uint16_t i_clu
 	return true;
 }
 
+bool CLibEzspMain::DiscoverAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_start_attribute_identifier,
+									 const uint8_t i_maximum_attribute_identifier, const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
+									 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code){
+    if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_messaging.DiscoverAttributes(i_endpoint, i_cluster_id, i_start_attribute_identifier, i_maximum_attribute_identifier, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	return true;
+}
+
 bool CLibEzspMain::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
 				   				 const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
 				   				 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code){
