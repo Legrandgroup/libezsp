@@ -141,6 +141,13 @@ void CEzsp::registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRec
 	main->registerZclFrameRecvCallback(newObsZclFrameRecvCallback);
 }
 
+void CEzsp::registerBindingTableRecvCallback(FBindingTableRecvCallback newObsBindingTableRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerBindingTableRecvCallback(newObsBindingTableRecvCallback);
+}
+
 void CEzsp::registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback){
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
@@ -306,6 +313,13 @@ bool CEzsp::joinNetwork(const uint64_t extendedPanId,
 	nwkParams.setNwkUpdateId(nwkUpdateId);
 	
 	return main->joinNetwork(nwkParams);
+}
+
+bool CEzsp::createNetwork(uint8_t channel){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "(" << std::dec << static_cast<unsigned int>(i_timeout) << ")\n";
+#endif
+	return main->createNetwork(channel);
 }
 
 bool CEzsp::openNetwork(uint8_t i_timeout) {

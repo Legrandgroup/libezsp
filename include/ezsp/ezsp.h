@@ -24,6 +24,7 @@
 #include <ezsp/ezsp-adapter-version.h>
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
+#include <ezsp/ezsp-protocol/struct/zdp-mgmt-binding-table.h>
 
 namespace NSMAIN {
     class MainStateMachine;
@@ -122,6 +123,7 @@ typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Cal
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
 typedef std::function<void (EmberNodeId &sender, CZclFrame &i_zclf, uint8_t &last_hop_lqi)> FZclFrameRecvCallback; /*!< Callback type for method registerZclFrameRecvCallback() */
+typedef std::function<void (uint8_t bindingTableEntries, uint8_t startIndex, uint8_t bindingTableListCount, std::vector<NSEZSP::MgmtBindRsp> bindingTable)> FBindingTableRecvCallback; /*!< Callback type for method registerBindingTableRecvCallback() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, EmberEUI64 &eui64)> FTrustCenterJoinHandlerCallBack; /*!< Callback type for method registerTrustCenterJoinHandlerCallback() */
 typedef std::function<void (EmberNodeId &sender, EmberEUI64 &deviceEui64)> FZdpDeviceAnnounceCallBack; /*!< Callback type for method registerZdpDeviceAnnounceRecvCallback() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t ep_count, std::vector<uint8_t> &ep_list)> FZdpActiveEpCallBack; /*!< Callback type for method registerZdpActiveEpRecvCallback() */
@@ -206,6 +208,13 @@ public:
 	 * @param newObsZclFrameRecvCallback A callback function that will be invoked each time a new zcl frame is received from a known source ID
 	 */
 	void registerZclFrameRecvCallback(FZclFrameRecvCallback newObsZclFrameRecvCallback);
+
+	/**	
+	 * @brief Register callback to receive the bindings table on specific node id
+	 *
+	 * @param newObsBindingTableRecvCallback A callback function that will be invoked each time a new bindings table is received from a known source ID
+	 */
+	void registerBindingTableRecvCallback(FBindingTableRecvCallback newObsBindingTableRecvCallback);
 
 	/**
 	 * @brief Register callback to receive active endpoint on specific node id
@@ -384,6 +393,15 @@ public:
 	                 const uint8_t radioTxPower = 3,
 	                 const NSEZSP::EmberNodeId nwkManagerId = 0,
 	                 const uint8_t nwkUpdateId = 0);
+
+	/**
+	 * @brief Create a zigbee network
+	 *
+	 * @param channel The 802.15.4 channel (valid values are 11 to 26, inclusive)
+	 *
+	 * @return true If the join action could be started
+	 */
+	bool createNetwork(uint8_t channel);
 
 	/**
 	 * @brief Open the zigbee network for a defined period so other products can join the zigbee network
