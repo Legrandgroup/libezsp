@@ -363,6 +363,21 @@ public:
 						const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
+	 * @brief Send a Read Attribute command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_attribute_id Attribute id to read
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	bool ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+					   const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
+					   const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+	
+	/**
 	 * @brief Send a WriteAttribute command
 	 *
 	 * @param i_endpoint Destination endpoint
