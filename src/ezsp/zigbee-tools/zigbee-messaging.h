@@ -54,6 +54,22 @@ public:
 						 const uint16_t i_node_id, const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 
 	/**
+	 * @brief Send a Discover Attributes command
+	 *
+	 * @param i_endpoint Destination endpoint
+	 * @param i_cluster_id Concerned cluster
+	 * @param i_start_attribute_identifier Specifies the value of the identifier at which to begin the attribute discovery.
+	 * @param i_maximum_attribute_identifier specifies the maximum number of attribute identifiers that are to be returned in the resulting Discover Attributes Response command.
+	 * @param i_direction Message direction (client to server or server to client)
+	 * @param i_node_id Short address of destination
+	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
+	 * @param i_manufacturer_code Manufacturer code
+	 */
+	void DiscoverAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_start_attribute_identifier,
+						    const uint8_t i_maximum_attribute_identifier, const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
+						    const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
+
+	/**
 	 * @brief Send a Read Attribute command
 	 *
 	 * @param i_endpoint Destination endpoint
