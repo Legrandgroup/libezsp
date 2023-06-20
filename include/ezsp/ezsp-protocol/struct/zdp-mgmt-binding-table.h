@@ -11,7 +11,7 @@ namespace NSEZSP {
 
 class LIBEXPORT MgmtBindRsp {
 	public:
-
+	
 		/**
 		* @brief Default constructor
 		*

@@ -244,7 +244,7 @@ void CLibEzspMain::stackInit() {
 	                    .value = 2
 	                   });
 	l_config.push_back({.id = EZSP_CONFIG_SOURCE_ROUTE_TABLE_SIZE,
-	                    .value = 16
+	                    .value = 8
 	                   });
 	/*l_config.push_back({.id = EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT,
 	                    .value = 6
@@ -273,9 +273,9 @@ void CLibEzspMain::stackInit() {
 	l_config.push_back({.id = EZSP_CONFIG_REQUEST_KEY_TIMEOUT,
 	                    .value = 0
 	                   });
-	l_config.push_back({.id = EZSP_CONFIG_CERTIFICATE_TABLE_SIZE,
-	                    .value = 0
-	                   });
+	// l_config.push_back({.id = EZSP_CONFIG_CERTIFICATE_TABLE_SIZE,
+	//                     .value = 0
+	//                    });
 	l_config.push_back({.id = EZSP_CONFIG_APPLICATION_ZDO_FLAGS,
 	                    .value = 3
 	                   });
@@ -525,6 +525,14 @@ bool CLibEzspMain::openNetwork(uint8_t i_timeout){
 		return false;
 	}
 	this->zb_nwk.openNetwork(i_timeout);
+	return true;
+}
+
+bool CLibEzspMain::closeNetwork(){
+	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
+		return false;
+	}
+	this->zb_nwk.closeNetwork();
 	return true;
 }
 
@@ -1040,6 +1048,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 							}
 							break;
 						}
+						break;
 						case ZDP_MGMT_BIND: {
 							uint8_t status = zbMsg.GetPayload().at(1U);
 							if( 0 == status ){
@@ -1084,7 +1093,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 								}
 
 								if( nullptr != obsBindingTableRecvCallback ) {
-									obsBindingTableRecvCallback(bindingTableEntries, startIndex, bindingTableListCount, bindingTable);
+									obsBindingTableRecvCallback(sender, bindingTableEntries, startIndex, bindingTableListCount, bindingTable);
 								}
 							}
 							else{
@@ -1093,15 +1102,39 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 							}
 							break;
 						}
+						case ZDP_UNBIND: {
+							uint8_t status = zbMsg.GetPayload().at(1U);
+							if( 0 == status ){
+								std::stringstream buf;
+								buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
+									"[ status : " << std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << "]";
+								clogI << buf.str() << std::endl;
+							}
+							else{
+								clogI << CZdpEnum::ToString(zdp_low) << " Response with status : " <<
+									std::hex << std::setw(2) << std::setfill('0') << unsigned(status) << std::endl;
+							}
+							break;
+						}
+						break;
 						default: {
 							// DEBUG
 							clogI << "ZDO Response : " << CZdpEnum::ToString(zdp_low) << std::endl;
+							
 						}
 						break;
 					}
 				}
 				else {
-					if( ZDP_DEVICE_ANNOUNCE == zdp_low ) {
+					if( ZDP_NODE_DESC == zdp_low) {
+						clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
+						
+						//clogI << zbMsg.GetPayload() << std::endl;
+						//EmberNodeId address = dble_u8_to_u16(zbMsg.GetPayload().at(1U), zbMsg.GetPayload().at(0U));
+
+						//clogI << unsigned(address) << std::endl;
+					}	
+					else if( ZDP_DEVICE_ANNOUNCE == zdp_low ) {
 						clogI << "ZDO Request : " << CZdpEnum::ToString(zdp_low) << std::endl;
 
 						/* Dirty! Store announcing device address as global variable to able to use this value in binding request for example
@@ -1120,7 +1153,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 							obsZdpDeviceAnnounceRecvCallback(address, deviceEui64);
 						}
 					}
-					if (ZDP_NWK_ADDR == zdp_low) {
+					else if (ZDP_NWK_ADDR == zdp_low) {
 						std::stringstream buf;
 						buf << CZdpEnum::ToString(zdp_low) << " Response : " <<
 							"[ address : " << std::hex << std::setw(4) << std::setfill('0') << unsigned(sender) << "]";
@@ -1151,8 +1184,8 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 	}
 	break;
 	default: {
-		// DEBUG VIEW
-		// clogI << "Unhandled EZSP message " << CEzspEnum::EEzspCmdToString(i_cmd) << ": " << i_msg_receive << "\n";
+		//DEBUG VIEW
+		//clogI << "Unhandled EZSP message " << CEzspEnum::EEzspCmdToString(i_cmd) << ": " << i_msg_receive << "\n";
 		
 	}
 	break;
