@@ -329,6 +329,13 @@ bool CEzsp::openNetwork(uint8_t i_timeout) {
 	return main->openNetwork(i_timeout);
 }
 
+bool CEzsp::closeNetwork() {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "(" << std::dec << static_cast<unsigned int>(i_timeout) << ")\n";
+#endif
+	return main->closeNetwork();
+}
+
 bool CEzsp::SendZDOCommand(EmberNodeId i_node_id, uint16_t i_cmd_id, const NSSPI::ByteBuffer& payload) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";

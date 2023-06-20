@@ -23,7 +23,8 @@ typedef enum {
 	ZDP_USER_DESC =         	  0x11,
 	ZDP_DISCOVERY_CACHE =   	  0x12,
 	ZDP_DEVICE_ANNOUNCE =   	  0x13,
-	ZDP_BIND            =   	  0x21,
+	ZDP_BIND =   	  			  0x21,
+	ZDP_UNBIND = 				  0x22,
 
 	ZDP_MGMT_LQI =          	  0x31,
 	ZDP_MGMT_RTG =  	    	  0x32,

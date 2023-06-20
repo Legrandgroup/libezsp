@@ -333,6 +333,11 @@ public:
 	bool openNetwork(uint8_t i_timeout);
 
 	/**
+	 * @brief Close the zigbee network
+	 */
+	bool closeNetwork();
+
+	/**
 	 * @brief Send a ZDO unicast command
 	 *
 	 * @param i_node_id Short address of destination

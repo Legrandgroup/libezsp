@@ -251,7 +251,8 @@ void CZigbeeNetworking::openNetwork(uint8_t i_timeout) {
 }
 
 void CZigbeeNetworking::closeNetwork() {
-	dongle.sendCommand(EZSP_PERMIT_JOINING, { 0x00U });
+	dongle.sendCommand( EZSP_PERMIT_JOINING, { 0x00U } );
+	dongle.sendCommand( EZSP_SET_POLICY, { EZSP_TC_KEY_REQUEST_POLICY, 0x50U /* EZSP_DENY_TC_KEY_REQUESTS */});
 
 	// use zdp frame
 	CZigBeeMsg l_msg;
