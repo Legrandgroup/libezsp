@@ -29,6 +29,7 @@ typedef enum {
 	ZDP_MGMT_LQI =          	  0x31,
 	ZDP_MGMT_RTG =  	    	  0x32,
 	ZDP_MGMT_BIND =         	  0x33,
+	ZDP_MGMT_LEAVE =         	  0x34,
 	ZDP_MGMT_PERMIT_JOINING_REQ = 0x36
 } EZdpLowByte;
 
