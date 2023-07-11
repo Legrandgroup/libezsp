@@ -11,7 +11,7 @@ std::string CZdpEnum::ToString( EZdpLowByte in ) {
 	const std::map<EZdpLowByte,std::string> MyEnumStrings {
 		{ ZDP_MGMT_PERMIT_JOINING_REQ, "ZDP_MGMT_PERMIT_JOINING_REQ" },
 		{ ZDP_MGMT_BIND, "ZDP_MGMT_BIND" },
-		{ ZDP_MGMT_BIND, "ZDP_MGMT_LEAVE" },
+		{ ZDP_MGMT_LEAVE, "ZDP_MGMT_LEAVE" },
 		{ ZDP_MGMT_RTG, "ZDP_MGMT_RTG" },
 		{ ZDP_MGMT_LQI, "ZDP_MGMT_LQI" },
 		{ ZDP_DISCOVERY_CACHE, "ZDP_DISCOVERY_CACHE" },
