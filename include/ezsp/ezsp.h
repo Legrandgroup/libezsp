@@ -125,6 +125,7 @@ typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callbac
 typedef std::function<void (EmberNodeId &sender, CZclFrame &i_zclf, uint8_t &last_hop_lqi)> FZclFrameRecvCallback; /*!< Callback type for method registerZclFrameRecvCallback() */
 typedef std::function<void (NSEZSP::EmberNodeId &sender, uint8_t bindingTableEntries, uint8_t startIndex, uint8_t bindingTableListCount, std::vector<NSEZSP::MgmtBindRsp> bindingTable)> FBindingTableRecvCallback; /*!< Callback type for method registerBindingTableRecvCallback() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, EmberEUI64 &eui64)> FTrustCenterJoinHandlerCallBack; /*!< Callback type for method registerTrustCenterJoinHandlerCallback() */
+typedef std::function<void (uint8_t status, uint32_t source_id, uint8_t application_id, uint8_t endpoint)> FGpProxyTableEntryHandlerCallBack; /*!< Callback type for method registerGpProxyTableEntryJoinHandlerCallback() */
 typedef std::function<void (EmberNodeId &sender, EmberEUI64 &deviceEui64)> FZdpDeviceAnnounceCallBack; /*!< Callback type for method registerZdpDeviceAnnounceRecvCallback() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t ep_count, std::vector<uint8_t> &ep_list)> FZdpActiveEpCallBack; /*!< Callback type for method registerZdpActiveEpRecvCallback() */
 typedef std::function<void (std::vector<uint8_t> &dongleEUI64)> FDongleEUI64CallBack; /*!< Callback type for method registerDongleEUI64RecvCallback() */
@@ -224,6 +225,13 @@ public:
 	void registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBack newObsTrustCenterJoinHandlerCallback);
 
 	/**
+	 * @brief Register callback to receive a gp proxy table entry
+	 *
+	 * @param newObsGpProxyTableEntryJoinHandlerCallback A callback function that will be invoked each time a EZSP_GP_PROXY_TABLE_GET_ENTRY is received
+	 */
+	void registerGpProxyTableEntryJoinHandlerCallback(FGpProxyTableEntryHandlerCallBack newObsGpProxyTableEntryJoinHandlerCallback);
+
+	/**
 	 * @brief Register callback to receive new node id in network
 	 *
 	 * @param newObsZdpDeviceAnnounceRecvCallback A callback function that will be invoked each time a new device join the network
@@ -264,6 +272,13 @@ public:
 	 * @return true if the action is going to be run in the background, false if the sink is busy
 	 */
 	bool getEUI64();
+
+	/**
+	 * @brief Get GP proxy table entry
+	 *
+	 * @return true if the action is going to be run in the background, false if the sink is busy
+	 */
+	bool getGPProxyTableEntry(const int index);
 
 	/**
 	 * @brief Remove GP all devices from sink

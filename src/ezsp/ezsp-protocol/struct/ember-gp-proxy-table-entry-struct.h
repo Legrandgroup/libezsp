@@ -51,6 +51,15 @@ public:
 		return gpd;
 	}
 
+	/**
+	 * @brief gpd status getter
+	 *
+	 * @return gp proxy table entry status
+	 */
+	EmberGpProxyTableEntryStatus getGpProxyTableEntryStatus() {
+		return status;
+	}
+
 
 private:
 	// EmberKeyData security_link_key; /*!< The link key to be used to secure this pairing link. */ -- WRONG SPEC

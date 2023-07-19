@@ -169,6 +169,13 @@ void CEzsp::registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBa
 	main->registerTrustCenterJoinHandlerCallback(newObsTrustCenterJoinHandlerCallback);
 }
 
+void CEzsp::registerGpProxyTableEntryJoinHandlerCallback(FGpProxyTableEntryHandlerCallBack newObsGpProxyTableEntryJoinHandlerCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerGpProxyTableEntryJoinHandlerCallback(newObsGpProxyTableEntryJoinHandlerCallback);
+}
+
 void CEzsp::registerDongleEUI64RecvCallback(FDongleEUI64CallBack newObsDongleEUI64RecvCallback){
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
@@ -188,6 +195,13 @@ bool CEzsp::getEUI64() {
 	clogD << "->API call " << __func__ << "()\n";
 #endif
 	return main->getEUI64();
+}
+
+bool CEzsp::getGPProxyTableEntry(const int index) {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->getGPProxyTableEntry(index);
 }
 
 bool CEzsp::clearAllGPDevices() {

@@ -14,6 +14,8 @@
 #include <ezsp/zbmessage/zcl-frame.h>
 #include "ezsp/ezsp-protocol/get-network-parameters-response.h"  // For CGetNetworkParametersResponse
 #include "ezsp/ezsp-protocol/struct/ember-key-struct.h"  // For CEmberKeyStruct
+#include "ezsp/ezsp-protocol/struct/ember-gp-proxy-table-entry-struct.h" // For CEmberGpProxyTableEntryStruct
+#include "ezsp/ezsp-protocol/struct/ember-gp-address-struct.h" // For CEmberGpAddressStruct
 
 DEFINE_ENUM(State, CLIBEZSP_INTERNAL_STATE_LIST, NSEZSP::CLibEzspInternal);
 
@@ -41,6 +43,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	obsZclFrameRecvCallback(nullptr),
 	obsBindingTableRecvCallback(nullptr),
 	obsTrustCenterJoinHandlerCallback(nullptr),
+	obsGpProxyTableEntryJoinHandlerCallback(nullptr),
 	obsZdpDeviceAnnounceRecvCallback(nullptr),
 	obsZdpActiveEpRecvCallback(nullptr),
 	obsZdpSimpleDescRecvCallback(nullptr),
@@ -101,6 +104,10 @@ void CLibEzspMain::registerBindingTableRecvCallback(FBindingTableRecvCallback ne
 
 void CLibEzspMain::registerTrustCenterJoinHandlerCallback(FTrustCenterJoinHandlerCallBack newObsTrustCenterJoinHandlerCallback) {
 	this->obsTrustCenterJoinHandlerCallback = newObsTrustCenterJoinHandlerCallback;
+}
+
+void CLibEzspMain::registerGpProxyTableEntryJoinHandlerCallback(FGpProxyTableEntryHandlerCallBack newObsGpProxyTableEntryJoinHandlerCallback) {
+	this->obsGpProxyTableEntryJoinHandlerCallback = newObsGpProxyTableEntryJoinHandlerCallback;
 }
 
 void CLibEzspMain::registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback) {
@@ -414,6 +421,16 @@ bool CLibEzspMain::getEUI64(){
 		return false;
 	}
 	dongle.sendCommand(EZSP_GET_EUI64);
+	return true;
+}
+
+bool CLibEzspMain::getGPProxyTableEntry(const int index) {
+	if (this->getState() != CLibEzspInternal::State::READY) {
+		return false;
+	}
+	NSSPI::ByteBuffer payload;
+	payload.push_back(index);
+	dongle.sendCommand(EZSP_GP_PROXY_TABLE_GET_ENTRY, payload);
 	return true;
 }
 
@@ -924,6 +941,24 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 
 		if( nullptr != obsTrustCenterJoinHandlerCallback ) {
 			obsTrustCenterJoinHandlerCallback(status, sender, eui64);
+		}
+
+	}
+	break;
+	case EZSP_GP_PROXY_TABLE_GET_ENTRY: {
+		clogI << "EZSP_GP_PROXY_TABLE_GET_ENTRY" << " : " << i_msg_receive << "\n";
+		
+		NSSPI::ByteBuffer l_msg_raw;
+		for(uint8_t loop = 0; loop < i_msg_receive.size()-1; loop++) {
+			l_msg_raw.push_back(i_msg_receive.at(1U+loop));
+		}
+		CEmberGpProxyTableEntryStruct CEmberGpProxyTableEntry(l_msg_raw);
+		CEmberGpAddressStruct CEmberGpAddress = CEmberGpProxyTableEntry.getGpdAddress();
+
+		clogD << CEmberGpProxyTableEntry.getGpdAddress() << std::endl;
+
+		if( nullptr != obsGpProxyTableEntryJoinHandlerCallback ) {
+			obsGpProxyTableEntryJoinHandlerCallback(CEmberGpProxyTableEntry.getGpProxyTableEntryStatus(), CEmberGpAddress.getSourceId(), CEmberGpAddress.getApplicationId(), CEmberGpAddress.getEndpoint());
 		}
 
 	}
