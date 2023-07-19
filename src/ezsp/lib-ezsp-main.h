@@ -143,6 +143,13 @@ public:
 	void registerZdpDeviceAnnounceRecvCallback(FZdpDeviceAnnounceCallBack newObsZdpDeviceAnnounceRecvCallback);
 
 	/**
+	 * @brief Register callback to receive a gp proxy table entry
+	 *
+	 * @param newObsGpProxyTableEntryJoinHandlerCallback A callback function that will be invoked each time a EZSP_GP_PROXY_TABLE_GET_ENTRY is received
+	 */
+	void registerGpProxyTableEntryJoinHandlerCallback(FGpProxyTableEntryHandlerCallBack newObsGpProxyTableEntryJoinHandlerCallback);
+
+	/**
 	 * @brief Register callback to receive simple descriptor on specific endpoint
 	 *
 	 * @param newObsZdpSimpleDescRecvCallback A callback function that will be invoked each time a ZDP_SIMPLE_DESC is received
@@ -183,6 +190,14 @@ public:
 	 * @return true if the action is going to be run in the background, false if the sink is busy
 	 */
 	bool getEUI64();
+
+
+	/**
+	 * @brief Get GP proxy table entry
+	 *
+	 * @return true if the action is going to be run in the background, false if the sink is busy
+	 */
+	bool getGPProxyTableEntry(const int index);
 
 	/**
 	 * @brief Remove GP all devices from sink
@@ -511,6 +526,7 @@ private:
 	FZdpDeviceAnnounceCallBack obsZdpDeviceAnnounceRecvCallback; /*!< Optional user callback invoked by us each time a new device join the network */
 	FZdpActiveEpCallBack obsZdpActiveEpRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_ACTIVE_ENDPOINT is received */
 	FTrustCenterJoinHandlerCallBack obsTrustCenterJoinHandlerCallback; /*!< Optional user callback invoked by us each time a EZSP_TRUST_CENTER_JOIN_HANDLER is received */
+	FGpProxyTableEntryHandlerCallBack obsGpProxyTableEntryJoinHandlerCallback;  /*!< Optional user callback invoked by us each time a EZSP_GP_PROXY_TABLE_GET_ENTRY is received */
 	FZdpSimpleDescCallBack obsZdpSimpleDescRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_SIMPLE_DESC is received */
 	FDongleEUI64CallBack obsDongleEUI64RecvCallback; /*!< Optional user callback invoked by us each time a EZSP_GET_EUI64 is received */
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
