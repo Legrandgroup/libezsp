@@ -158,6 +158,13 @@ private:
 	void notifyObserversOfRxGpdId( uint32_t i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
 
 	/**
+	 * @brief Notify observers of this class
+	 *
+	 * @param i_gpd_id The received GPD commissioning frame
+	 */
+	void notifyObserversForCommissioningGpDevice( CGpFrame i_gpf );
+
+	/**
 	 * @brief Private utility function to manage error state
 	 */
 	void setSinkState(CGpSink::State i_state);

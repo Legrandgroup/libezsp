@@ -346,6 +346,9 @@ void CGpSink::handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(const NSSPI::ByteBuff
 	}
 #endif
 	notifyObserversOfRxGpdId(gpf.getSourceId(), (gpf.getProxyTableEntry()!=0xFF?true:false), l_key_status);
+	if(gpf.getCommandId() == 0xE0){
+		notifyObserversForCommissioningGpDevice(gpf);
+	}
 
 	clogD << "handleEzspRxMessage_INCOMING_MESSAGE_HANDLER(): "
 #ifndef USE_BUILTIN_MIC_PROCESSING
@@ -707,6 +710,12 @@ void CGpSink::notifyObserversOfRxGpFrame( CGpFrame i_gpf ) {
 void CGpSink::notifyObserversOfRxGpdId( uint32_t i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) {
 	for(auto observer : this->observers) {
 		observer->handleRxGpdId( i_gpd_id, i_gpd_known, i_gpd_key_status );
+	}
+}
+
+void CGpSink::notifyObserversForCommissioningGpDevice( CGpFrame i_gpf ) {
+	for(auto observer : this->observers) {
+		observer->handleRxGpFrameCommissioning( i_gpf );
 	}
 }
 
