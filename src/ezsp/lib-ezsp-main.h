@@ -178,6 +178,13 @@ public:
 	void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
 
 	/**
+	 * @brief Register callback to receive all commissioning greenpower frame
+	 *
+	 * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power commissioning frame is received
+	 */
+	void registerGPFrameCommissioningRecvCallback(FGpFrameCommissioningRecvCallback newObsGPFrameCommissioningRecvCallback);
+
+	/**
 	 * @brief Register callback to receive all incoming green power sourceId
 	 *
 	 * @param newObsGPSourceIdCallback A callback function that will be invoked each time a new source ID transmits over the air (or nullptr to disable this callback)
@@ -473,6 +480,7 @@ private:
 	void handleBootloaderPrompt();
 	void handleFirmwareXModemXfr();
 	void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status );
+	void handleRxGpFrameCommissioning( CGpFrame &i_gpf );
 
 	/**
 	 * @brief Handle an incoming VERSION EZSP message
@@ -521,6 +529,7 @@ private:
 	CZigbeeNetworking zb_nwk;   /*!< Zigbee networking utility */
 	CGpSink gp_sink;    /*!< Internal Green Power sink utility */
 	FGpFrameRecvCallback obsGPFrameRecvCallback;   /*!< Optional user callback invoked by us each time a green power message is received */
+	FGpFrameCommissioningRecvCallback obsGPFrameCommissioningRecvCallback;  /*!< Optional user callback invoked by us each time a green power commissioning is received */
 	FZclFrameRecvCallback obsZclFrameRecvCallback;	 /*!< Optional user callback invoked by us each time a zcl frame is received */
 	FBindingTableRecvCallback obsBindingTableRecvCallback;  /*!< Optional user callback invoked by us each time a binding table is received */
 	FZdpDeviceAnnounceCallBack obsZdpDeviceAnnounceRecvCallback; /*!< Optional user callback invoked by us each time a new device join the network */

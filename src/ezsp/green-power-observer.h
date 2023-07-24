@@ -32,6 +32,13 @@ public:
 	 */
 	virtual void handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) { /* Default implementation does nothing, add your own handler here in derived observer classes */ }
 
+	/**
+	 * @brief Method that will be invoked on incoming commissioning green power frames
+	 *
+	 * @param i_gpf The green power frame received
+	 */
+	virtual void handleRxGpFrameCommissioning( CGpFrame &i_gpf ) {}
+
 };
 
 } // namespace NSEZSP

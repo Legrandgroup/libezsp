@@ -122,6 +122,7 @@ class CLibEzspMain;
 typedef std::function<void (CLibEzspState i_state)> FLibStateCallback;  /*!< Callback type for method registerLibraryStateCallback() */
 typedef std::function<void (uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status)> FGpSourceIdCallback;    /*!< Callback type for method registerGPSourceIdCallback() */
 typedef std::function<void (CGpFrame &i_gpf)> FGpFrameRecvCallback; /*!< Callback type for method registerGPFrameRecvCallback() */
+typedef std::function<void (CGpFrame &i_gpf)> FGpFrameCommissioningRecvCallback; /*!< Callback type for method registerGPFrameCommissioningRecvCallback() */
 typedef std::function<void (EmberNodeId &sender, CZclFrame &i_zclf, uint8_t &last_hop_lqi)> FZclFrameRecvCallback; /*!< Callback type for method registerZclFrameRecvCallback() */
 typedef std::function<void (NSEZSP::EmberNodeId &sender, uint8_t bindingTableEntries, uint8_t startIndex, uint8_t bindingTableListCount, std::vector<NSEZSP::MgmtBindRsp> bindingTable)> FBindingTableRecvCallback; /*!< Callback type for method registerBindingTableRecvCallback() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, EmberEUI64 &eui64)> FTrustCenterJoinHandlerCallBack; /*!< Callback type for method registerTrustCenterJoinHandlerCallback() */
@@ -202,6 +203,13 @@ public:
 	 * @param newObsGPFrameRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power frame is received from a known source ID (or nullptr to disable callbacks)
 	 */
 	void registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFrameRecvCallback);
+
+	/**
+	 * @brief Register callback to receive all commissioning greenpower frame
+	 *
+	 * @param newObsGPFrameCommissioningRecvCallback A callback function of type void func(CGpFrame &i_gpf), that will be invoked each time a new valid green power commissioning frame is received
+	 */
+	void registerGPFrameCommissioningRecvCallback(FGpFrameCommissioningRecvCallback newObsGPFrameCommissioningRecvCallback);
 
 	/**
 	 * @brief Register callback to receive all zcl incoming frames

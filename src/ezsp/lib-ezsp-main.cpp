@@ -39,6 +39,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	zb_nwk(dongle, zb_messaging),
 	gp_sink(dongle, zb_messaging),
 	obsGPFrameRecvCallback(nullptr),
+	obsGPFrameCommissioningRecvCallback(nullptr),
 	obsGPSourceIdCallback(nullptr),
 	obsZclFrameRecvCallback(nullptr),
 	obsBindingTableRecvCallback(nullptr),
@@ -132,6 +133,10 @@ void CLibEzspMain::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsGPFram
 
 void CLibEzspMain::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback) {
 	this->obsGPSourceIdCallback = newObsGPSourceIdCallback;
+}
+
+void CLibEzspMain::registerGPFrameCommissioningRecvCallback(FGpFrameCommissioningRecvCallback newObsGPFrameCommissioningRecvCallback) {
+	this->obsGPFrameCommissioningRecvCallback = newObsGPFrameCommissioningRecvCallback;
 }
 
 void CLibEzspMain::setState(CLibEzspInternal::State i_new_state) {
@@ -1233,7 +1238,7 @@ void CLibEzspMain::handleBootloaderPrompt() {
 
 void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf ) {
 	// Start DEBUG
-	clogI << "CLibEzspMain::handleRxGpFrame gp frame : " << i_gpf << std::endl;
+	//clogI << "CLibEzspMain::handleRxGpFrame gp frame : " << i_gpf << std::endl;
 
 	if( nullptr != obsGPFrameRecvCallback ) {
 		obsGPFrameRecvCallback(i_gpf);
@@ -1243,5 +1248,11 @@ void CLibEzspMain::handleRxGpFrame( CGpFrame &i_gpf ) {
 void CLibEzspMain::handleRxGpdId( uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status ) {
 	if( nullptr != obsGPSourceIdCallback ) {
 		obsGPSourceIdCallback(i_gpd_id, i_gpd_known, i_gpd_key_status);
+	}
+}
+
+void CLibEzspMain::handleRxGpFrameCommissioning( CGpFrame &i_gpf ) {
+	if( nullptr != obsGPFrameCommissioningRecvCallback ) {
+		obsGPFrameCommissioningRecvCallback(i_gpf);
 	}
 }

@@ -127,6 +127,13 @@ void CEzsp::registerGPFrameRecvCallback(FGpFrameRecvCallback newObsStateCallback
 	main->registerGPFrameRecvCallback(newObsStateCallback);
 }
 
+void CEzsp::registerGPFrameCommissioningRecvCallback(FGpFrameCommissioningRecvCallback newObsGPFrameCommissioningRecvCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerGPFrameCommissioningRecvCallback(newObsGPFrameCommissioningRecvCallback);
+}
+
 void CEzsp::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
