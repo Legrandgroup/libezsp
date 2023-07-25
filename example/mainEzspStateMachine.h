@@ -708,7 +708,7 @@ public:
 					/* Configure reporting example */
 					//libEzsp.ConfigureReporting(0x01, 0x0702, 0x0200, NSEZSP::E_DIR_CLIENT_TO_SERVER, NSEZSP::ZCL_BITMAP8_ATTRIBUTE_TYPE, 0x0010, 0x0030, 0x0000, sender);
 					/* Read attribute example */
-					//libEzsp.ReadAttribute(0x01, 0x0006, 0x0000, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
+					//libEzsp.ReadAttributes(0x01, 0x0006, { 0x0000 }, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);
 
 					/* Discover attributes for a non specific manufacturer code, if cluster < 0xFC00 */
 					//libEzsp.DiscoverAttributes(0x01, 0x0006, 0x0000, 0xFF, NSEZSP::E_DIR_CLIENT_TO_SERVER, sender);

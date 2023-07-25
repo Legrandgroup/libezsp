@@ -80,7 +80,7 @@ public:
 	 * @param i_grp_id Multicast group address to use (0 is assume as unicast/broadcast)
 	 * @param i_manufacturer_code Manufacturer code
 	 */
-	void ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+	void ReadAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const std::vector<uint16_t> &i_attribute_id,
 							const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
 							const uint8_t i_transaction_number = 0, const uint16_t i_grp_id = 0, const uint16_t i_manufacturer_code = 0xFFFF);
 	

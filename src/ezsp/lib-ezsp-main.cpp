@@ -587,13 +587,13 @@ bool CLibEzspMain::DiscoverAttributes(const uint8_t i_endpoint, const uint16_t i
 	return true;
 }
 
-bool CLibEzspMain::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+bool CLibEzspMain::ReadAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const std::vector<uint16_t> &i_attribute_ids,
 				   				 const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
 				   				 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code){
 	if (this->getState() != CLibEzspInternal::State::READY || this->scanInProgress) {
 		return false;
 	}
-	this->zb_messaging.ReadAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	this->zb_messaging.ReadAttributes(i_endpoint, i_cluster_id, i_attribute_ids, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 	return true;
 }
 

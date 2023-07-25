@@ -383,13 +383,13 @@ bool CEzsp::DiscoverAttributes(const uint8_t i_endpoint, const uint16_t i_cluste
 	return main->DiscoverAttributes(i_endpoint, i_cluster_id, i_start_attribute_identifier, i_maximum_attribute_identifier, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 }
 
-bool CEzsp::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+bool CEzsp::ReadAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const std::vector<uint16_t> &i_attribute_ids,
 				   const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
 				   const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code){
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
 #endif
-	return main->ReadAttribute(i_endpoint, i_cluster_id, i_attribute_id, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
+	return main->ReadAttributes(i_endpoint, i_cluster_id, i_attribute_ids, i_direction, i_node_id, i_transaction_number, i_grp_id, i_manufacturer_code);
 }
 
 bool CEzsp::WriteAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
