@@ -132,7 +132,7 @@ void CZigbeeMessaging::DiscoverAttributes(const uint8_t i_endpoint, const uint16
 	SendUnicast( i_node_id, l_msg );
 }
 
-void CZigbeeMessaging::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_cluster_id, const uint16_t i_attribute_id,
+void CZigbeeMessaging::ReadAttributes(const uint8_t i_endpoint, const uint16_t i_cluster_id, const std::vector<uint16_t> &i_attribute_ids,
 				   					 const EZCLFrameCtrlDirection i_direction, const uint16_t i_node_id,
 				   					 const uint8_t i_transaction_number, const uint16_t i_grp_id, const uint16_t i_manufacturer_code) {
 	CZigBeeMsg l_msg;
@@ -147,8 +147,10 @@ void CZigbeeMessaging::ReadAttribute(const uint8_t i_endpoint, const uint16_t i_
 	}
 
 	NSSPI::ByteBuffer l_payload;
-	l_payload.push_back( i_attribute_id&0xFF );
-	l_payload.push_back( (i_attribute_id>>8)&0xFF );
+	for (auto attribute : i_attribute_ids) {
+		l_payload.push_back( attribute&0xFF );
+		l_payload.push_back( (attribute>>8)&0xFF );
+	}
 
 	l_msg.SetGeneral( l_profile, i_manufacturer_code, i_endpoint, i_cluster_id, GENERIC_COMMAND_READ_ATTRIBUTES, i_direction, l_payload, i_transaction_number, i_grp_id);
 	SendUnicast( i_node_id, l_msg );	
