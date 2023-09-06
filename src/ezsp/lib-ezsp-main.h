@@ -192,12 +192,18 @@ public:
 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
 
 	/**
+	 * @brief Register callback to receive the network parameters
+	 *
+	 * @param nwNetworkParametersCallback A callback function that will be invoked each time a EZSP_GET_NETWORK_PARAMETERS is received
+	 */
+	void registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback);
+
+	/**
 	 * @brief Get EUI64 dongle
 	 *
 	 * @return true if the action is going to be run in the background, false if the sink is busy
 	 */
 	bool getEUI64();
-
 
 	/**
 	 * @brief Get GP proxy table entry
@@ -539,6 +545,7 @@ private:
 	FZdpSimpleDescCallBack obsZdpSimpleDescRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_SIMPLE_DESC is received */
 	FDongleEUI64CallBack obsDongleEUI64RecvCallback; /*!< Optional user callback invoked by us each time a EZSP_GET_EUI64 is received */
 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
+	FNetworkParametersCallback obsNetworkParametersRecvCallback;  /*!< A user callback invoked by us each time an EZSP_GET_NETWORK_PARAMETERS is received */
 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
 	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
 	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */

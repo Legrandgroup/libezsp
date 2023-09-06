@@ -197,6 +197,13 @@ void CEzsp::registerZdpSimpleDescRecvCallback(FZdpSimpleDescCallBack newObsZdpSi
 	main->registerZdpSimpleDescRecvCallback(newObsZdpSimpleDescRecvCallback);
 }
 
+void CEzsp::registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback){
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	main->registerNetworkParametersCallback(newObsNetworkParametersCallback);
+}
+
 bool CEzsp::getEUI64() {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
