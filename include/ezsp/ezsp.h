@@ -25,6 +25,7 @@
 #include <spi/TimerBuilder.h>
 #include <spi/IUartDriver.h>
 #include <ezsp/ezsp-protocol/struct/zdp-mgmt-binding-table.h>
+#include <ezsp/ezsp-protocol/get-network-parameters-response.h>
 
 namespace NSMAIN {
     class MainStateMachine;
@@ -132,6 +133,7 @@ typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t ep_cou
 typedef std::function<void (std::vector<uint8_t> &dongleEUI64)> FDongleEUI64CallBack; /*!< Callback type for method registerDongleEUI64RecvCallback() */
 typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
 typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
+typedef std::function<void (CGetNetworkParametersResponse networkParameters)> FNetworkParametersCallback;    /*!< Callback to get network parameters */
 typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
 typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t &endpoint,
 							uint16_t &profile_id, uint16_t &device_id, uint8_t version,
@@ -273,6 +275,13 @@ public:
 	 * @param newObsGPSourceIdCallback A callback function of type void func(uint32_t &i_gpd_id, bool i_gpd_known, CGpdKeyStatus i_gpd_key_status), that will be invoked each time a new source ID transmits over the air (or nullptr to disable callbacks)
 	 */
 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
+
+	/**
+	 * @brief Register callback to receive the network parameters
+	 *
+	 * @param nwNetworkParametersCallback A callback function that will be invoked each time a EZSP_GET_NETWORK_PARAMETERS is received
+	 */
+	void registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback);
 
 	/**
 	 * @brief Get EUI64 dongle

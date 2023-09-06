@@ -46,6 +46,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
 	obsTrustCenterJoinHandlerCallback(nullptr),
 	obsGpProxyTableEntryJoinHandlerCallback(nullptr),
 	obsZdpDeviceAnnounceRecvCallback(nullptr),
+	obsNetworkParametersRecvCallback(nullptr),
 	obsZdpActiveEpRecvCallback(nullptr),
 	obsZdpSimpleDescRecvCallback(nullptr),
 	obsDongleEUI64RecvCallback(nullptr),
@@ -137,6 +138,10 @@ void CLibEzspMain::registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSource
 
 void CLibEzspMain::registerGPFrameCommissioningRecvCallback(FGpFrameCommissioningRecvCallback newObsGPFrameCommissioningRecvCallback) {
 	this->obsGPFrameCommissioningRecvCallback = newObsGPFrameCommissioningRecvCallback;
+}
+
+void CLibEzspMain::registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback) {
+	this->obsNetworkParametersRecvCallback = newObsNetworkParametersCallback;
 }
 
 void CLibEzspMain::setState(CLibEzspInternal::State i_new_state) {
@@ -827,6 +832,11 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 	break;
 	case EZSP_GET_NETWORK_PARAMETERS: {
 		CGetNetworkParametersResponse l_rsp(i_msg_receive);
+
+		if( nullptr != obsNetworkParametersRecvCallback ) {
+			obsNetworkParametersRecvCallback(l_rsp);
+		}
+
 		clogI << l_rsp.String() << std::endl;
 	}
 	break;

@@ -14,12 +14,12 @@ namespace NSEZSP {
 
 class CGetNetworkParametersResponse {
 public:
-	/**
-	 * @brief Default constructor
-	 *
-	 * Construction without arguments is not allowed
-	 */
-	CGetNetworkParametersResponse() = delete;
+	// /**
+	//  * @brief Default constructor
+	//  *
+	//  * Construction without arguments is not allowed
+	//  */
+	// CGetNetworkParametersResponse() = delete;
 
 	/**
 	 * @brief Construction from a buffer
@@ -28,19 +28,19 @@ public:
 	 */
 	explicit CGetNetworkParametersResponse(const NSSPI::ByteBuffer& raw_message);
 
-	/**
-	 * @brief Copy constructor
-	 *
-	 * Copy construction is forbidden on this class
-	 */
-	CGetNetworkParametersResponse(const CGetNetworkParametersResponse& other) = delete;
+	// /**
+	//  * @brief Copy constructor
+	//  *
+	//  * Copy construction is forbidden on this class
+	//  */
+	// CGetNetworkParametersResponse(const CGetNetworkParametersResponse& other) = delete;
 
-	/**
-	 * @brief Assignment operator
-	 *
-	 * Assignment is forbidden on this class
-	 */
-	CGetNetworkParametersResponse& operator=(const CGetNetworkParametersResponse& other) = delete;
+	// /**
+	//  * @brief Assignment operator
+	//  *
+	//  * Assignment is forbidden on this class
+	//  */
+	// CGetNetworkParametersResponse& operator=(const CGetNetworkParametersResponse& other) = delete;
 
 	/**
 	 * @brief An EmberStatus value indicating success or the reason for failure.

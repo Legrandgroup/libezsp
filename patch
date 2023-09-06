@@ -1,0 +1,407 @@
+diff --git a/include/ezsp/ezsp.h b/include/ezsp/ezsp.h
+index 37781d5..3ca0dc6 100644
+--- a/include/ezsp/ezsp.h
++++ b/include/ezsp/ezsp.h
+@@ -25,6 +25,7 @@
+ #include <spi/TimerBuilder.h>
+ #include <spi/IUartDriver.h>
+ #include <ezsp/ezsp-protocol/struct/zdp-mgmt-binding-table.h>
++#include <ezsp/ezsp-protocol/get-network-parameters-response.h>
+ 
+ namespace NSMAIN {
+     class MainStateMachine;
+@@ -132,6 +133,7 @@ typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t ep_cou
+ typedef std::function<void (std::vector<uint8_t> &dongleEUI64)> FDongleEUI64CallBack; /*!< Callback type for method registerDongleEUI64RecvCallback() */
+ typedef std::function<void (std::map<uint8_t, int8_t>)> FEnergyScanCallback;    /*!< Callback type for method startEnergyScan() */
+ typedef std::function<void (std::map<uint8_t, std::vector<NSEZSP::ZigbeeNetworkScanResult> >)> FActiveScanCallback; /*!< Callback type for method startActiveScan() */
++typedef std::function<void (CGetNetworkParametersResponse networkParameters)> FNetworkParametersCallback;    /*!< Callback to get network parameters */
+ typedef std::function<void (EEmberStatus status, const NSEZSP::EmberKeyData& key)> FNetworkKeyCallback;    /*!< Callback type for method getNetworkKey() */
+ typedef std::function<void (uint8_t status, EmberNodeId &address, uint8_t &endpoint,
+ 							uint16_t &profile_id, uint16_t &device_id, uint8_t version,
+@@ -274,6 +276,13 @@ public:
+ 	 */
+ 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
+ 
++	/**
++	 * @brief Register callback to receive the network parameters
++	 *
++	 * @param nwNetworkParametersCallback A callback function that will be invoked each time a EZSP_GET_NETWORK_PARAMETERS is received
++	 */
++	void registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback);
++
+ 	/**
+ 	 * @brief Get EUI64 dongle
+ 	 *
+diff --git a/src/ezsp/CMakeLists.txt b/src/ezsp/CMakeLists.txt
+index 9109e24..eae406d 100644
+--- a/src/ezsp/CMakeLists.txt
++++ b/src/ezsp/CMakeLists.txt
+@@ -54,6 +54,8 @@ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/zbmessage/gre
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/byte-manip.h)
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-adapter-version.h)
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/struct/ember-gp-sink-table-options-field.h)
++list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/struct/ember-network-parameters.h)
++list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/get-network-parameters-response.h)
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/struct/zdp-mgmt-binding-table.h)
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/ezsp/ezsp-protocol/ezsp-enum.h)
+ list(APPEND ezsp_PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/include/config.h)
+diff --git a/src/ezsp/ezsp-protocol/get-network-parameters-response.h b/src/ezsp/ezsp-protocol/get-network-parameters-response.h
+deleted file mode 100644
+index 4ead730..0000000
+--- a/src/ezsp/ezsp-protocol/get-network-parameters-response.h
++++ /dev/null
+@@ -1,93 +0,0 @@
+-/**
+- * @file get-network-parameters-response.h
+- *
+- * @brief Handles decoding of the current network parameters.
+- */
+-
+-#pragma once
+-
+-#include "ezsp/ezsp-protocol/ezsp-enum.h"
+-#include "ezsp/ezsp-protocol/struct/ember-network-parameters.h"
+-#include "spi/ByteBuffer.h"
+-
+-namespace NSEZSP {
+-
+-class CGetNetworkParametersResponse {
+-public:
+-	/**
+-	 * @brief Default constructor
+-	 *
+-	 * Construction without arguments is not allowed
+-	 */
+-	CGetNetworkParametersResponse() = delete;
+-
+-	/**
+-	 * @brief Construction from a buffer
+-	 *
+-	 * @param raw_message The buffer to construct from
+-	 */
+-	explicit CGetNetworkParametersResponse(const NSSPI::ByteBuffer& raw_message);
+-
+-	/**
+-	 * @brief Copy constructor
+-	 *
+-	 * Copy construction is forbidden on this class
+-	 */
+-	CGetNetworkParametersResponse(const CGetNetworkParametersResponse& other) = delete;
+-
+-	/**
+-	 * @brief Assignment operator
+-	 *
+-	 * Assignment is forbidden on this class
+-	 */
+-	CGetNetworkParametersResponse& operator=(const CGetNetworkParametersResponse& other) = delete;
+-
+-	/**
+-	 * @brief An EmberStatus value indicating success or the reason for failure.
+-	 */
+-	EEmberStatus getStatus() const {
+-		return status;
+-	}
+-
+-	/**
+-	 * @brief An EmberNodeType value indicating the current node type.
+-	 */
+-	EmberNodeType getNodeType() const {
+-		return node_type;
+-	}
+-
+-	/**
+-	 * @brief The current network parameters.
+-	 */
+-	CEmberNetworkParameters getParameters() const {
+-		return parameters;
+-	}
+-
+-	/**
+-	 * @brief Dump this instance as a string
+-	 *
+-	 * @return The resulting string
+-	 */
+-	std::string String() const;
+-
+-	/**
+-	 * @brief Serialize to an iostream
+-	 *
+-	 * @param out The original output stream
+-	 * @param data The object to serialize
+-	 *
+-	 * @return The new output stream with serialized data appended
+-	 */
+-	friend std::ostream& operator<< (std::ostream& out, const CGetNetworkParametersResponse& data) {
+-		out << data.String();
+-		return out;
+-	}
+-
+-
+-private:
+-	EEmberStatus status;
+-	EmberNodeType node_type;
+-	CEmberNetworkParameters parameters;
+-};
+-
+-} // namespace NSEZSP
+diff --git a/src/ezsp/ezsp-protocol/struct/ember-network-parameters.h b/src/ezsp/ezsp-protocol/struct/ember-network-parameters.h
+deleted file mode 100644
+index 9826736..0000000
+--- a/src/ezsp/ezsp-protocol/struct/ember-network-parameters.h
++++ /dev/null
+@@ -1,168 +0,0 @@
+-/**
+- * @file ember-network-parameters.h
+- *
+- * @brief Ember network parameters encoder as used as payload for EZSP command 0x1E (formNetwork)
+- */
+-
+-#pragma once
+-
+-#include <string>
+-#include "ezsp/ezsp-protocol/ezsp-enum.h"
+-#include "spi/ByteBuffer.h"
+-
+-namespace NSEZSP {
+-
+-class CEmberNetworkParameters; /* Forward declaration */
+-void swap(CEmberNetworkParameters& first, CEmberNetworkParameters& second) noexcept; /* Declaration before qualifying ::swap() as friend for class CEmberNetworkParameters */
+-
+-class CEmberNetworkParameters {
+-public:
+-	/**
+-	 * @brief Default constructor
+-	 *
+-	 * Construction without arguments is not allowed
+-	 */
+-	CEmberNetworkParameters();
+-
+-	/**
+-	 * @brief Construction from a buffer
+-	 *
+-	 * @param raw_message The buffer to construct from
+-	 * @param skip The number of leading bytes to skip in buffer @p raw_message
+-	 */
+-	CEmberNetworkParameters(const NSSPI::ByteBuffer& raw_message, const std::string::size_type skip = 0);
+-
+-	NSSPI::ByteBuffer getRaw() const;
+-
+-	/**
+-	 * @brief The network's extended PAN identifier.
+-	 */
+-	uint64_t getExtendPanId() const {
+-		return extend_pan_id;
+-	}
+-	void setExtendPanId(const uint64_t i_extend_pan_id) {
+-		extend_pan_id = i_extend_pan_id;
+-	}
+-
+-	/**
+-	 * @brief The network's PAN identifier.
+-	 */
+-	uint16_t getPanId() const {
+-		return pan_id;
+-	}
+-	void setPanId(const uint16_t i_pan_id) {
+-		pan_id = i_pan_id;
+-	}
+-
+-	/**
+-	 * @brief A power setting, in dBm.
+-	 */
+-	uint8_t getRadioTxPower() const {
+-		return radio_tx_power;
+-	}
+-	void setRadioTxPower(const uint8_t i_radio_tx_power) {
+-		radio_tx_power = i_radio_tx_power;
+-	}
+-
+-	/**
+-	 * @brief A radio channel.
+-	 */
+-	uint8_t getRadioChannel() const {
+-		return radio_channel;
+-	}
+-	void setRadioChannel(const uint8_t i_radio_channel) {
+-		radio_channel = i_radio_channel;
+-	}
+-
+-	/**
+-	 * @brief The method used to initially join the network.
+-	 */
+-	EmberJoinMethod getJoinMethod() const {
+-		return join_method;
+-	}
+-	void setJoinMethod(const EmberJoinMethod i_join_method) {
+-		join_method = i_join_method;
+-	}
+-
+-	/**
+-	 * @brief NWK Manager ID
+-	 *
+-	 * The ID of the network manager in
+-	 * the current network. This may only be set at joining
+-	 * when using EMBER_USE_NWK_COMMISSIONING
+-	 * as the join method.
+-	 */
+-	EmberNodeId getNwkManagerId() const {
+-		return nwk_manager_id;
+-	}
+-	void setNwkManagerId(const EmberNodeId i_nwk_manager_id) {
+-		nwk_manager_id = i_nwk_manager_id;
+-	}
+-
+-	/**
+-	 * @brief Get NWK Update ID.
+-	 *
+-	 * The value of the ZigBee
+-	 * nwkUpdateId known by the stack. This is used to
+-	 * determine the newest instance of the network after a
+-	 * PAN ID or channel change. This may only be set at
+-	 * joining when using
+-	 * EMBER_USE_NWK_COMMISSIONING as the join
+-	 * method.
+-	 */
+-	uint8_t getNwkUpdateId() const {
+-		return nwk_update_id;
+-	}
+-	void setNwkUpdateId(const uint8_t i_nwk_update_id) {
+-		nwk_update_id = i_nwk_update_id;
+-	}
+-
+-	/**
+-	 * @brief Get NWK channel mask.
+-	 *
+-	 * The list of preferred channels
+-	 * that the NWK manager has told this device to use
+-	 * when searching for the network. This may only be
+-	 * set at joining when using
+-	 * EMBER_USE_NWK_COMMISSIONING as the join
+-	 * method.
+-	 */
+-	uint32_t getChannels() const {
+-		return channels;
+-	}
+-	void setChannels(const uint32_t i_channels) {
+-		channels = i_channels;
+-	}
+-
+-	/**
+-	 * @brief Dump this instance as a string
+-	 *
+-	 * @return The resulting string
+-	 */
+-	std::string toString() const;
+-
+-	/**
+-	 * @brief Serialize to an iostream
+-	 *
+-	 * @param out The original output stream
+-	 * @param data The object to serialize
+-	 *
+-	 * @return The new output stream with serialized data appended
+-	 */
+-	friend std::ostream& operator<< (std::ostream& out, const CEmberNetworkParameters& data) {
+-		out << data.toString();
+-		return out;
+-	}
+-
+-private:
+-	uint64_t extend_pan_id;
+-	uint16_t pan_id;
+-	uint8_t radio_tx_power;
+-	uint8_t radio_channel;
+-	EmberJoinMethod join_method;
+-	EmberNodeId nwk_manager_id;
+-	uint8_t nwk_update_id;
+-	uint32_t channels;
+-};
+-
+-} // namespace NSEZSP
+diff --git a/src/ezsp/ezsp.cpp b/src/ezsp/ezsp.cpp
+index 0b1803e..43c7a77 100644
+--- a/src/ezsp/ezsp.cpp
++++ b/src/ezsp/ezsp.cpp
+@@ -197,6 +197,13 @@ void CEzsp::registerZdpSimpleDescRecvCallback(FZdpSimpleDescCallBack newObsZdpSi
+ 	main->registerZdpSimpleDescRecvCallback(newObsZdpSimpleDescRecvCallback);
+ }
+ 
++void CEzsp::registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback){
++#ifdef TRACE_API_CALLS
++	clogD << "->API call " << __func__ << "()\n";
++#endif
++	main->registerNetworkParametersCallback(newObsNetworkParametersCallback);
++}
++
+ bool CEzsp::getEUI64() {
+ #ifdef TRACE_API_CALLS
+ 	clogD << "->API call " << __func__ << "()\n";
+diff --git a/src/ezsp/lib-ezsp-main.cpp b/src/ezsp/lib-ezsp-main.cpp
+index cde0e8b..41f5388 100644
+--- a/src/ezsp/lib-ezsp-main.cpp
++++ b/src/ezsp/lib-ezsp-main.cpp
+@@ -46,6 +46,7 @@ CLibEzspMain::CLibEzspMain(NSSPI::IUartDriverHandle uartHandle, const NSSPI::Tim
+ 	obsTrustCenterJoinHandlerCallback(nullptr),
+ 	obsGpProxyTableEntryJoinHandlerCallback(nullptr),
+ 	obsZdpDeviceAnnounceRecvCallback(nullptr),
++	obsNetworkParametersRecvCallback(nullptr),
+ 	obsZdpActiveEpRecvCallback(nullptr),
+ 	obsZdpSimpleDescRecvCallback(nullptr),
+ 	obsDongleEUI64RecvCallback(nullptr),
+@@ -139,6 +140,10 @@ void CLibEzspMain::registerGPFrameCommissioningRecvCallback(FGpFrameCommissionin
+ 	this->obsGPFrameCommissioningRecvCallback = newObsGPFrameCommissioningRecvCallback;
+ }
+ 
++void CLibEzspMain::registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback) {
++	this->obsNetworkParametersRecvCallback = newObsNetworkParametersCallback;
++}
++
+ void CLibEzspMain::setState(CLibEzspInternal::State i_new_state) {
+ 	CLibEzspInternal::State l_old_state = this->lib_state;
+ 	this->lib_state = i_new_state;
+@@ -827,6 +832,11 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
+ 	break;
+ 	case EZSP_GET_NETWORK_PARAMETERS: {
+ 		CGetNetworkParametersResponse l_rsp(i_msg_receive);
++
++		if( nullptr != obsNetworkParametersRecvCallback ) {
++			obsNetworkParametersRecvCallback(l_rsp);
++		}
++
+ 		clogI << l_rsp.String() << std::endl;
+ 	}
+ 	break;
+diff --git a/src/ezsp/lib-ezsp-main.h b/src/ezsp/lib-ezsp-main.h
+index 95e181c..6f65086 100644
+--- a/src/ezsp/lib-ezsp-main.h
++++ b/src/ezsp/lib-ezsp-main.h
+@@ -191,6 +191,13 @@ public:
+ 	 */
+ 	void registerGPSourceIdCallback(FGpSourceIdCallback newObsGPSourceIdCallback);
+ 
++	/**
++	 * @brief Register callback to receive the network parameters
++	 *
++	 * @param nwNetworkParametersCallback A callback function that will be invoked each time a EZSP_GET_NETWORK_PARAMETERS is received
++	 */
++	void registerNetworkParametersCallback(FNetworkParametersCallback newObsNetworkParametersCallback);
++
+ 	/**
+ 	 * @brief Get EUI64 dongle
+ 	 *
+@@ -198,7 +205,6 @@ public:
+ 	 */
+ 	bool getEUI64();
+ 
+-
+ 	/**
+ 	 * @brief Get GP proxy table entry
+ 	 *
+@@ -539,6 +545,7 @@ private:
+ 	FZdpSimpleDescCallBack obsZdpSimpleDescRecvCallback; /*!< Optional user callback invoked by us each time a ZDP_SIMPLE_DESC is received */
+ 	FDongleEUI64CallBack obsDongleEUI64RecvCallback; /*!< Optional user callback invoked by us each time a EZSP_GET_EUI64 is received */
+ 	FGpSourceIdCallback obsGPSourceIdCallback;	/*!< Optional user callback invoked by us each time a green power message is received */
++	FNetworkParametersCallback obsNetworkParametersRecvCallback;  /*!< A user callback invoked by us each time an EZSP_GET_NETWORK_PARAMETERS is received */
+ 	FEnergyScanCallback energyScanCallback;  /*!< A user callback invoked by us each time an energy scan is finished */
+ 	FActiveScanCallback activeScanCallback;  /*!< A user callback invoked by us each time an active scan is finished */
+ 	FNetworkKeyCallback networkKeyCallback;	/*!< A user callback invoked by us when the network key details are retrieved */
