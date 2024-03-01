@@ -434,6 +434,14 @@ bool CLibEzspMain::getEUI64(){
 	return true;
 }
 
+bool CLibEzspMain::getNetworkParameters() {
+	if (this->getState() != CLibEzspInternal::State::READY) {
+		return false;
+	}
+	dongle.sendCommand(EZSP_GET_NETWORK_PARAMETERS);
+	return true;
+}
+
 bool CLibEzspMain::getGPProxyTableEntry(const int index) {
 	if (this->getState() != CLibEzspInternal::State::READY) {
 		return false;
@@ -837,7 +845,7 @@ void CLibEzspMain::handleEzspRxMessage(EEzspCmd i_cmd, NSSPI::ByteBuffer i_msg_r
 			obsNetworkParametersRecvCallback(l_rsp);
 		}
 
-		clogI << l_rsp.String() << std::endl;
+		clogD << l_rsp.String() << std::endl;
 	}
 	break;
 	case EZSP_GET_KEY: {

@@ -211,6 +211,13 @@ bool CEzsp::getEUI64() {
 	return main->getEUI64();
 }
 
+bool CEzsp::getNetworkParameters() {
+#ifdef TRACE_API_CALLS
+	clogD << "->API call " << __func__ << "()\n";
+#endif
+	return main->getNetworkParameters();
+}
+
 bool CEzsp::getGPProxyTableEntry(const int index) {
 #ifdef TRACE_API_CALLS
 	clogD << "->API call " << __func__ << "()\n";
