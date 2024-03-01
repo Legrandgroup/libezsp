@@ -291,6 +291,13 @@ public:
 	bool getEUI64();
 
 	/**
+	 * @brief Get network parameters of current network
+	 *
+	 * @return true if the action is going to be run in the background, false if the sink is busy
+	 */
+	bool getNetworkParameters();
+
+	/**
 	 * @brief Get GP proxy table entry
 	 *
 	 * @return true if the action is going to be run in the background, false if the sink is busy
